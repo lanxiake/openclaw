@@ -2,16 +2,27 @@
 __pycache__/
 *.pyc
 *.pyo
+*.egg-info/
+dist/
+build/
 
 # Debug files
 debug_*.py
 debug_*.png
 
-# Test files (keep only essential ones)
+# Test files
 test_*.py
 
 # Cache
 wxdata/
+wxauto_logs/
 
 # Logs
 *.log
+
+# Screenshots
+*.png
+
+# IDE
+.vscode/
+.idea/

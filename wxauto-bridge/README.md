@@ -25,7 +25,8 @@ wxauto-bridge 作为 WebSocket 服务器运行，OpenClaw Gateway 作为客户�
 
 - Windows 10/11
 - Python 3.8+
-- 微信 PC 客户端（已登录）
+- 微信 PC 客户端 3.x 版本（已登录）
+  - **注意**：微信 4.x 版本使用 Qt 框架，不支持 UIAutomation，请使用 3.x 版本
 
 ## 安装
 
