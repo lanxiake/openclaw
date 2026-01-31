@@ -249,6 +249,13 @@ export type {
 export { detectMime, extensionForMime, getFileExtension } from "../media/mime.js";
 export { extractOriginalFilename } from "../media/store.js";
 
+// Gateway WebSocket upgrade handlers
+export {
+  registerWsUpgradeHandler,
+  getWsUpgradeHandlers,
+  type WsUpgradeHandler,
+} from "../gateway/server-runtime-state.js";
+
 // Channel: Discord
 export {
   listDiscordAccountIds,

@@ -305,10 +305,27 @@ export function attachGatewayUpgradeHandler(opts: {
   httpServer: HttpServer;
   wss: WebSocketServer;
   canvasHost: CanvasHostHandler | null;
+  pluginUpgradeHandlers?: Array<{
+    path: string;
+    handler: (req: IncomingMessage, socket: import("node:stream").Duplex, head: Buffer) => boolean;
+  }>;
 }) {
-  const { httpServer, wss, canvasHost } = opts;
+  const { httpServer, wss, canvasHost, pluginUpgradeHandlers } = opts;
   httpServer.on("upgrade", (req, socket, head) => {
+    // Check canvas host first
     if (canvasHost?.handleUpgrade(req, socket, head)) return;
+
+    // Check plugin upgrade handlers
+    if (pluginUpgradeHandlers) {
+      const url = new URL(req.url ?? "/", "http://localhost");
+      for (const { path, handler } of pluginUpgradeHandlers) {
+        if (url.pathname === path || url.pathname.startsWith(`${path}/`)) {
+          if (handler(req, socket, head)) return;
+        }
+      }
+    }
+
+    // Default to main WebSocket server
     wss.handleUpgrade(req, socket, head, (ws) => {
       wss.emit("connection", ws, req);
     });

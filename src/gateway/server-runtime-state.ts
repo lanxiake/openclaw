@@ -1,4 +1,6 @@
 import type { Server as HttpServer } from "node:http";
+import type { Duplex } from "node:stream";
+import type { IncomingMessage } from "node:http";
 import { WebSocketServer } from "ws";
 import { CANVAS_HOST_PATH } from "../canvas-host/a2ui.js";
 import { type CanvasHostHandler, createCanvasHostHandler } from "../canvas-host/server.js";
@@ -20,6 +22,35 @@ import { attachGatewayUpgradeHandler, createGatewayHttpServer } from "./server-h
 import type { DedupeEntry } from "./server-shared.js";
 import type { PluginRegistry } from "../plugins/registry.js";
 import type { GatewayTlsRuntime } from "./server/tls.js";
+
+export type WsUpgradeHandler = {
+  path: string;
+  handler: (req: IncomingMessage, socket: Duplex, head: Buffer) => boolean;
+};
+
+// Global registry for WebSocket upgrade handlers from plugins
+const wsUpgradeHandlers: WsUpgradeHandler[] = [];
+
+/**
+ * Register a WebSocket upgrade handler for a specific path.
+ * This is used by channel plugins to handle WebSocket connections.
+ */
+export function registerWsUpgradeHandler(handler: WsUpgradeHandler): () => void {
+  wsUpgradeHandlers.push(handler);
+  return () => {
+    const index = wsUpgradeHandlers.indexOf(handler);
+    if (index !== -1) {
+      wsUpgradeHandlers.splice(index, 1);
+    }
+  };
+}
+
+/**
+ * Get all registered WebSocket upgrade handlers.
+ */
+export function getWsUpgradeHandlers(): WsUpgradeHandler[] {
+  return wsUpgradeHandlers;
+}
 
 export async function createGatewayRuntimeState(params: {
   cfg: import("../config/config.js").OpenClawConfig;
@@ -145,7 +176,12 @@ export async function createGatewayRuntimeState(params: {
     maxPayload: MAX_PAYLOAD_BYTES,
   });
   for (const server of httpServers) {
-    attachGatewayUpgradeHandler({ httpServer: server, wss, canvasHost });
+    attachGatewayUpgradeHandler({
+      httpServer: server,
+      wss,
+      canvasHost,
+      pluginUpgradeHandlers: wsUpgradeHandlers,
+    });
   }
 
   const clients = new Set<GatewayWsClient>();

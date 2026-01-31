@@ -284,7 +284,7 @@ export const wechatPlugin: ChannelPlugin<ResolvedWeChatAccount> = {
         throw new Error("WeChat gateway not connected");
       }
 
-      const success = gateway.sendText(to, text);
+      const success = await gateway.sendText(to, text);
       if (!success) {
         throw new Error("Failed to send WeChat message");
       }
@@ -303,7 +303,7 @@ export const wechatPlugin: ChannelPlugin<ResolvedWeChatAccount> = {
 
       // Send media file if URL is a local path
       if (mediaUrl) {
-        const success = gateway.sendFile(to, mediaUrl);
+        const success = await gateway.sendFile(to, mediaUrl);
         if (!success) {
           throw new Error("Failed to send WeChat media");
         }
@@ -311,7 +311,7 @@ export const wechatPlugin: ChannelPlugin<ResolvedWeChatAccount> = {
 
       // Send text caption if provided
       if (text) {
-        const success = gateway.sendText(to, text);
+        const success = await gateway.sendText(to, text);
         if (!success) {
           throw new Error("Failed to send WeChat caption");
         }
@@ -498,3 +498,6 @@ export const wechatPlugin: ChannelPlugin<ResolvedWeChatAccount> = {
     },
   },
 };
+
+// Export the WebSocket upgrade handler for Gateway integration
+export { handleWeChatUpgrade } from "./gateway.js";
