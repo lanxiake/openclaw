@@ -1,0 +1,13 @@
+# wxauto 需要从本地源码安装：
+# pip install ../my-docs/wxauto-main
+# 或者从 GitHub 安装：
+# pip install git+https://github.com/cluic/wxauto.git
+
+websockets>=12.0
+tenacity
+pywin32
+pyperclip
+pillow
+psutil
+colorama
+comtypes

@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Debug files
+debug_*.py
+debug_*.png
+
+# Test files (keep only essential ones)
+test_*.py
+
+# Cache
+wxdata/
+
+# Logs
+*.log
