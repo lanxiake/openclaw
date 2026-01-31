@@ -1,6 +1,13 @@
 """
 微信桥接主程序
-WebSocket 服务器，等待 OpenClaw 连接，实现微信消息桥接
+WebSocket 客户端，主动连接 OpenClaw Gateway，实现微信消息桥接
+
+架构：
+  wxauto-bridge (Python Client) ──WebSocket──► OpenClaw Gateway (Node.js)
+                                   连接
+  wxauto library ◄──JSON-RPC── OpenClaw
+       ↓            命令
+  微信 Windows 客户端
 """
 
 import argparse
@@ -9,10 +16,13 @@ import json
 import logging
 import signal
 import sys
-from typing import Any, Optional, Set
+import time
+import uuid
+from pathlib import Path
+from typing import Any, Callable, Dict, Optional
 
 import websockets
-from websockets.server import WebSocketServerProtocol
+from websockets.client import WebSocketClientProtocol
 
 from wechat_handler import WeChatHandler, WeChatMessage, WeChatStatus
 
@@ -28,368 +38,338 @@ logger = logging.getLogger(__name__)
 class WeChatBridge:
     """
     微信桥接器
-    作为 WebSocket 服务器，等待 OpenClaw 连接，转发微信消息
+    作为 WebSocket 客户端，主动连接 OpenClaw Gateway，转发微信消息
     """
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 18790):
+    def __init__(self, gateway_url: str = "ws://localhost:18789"):
         """
         初始化桥接器
 
         参数:
-            host: 监听地址
-            port: 监听端口
+            gateway_url: OpenClaw Gateway WebSocket 地址
         """
-        self.host = host
-        self.port = port
+        self.gateway_url = gateway_url.rstrip('/')
+        self.ws_url = f"{self.gateway_url}/channels/wechat"
         self.wechat = WeChatHandler()
-        self.clients: Set[WebSocketServerProtocol] = set()
+        self.ws: Optional[WebSocketClientProtocol] = None
         self._running = False
-        self._server = None
+        self._reconnect_delay = 5  # 重连延迟（秒）
+        self._pending_requests: Dict[str, asyncio.Future] = {}
 
         # 设置微信回调
         self.wechat.set_message_callback(self._on_wechat_message)
         self.wechat.set_status_callback(self._on_wechat_status)
 
+    async def connect(self) -> bool:
+        """连接到 OpenClaw Gateway"""
+        try:
+            logger.info(f"正在连接到 OpenClaw Gateway: {self.ws_url}")
+            self.ws = await websockets.connect(
+                self.ws_url,
+                ping_interval=30,
+                ping_timeout=10
+            )
+            logger.info("WebSocket 连接成功")
+            return True
+        except Exception as e:
+            logger.error(f"WebSocket 连接失败: {e}")
+            return False
+
     async def start(self) -> None:
         """启动桥接器"""
         self._running = True
-        logger.info(f"启动微信桥接器，监听: {self.host}:{self.port}")
+        logger.info("启动微信桥接器")
 
         # 首先连接微信
         if not self.wechat.connect():
             logger.error("微信连接失败，退出")
             return
 
-        # 启动 WebSocket 服务器
-        self._server = await websockets.serve(
-            self._handle_client,
-            self.host,
-            self.port,
-            ping_interval=30,
-            ping_timeout=10
-        )
-
-        logger.info(f"WebSocket 服务器已启动: ws://{self.host}:{self.port}")
-
-        # 保持运行
+        # 连接到 Gateway 并保持运行
         while self._running:
-            await asyncio.sleep(1)
+            try:
+                if not await self.connect():
+                    logger.info(f"{self._reconnect_delay}秒后重试连接...")
+                    await asyncio.sleep(self._reconnect_delay)
+                    continue
+
+                # 发送连接成功通知
+                await self._send_connected_notification()
+
+                # 启动消息处理循环
+                await self._message_loop()
+
+            except websockets.ConnectionClosed as e:
+                logger.warning(f"WebSocket 连接断开: {e}")
+                if self._running:
+                    logger.info(f"{self._reconnect_delay}秒后重试连接...")
+                    await asyncio.sleep(self._reconnect_delay)
+            except Exception as e:
+                logger.error(f"发生错误: {e}")
+                if self._running:
+                    await asyncio.sleep(self._reconnect_delay)
 
     async def stop(self) -> None:
         """停止桥接器"""
         logger.info("正在停止桥接器...")
         self._running = False
 
-        # 关闭所有客户端连接
-        for client in list(self.clients):
-            await client.close()
-
-        # 关闭服务器
-        if self._server:
-            self._server.close()
-            await self._server.wait_closed()
+        if self.ws:
+            await self.ws.close()
 
         self.wechat.disconnect()
         logger.info("桥接器已停止")
 
-    async def _handle_client(self, websocket: WebSocketServerProtocol) -> None:
-        """处理客户端连接"""
-        client_addr = websocket.remote_address
-        logger.info(f"新客户端连接: {client_addr}")
-        self.clients.add(websocket)
+    async def _message_loop(self) -> None:
+        """消息处理循环"""
+        async for message in self.ws:
+            try:
+                data = json.loads(message)
+                await self._handle_message(data)
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON 解析错误: {e}")
+            except Exception as e:
+                logger.error(f"处理消息错误: {e}")
+
+    async def _handle_message(self, data: dict) -> None:
+        """处理来自 Gateway 的消息"""
+        # 检查是否是响应消息
+        if "id" in data and "result" in data:
+            request_id = data["id"]
+            if request_id in self._pending_requests:
+                self._pending_requests[request_id].set_result(data.get("result"))
+            return
+
+        # 处理 JSON-RPC 请求
+        method = data.get("method")
+        params = data.get("params", {})
+        request_id = data.get("id")
+
+        logger.debug(f"收到命令: {method}, params: {params}")
+
+        result = None
+        error = None
 
         try:
-            # 发送连接成功通知
-            await self._send_to_client(websocket, {
-                "type": "connected",
-                "wxid": self.wechat.get_wxid(),
-                "nickname": self.wechat.get_nickname(),
-            })
-
-            # 接收消息循环
-            async for message in websocket:
-                try:
-                    await self._handle_message(websocket, message)
-                except Exception as e:
-                    logger.error(f"处理消息失败: {e}")
-                    await self._send_to_client(websocket, {
-                        "type": "error",
-                        "message": str(e),
-                    })
-
-        except websockets.ConnectionClosed as e:
-            logger.info(f"客户端断开连接: {client_addr} ({e})")
+            if method == "send":
+                result = await self._handle_send(params)
+            elif method == "sendFile":
+                result = await self._handle_send_file(params)
+            elif method == "getStatus":
+                result = await self._handle_get_status(params)
+            elif method == "getContacts":
+                result = await self._handle_get_contacts(params)
+            elif method == "addListen":
+                result = await self._handle_add_listen(params)
+            elif method == "removeListen":
+                result = await self._handle_remove_listen(params)
+            elif method == "ping":
+                result = {"pong": True, "timestamp": int(time.time() * 1000)}
+            else:
+                error = {"code": -32601, "message": f"Method not found: {method}"}
         except Exception as e:
-            logger.error(f"客户端处理异常: {e}")
-        finally:
-            self.clients.discard(websocket)
-            logger.info(f"客户端已移除: {client_addr}")
+            error = {"code": -32000, "message": str(e)}
 
-    async def _handle_message(self, websocket: WebSocketServerProtocol, raw_message: str) -> None:
-        """
-        处理收到的消息
+        # 发送响应
+        if request_id:
+            await self._send_response(request_id, result, error)
 
-        参数:
-            websocket: WebSocket 连接
-            raw_message: 原始 JSON 字符串
-        """
-        try:
-            message = json.loads(raw_message)
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON 解析失败: {e}")
-            await self._send_to_client(websocket, {
-                "type": "error",
-                "message": "Invalid JSON",
-            })
-            return
+    async def _handle_send(self, params: dict) -> dict:
+        """处理发送消息命令"""
+        to = params.get("to")
+        text = params.get("text", "")
+        files = params.get("files", [])
 
-        msg_type = message.get("type")
-        logger.debug(f"收到消息: {msg_type}")
+        if not to:
+            return {"ok": False, "error": "Missing 'to' parameter"}
 
-        if msg_type == "send":
-            await self._handle_send(websocket, message)
-        elif msg_type == "sendFile":
-            await self._handle_send_file(websocket, message)
-        elif msg_type == "addListen":
-            await self._handle_add_listen(websocket, message)
-        elif msg_type == "removeListen":
-            await self._handle_remove_listen(websocket, message)
-        elif msg_type == "getChats":
-            await self._handle_get_chats(websocket)
-        elif msg_type == "ping":
-            await self._send_to_client(websocket, {"type": "pong"})
-        else:
-            logger.warning(f"未知消息类型: {msg_type}")
-            await self._send_to_client(websocket, {
-                "type": "error",
-                "message": f"Unknown message type: {msg_type}",
-            })
+        # 发送文件
+        if files:
+            for file_path in files:
+                result = self.wechat.send_file(to, file_path)
+                if not result.get("success"):
+                    return {"ok": False, "error": result.get("error")}
 
-    async def _handle_send(self, websocket: WebSocketServerProtocol, message: dict) -> None:
-        """处理发送消息请求"""
-        to = message.get("to")
-        text = message.get("text")
+        # 发送文本
+        if text:
+            result = self.wechat.send_message(to, text)
+            if not result.get("success"):
+                return {"ok": False, "error": result.get("error")}
 
-        if not to or not text:
-            await self._send_to_client(websocket, {
-                "type": "error",
-                "message": "Missing required params: to, text",
-            })
-            return
+        return {"ok": True}
 
-        # 在线程池中执行同步操作
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(
-            None,
-            self.wechat.send_message,
-            to,
-            text
-        )
-
-        await self._send_to_client(websocket, {
-            "type": "sendResult",
-            "success": result.get("success", False),
-            "error": result.get("error"),
-        })
-
-    async def _handle_send_file(self, websocket: WebSocketServerProtocol, message: dict) -> None:
-        """处理发送文件请求"""
-        to = message.get("to")
-        file_path = message.get("filePath")
+    async def _handle_send_file(self, params: dict) -> dict:
+        """处理发送文件命令"""
+        to = params.get("to")
+        file_path = params.get("filePath")
 
         if not to or not file_path:
-            await self._send_to_client(websocket, {
-                "type": "error",
-                "message": "Missing required params: to, filePath",
-            })
-            return
+            return {"ok": False, "error": "Missing 'to' or 'filePath' parameter"}
 
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(
-            None,
-            self.wechat.send_file,
-            to,
-            file_path
-        )
+        result = self.wechat.send_file(to, file_path)
+        return {"ok": result.get("success", False), "error": result.get("error")}
 
-        await self._send_to_client(websocket, {
-            "type": "sendFileResult",
-            "success": result.get("success", False),
-            "error": result.get("error"),
-        })
+    async def _handle_get_status(self, params: dict) -> dict:
+        """处理获取状态命令"""
+        return self.wechat.get_status()
 
-    async def _handle_add_listen(self, websocket: WebSocketServerProtocol, message: dict) -> None:
-        """处理添加监听请求"""
-        chat_name = message.get("chatName")
+    async def _handle_get_contacts(self, params: dict) -> dict:
+        """处理获取联系人列表命令"""
+        chats = self.wechat.get_chat_list()
+        return {"ok": True, "contacts": chats}
 
-        if not chat_name:
-            await self._send_to_client(websocket, {
-                "type": "error",
-                "message": "Missing required param: chatName",
-            })
-            return
+    async def _handle_add_listen(self, params: dict) -> dict:
+        """处理添加监听命令"""
+        chat = params.get("chat")
+        if not chat:
+            return {"ok": False, "error": "Missing 'chat' parameter"}
 
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(
-            None,
-            self.wechat.add_listener,
-            chat_name
-        )
+        result = self.wechat.add_listener(chat)
+        return {"ok": result.get("success", False), "error": result.get("error")}
 
-        await self._send_to_client(websocket, {
-            "type": "addListenResult",
-            "success": result.get("success", False),
-            "chatName": chat_name,
-            "error": result.get("error"),
-        })
+    async def _handle_remove_listen(self, params: dict) -> dict:
+        """处理移除监听命令"""
+        chat = params.get("chat")
+        if not chat:
+            return {"ok": False, "error": "Missing 'chat' parameter"}
 
-    async def _handle_remove_listen(self, websocket: WebSocketServerProtocol, message: dict) -> None:
-        """处理移除监听请求"""
-        chat_name = message.get("chatName")
-
-        if not chat_name:
-            await self._send_to_client(websocket, {
-                "type": "error",
-                "message": "Missing required param: chatName",
-            })
-            return
-
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(
-            None,
-            self.wechat.remove_listener,
-            chat_name
-        )
-
-        await self._send_to_client(websocket, {
-            "type": "removeListenResult",
-            "success": result.get("success", False),
-            "chatName": chat_name,
-        })
-
-    async def _handle_get_chats(self, websocket: WebSocketServerProtocol) -> None:
-        """处理获取聊天列表请求"""
-        loop = asyncio.get_event_loop()
-        chats = await loop.run_in_executor(
-            None,
-            self.wechat.get_chat_list
-        )
-
-        await self._send_to_client(websocket, {
-            "type": "chats",
-            "chats": chats,
-        })
+        result = self.wechat.remove_listener(chat)
+        return {"ok": result.get("success", False), "error": result.get("error")}
 
     def _on_wechat_message(self, msg: WeChatMessage) -> None:
         """微信消息回调"""
-        # 广播消息给所有客户端
-        asyncio.create_task(self._broadcast({
-            "type": "message",
-            "data": {
-                "from": msg.sender,
-                "to": msg.chat_name,
-                "text": msg.content,
-                "chatType": "group" if msg.is_group else "direct",
-                "groupName": msg.chat_name if msg.is_group else None,
-                "senderName": msg.sender_name,
-                "timestamp": msg.timestamp,
-                "msgType": msg.msg_type,
-            }
-        }))
+        asyncio.create_task(self._push_message(msg))
 
     def _on_wechat_status(self, status: WeChatStatus) -> None:
-        """微信状态变更回调"""
-        asyncio.create_task(self._broadcast({
-            "type": "status",
-            "connected": status == WeChatStatus.CONNECTED,
-            "status": status.value,
-        }))
+        """微信状态回调"""
+        asyncio.create_task(self._push_status(status))
 
-    async def _send_to_client(self, websocket: WebSocketServerProtocol, data: dict) -> None:
-        """发送消息给指定客户端"""
-        try:
-            await websocket.send(json.dumps(data, ensure_ascii=False))
-        except Exception as e:
-            logger.error(f"发送消息失败: {e}")
-
-    async def _broadcast(self, data: dict) -> None:
-        """广播消息给所有客户端"""
-        if not self.clients:
+    async def _push_message(self, msg: WeChatMessage) -> None:
+        """推送消息到 Gateway"""
+        if not self.ws or self.ws.closed:
             return
 
-        message = json.dumps(data, ensure_ascii=False)
-        for client in list(self.clients):
-            try:
-                await client.send(message)
-            except Exception as e:
-                logger.error(f"广播消息失败: {e}")
+        await self._send_notification("wechat.message", {
+            "from": msg.sender,
+            "to": msg.chat_name,
+            "text": msg.content,
+            "type": msg.msg_type,
+            "chatType": "group" if msg.is_group else "friend",
+            "timestamp": int(msg.timestamp * 1000),
+            "isSelf": msg.is_self
+        })
+
+    async def _push_status(self, status: WeChatStatus) -> None:
+        """推送状态到 Gateway"""
+        if not self.ws or self.ws.closed:
+            return
+
+        await self._send_notification("wechat.status", {
+            "status": status.value,
+            "timestamp": int(time.time() * 1000)
+        })
+
+    async def _send_connected_notification(self) -> None:
+        """发送连接成功通知"""
+        await self._send_notification("wechat.connected", {
+            "nickname": self.wechat.get_nickname(),
+            "wxid": self.wechat.get_wxid(),
+            "online": self.wechat.status == WeChatStatus.CONNECTED,
+            "timestamp": int(time.time() * 1000)
+        })
+
+    async def _send_notification(self, method: str, params: dict) -> None:
+        """发送通知（无需响应）"""
+        if not self.ws or self.ws.closed:
+            return
+
+        message = {
+            "jsonrpc": "2.0",
+            "method": method,
+            "params": params
+        }
+        await self.ws.send(json.dumps(message))
+        logger.debug(f"发送通知: {method}")
+
+    async def _send_response(self, request_id: str, result: Any = None, error: dict = None) -> None:
+        """发送命令响应"""
+        if not self.ws or self.ws.closed:
+            return
+
+        message = {
+            "jsonrpc": "2.0",
+            "id": request_id
+        }
+        if error:
+            message["error"] = error
+        else:
+            message["result"] = result
+
+        await self.ws.send(json.dumps(message))
+        logger.debug(f"发送响应: {request_id}")
+
+    async def _send_request(self, method: str, params: dict, timeout: float = 30) -> Any:
+        """发送请求并等待响应"""
+        if not self.ws or self.ws.closed:
+            raise Exception("WebSocket not connected")
+
+        request_id = str(uuid.uuid4())
+        message = {
+            "jsonrpc": "2.0",
+            "id": request_id,
+            "method": method,
+            "params": params
+        }
+
+        future = asyncio.get_event_loop().create_future()
+        self._pending_requests[request_id] = future
+
+        try:
+            await self.ws.send(json.dumps(message))
+            result = await asyncio.wait_for(future, timeout=timeout)
+            return result
+        finally:
+            self._pending_requests.pop(request_id, None)
 
 
-def parse_args() -> argparse.Namespace:
-    """解析命令行参数"""
-    parser = argparse.ArgumentParser(
-        description="微信桥接器 - WebSocket 服务器，等待 OpenClaw 连接",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-示例:
-  %(prog)s --port 18790
-  %(prog)s -p 18790 --host 0.0.0.0
-        """
-    )
-
+async def main():
+    """主函数"""
+    parser = argparse.ArgumentParser(description="微信桥接器 - 连接 OpenClaw Gateway")
     parser.add_argument(
-        "-H", "--host",
-        default="0.0.0.0",
-        help="监听地址 (默认: 0.0.0.0)"
+        "--gateway", "-g",
+        default="ws://localhost:18789",
+        help="OpenClaw Gateway WebSocket 地址 (默认: ws://localhost:18789)"
     )
-
     parser.add_argument(
-        "-p", "--port",
-        type=int,
-        default=18790,
-        help="监听端口 (默认: 18790)"
-    )
-
-    parser.add_argument(
-        "-v", "--verbose",
+        "--verbose", "-v",
         action="store_true",
         help="启用详细日志"
     )
-
-    return parser.parse_args()
-
-
-async def main() -> None:
-    """主函数"""
-    args = parse_args()
+    args = parser.parse_args()
 
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    bridge = WeChatBridge(host=args.host, port=args.port)
+    bridge = WeChatBridge(gateway_url=args.gateway)
 
     # 设置信号处理
     loop = asyncio.get_event_loop()
 
     def signal_handler():
-        logger.info("收到退出信号")
+        logger.info("收到停止信号")
         asyncio.create_task(bridge.stop())
 
-    # Windows 不支持 add_signal_handler，使用替代方案
     if sys.platform != "win32":
-        for sig in (signal.SIGINT, signal.SIGTERM):
-            loop.add_signal_handler(sig, signal_handler)
+        loop.add_signal_handler(signal.SIGINT, signal_handler)
+        loop.add_signal_handler(signal.SIGTERM, signal_handler)
 
     try:
         await bridge.start()
     except KeyboardInterrupt:
-        logger.info("用户中断")
+        logger.info("收到键盘中断")
     finally:
         await bridge.stop()
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        pass
+    asyncio.run(main())

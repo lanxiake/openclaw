@@ -5,21 +5,21 @@
 ## 架构
 
 ```
-┌─────────────────┐     WebSocket      ┌─────────────────┐
-│   OpenClaw      │ ◄─────────────────► │  wxauto-bridge  │
-│   Gateway       │    (客户端连接)      │  (WebSocket     │
-│                 │                     │   服务器)        │
-└─────────────────┘                     └────────┬────────┘
-                                                 │
-                                                 │ UIAutomation
-                                                 ▼
-                                        ┌─────────────────┐
-                                        │  微信 PC 客户端  │
-                                        │  (Windows)      │
-                                        └─────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                      Windows 机器                            │
+│  ┌─────────────────┐                  ┌──────────────────┐  │
+│  │  wxauto-bridge  │ ──WebSocket───► │   OpenClaw       │  │
+│  │  (Python Client)│    连接          │   Gateway        │  │
+│  │                 │                  │   (Node.js)      │  │
+│  │  wxauto library │ ◄──JSON-RPC────  │                  │  │
+│  │       ↓         │    命令          │ extensions/      │  │
+│  │  微信 Windows   │                  │   wechat/        │  │
+│  │  客户端 (3.x)   │ ───消息推送────► │                  │  │
+│  └─────────────────┘                  └──────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-wxauto-bridge 作为 WebSocket 服务器运行，OpenClaw Gateway 作为客户端连接。
+wxauto-bridge 作为 WebSocket **客户端**，主动连接到 OpenClaw Gateway。
 
 ## 系统要求
 
@@ -49,17 +49,26 @@ pip install git+https://github.com/cluic/wxauto.git
 
 ## 使用方法
 
-### 启动桥接器
+### 启动流程
 
 ```bash
-# 默认监听 0.0.0.0:18790
+# 1. 启动微信客户端并登录（手动）
+
+# 2. 启动 OpenClaw 网关
+openclaw gateway run --port 18789
+
+# 3. 启动 wxauto-bridge（连接到网关）
+python bridge.py --gateway ws://localhost:18789
+```
+
+### 命令行参数
+
+```bash
+# 默认连接 ws://localhost:18789
 python bridge.py
 
-# 指定端口
-python bridge.py --port 18790
-
-# 指定监听地址
-python bridge.py --host 127.0.0.1 --port 18790
+# 指定 Gateway 地址
+python bridge.py --gateway ws://192.168.1.100:18789
 
 # 启用详细日志
 python bridge.py -v
@@ -68,82 +77,77 @@ python bridge.py -v
 ### 配置 OpenClaw
 
 ```bash
-# 设置 bridgeUrl
-openclaw config set channels.wechat.bridgeUrl "ws://localhost:18790"
-
 # 启用 wechat 渠道
 openclaw config set channels.wechat.enabled true
+
+# 配置允许的联系人
+openclaw config set channels.wechat.allowFrom '["张三", "文件传输助手"]'
 
 # 查看渠道状态
 openclaw channels list
 ```
 
-### 启动 OpenClaw Gateway
+## 通讯协议
 
-```bash
-openclaw gateway run
-```
+使用 JSON-RPC 2.0 协议进行通讯。
 
-## 消息协议
-
-wxauto-bridge 使用简单的 JSON 消息协议：
-
-### 连接成功
+### Bridge → OpenClaw（入站消息）
 
 ```json
 {
-  "type": "connected",
-  "wxid": "wxid_xxx",
-  "nickname": "用户昵称"
-}
-```
-
-### 发送消息
-
-```json
-{
-  "type": "send",
-  "to": "联系人或群名",
-  "text": "消息内容"
-}
-```
-
-### 发送文件
-
-```json
-{
-  "type": "sendFile",
-  "to": "联系人或群名",
-  "filePath": "C:\\path\\to\\file.jpg"
-}
-```
-
-### 添加监听
-
-```json
-{
-  "type": "addListen",
-  "chatName": "要监听的聊天名称"
-}
-```
-
-### 接收消息
-
-```json
-{
-  "type": "message",
-  "data": {
-    "from": "发送者",
-    "to": "聊天名称",
-    "text": "消息内容",
-    "chatType": "direct|group",
-    "groupName": "群名（如果是群消息）",
-    "senderName": "发送者昵称",
-    "timestamp": 1234567890.123,
-    "msgType": "text"
+  "jsonrpc": "2.0",
+  "method": "wechat.message",
+  "params": {
+    "from": "张三",
+    "to": "我",
+    "text": "你好",
+    "type": "text",
+    "timestamp": 1706694000000,
+    "chatType": "friend"
   }
 }
 ```
+
+### OpenClaw → Bridge（发送命令）
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "msg-001",
+  "method": "send",
+  "params": {
+    "to": "张三",
+    "text": "收到，谢谢！",
+    "files": []
+  }
+}
+```
+
+### Bridge → OpenClaw（命令响应）
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "msg-001",
+  "result": {
+    "ok": true
+  }
+}
+```
+
+### 支持的方法
+
+| 方向 | 方法 | 说明 |
+|------|------|------|
+| OC → Bridge | `send` | 发送消息 |
+| OC → Bridge | `sendFile` | 发送文件 |
+| OC → Bridge | `getStatus` | 获取微信状态 |
+| OC → Bridge | `getContacts` | 获取联系人列表 |
+| OC → Bridge | `addListen` | 添加聊天监听 |
+| OC → Bridge | `removeListen` | 移除聊天监听 |
+| Bridge → OC | `wechat.message` | 推送新消息 |
+| Bridge → OC | `wechat.status` | 状态变更通知 |
+| Bridge → OC | `wechat.connected` | 连接成功通知 |
 
 ## 打包为 exe
 
@@ -164,7 +168,7 @@ pyinstaller --onefile --name wxauto-bridge bridge.py
 1. **仅支持 Windows**：wxauto 依赖 Windows UIAutomation API
 2. **需要微信 PC 客户端**：必须先登录微信 PC 客户端
 3. **窗口可见性**：wxauto 需要微信窗口可见（不能最小化）
-4. **防火墙**：如果远程连接，需要开放对应端口
+4. **连接顺序**：先启动 OpenClaw Gateway，再启动 wxauto-bridge
 
 ## 故障排除
 
@@ -172,13 +176,14 @@ pyinstaller --onefile --name wxauto-bridge bridge.py
 
 - 确保微信 PC 客户端已启动并登录
 - 确保微信窗口没有最小化
+- 确保使用微信 3.x 版本（不支持 4.x）
 - 尝试重启微信客户端
 
 ### WebSocket 连接失败
 
-- 检查端口是否被占用
+- 确保 OpenClaw Gateway 已启动
+- 检查 Gateway 地址和端口是否正确
 - 检查防火墙设置
-- 确保 OpenClaw 配置的 bridgeUrl 正确
 
 ### 消息发送失败
 
