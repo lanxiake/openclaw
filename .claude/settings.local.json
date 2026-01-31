@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout:*)",
+      "mcp__github_com_zcaceres_markdownify-mcp__webpage-to-markdown",
+      "WebFetch(domain:docs.wxauto.org)",
+      "mcp__playwright__playwright_navigate",
+      "mcp__playwright__playwright_screenshot",
+      "Bash(timeout 8 sleep:*)",
+      "WebSearch",
+      "Bash(curl:*)"
+    ]
+  }
+}
