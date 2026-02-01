@@ -8,6 +8,7 @@ import {
   type ChannelPlugin,
   type OpenClawConfig,
   type ChannelMeta,
+  type PluginRuntime,
 } from "openclaw/plugin-sdk";
 
 import { getWeChatRuntime } from "./runtime.js";
@@ -20,6 +21,84 @@ import {
 } from "./config.js";
 import { createGateway, removeGateway, getGateway } from "./gateway.js";
 import type { ResolvedWeChatAccount, WeChatAccountRuntime, WeChatMessage } from "./types.js";
+
+/**
+ * Handle inbound WeChat message using OpenClaw's message processing pipeline.
+ */
+async function handleWeChatInboundMessage(params: {
+  message: WeChatMessage;
+  account: ResolvedWeChatAccount;
+  cfg: OpenClawConfig;
+  runtime: PluginRuntime;
+  log?: { info: (msg: string) => void; error: (msg: string) => void };
+}): Promise<void> {
+  const { message, account, cfg, runtime, log } = params;
+  const chatId = message.chatType === "group" ? message.to : message.from;
+  const isGroup = message.chatType === "group";
+  const senderName = message.from;
+
+  // For group messages, only respond if @'d (unless requireMention is disabled)
+  if (isGroup && !message.isAtMe) {
+    log?.info(`[${account.accountId}] Ignoring group message not @'ing me: from=${senderName}, chat=${chatId}`);
+    return;
+  }
+
+  // Build message context
+  const ctxPayload = runtime.channel.reply.finalizeInboundContext({
+    Body: message.text ?? "",
+    RawBody: message.text ?? "",
+    CommandBody: message.text ?? "",
+    From: isGroup ? `group:${message.to}` : `wechat:${message.from}`,
+    To: `wechat:${chatId}`,
+    SessionKey: `wechat:${account.accountId}:${chatId}`,
+    AccountId: account.accountId,
+    ChatType: isGroup ? "group" : "direct",
+    ConversationLabel: message.from,
+    GroupSubject: isGroup ? message.to : undefined,
+    SenderName: message.from,
+    SenderId: message.from,
+    Provider: "wechat" as const,
+    Surface: "wechat" as const,
+    MessageSid: `wechat-${Date.now()}`,
+    Timestamp: message.timestamp,
+    CommandAuthorized: true,
+    OriginatingChannel: "wechat" as const,
+    OriginatingTo: `wechat:${chatId}`,
+  });
+
+  log?.info(`[${account.accountId}] Processing message context: SessionKey=${ctxPayload.SessionKey}, From=${ctxPayload.From}, isGroup=${isGroup}, isAtMe=${message.isAtMe}`);
+
+  // Dispatch message using OpenClaw's message processing pipeline
+  await runtime.channel.reply.dispatchReplyWithBufferedBlockDispatcher({
+    ctx: ctxPayload,
+    cfg,
+    dispatcherOptions: {
+      deliver: async (payload) => {
+        const responseText = payload.text ?? "";
+        if (!responseText.trim()) {
+          log?.info(`[${account.accountId}] Empty response, skipping delivery`);
+          return;
+        }
+
+        log?.info(`[${account.accountId}] Delivering reply to ${chatId}, isGroup=${isGroup}, sender=${senderName}`);
+        const gw = getGateway(account.accountId);
+        if (gw?.isConnected()) {
+          // For group messages, @ the sender; for direct messages, just send
+          const atUser = isGroup ? senderName : undefined;
+          const success = await gw.sendText(chatId, responseText, atUser);
+          if (!success) {
+            log?.error(`[${account.accountId}] Failed to send message to ${chatId}`);
+          }
+        } else {
+          log?.error(`[${account.accountId}] Gateway not connected, cannot send reply`);
+        }
+      },
+      onError: (err, info) => {
+        log?.error(`[${account.accountId}] Reply ${info.kind} failed: ${err instanceof Error ? err.message : String(err)}`);
+      },
+    },
+  });
+}
 
 const meta: ChannelMeta = {
   id: "wechat",
@@ -408,32 +487,35 @@ export const wechatPlugin: ChannelPlugin<ResolvedWeChatAccount> = {
     startAccount: async (ctx) => {
       const { account, cfg, log, abortSignal } = ctx;
 
-      if (!account.bridgeUrl) {
-        throw new Error("WeChat bridge URL not configured");
-      }
-
       log?.info(`[${account.accountId}] Starting WeChat gateway`);
 
+      const runtime = getWeChatRuntime();
+
       const gateway = createGateway({
-        bridgeUrl: account.bridgeUrl,
         accountId: account.accountId,
+        authToken: account.authToken,
         listenChats: account.config.listenChats,
-        onMessage: (message: WeChatMessage) => {
-          // Route message to OpenClaw runtime
-          const runtime = getWeChatRuntime();
-          runtime.channel.inbound.handleInbound({
-            channel: "wechat",
-            accountId: account.accountId,
-            chatType: message.chatType === "group" ? "group" : "direct",
-            from: message.from,
-            to: message.to,
-            text: message.text,
-            timestamp: message.timestamp,
-            groupId: message.chatType === "group" ? message.to : undefined,
-            groupName: message.groupName,
-            senderName: message.senderName,
-            mediaUrl: message.mediaUrl,
-          });
+        onMessage: async (message: WeChatMessage) => {
+          // Log metadata only, not message content
+          log?.info(`[${account.accountId}] Received message from ${message.from}, chatType=${message.chatType}`);
+
+          try {
+            // Load current config
+            const currentCfg = await runtime.config.loadConfig();
+
+            await handleWeChatInboundMessage({
+              message,
+              account,
+              cfg: currentCfg,
+              runtime,
+              log,
+            });
+          } catch (err) {
+            log?.error(`[${account.accountId}] Failed to handle inbound message: ${err instanceof Error ? err.message : String(err)}`);
+            if (err instanceof Error && err.stack) {
+              log?.error(`[${account.accountId}] Stack trace: ${err.stack}`);
+            }
+          }
         },
         onStatus: (status) => {
           if (status.connected) {

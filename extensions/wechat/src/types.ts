@@ -38,6 +38,8 @@ export interface WeChatMessage {
   mediaUrl?: string;
   /** Optional message ID. */
   msgId?: string;
+  /** Whether the message @'d the current account (for group messages). */
+  isAtMe?: boolean;
 }
 
 export type DmPolicy = "pairing" | "allowlist" | "open" | "disabled";
@@ -67,6 +69,8 @@ export interface WeChatAccountConfig {
   enabled?: boolean;
   /** wxauto-bridge WebSocket URL. */
   bridgeUrl?: string;
+  /** Authentication token for bridge connections. */
+  authToken?: string;
   /** Direct message access policy (default: pairing). */
   dmPolicy?: DmPolicy;
   /** Allowlist for DM senders (wxid or nicknames). */
@@ -105,31 +109,11 @@ export interface ResolvedWeChatAccount {
   bridgeUrl: string;
   /** Source of bridge URL (config, env, none). */
   bridgeUrlSource: "config" | "env" | "none";
+  /** Authentication token for bridge connections. */
+  authToken: string;
   /** Full configuration. */
   config: WeChatConfig;
 }
-
-/**
- * WebSocket command types for wxauto-bridge.
- */
-export type WeChatBridgeCommand =
-  | { type: "send"; to: string; text: string }
-  | { type: "sendFile"; to: string; filePath: string }
-  | { type: "addListen"; chatName: string }
-  | { type: "removeListen"; chatName: string }
-  | { type: "getChats" }
-  | { type: "ping" };
-
-/**
- * WebSocket event types from wxauto-bridge.
- */
-export type WeChatBridgeEvent =
-  | { type: "message"; data: WeChatMessage }
-  | { type: "connected"; wxid: string; nickname: string }
-  | { type: "disconnected"; reason?: string }
-  | { type: "error"; message: string }
-  | { type: "pong" }
-  | { type: "chats"; data: string[] };
 
 /**
  * Account runtime state for status tracking.

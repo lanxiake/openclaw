@@ -11,6 +11,7 @@ import type { Socket } from "node:net";
 import { WebSocket, WebSocketServer } from "ws";
 import { randomUUID } from "node:crypto";
 import type { WeChatMessage } from "./types.js";
+import { createWeChatLogger, type WeChatLogger } from "./logger.js";
 
 export type BridgeMessageHandler = (message: WeChatMessage) => void;
 export type BridgeStatusHandler = (status: {
@@ -22,6 +23,7 @@ export type BridgeStatusHandler = (status: {
 
 export interface WeChatBridgeServerOptions {
   accountId: string;
+  authToken: string;
   onMessage: BridgeMessageHandler;
   onStatus?: BridgeStatusHandler;
   listenChats?: string[];
@@ -64,9 +66,11 @@ export class WeChatBridgeServer {
   private wxid: string | null = null;
   private nickname: string | null = null;
   private pingTimer: ReturnType<typeof setInterval> | null = null;
+  private log: WeChatLogger;
 
   constructor(options: WeChatBridgeServerOptions) {
     this.options = options;
+    this.log = createWeChatLogger(options.accountId);
     this.wss = new WebSocketServer({ noServer: true });
 
     this.wss.on("connection", (ws) => {
@@ -84,6 +88,14 @@ export class WeChatBridgeServer {
       return false;
     }
 
+    // Validate auth token
+    const token = url.searchParams.get("token");
+    if (!token || token !== this.options.authToken) {
+      socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+      socket.destroy();
+      return true;
+    }
+
     this.wss.handleUpgrade(req, socket as Socket, head, (ws) => {
       this.wss.emit("connection", ws, req);
     });
@@ -96,19 +108,19 @@ export class WeChatBridgeServer {
   private handleConnection(ws: WebSocket): void {
     // Only allow one bridge connection at a time
     if (this.client) {
-      console.log(`[wechat:${this.options.accountId}] Closing existing bridge connection`);
+      this.log.info("Closing existing bridge connection");
       this.client.close(1000, "New connection");
     }
 
     this.client = ws;
-    console.log(`[wechat:${this.options.accountId}] Bridge connected`);
+    this.log.info("Bridge connected");
 
     ws.on("message", (data) => {
       this.handleMessage(data.toString());
     });
 
     ws.on("close", () => {
-      console.log(`[wechat:${this.options.accountId}] Bridge disconnected`);
+      this.log.info("Bridge disconnected");
       this.cleanup();
       this.options.onStatus?.({
         connected: false,
@@ -118,7 +130,7 @@ export class WeChatBridgeServer {
     });
 
     ws.on("error", (err) => {
-      console.error(`[wechat:${this.options.accountId}] Bridge error:`, err);
+      this.log.error(`Bridge error: ${err.message}`);
     });
 
     // Start ping interval
@@ -151,7 +163,7 @@ export class WeChatBridgeServer {
         this.handleNotification(msg as JsonRpcNotification);
       }
     } catch (err) {
-      console.error(`[wechat:${this.options.accountId}] Failed to parse message:`, err);
+      this.log.error(`Failed to parse message: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
@@ -178,7 +190,7 @@ export class WeChatBridgeServer {
         if (this.options.listenChats?.length) {
           for (const chat of this.options.listenChats) {
             this.addListen(chat).catch((err) => {
-              console.error(`[wechat:${this.options.accountId}] Failed to add listen:`, err);
+              this.log.error(`Failed to add listen: ${err instanceof Error ? err.message : String(err)}`);
             });
           }
         }
@@ -194,7 +206,10 @@ export class WeChatBridgeServer {
           chatType: string;
           timestamp: number;
           isSelf?: boolean;
+          isAtMe?: boolean;
         };
+        // Log metadata only, not message content
+        this.log.info(`Received message: from=${params.from}, to=${params.to}, chatType=${params.chatType}, isAtMe=${params.isAtMe}`);
         this.options.onMessage({
           from: params.from,
           to: params.to,
@@ -202,6 +217,7 @@ export class WeChatBridgeServer {
           type: params.type as WeChatMessage["type"],
           chatType: params.chatType as WeChatMessage["chatType"],
           timestamp: params.timestamp,
+          isAtMe: params.isAtMe,
         });
         break;
       }
@@ -247,13 +263,16 @@ export class WeChatBridgeServer {
 
   /**
    * Send a text message.
+   * @param to - Target chat name
+   * @param text - Message text
+   * @param at - Optional user(s) to @ in group chat
    */
-  async sendText(to: string, text: string): Promise<boolean> {
+  async sendText(to: string, text: string, at?: string | string[]): Promise<boolean> {
     try {
-      const result = (await this.sendRequest("send", { to, text })) as { ok: boolean };
+      const result = (await this.sendRequest("send", { to, text, at })) as { ok: boolean };
       return result.ok;
     } catch (err) {
-      console.error(`[wechat:${this.options.accountId}] Send failed:`, err);
+      this.log.error(`Send failed: ${err instanceof Error ? err.message : String(err)}`);
       return false;
     }
   }
@@ -266,7 +285,7 @@ export class WeChatBridgeServer {
       const result = (await this.sendRequest("sendFile", { to, filePath })) as { ok: boolean };
       return result.ok;
     } catch (err) {
-      console.error(`[wechat:${this.options.accountId}] SendFile failed:`, err);
+      this.log.error(`SendFile failed: ${err instanceof Error ? err.message : String(err)}`);
       return false;
     }
   }
@@ -279,7 +298,7 @@ export class WeChatBridgeServer {
       const result = (await this.sendRequest("addListen", { chat })) as { ok: boolean };
       return result.ok;
     } catch (err) {
-      console.error(`[wechat:${this.options.accountId}] AddListen failed:`, err);
+      this.log.error(`AddListen failed: ${err instanceof Error ? err.message : String(err)}`);
       return false;
     }
   }
@@ -292,7 +311,7 @@ export class WeChatBridgeServer {
       const result = (await this.sendRequest("removeListen", { chat })) as { ok: boolean };
       return result.ok;
     } catch (err) {
-      console.error(`[wechat:${this.options.accountId}] RemoveListen failed:`, err);
+      this.log.error(`RemoveListen failed: ${err instanceof Error ? err.message : String(err)}`);
       return false;
     }
   }
@@ -304,7 +323,7 @@ export class WeChatBridgeServer {
     try {
       return (await this.sendRequest("getStatus", {})) as Record<string, unknown>;
     } catch (err) {
-      console.error(`[wechat:${this.options.accountId}] GetStatus failed:`, err);
+      this.log.error(`GetStatus failed: ${err instanceof Error ? err.message : String(err)}`);
       return { connected: false, error: String(err) };
     }
   }

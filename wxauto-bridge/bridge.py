@@ -14,6 +14,7 @@ import argparse
 import asyncio
 import json
 import logging
+import os
 import signal
 import sys
 import time
@@ -41,17 +42,24 @@ class WeChatBridge:
     作为 WebSocket 客户端，主动连接 OpenClaw Gateway，转发微信消息
     """
 
-    def __init__(self, gateway_url: str = "ws://localhost:18789"):
+    def __init__(self, gateway_url: str = "ws://localhost:18789", auth_token: str = ""):
         """
         初始化桥接器
 
         参数:
             gateway_url: OpenClaw Gateway WebSocket 地址
+            auth_token: 认证令牌
         """
         self.gateway_url = gateway_url.rstrip('/')
-        self.ws_url = f"{self.gateway_url}/channels/wechat"
+        self.auth_token = auth_token
+        # 构建带认证的 WebSocket URL
+        ws_path = "/channels/wechat"
+        if auth_token:
+            ws_path = f"{ws_path}?token={auth_token}"
+        self.ws_url = f"{self.gateway_url}{ws_path}"
         self.wechat = WeChatHandler()
         self.ws: Optional[WebSocketClientProtocol] = None
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._running = False
         self._reconnect_delay = 5  # 重连延迟（秒）
         self._pending_requests: Dict[str, asyncio.Future] = {}
@@ -78,6 +86,7 @@ class WeChatBridge:
     async def start(self) -> None:
         """启动桥接器"""
         self._running = True
+        self._loop = asyncio.get_running_loop()
         logger.info("启动微信桥接器")
 
         # 首先连接微信
@@ -179,6 +188,7 @@ class WeChatBridge:
         to = params.get("to")
         text = params.get("text", "")
         files = params.get("files", [])
+        at = params.get("at")  # @用户列表
 
         if not to:
             return {"ok": False, "error": "Missing 'to' parameter"}
@@ -190,9 +200,14 @@ class WeChatBridge:
                 if not result.get("success"):
                     return {"ok": False, "error": result.get("error")}
 
-        # 发送文本
+        # 发送文本（支持 @功能）
         if text:
-            result = self.wechat.send_message(to, text)
+            # 将 at 参数转换为列表
+            at_list = None
+            if at:
+                at_list = [at] if isinstance(at, str) else at
+
+            result = self.wechat.send_message(to, text, at=at_list)
             if not result.get("success"):
                 return {"ok": False, "error": result.get("error")}
 
@@ -238,17 +253,40 @@ class WeChatBridge:
 
     def _on_wechat_message(self, msg: WeChatMessage) -> None:
         """微信消息回调"""
-        asyncio.create_task(self._push_message(msg))
+        # Log metadata only, not message content
+        logger.info(f"收到微信消息: from={msg.sender}, chat={msg.chat_name}, type={msg.msg_type}, is_group={msg.is_group}")
+        if self._loop and self._loop.is_running():
+            asyncio.run_coroutine_threadsafe(self._push_message(msg), self._loop)
+        else:
+            logger.warning("事件循环未运行，无法推送消息")
 
     def _on_wechat_status(self, status: WeChatStatus) -> None:
         """微信状态回调"""
-        asyncio.create_task(self._push_status(status))
+        if self._loop and self._loop.is_running():
+            asyncio.run_coroutine_threadsafe(self._push_status(status), self._loop)
+
+    def _is_ws_connected(self) -> bool:
+        """检查 WebSocket 是否已连接"""
+        if not self.ws:
+            return False
+        try:
+            # websockets 13.x uses state property
+            return self.ws.state.name == "OPEN"
+        except AttributeError:
+            # Fallback for older versions
+            try:
+                return not self.ws.closed
+            except AttributeError:
+                return True
 
     async def _push_message(self, msg: WeChatMessage) -> None:
         """推送消息到 Gateway"""
-        if not self.ws or self.ws.closed:
+        if not self._is_ws_connected():
+            logger.warning("WebSocket 未连接，无法推送消息")
             return
 
+        # Log metadata only, not message content
+        logger.info(f"推送消息到 Gateway: from={msg.sender}, to={msg.chat_name}, type={msg.msg_type}, is_at_me={msg.is_at_me}")
         await self._send_notification("wechat.message", {
             "from": msg.sender,
             "to": msg.chat_name,
@@ -256,12 +294,13 @@ class WeChatBridge:
             "type": msg.msg_type,
             "chatType": "group" if msg.is_group else "friend",
             "timestamp": int(msg.timestamp * 1000),
-            "isSelf": msg.is_self
+            "isSelf": msg.is_self,
+            "isAtMe": msg.is_at_me
         })
 
     async def _push_status(self, status: WeChatStatus) -> None:
         """推送状态到 Gateway"""
-        if not self.ws or self.ws.closed:
+        if not self._is_ws_connected():
             return
 
         await self._send_notification("wechat.status", {
@@ -280,7 +319,7 @@ class WeChatBridge:
 
     async def _send_notification(self, method: str, params: dict) -> None:
         """发送通知（无需响应）"""
-        if not self.ws or self.ws.closed:
+        if not self._is_ws_connected():
             return
 
         message = {
@@ -293,7 +332,7 @@ class WeChatBridge:
 
     async def _send_response(self, request_id: str, result: Any = None, error: dict = None) -> None:
         """发送命令响应"""
-        if not self.ws or self.ws.closed:
+        if not self._is_ws_connected():
             return
 
         message = {
@@ -310,7 +349,7 @@ class WeChatBridge:
 
     async def _send_request(self, method: str, params: dict, timeout: float = 30) -> Any:
         """发送请求并等待响应"""
-        if not self.ws or self.ws.closed:
+        if not self._is_ws_connected():
             raise Exception("WebSocket not connected")
 
         request_id = str(uuid.uuid4())
@@ -341,6 +380,11 @@ async def main():
         help="OpenClaw Gateway WebSocket 地址 (默认: ws://localhost:18789)"
     )
     parser.add_argument(
+        "--token", "-t",
+        default="",
+        help="认证令牌 (可通过 WECHAT_AUTH_TOKEN 环境变量设置)"
+    )
+    parser.add_argument(
         "--verbose", "-v",
         action="store_true",
         help="启用详细日志"
@@ -350,7 +394,10 @@ async def main():
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    bridge = WeChatBridge(gateway_url=args.gateway)
+    # 优先使用命令行参数，其次使用环境变量
+    auth_token = args.token or os.environ.get("WECHAT_AUTH_TOKEN", "")
+
+    bridge = WeChatBridge(gateway_url=args.gateway, auth_token=auth_token)
 
     # 设置信号处理
     loop = asyncio.get_event_loop()

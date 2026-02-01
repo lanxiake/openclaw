@@ -28,19 +28,32 @@ export type WsUpgradeHandler = {
   handler: (req: IncomingMessage, socket: Duplex, head: Buffer) => boolean;
 };
 
+// Use globalThis to ensure single instance across module loads
+const GLOBAL_KEY = "__openclaw_ws_upgrade_handlers__";
+declare global {
+  // eslint-disable-next-line no-var
+  var __openclaw_ws_upgrade_handlers__: WsUpgradeHandler[] | undefined;
+}
+
 // Global registry for WebSocket upgrade handlers from plugins
-const wsUpgradeHandlers: WsUpgradeHandler[] = [];
+function getGlobalHandlers(): WsUpgradeHandler[] {
+  if (!globalThis[GLOBAL_KEY]) {
+    globalThis[GLOBAL_KEY] = [];
+  }
+  return globalThis[GLOBAL_KEY];
+}
 
 /**
  * Register a WebSocket upgrade handler for a specific path.
  * This is used by channel plugins to handle WebSocket connections.
  */
 export function registerWsUpgradeHandler(handler: WsUpgradeHandler): () => void {
-  wsUpgradeHandlers.push(handler);
+  const handlers = getGlobalHandlers();
+  handlers.push(handler);
   return () => {
-    const index = wsUpgradeHandlers.indexOf(handler);
+    const index = handlers.indexOf(handler);
     if (index !== -1) {
-      wsUpgradeHandlers.splice(index, 1);
+      handlers.splice(index, 1);
     }
   };
 }
@@ -49,7 +62,7 @@ export function registerWsUpgradeHandler(handler: WsUpgradeHandler): () => void 
  * Get all registered WebSocket upgrade handlers.
  */
 export function getWsUpgradeHandlers(): WsUpgradeHandler[] {
-  return wsUpgradeHandlers;
+  return getGlobalHandlers();
 }
 
 export async function createGatewayRuntimeState(params: {
@@ -175,6 +188,7 @@ export async function createGatewayRuntimeState(params: {
     noServer: true,
     maxPayload: MAX_PAYLOAD_BYTES,
   });
+  const wsUpgradeHandlers = getGlobalHandlers();
   for (const server of httpServers) {
     attachGatewayUpgradeHandler({
       httpServer: server,

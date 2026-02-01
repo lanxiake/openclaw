@@ -15,6 +15,7 @@ import {
   getAllBridgeServers,
   type WeChatBridgeServerOptions,
 } from "./bridge-server.js";
+import { createWeChatLogger, type WeChatLogger } from "./logger.js";
 
 export type GatewayMessageHandler = (message: WeChatMessage) => void;
 export type GatewayStatusHandler = (status: {
@@ -26,6 +27,7 @@ export type GatewayStatusHandler = (status: {
 
 export interface WeChatGatewayOptions {
   accountId: string;
+  authToken: string;
   onMessage: GatewayMessageHandler;
   onStatus?: GatewayStatusHandler;
   listenChats?: string[];
@@ -37,11 +39,14 @@ export interface WeChatGatewayOptions {
 export class WeChatGateway {
   private server: WeChatBridgeServer;
   private options: WeChatGatewayOptions;
+  private log: WeChatLogger;
 
   constructor(options: WeChatGatewayOptions) {
     this.options = options;
+    this.log = createWeChatLogger(options.accountId);
     this.server = createBridgeServer({
       accountId: options.accountId,
+      authToken: options.authToken,
       onMessage: options.onMessage,
       onStatus: options.onStatus,
       listenChats: options.listenChats,
@@ -54,7 +59,7 @@ export class WeChatGateway {
   async connect(): Promise<void> {
     // In server mode, we don't actively connect.
     // The bridge will connect to us.
-    console.log(`[wechat:${this.options.accountId}] Gateway ready, waiting for bridge connection`);
+    this.log.info("Gateway ready, waiting for bridge connection");
   }
 
   /**
@@ -67,9 +72,12 @@ export class WeChatGateway {
 
   /**
    * Send a text message.
+   * @param to - Target chat name
+   * @param text - Message text
+   * @param at - Optional user(s) to @ in group chat
    */
-  async sendText(to: string, text: string): Promise<boolean> {
-    return this.server.sendText(to, text);
+  async sendText(to: string, text: string, at?: string | string[]): Promise<boolean> {
+    return this.server.sendText(to, text, at);
   }
 
   /**
@@ -167,15 +175,19 @@ export function handleWeChatUpgrade(
   head: Buffer
 ): boolean {
   const url = new URL(req.url ?? "/", "http://localhost");
+
   if (url.pathname !== "/channels/wechat") {
     return false;
   }
 
   // Find any active bridge server to handle the upgrade
   const servers = getAllBridgeServers();
+
   if (servers.length === 0) {
-    console.warn("[wechat] No bridge server available to handle upgrade");
-    return false;
+    // No servers available, reject connection
+    socket.write("HTTP/1.1 503 Service Unavailable\r\n\r\n");
+    socket.destroy();
+    return true;
   }
 
   // Use the first available server (typically there's only one)

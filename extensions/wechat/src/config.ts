@@ -2,6 +2,55 @@ import type { OpenClawConfig } from "openclaw/plugin-sdk";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "openclaw/plugin-sdk";
 import type { ResolvedWeChatAccount, WeChatConfig } from "./types.js";
 
+// Cache for generated auth tokens to ensure consistency within a session
+const generatedTokenCache = new Map<string, string>();
+
+/**
+ * Generate a random auth token.
+ */
+function generateAuthToken(): string {
+  // Use crypto.randomUUID for simplicity (available in Node 16+)
+  return crypto.randomUUID().replace(/-/g, "");
+}
+
+/**
+ * Get or generate a consistent auth token for an account.
+ * If no token is configured, generates one and caches it for the session.
+ */
+function resolveAuthToken(params: {
+  accountId: string;
+  accountConfig?: WeChatConfig;
+  baseConfig?: WeChatConfig;
+}): string {
+  const { accountId, accountConfig, baseConfig } = params;
+
+  // Priority: account config > base config > env var > cached generated
+  const configuredToken =
+    accountConfig?.authToken ??
+    baseConfig?.authToken ??
+    process.env.WECHAT_AUTH_TOKEN;
+
+  if (configuredToken) {
+    return configuredToken;
+  }
+
+  // Generate and cache a token for this account
+  const cacheKey = `wechat:${accountId}`;
+  let cachedToken = generatedTokenCache.get(cacheKey);
+  if (!cachedToken) {
+    cachedToken = generateAuthToken();
+    generatedTokenCache.set(cacheKey, cachedToken);
+    // Log the generated token so users can configure their bridge
+    console.info(
+      `[wechat:${accountId}] Generated auth token: ${cachedToken}\n` +
+        `  Configure your bridge with: --token ${cachedToken}\n` +
+        `  Or set WECHAT_AUTH_TOKEN environment variable\n` +
+        `  Or add to config: channels.wechat.authToken: "${cachedToken}"`
+    );
+  }
+  return cachedToken;
+}
+
 /**
  * Get WeChat channel configuration from config.
  */
@@ -89,19 +138,28 @@ export function resolveWeChatAccount(params: {
   // Resolve name
   const name = accountConfig?.name ?? wechat?.name ?? accountId;
 
+  // Resolve auth token (cached to ensure consistency)
+  const authToken = resolveAuthToken({
+    accountId,
+    accountConfig,
+    baseConfig: wechat,
+  });
+
   return {
     accountId,
     name,
     enabled,
     bridgeUrl,
     bridgeUrlSource,
+    authToken,
     config: mergedConfig,
   };
 }
 
 /**
  * Check if a WeChat account is configured.
+ * In the new architecture, wechat is always configured if enabled.
  */
 export function isWeChatAccountConfigured(account: ResolvedWeChatAccount): boolean {
-  return Boolean(account.bridgeUrl?.trim());
+  return account.enabled;
 }
