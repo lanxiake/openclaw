@@ -7,5 +7,9 @@
   "author": "OpenClaw Team",
   "license": "MIT",
   "type": "channel",
-  "entrypoint": "./index.ts"
+  "entrypoint": "./index.ts",
+  "configSchema": {
+    "type": "object",
+    "properties": {}
+  }
 }
