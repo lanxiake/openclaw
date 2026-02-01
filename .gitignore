@@ -75,4 +75,4 @@ logs/**
 .idea/**
 .claude/**
 wxauto_logs/**
- 
+ .claude/settings.local.json

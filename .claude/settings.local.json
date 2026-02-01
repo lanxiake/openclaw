@@ -68,7 +68,8 @@
       "Bash(GIT_TRACE=1 git commit:*)",
       "Bash(ssh:*)",
       "Bash(ssh-add:*)",
-      "Bash(git remote set-url:*)"
+      "Bash(git remote set-url:*)",
+      "Bash(git fetch:*)"
     ]
   }
 }
