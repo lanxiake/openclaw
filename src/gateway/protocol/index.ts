@@ -163,6 +163,25 @@ import {
   StateVersionSchema,
   type TalkModeParams,
   TalkModeParamsSchema,
+  type Task,
+  type TaskChangeEvent,
+  TaskChangeEventSchema,
+  type TaskChangeType,
+  type TaskCreateParams,
+  TaskCreateParamsSchema,
+  type TaskDeleteParams,
+  TaskDeleteParamsSchema,
+  type TaskGetParams,
+  TaskGetParamsSchema,
+  type TaskListParams,
+  TaskListParamsSchema,
+  type TaskListResult,
+  TaskListResultSchema,
+  TaskSchema,
+  type TaskStatsResult,
+  TaskStatsResultSchema,
+  type TaskUpdateParams,
+  TaskUpdateParamsSchema,
   type TickEvent,
   TickEventSchema,
   type UpdateRunParams,
@@ -319,6 +338,11 @@ export const validateUpdateRunParams = ajv.compile<UpdateRunParams>(UpdateRunPar
 export const validateWebLoginStartParams =
   ajv.compile<WebLoginStartParams>(WebLoginStartParamsSchema);
 export const validateWebLoginWaitParams = ajv.compile<WebLoginWaitParams>(WebLoginWaitParamsSchema);
+export const validateTaskCreateParams = ajv.compile<TaskCreateParams>(TaskCreateParamsSchema);
+export const validateTaskUpdateParams = ajv.compile<TaskUpdateParams>(TaskUpdateParamsSchema);
+export const validateTaskDeleteParams = ajv.compile<TaskDeleteParams>(TaskDeleteParamsSchema);
+export const validateTaskGetParams = ajv.compile<TaskGetParams>(TaskGetParamsSchema);
+export const validateTaskListParams = ajv.compile<TaskListParams>(TaskListParamsSchema);
 
 export function formatValidationErrors(errors: ErrorObject[] | null | undefined) {
   if (!errors?.length) {
@@ -428,6 +452,15 @@ export {
   ChatSendParamsSchema,
   ChatInjectParamsSchema,
   UpdateRunParamsSchema,
+  TaskSchema,
+  TaskCreateParamsSchema,
+  TaskUpdateParamsSchema,
+  TaskDeleteParamsSchema,
+  TaskGetParamsSchema,
+  TaskListParamsSchema,
+  TaskListResultSchema,
+  TaskStatsResultSchema,
+  TaskChangeEventSchema,
   TickEventSchema,
   ShutdownEventSchema,
   ProtocolSchemas,
@@ -519,4 +552,14 @@ export type {
   PollParams,
   UpdateRunParams,
   ChatInjectParams,
+  Task,
+  TaskCreateParams,
+  TaskUpdateParams,
+  TaskDeleteParams,
+  TaskGetParams,
+  TaskListParams,
+  TaskListResult,
+  TaskStatsResult,
+  TaskChangeEvent,
+  TaskChangeType,
 };

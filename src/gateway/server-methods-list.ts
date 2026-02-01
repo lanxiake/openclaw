@@ -93,6 +93,7 @@ export const GATEWAY_EVENTS = [
   "connect.challenge",
   "agent",
   "chat",
+  "dashboard",
   "presence",
   "tick",
   "talk.mode",

@@ -69,7 +69,14 @@
       "Bash(ssh:*)",
       "Bash(ssh-add:*)",
       "Bash(git remote set-url:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(pnpm dev)",
+      "Bash(bun run src/cli/index.ts gateway run --bind loopback --port 18789 --force --verbose)",
+      "Bash(git stash:*)",
+      "Bash(node openclaw.mjs gateway run:*)",
+      "Bash(ls:*)",
+      "Bash(npx esbuild:*)",
+      "Bash(npm ls @mariozechner/pi-coding-agent)"
     ]
   }
 }

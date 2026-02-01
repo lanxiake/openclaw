@@ -9,6 +9,12 @@ import type { AgentsListResult, PresenceEntry, HealthSnapshot, StatusSummary } f
 import type { Tab } from "./navigation";
 import type { UiSettings } from "./storage";
 import { handleAgentEvent, resetToolStream, type AgentEventPayload } from "./app-tool-stream";
+import {
+  handleDashboardAgentEvent,
+  handleDashboardEvent,
+  type DashboardState,
+  type DashboardEvent,
+} from "./controllers/dashboard";
 import { CHAT_SESSIONS_ACTIVE_MINUTES, flushChatQueueForEvent } from "./app-chat";
 import { applySettings, loadCron, refreshActiveTab, setLastActiveSessionKey } from "./app-settings";
 import { handleChatEvent, type ChatEventPayload } from "./controllers/chat";
@@ -49,6 +55,8 @@ type GatewayHost = {
   refreshSessionsAfterChat: Set<string>;
   execApprovalQueue: ExecApprovalRequest[];
   execApprovalError: string | null;
+  dashboardState: DashboardState;
+  requestUpdate: () => void;
 };
 
 type SessionDefaultsSnapshot = {
@@ -173,6 +181,15 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
       host as unknown as Parameters<typeof handleAgentEvent>[0],
       evt.payload as AgentEventPayload | undefined,
     );
+    // Also update dashboard from agent events
+    handleDashboardAgentEvent(host, evt.payload as AgentEventPayload | undefined);
+    return;
+  }
+
+  // Handle dedicated dashboard events (from dashboard broadcaster)
+  if (evt.event === "dashboard") {
+    if (host.onboarding) return;
+    handleDashboardEvent(host, evt.payload as DashboardEvent | undefined);
     return;
   }
 

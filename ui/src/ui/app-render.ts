@@ -35,6 +35,7 @@ import { renderChat } from "./views/chat";
 import { renderConfig } from "./views/config";
 import { renderChannels } from "./views/channels";
 import { renderCron } from "./views/cron";
+import { renderDashboard } from "./views/dashboard";
 import { renderDebug } from "./views/debug";
 import { renderInstances } from "./views/instances";
 import { renderLogs } from "./views/logs";
@@ -87,6 +88,7 @@ import {
   addCronJob,
 } from "./controllers/cron";
 import { loadDebug, callDebugMethod } from "./controllers/debug";
+import { getTaskById, getToolCallDetail } from "./controllers/dashboard";
 import { loadLogs } from "./controllers/logs";
 
 const AVATAR_DATA_RE = /^data:/i;
@@ -235,6 +237,27 @@ export function renderApp(state: AppViewState) {
                 },
                 onConnect: () => state.connect(),
                 onRefresh: () => state.loadOverview(),
+              })
+            : nothing
+        }
+
+        ${
+          state.tab === "dashboard"
+            ? renderDashboard({
+                connected: state.connected,
+                sessionKey: state.sessionKey,
+                state: state.dashboardState,
+                selectedTask: state.dashboardSelectedTaskId
+                  ? getTaskById(state.dashboardState, state.dashboardSelectedTaskId)
+                  : null,
+                selectedToolCall: state.dashboardSelectedToolCallId
+                  ? getToolCallDetail(state.dashboardState, state.dashboardSelectedToolCallId)
+                  : null,
+                timelineFilter: state.dashboardTimelineFilter,
+                onClearTimeline: () => state.clearDashboardTimeline(),
+                onSelectTask: (taskId) => state.selectDashboardTask(taskId),
+                onSelectToolCall: (toolCallId) => state.selectDashboardToolCall(toolCallId),
+                onTimelineFilterChange: (filter) => state.setDashboardTimelineFilter(filter),
               })
             : nothing
         }

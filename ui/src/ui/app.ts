@@ -75,6 +75,10 @@ import {
 } from "./app-channels";
 import type { NostrProfileFormState } from "./views/channels.nostr-profile-form";
 import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./controllers/assistant-identity";
+import {
+  clearDashboardTimeline as clearDashboardTimelineInternal,
+  createDashboardState,
+} from "./controllers/dashboard";
 
 declare global {
   interface Window {
@@ -242,6 +246,12 @@ export class OpenClawApp extends LitElement {
   @state() logsLastFetchAt: number | null = null;
   @state() logsLimit = 500;
   @state() logsMaxBytes = 250_000;
+
+  // Dashboard state
+  @state() dashboardState = createDashboardState();
+  @state() dashboardSelectedTaskId: string | null = null;
+  @state() dashboardSelectedToolCallId: string | null = null;
+  @state() dashboardTimelineFilter: import("./views/dashboard").TimelineFilter = "all";
   @state() logsAtBottom = true;
 
   client: GatewayBrowserClient | null = null;
@@ -403,6 +413,30 @@ export class OpenClawApp extends LitElement {
 
   handleNostrProfileToggleAdvanced() {
     handleNostrProfileToggleAdvancedInternal(this);
+  }
+
+  clearDashboardTimeline() {
+    clearDashboardTimelineInternal(this);
+  }
+
+  selectDashboardTask(taskId: string | null) {
+    this.dashboardSelectedTaskId = taskId;
+    // Clear tool call selection when selecting a task
+    if (taskId) {
+      this.dashboardSelectedToolCallId = null;
+    }
+  }
+
+  selectDashboardToolCall(toolCallId: string | null) {
+    this.dashboardSelectedToolCallId = toolCallId;
+    // Clear task selection when selecting a tool call
+    if (toolCallId) {
+      this.dashboardSelectedTaskId = null;
+    }
+  }
+
+  setDashboardTimelineFilter(filter: import("./views/dashboard").TimelineFilter) {
+    this.dashboardTimelineFilter = filter;
   }
 
   async handleExecApprovalDecision(decision: "allow-once" | "allow-always" | "deny") {

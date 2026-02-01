@@ -26,6 +26,8 @@ import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exe
 import type { DevicePairingList } from "./controllers/devices";
 import type { ExecApprovalRequest } from "./controllers/exec-approval";
 import type { NostrProfileFormState } from "./views/channels.nostr-profile-form";
+import type { DashboardState } from "./controllers/dashboard";
+import type { TimelineFilter } from "./views/dashboard";
 
 export type AppViewState = {
   settings: UiSettings;
@@ -143,6 +145,10 @@ export type AppViewState = {
   logsLevelFilters: Record<LogLevel, boolean>;
   logsAutoFollow: boolean;
   logsTruncated: boolean;
+  dashboardState: DashboardState;
+  dashboardSelectedTaskId: string | null;
+  dashboardSelectedToolCallId: string | null;
+  dashboardTimelineFilter: TimelineFilter;
   client: GatewayBrowserClient | null;
   connect: () => void;
   setTab: (tab: Tab) => void;
@@ -203,4 +209,8 @@ export type AppViewState = {
   handleLogsLevelFilterToggle: (level: LogLevel) => void;
   handleLogsAutoFollowToggle: (next: boolean) => void;
   handleCallDebugMethod: (method: string, params: string) => Promise<void>;
+  clearDashboardTimeline: () => void;
+  selectDashboardTask: (taskId: string | null) => void;
+  selectDashboardToolCall: (toolCallId: string | null) => void;
+  setDashboardTimelineFilter: (filter: TimelineFilter) => void;
 };

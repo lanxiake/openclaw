@@ -4,7 +4,7 @@ export const TAB_GROUPS = [
   { label: "Chat", tabs: ["chat"] },
   {
     label: "Control",
-    tabs: ["overview", "channels", "instances", "sessions", "cron"],
+    tabs: ["overview", "dashboard", "channels", "instances", "sessions", "cron"],
   },
   { label: "Agent", tabs: ["skills", "nodes"] },
   { label: "Settings", tabs: ["config", "debug", "logs"] },
@@ -12,6 +12,7 @@ export const TAB_GROUPS = [
 
 export type Tab =
   | "overview"
+  | "dashboard"
   | "channels"
   | "instances"
   | "sessions"
@@ -25,6 +26,7 @@ export type Tab =
 
 const TAB_PATHS: Record<Tab, string> = {
   overview: "/overview",
+  dashboard: "/dashboard",
   channels: "/channels",
   instances: "/instances",
   sessions: "/sessions",
@@ -104,6 +106,8 @@ export function iconForTab(tab: Tab): IconName {
       return "messageSquare";
     case "overview":
       return "barChart";
+    case "dashboard":
+      return "layoutDashboard";
     case "channels":
       return "link";
     case "instances":
@@ -131,6 +135,8 @@ export function titleForTab(tab: Tab) {
   switch (tab) {
     case "overview":
       return "Overview";
+    case "dashboard":
+      return "Dashboard";
     case "channels":
       return "Channels";
     case "instances":
@@ -160,6 +166,8 @@ export function subtitleForTab(tab: Tab) {
   switch (tab) {
     case "overview":
       return "Gateway status, entry points, and a fast health read.";
+    case "dashboard":
+      return "Real-time visualization of agent execution and task progress.";
     case "channels":
       return "Manage channels and settings.";
     case "instances":
