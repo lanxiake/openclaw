@@ -1,0 +1,11 @@
+{
+  "$schema": "../../src/plugin-sdk/plugin-schema.json",
+  "id": "feishu",
+  "name": "Feishu",
+  "description": "Feishu/Lark channel plugin for OpenClaw",
+  "version": "2026.2.1",
+  "author": "OpenClaw Team",
+  "license": "MIT",
+  "type": "channel",
+  "entrypoint": "./index.ts"
+}

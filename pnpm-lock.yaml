@@ -288,6 +288,16 @@ importers:
         specifier: workspace:*
         version: link:../..
 
+  extensions/feishu:
+    dependencies:
+      undici:
+        specifier: 7.19.2
+        version: 7.19.2
+    devDependencies:
+      openclaw:
+        specifier: workspace:*
+        version: link:../..
+
   extensions/google-antigravity-auth:
     devDependencies:
       openclaw:

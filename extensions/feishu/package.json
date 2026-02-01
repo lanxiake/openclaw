@@ -1,0 +1,31 @@
+{
+  "name": "@openclaw/feishu",
+  "version": "2026.2.1",
+  "description": "OpenClaw Feishu/Lark channel plugin",
+  "type": "module",
+  "dependencies": {
+    "undici": "7.19.2"
+  },
+  "devDependencies": {
+    "openclaw": "workspace:*"
+  },
+  "openclaw": {
+    "extensions": ["./index.ts"],
+    "channel": {
+      "id": "feishu",
+      "label": "Feishu",
+      "selectionLabel": "Feishu/Lark (Bot API)",
+      "docsPath": "/channels/feishu",
+      "docsLabel": "feishu",
+      "blurb": "China-focused enterprise messaging platform with Bot API.",
+      "aliases": ["lark", "fs"],
+      "order": 85,
+      "quickstartAllowFrom": true
+    },
+    "install": {
+      "npmSpec": "@openclaw/feishu",
+      "localPath": "extensions/feishu",
+      "defaultChoice": "npm"
+    }
+  }
+}
