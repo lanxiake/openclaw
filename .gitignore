@@ -71,3 +71,8 @@ USER.md
 
 # local tooling
 .serena/
+logs/**
+.idea/**
+.claude/**
+wxauto_logs/**
+ 
