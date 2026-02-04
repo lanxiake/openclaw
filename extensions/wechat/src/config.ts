@@ -107,8 +107,8 @@ export function resolveWeChatAccount(params: {
   const accounts = (wechat as Record<string, unknown> | undefined)?.accounts as
     | Record<string, WeChatConfig>
     | undefined;
-  const accountConfig =
-    accountId !== DEFAULT_ACCOUNT_ID ? accounts?.[accountId] : undefined;
+  // Always try to get account-specific config, including for "default"
+  const accountConfig = accounts?.[accountId];
 
   // Merge base config with account-specific config
   const mergedConfig: WeChatConfig = {

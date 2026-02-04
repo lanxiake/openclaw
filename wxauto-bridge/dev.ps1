@@ -112,7 +112,23 @@ function Start-Bridge {
         Write-Err "Python not found"
         return $false
     }
-    Start-Process -FilePath "python" -ArgumentList "bridge.py", "-v" -WorkingDirectory $BridgeDir
+
+    # Get auth token from config file
+    $token = $null
+    $configPath = Join-Path $env:USERPROFILE ".openclaw\openclaw.json"
+    if (Test-Path $configPath) {
+        try {
+            $config = Get-Content $configPath -Raw | ConvertFrom-Json
+            $token = $config.channels.wechat.accounts.default.authToken
+            if (-not $token) { $token = $config.channels.wechat.authToken }
+            if ($token) { Write-Info "Using auth token from config" }
+        } catch { }
+    }
+
+    $args = @("bridge.py", "--gateway", "ws://localhost:$GatewayPort", "-v")
+    if ($token) { $args += "--token"; $args += $token }
+
+    Start-Process -FilePath "python" -ArgumentList $args -WorkingDirectory $BridgeDir
     Start-Sleep -Seconds 2
     Write-OK "Bridge started"
     return $true
