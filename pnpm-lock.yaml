@@ -501,6 +501,8 @@ importers:
         specifier: workspace:*
         version: link:../..
 
+  extensions/wechat: {}
+
   extensions/whatsapp:
     devDependencies:
       openclaw:

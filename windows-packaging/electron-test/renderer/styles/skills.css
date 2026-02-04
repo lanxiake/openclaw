@@ -1,0 +1,347 @@
+/* OpenClaw Desktop - 技能页面样式 */
+
+.skills-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 顶部工具栏 */
+.skills-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.skills-search {
+  flex: 1;
+  max-width: 400px;
+  position: relative;
+}
+
+.skills-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.skills-search-input {
+  width: 100%;
+  padding: 10px 14px 10px 42px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  transition: all var(--transition-fast);
+}
+
+.skills-search-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.skills-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.skills-count {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* 技能列表 */
+.skills-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 技能卡片 */
+.skill-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  transition: all var(--transition-normal);
+}
+
+.skill-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-glow);
+}
+
+.skill-card.disabled {
+  opacity: 0.6;
+}
+
+/* 技能图标 */
+.skill-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+/* 技能内容 */
+.skill-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.skill-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.skill-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.skill-badges {
+  display: flex;
+  gap: 6px;
+}
+
+.skill-badge {
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.skill-badge.eligible {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success-color);
+}
+
+.skill-badge.blocked {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning-color);
+}
+
+.skill-badge.disabled {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger-color);
+}
+
+.skill-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.skill-missing {
+  font-size: 12px;
+  color: var(--warning-color);
+  background: rgba(245, 158, 11, 0.1);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+
+/* 技能操作 */
+.skill-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.skill-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skill-toggle-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.skill-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.skill-switch.active {
+  background: var(--accent-primary);
+}
+
+.skill-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.skill-switch.active::after {
+  transform: translateX(20px);
+}
+
+/* API Key 输入 */
+.skill-apikey {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 250px;
+}
+
+.skill-apikey-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.skill-apikey-input {
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.skill-apikey-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+/* 安装按钮 */
+.skill-install-btn {
+  padding: 8px 16px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-md);
+  color: var(--info-color);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.skill-install-btn:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.skill-install-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 消息提示 */
+.skill-message {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  margin-top: 8px;
+}
+
+.skill-message.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-color);
+}
+
+.skill-message.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color);
+}
+
+/* 空状态 */
+.skills-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--text-muted);
+}
+
+.skills-empty-icon {
+  font-size: 64px;
+  opacity: 0.5;
+}
+
+.skills-empty-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* 加载状态 */
+.skills-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* 分类标签 */
+.skill-source {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  border-radius: 100px;
+}
+
+.skill-source.bundled {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success-color);
+}
+
+.skill-source.managed {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--info-color);
+}
+
+.skill-source.workspace {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning-color);
+}

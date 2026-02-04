@@ -1,0 +1,44 @@
+{
+  "name": "openclaw-electron",
+  "version": "1.0.0",
+  "description": "OpenClaw Windows Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "node build.js",
+    "test": "electron dist/win-unpacked/OpenClaw.exe"
+  },
+  "build": {
+    "appId": "ai.openclaw.desktop",
+    "productName": "OpenClaw",
+    "directories": {
+      "output": "dist"
+    },
+    "extraResources": [
+      {
+        "from": "bundled-config",
+        "to": "bundled-config",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.3",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "electron": "^40.1.0",
+    "electron-builder": "^26.7.0"
+  }
+}

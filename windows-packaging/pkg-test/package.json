@@ -1,0 +1,28 @@
+{
+  "name": "openclaw-pkg-test",
+  "version": "1.0.0",
+  "description": "OpenClaw Windows packaging test - pkg",
+  "main": "index.js",
+  "bin": "index.js",
+  "scripts": {
+    "build": "node build.js",
+    "test": "node dist/openclaw.exe"
+  },
+  "pkg": {
+    "targets": [
+      "node14-win-x64"
+    ],
+    "outputPath": "dist",
+    "assets": [
+      "assets/**/*",
+      "dist/**/*",
+      "openclaw.mjs"
+    ],
+    "scripts": [
+      "dist/**/*.js"
+    ]
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.3"
+  }
+}

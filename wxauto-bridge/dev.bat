@@ -5,7 +5,7 @@ REM 命令: build, start, restart, stop, all
 
 setlocal enabledelayedexpansion
 
-set PROJECT_ROOT=E:\open-source-project\openclaw
+set PROJECT_ROOT=E:\open-source-project\openclaw-windows-exe
 set BRIDGE_DIR=%PROJECT_ROOT%\wxauto-bridge
 
 if "%1"=="" set CMD=all
