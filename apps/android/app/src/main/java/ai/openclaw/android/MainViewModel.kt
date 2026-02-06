@@ -51,7 +51,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
   val manualHost: StateFlow<String> = runtime.manualHost
   val manualPort: StateFlow<Int> = runtime.manualPort
   val manualTls: StateFlow<Boolean> = runtime.manualTls
+  val manualScheme: StateFlow<String> = runtime.manualScheme
+  val manualPath: StateFlow<String> = runtime.manualPath
+  val manualToken: StateFlow<String> = runtime.manualToken
   val canvasDebugStatusEnabled: StateFlow<Boolean> = runtime.canvasDebugStatusEnabled
+  val autoDiscoveryEnabled: StateFlow<Boolean> = runtime.autoDiscoveryEnabled
 
   val chatSessionKey: StateFlow<String> = runtime.chatSessionKey
   val chatSessionId: StateFlow<String?> = runtime.chatSessionId
@@ -104,8 +108,24 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     runtime.setManualTls(value)
   }
 
+  fun setManualScheme(value: String) {
+    runtime.setManualScheme(value)
+  }
+
+  fun setManualPath(value: String) {
+    runtime.setManualPath(value)
+  }
+
+  fun setManualToken(value: String) {
+    runtime.setManualToken(value)
+  }
+
   fun setCanvasDebugStatusEnabled(value: Boolean) {
     runtime.setCanvasDebugStatusEnabled(value)
+  }
+
+  fun setAutoDiscoveryEnabled(value: Boolean) {
+    runtime.setAutoDiscoveryEnabled(value)
   }
 
   fun setWakeWords(words: List<String>) {

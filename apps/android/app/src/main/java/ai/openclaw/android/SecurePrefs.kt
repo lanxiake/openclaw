@@ -71,11 +71,27 @@ class SecurePrefs(context: Context) {
     MutableStateFlow(prefs.getBoolean("gateway.manual.tls", true))
   val manualTls: StateFlow<Boolean> = _manualTls
 
+  private val _manualScheme =
+    MutableStateFlow(prefs.getString("gateway.manual.scheme", "wss") ?: "wss")
+  val manualScheme: StateFlow<String> = _manualScheme
+
+  private val _manualPath =
+    MutableStateFlow(prefs.getString("gateway.manual.path", "") ?: "")
+  val manualPath: StateFlow<String> = _manualPath
+
+  private val _manualToken =
+    MutableStateFlow(prefs.getString("gateway.manual.token", "") ?: "")
+  val manualToken: StateFlow<String> = _manualToken
+
   private val _lastDiscoveredStableId =
     MutableStateFlow(
       prefs.getString("gateway.lastDiscoveredStableID", "") ?: "",
     )
   val lastDiscoveredStableId: StateFlow<String> = _lastDiscoveredStableId
+
+  private val _autoDiscoveryEnabled =
+    MutableStateFlow(prefs.getBoolean("gateway.autoDiscovery.enabled", true))
+  val autoDiscoveryEnabled: StateFlow<Boolean> = _autoDiscoveryEnabled
 
   private val _canvasDebugStatusEnabled =
     MutableStateFlow(prefs.getBoolean("canvas.debugStatusEnabled", false))
@@ -94,6 +110,11 @@ class SecurePrefs(context: Context) {
     val trimmed = value.trim()
     prefs.edit { putString("gateway.lastDiscoveredStableID", trimmed) }
     _lastDiscoveredStableId.value = trimmed
+  }
+
+  fun setAutoDiscoveryEnabled(value: Boolean) {
+    prefs.edit { putBoolean("gateway.autoDiscovery.enabled", value) }
+    _autoDiscoveryEnabled.value = value
   }
 
   fun setDisplayName(value: String) {
@@ -141,6 +162,24 @@ class SecurePrefs(context: Context) {
   fun setManualTls(value: Boolean) {
     prefs.edit { putBoolean("gateway.manual.tls", value) }
     _manualTls.value = value
+  }
+
+  fun setManualScheme(value: String) {
+    val trimmed = value.trim().lowercase()
+    prefs.edit { putString("gateway.manual.scheme", trimmed) }
+    _manualScheme.value = trimmed
+  }
+
+  fun setManualPath(value: String) {
+    val trimmed = value.trim()
+    prefs.edit { putString("gateway.manual.path", trimmed) }
+    _manualPath.value = trimmed
+  }
+
+  fun setManualToken(value: String) {
+    val trimmed = value.trim()
+    prefs.edit { putString("gateway.manual.token", trimmed) }
+    _manualToken.value = trimmed
   }
 
   fun setCanvasDebugStatusEnabled(value: Boolean) {

@@ -192,8 +192,18 @@ class GatewaySession(
 
     suspend fun connect() {
       val scheme = if (tls != null) "wss" else "ws"
-      val url = "$scheme://${endpoint.host}:${endpoint.port}"
-      val request = Request.Builder().url(url).build()
+      val pathPart = endpoint.path.let { p ->
+        if (p.isBlank()) "" else if (p.startsWith("/")) p else "/$p"
+      }
+      val portPart = if (endpoint.port == 443 || endpoint.port == 80) "" else ":${endpoint.port}"
+      val url = "$scheme://${endpoint.host}$portPart$pathPart"
+      val requestBuilder = Request.Builder().url(url)
+      // Prefer endpoint.token, fallback to token parameter for Authorization header
+      val authToken = endpoint.token?.takeIf { it.isNotBlank() } ?: token?.takeIf { it.isNotBlank() }
+      authToken?.let { t ->
+        requestBuilder.addHeader("Authorization", "Bearer $t")
+      }
+      val request = requestBuilder.build()
       socket = client.newWebSocket(request, Listener())
       try {
         connectDeferred.await()

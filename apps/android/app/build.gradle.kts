@@ -55,6 +55,7 @@ android {
   testOptions {
     unitTests.isIncludeAndroidResources = true
   }
+    buildToolsVersion = "36.0.0"
 }
 
 androidComponents {

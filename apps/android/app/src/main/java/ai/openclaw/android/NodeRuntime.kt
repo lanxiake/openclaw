@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
 import android.os.SystemClock
+import android.util.Log
 import androidx.core.content.ContextCompat
 import ai.openclaw.android.chat.ChatController
 import ai.openclaw.android.chat.ChatMessage
@@ -284,7 +285,11 @@ class NodeRuntime(context: Context) {
   val manualHost: StateFlow<String> = prefs.manualHost
   val manualPort: StateFlow<Int> = prefs.manualPort
   val manualTls: StateFlow<Boolean> = prefs.manualTls
+  val manualScheme: StateFlow<String> = prefs.manualScheme
+  val manualPath: StateFlow<String> = prefs.manualPath
+  val manualToken: StateFlow<String> = prefs.manualToken
   val lastDiscoveredStableId: StateFlow<String> = prefs.lastDiscoveredStableId
+  val autoDiscoveryEnabled: StateFlow<Boolean> = prefs.autoDiscoveryEnabled
   val canvasDebugStatusEnabled: StateFlow<Boolean> = prefs.canvasDebugStatusEnabled
 
   private var didAutoConnect = false
@@ -352,6 +357,9 @@ class NodeRuntime(context: Context) {
 
         if (didAutoConnect) return@collect
         if (_isConnected.value) return@collect
+
+        // Skip auto-connect if auto-discovery is disabled
+        if (!autoDiscoveryEnabled.value) return@collect
 
         if (manualEnabled.value) {
           val host = manualHost.value.trim()
@@ -428,8 +436,24 @@ class NodeRuntime(context: Context) {
     prefs.setManualTls(value)
   }
 
+  fun setManualScheme(value: String) {
+    prefs.setManualScheme(value)
+  }
+
+  fun setManualPath(value: String) {
+    prefs.setManualPath(value)
+  }
+
+  fun setManualToken(value: String) {
+    prefs.setManualToken(value)
+  }
+
   fun setCanvasDebugStatusEnabled(value: Boolean) {
     prefs.setCanvasDebugStatusEnabled(value)
+  }
+
+  fun setAutoDiscoveryEnabled(value: Boolean) {
+    prefs.setAutoDiscoveryEnabled(value)
   }
 
   fun setWakeWords(words: List<String>) {
@@ -548,7 +572,10 @@ class NodeRuntime(context: Context) {
 
   fun refreshGatewayConnection() {
     val endpoint = connectedEndpoint ?: return
-    val token = prefs.loadGatewayToken()
+    // Token priority: endpoint.token > stored device token > manual token (as global fallback)
+    val token = endpoint.token?.trim()?.takeIf { it.isNotEmpty() }
+      ?: prefs.loadGatewayToken()
+      ?: prefs.manualToken.value.trim().takeIf { it.isNotEmpty() }
     val password = prefs.loadGatewayPassword()
     val tls = resolveTlsParams(endpoint)
     operatorSession.connect(endpoint, token, password, buildOperatorConnectOptions(), tls)
@@ -562,7 +589,10 @@ class NodeRuntime(context: Context) {
     operatorStatusText = "Connecting…"
     nodeStatusText = "Connecting…"
     updateStatus()
-    val token = prefs.loadGatewayToken()
+    // Token priority: endpoint.token > stored device token > manual token (as global fallback)
+    val token = endpoint.token?.trim()?.takeIf { it.isNotEmpty() }
+      ?: prefs.loadGatewayToken()
+      ?: prefs.manualToken.value.trim().takeIf { it.isNotEmpty() }
     val password = prefs.loadGatewayPassword()
     val tls = resolveTlsParams(endpoint)
     operatorSession.connect(endpoint, token, password, buildOperatorConnectOptions(), tls)
@@ -600,11 +630,24 @@ class NodeRuntime(context: Context) {
   fun connectManual() {
     val host = manualHost.value.trim()
     val port = manualPort.value
+    val scheme = prefs.manualScheme.value.lowercase()
+    val path = prefs.manualPath.value.trim()
+    val token = prefs.manualToken.value.trim().takeIf { it.isNotEmpty() }
+    Log.d("OpenClawManual", "connectManual: host=$host port=$port scheme=$scheme path=$path hasToken=${token != null}")
     if (host.isEmpty() || port <= 0 || port > 65535) {
       _statusText.value = "Failed: invalid manual host/port"
       return
     }
-    connect(GatewayEndpoint.manual(host = host, port = port))
+    val tlsEnabled = scheme == "wss"
+    connect(
+      GatewayEndpoint.manual(
+        host = host,
+        port = port,
+        tlsEnabled = tlsEnabled,
+        path = path,
+        token = token,
+      ),
+    )
   }
 
   fun disconnect() {
@@ -619,7 +662,7 @@ class NodeRuntime(context: Context) {
     val manual = endpoint.stableId.startsWith("manual|")
 
     if (manual) {
-      if (!manualTls.value) return null
+      if (!endpoint.tlsEnabled) return null
       return GatewayTlsParams(
         required = true,
         expectedFingerprint = endpoint.tlsFingerprintSha256 ?: stored,

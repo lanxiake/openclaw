@@ -82,7 +82,11 @@ fun SettingsSheet(viewModel: MainViewModel) {
   val manualHost by viewModel.manualHost.collectAsState()
   val manualPort by viewModel.manualPort.collectAsState()
   val manualTls by viewModel.manualTls.collectAsState()
+  val manualScheme by viewModel.manualScheme.collectAsState()
+  val manualPath by viewModel.manualPath.collectAsState()
+  val manualToken by viewModel.manualToken.collectAsState()
   val canvasDebugStatusEnabled by viewModel.canvasDebugStatusEnabled.collectAsState()
+  val autoDiscoveryEnabled by viewModel.autoDiscoveryEnabled.collectAsState()
   val statusText by viewModel.statusText.collectAsState()
   val serverName by viewModel.serverName.collectAsState()
   val remoteAddress by viewModel.remoteAddress.collectAsState()
@@ -314,6 +318,18 @@ fun SettingsSheet(viewModel: MainViewModel) {
           style = MaterialTheme.typography.titleSmall,
         )
       }
+      item {
+        ListItem(
+          headlineContent = { Text("Auto Connect") },
+          supportingContent = { Text("Automatically connect to discovered gateways.") },
+          trailingContent = {
+            Switch(
+              checked = autoDiscoveryEnabled,
+              onCheckedChange = viewModel::setAutoDiscoveryEnabled,
+            )
+          },
+        )
+      }
       if (!isConnected && visibleGateways.isEmpty()) {
         item { Text("No gateways found yet.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
       } else {
@@ -389,12 +405,40 @@ fun SettingsSheet(viewModel: MainViewModel) {
             trailingContent = { Switch(checked = manualEnabled, onCheckedChange = viewModel::setManualEnabled) },
           )
 
+          // Protocol selection
+          ListItem(
+            headlineContent = { Text("Protocol") },
+            supportingContent = {
+              Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row {
+                  RadioButton(
+                    selected = manualScheme == "wss",
+                    onClick = { viewModel.setManualScheme("wss") },
+                    enabled = manualEnabled,
+                  )
+                  Text("wss://", modifier = Modifier.alpha(if (manualEnabled) 1f else 0.5f))
+                }
+                Row {
+                  RadioButton(
+                    selected = manualScheme == "ws",
+                    onClick = { viewModel.setManualScheme("ws") },
+                    enabled = manualEnabled,
+                  )
+                  Text("ws://", modifier = Modifier.alpha(if (manualEnabled) 1f else 0.5f))
+                }
+              }
+            },
+            modifier = Modifier.alpha(if (manualEnabled) 1f else 0.5f),
+          )
+
           OutlinedTextField(
             value = manualHost,
             onValueChange = viewModel::setManualHost,
-            label = { Text("Host") },
+            label = { Text("Host / Domain") },
+            placeholder = { Text("e.g. gateway.example.com or 192.168.1.100") },
             modifier = Modifier.fillMaxWidth(),
             enabled = manualEnabled,
+            singleLine = true,
           )
           OutlinedTextField(
             value = manualPort.toString(),
@@ -403,11 +447,23 @@ fun SettingsSheet(viewModel: MainViewModel) {
             modifier = Modifier.fillMaxWidth(),
             enabled = manualEnabled,
           )
-          ListItem(
-            headlineContent = { Text("Require TLS") },
-            supportingContent = { Text("Pin the gateway certificate on first connect.") },
-            trailingContent = { Switch(checked = manualTls, onCheckedChange = viewModel::setManualTls, enabled = manualEnabled) },
-            modifier = Modifier.alpha(if (manualEnabled) 1f else 0.5f),
+          OutlinedTextField(
+            value = manualPath,
+            onValueChange = viewModel::setManualPath,
+            label = { Text("Path (optional)") },
+            placeholder = { Text("e.g. /channels/wechat") },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = manualEnabled,
+            singleLine = true,
+          )
+          OutlinedTextField(
+            value = manualToken,
+            onValueChange = viewModel::setManualToken,
+            label = { Text("Token") },
+            placeholder = { Text("Authorization token (used for all connections)") },
+            supportingText = { Text("Also used for auto-discovered gateways") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
           )
 
           val hostOk = manualHost.trim().isNotEmpty()

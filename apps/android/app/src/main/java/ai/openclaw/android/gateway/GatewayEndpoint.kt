@@ -5,6 +5,8 @@ data class GatewayEndpoint(
   val name: String,
   val host: String,
   val port: Int,
+  val path: String = "",
+  val token: String? = null,
   val lanHost: String? = null,
   val tailnetDns: String? = null,
   val gatewayPort: Int? = null,
@@ -13,13 +15,21 @@ data class GatewayEndpoint(
   val tlsFingerprintSha256: String? = null,
 ) {
   companion object {
-    fun manual(host: String, port: Int): GatewayEndpoint =
+    fun manual(
+      host: String,
+      port: Int,
+      tlsEnabled: Boolean = false,
+      path: String = "",
+      token: String? = null,
+    ): GatewayEndpoint =
       GatewayEndpoint(
         stableId = "manual|${host.lowercase()}|$port",
         name = "$host:$port",
         host = host,
         port = port,
-        tlsEnabled = false,
+        path = path,
+        token = token,
+        tlsEnabled = tlsEnabled,
         tlsFingerprintSha256 = null,
       )
   }
