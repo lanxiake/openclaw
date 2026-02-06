@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片和视频浏览器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls select, .controls input {
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .controls select:hover, .controls input:hover {
+            border-color: #667eea;
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .controls button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            padding: 20px 30px;
+            background: #e7f3ff;
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item .number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-item .label {
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .gallery {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .media-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #f8f9fa;
+        }
+
+        .media-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .media-item img, .media-item video {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .media-item .info {
+            padding: 12px;
+            background: white;
+        }
+
+        .media-item .filename {
+            font-size: 13px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 5px;
+        }
+
+        .media-item .date {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        .media-item .video-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+
+        .lightbox-content img, .lightbox-content video {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: #333;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .lightbox-nav.prev {
+            left: 20px;
+        }
+
+        .lightbox-nav.next {
+            right: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+            font-size: 18px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 100px 20px;
+            color: #6c757d;
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .file-input-section {
+            padding: 20px 30px;
+            background: #fff3cd;
+            border-bottom: 2px solid #ffc107;
+            text-align: center;
+        }
+
+        .file-input-section input[type="file"] {
+            display: none;
+        }
+
+        .file-input-section label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #ffc107;
+            color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .file-input-section label:hover {
+            background: #ffb300;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 照片和视频浏览器</h1>
+            <p>按时间整理的媒体库</p>
+        </div>
+
+        <div class="file-input-section">
+            <p style="margin-bottom: 10px;">💡 使用 file:// 协议时，请手动加载 media_list.json 文件</p>
+            <label for="jsonFileInput">📂 选择 media_list.json 文件</label>
+            <input type="file" id="jsonFileInput" accept=".json">
+        </div>
+
+        <div class="controls">
+            <select id="typeFilter">
+                <option value="all">全部</option>
+                <option value="photo">照片</option>
+                <option value="video">视频</option>
+            </select>
+
+            <select id="yearFilter">
+                <option value="all">所有年份</option>
+            </select>
+
+            <select id="monthFilter">
+                <option value="all">所有月份</option>
+            </select>
+
+            <input type="text" id="searchInput" placeholder="搜索文件名...">
+
+            <button onclick="loadMedia()">🔄 刷新</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="number" id="totalCount">0</div>
+                <div class="label">总文件数</div>
+            </div>
+            <div class="stat-item">
+                <div class="number" id="photoCount">0</div>
+                <div class="label">照片</div>
+            </div>
+            <div class="stat-item">
+                <div class="number" id="videoCount">0</div>
+                <div class="label">视频</div>
+            </div>
+        </div>
+
+        <div class="gallery" id="gallery">
+            <div class="loading">请选择 media_list.json 文件或点击刷新按钮...</div>
+        </div>
+    </div>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()">×</button>
+        <button class="lightbox-nav prev" onclick="navigateLightbox(-1)">‹</button>
+        <button class="lightbox-nav next" onclick="navigateLightbox(1)">›</button>
+        <div class="lightbox-content" id="lightboxContent"></div>
+    </div>
+
+    <script>
+        let allMedia = [];
+        let filteredMedia = [];
+        let currentLightboxIndex = 0;
+        let basePath = '';
+
+        // 文件选择器事件
+        document.getElementById('jsonFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        // 获取文件所在目录作为 basePath
+                        basePath = file.webkitRelativePath || file.name;
+                        basePath = basePath.substring(0, basePath.lastIndexOf('/') || basePath.lastIndexOf('\\'));
+                        
+                        allMedia = data.files || [];
+                        updateFilters();
+                        filterMedia();
+                    } catch (error) {
+                        showError('JSON 文件格式错误: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        async function loadMedia() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '<div class="loading">正在加载媒体文件...</div>';
+
+            try {
+                // 尝试使用 fetch 加载（HTTP 服务器模式）
+                const response = await fetch('media_list.json');
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                
+                const data = await response.json();
+                allMedia = data.files || [];
+                updateFilters();
+                filterMedia();
+                
+            } catch (error) {
+                // fetch 失败，提示用户手动选择文件
+                gallery.innerHTML = `
+                    <div class="empty">
+                        <div class="empty-icon">⚠️</div>
+                        <h2>无法自动加载媒体文件</h2>
+                        <p>请使用上方的"选择 media_list.json 文件"按钮手动加载</p>
+                        <p style="color: #6c757d; margin-top: 10px; font-size: 14px;">
+                            或者启动本地 HTTP 服务器后刷新页面
+                        </p>
+                        <p style="color: #dc3545; margin-top: 10px; font-size: 12px;">错误: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showError(message) {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = `
+                <div class="empty">
+                    <div class="empty-icon">❌</div>
+                    <h2>加载失败</h2>
+                    <p style="color: #dc3545; margin-top: 10px;">${message}</p>
+                </div>
+            `;
+        }
+
+        function updateFilters() {
+            const years = [...new Set(allMedia.map(m => m.year))].sort().reverse();
+            const yearFilter = document.getElementById('yearFilter');
+            yearFilter.innerHTML = '<option value="all">所有年份</option>';
+            years.forEach(year => {
+                yearFilter.innerHTML += `<option value="${year}">${year}年</option>`;
+            });
+
+            updateStats();
+        }
+
+        function updateStats() {
+            const photos = allMedia.filter(m => m.type === 'photo').length;
+            const videos = allMedia.filter(m => m.type === 'video').length;
+            
+            document.getElementById('totalCount').textContent = allMedia.length;
+            document.getElementById('photoCount').textContent = photos;
+            document.getElementById('videoCount').textContent = videos;
+        }
+
+        function filterMedia() {
+            const typeFilter = document.getElementById('typeFilter').value;
+            const yearFilter = document.getElementById('yearFilter').value;
+            const monthFilter = document.getElementById('monthFilter').value;
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+
+            filteredMedia = allMedia.filter(item => {
+                if (typeFilter !== 'all' && item.type !== typeFilter) return false;
+                if (yearFilter !== 'all' && item.year !== yearFilter) return false;
+                if (monthFilter !== 'all' && item.month !== monthFilter) return false;
+                if (searchText && !item.name.toLowerCase().includes(searchText)) return false;
+                return true;
+            });
+
+            renderGallery();
+        }
+
+        function renderGallery() {
+            const gallery = document.getElementById('gallery');
+            
+            if (filteredMedia.length === 0) {
+                gallery.innerHTML = `
+                    <div class="empty">
+                        <div class="empty-icon">📁</div>
+                        <h2>没有找到媒体文件</h2>
+                        <p>尝试调整筛选条件</p>
+                    </div>
+                `;
+                return;
+            }
+
+            gallery.innerHTML = '';
+            filteredMedia.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'media-item';
+                div.onclick = () => openLightbox(index);
+
+                // 构建相对路径或绝对路径
+                const mediaPath = item.path.startsWith('/') || item.path.startsWith('\\') 
+                    ? '.' + item.path.replace(/\\/g, '/')
+                    : item.path;
+
+                const mediaElement = item.type === 'video' 
+                    ? `<video src="${mediaPath}" preload="metadata"></video>
+                       <div class="video-badge">▶ 视频</div>`
+                    : `<img src="${mediaPath}" alt="${item.name}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22%3E无法加载%3C/text%3E%3C/svg%3E'">`;
+
+                div.innerHTML = `
+                    ${mediaElement}
+                    <div class="info">
+                        <div class="filename" title="${item.name}">${item.name}</div>
+                        <div class="date">${item.date}</div>
+                    </div>
+                `;
+
+                gallery.appendChild(div);
+            });
+        }
+
+        function openLightbox(index) {
+            currentLightboxIndex = index;
+            const item = filteredMedia[index];
+            const lightbox = document.getElementById('lightbox');
+            const content = document.getElementById('lightboxContent');
+
+            const mediaPath = item.path.startsWith('/') || item.path.startsWith('\\')
+                ? '.' + item.path.replace(/\\/g, '/')
+                : item.path;
+
+            const mediaElement = item.type === 'video'
+                ? `<video src="${mediaPath}" controls autoplay style="max-width: 100%; max-height: 90vh;"></video>`
+                : `<img src="${mediaPath}" alt="${item.name}">`;
+
+            content.innerHTML = mediaElement;
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
+        function navigateLightbox(direction) {
+            currentLightboxIndex += direction;
+            if (currentLightboxIndex < 0) currentLightboxIndex = filteredMedia.length - 1;
+            if (currentLightboxIndex >= filteredMedia.length) currentLightboxIndex = 0;
+            openLightbox(currentLightboxIndex);
+        }
+
+        // 事件监听
+        document.getElementById('typeFilter').addEventListener('change', filterMedia);
+        document.getElementById('yearFilter').addEventListener('change', filterMedia);
+        document.getElementById('monthFilter').addEventListener('change', filterMedia);
+        document.getElementById('searchInput').addEventListener('input', filterMedia);
+
+        // ESC 键关闭灯箱
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        });
+
+        // 页面加载时尝试自动加载
+        window.addEventListener('load', loadMedia);
+    </script>
+</body>
+</html>
