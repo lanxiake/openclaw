@@ -6,8 +6,10 @@
 
 import React, { useState, useEffect } from 'react'
 import { ChatView } from './components/ChatView'
+import { ConfirmDialog } from './components/ConfirmDialog'
 import { Sidebar } from './components/Sidebar'
 import { TitleBar } from './components/TitleBar'
+import { useConfirmRequests } from './hooks/useConfirmRequests'
 import { useConnectionStatus } from './hooks/useConnectionStatus'
 
 /**
@@ -15,6 +17,7 @@ import { useConnectionStatus } from './hooks/useConnectionStatus'
  */
 const App: React.FC = () => {
   const { isConnected, connect, disconnect } = useConnectionStatus()
+  const { currentRequest, handleResponse, hasPendingRequests } = useConfirmRequests()
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   // 应用启动时自动连接
@@ -53,6 +56,11 @@ const App: React.FC = () => {
         {/* 聊天视图 */}
         <ChatView isConnected={isConnected} />
       </div>
+
+      {/* 敏感操作确认对话框 */}
+      {currentRequest && (
+        <ConfirmDialog request={currentRequest} onResponse={handleResponse} />
+      )}
     </div>
   )
 }

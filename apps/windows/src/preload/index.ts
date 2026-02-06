@@ -16,6 +16,22 @@ const log = {
 log.info('预加载脚本开始执行')
 
 /**
+ * 确认请求的数据结构
+ */
+export interface ConfirmRequest {
+  /** 唯一请求 ID */
+  requestId: string
+  /** 操作名称 */
+  action: string
+  /** 操作描述 */
+  description: string
+  /** 风险等级 */
+  level: 'low' | 'medium' | 'high'
+  /** 超时时间 (毫秒) */
+  timeoutMs: number
+}
+
+/**
  * 定义暴露给渲染进程的 API 类型
  */
 export interface ElectronAPI {
@@ -27,6 +43,7 @@ export interface ElectronAPI {
     call: <T>(method: string, params?: unknown) => Promise<T>
     onStatusChange: (callback: (connected: boolean) => void) => () => void
     onMessage: (callback: (message: unknown) => void) => () => void
+    onConfirmRequest: (callback: (request: ConfirmRequest) => void) => () => void
   }
 
   // 文件操作
@@ -115,6 +132,8 @@ const electronAPI: ElectronAPI = {
       createEventListener('gateway:status-change', callback as (...args: unknown[]) => void),
     onMessage: (callback: (message: unknown) => void) =>
       createEventListener('gateway:message', callback),
+    onConfirmRequest: (callback: (request: ConfirmRequest) => void) =>
+      createEventListener('confirm:request', callback as (...args: unknown[]) => void),
   },
 
   // 文件操作 API
