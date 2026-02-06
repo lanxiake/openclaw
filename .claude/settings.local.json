@@ -69,7 +69,10 @@
       "Bash(ssh:*)",
       "Bash(ssh-add:*)",
       "Bash(git remote set-url:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git config:*)",
+      "Bash(git show:*)",
+      "Bash(Get-Content logsbridge.log -Tail 50 -Encoding UTF8)"
     ]
   }
 }

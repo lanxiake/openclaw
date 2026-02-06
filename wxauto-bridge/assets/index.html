@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信桥接配置</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- 顶部状态栏 -->
+        <header class="header">
+            <div class="header-title">
+                <span class="logo">💬</span>
+                <h1>微信桥接</h1>
+            </div>
+            <div class="header-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span class="status-text" id="statusText">未连接</span>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <main class="main">
+            <!-- 连接配置卡片 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2>连接设置</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="gatewayUrl">Gateway 地址</label>
+                        <div class="input-group">
+                            <input type="text" id="gatewayUrl" placeholder="ws://localhost:18789">
+                            <button class="btn btn-secondary" onclick="testConnection()">测试</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="authToken">认证 Token</label>
+                        <div class="input-group">
+                            <input type="password" id="authToken" placeholder="输入或生成 Token">
+                            <button class="btn btn-icon" onclick="toggleTokenVisibility()" title="显示/隐藏">
+                                <span id="tokenVisibilityIcon">👁</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="generateToken()">生成</button>
+                            <button class="btn btn-secondary" onclick="copyToken()">复制</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 监听列表卡片 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2>监听列表</h2>
+                    <button class="btn btn-primary btn-sm" onclick="fetchContacts()">
+                        <span class="btn-icon-left">🔄</span> 从微信获取
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- 标签页切换 -->
+                    <div class="tabs">
+                        <button class="tab active" data-tab="all" onclick="switchTab('all')">全部</button>
+                        <button class="tab" data-tab="friend" onclick="switchTab('friend')">好友</button>
+                        <button class="tab" data-tab="group" onclick="switchTab('group')">群聊</button>
+                    </div>
+
+                    <!-- 监听列表 -->
+                    <div class="listen-list" id="listenList">
+                        <div class="empty-state" id="emptyState">
+                            <span class="empty-icon">📭</span>
+                            <p>暂无监听项</p>
+                            <p class="empty-hint">点击"从微信获取"或手动添加</p>
+                        </div>
+                    </div>
+
+                    <!-- 添加按钮 -->
+                    <div class="add-section">
+                        <button class="btn btn-outline" onclick="showAddDialog()">
+                            <span class="btn-icon-left">+</span> 手动添加
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 运行日志卡片 -->
+            <section class="card card-log">
+                <div class="card-header">
+                    <h2>运行日志</h2>
+                    <button class="btn btn-secondary btn-sm" onclick="clearLogs()">清空</button>
+                </div>
+                <div class="card-body">
+                    <div class="log-container" id="logContainer">
+                        <div class="log-empty" id="logEmpty">
+                            <span class="log-empty-icon">📋</span>
+                            <p>暂无日志</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部操作栏 -->
+        <footer class="footer">
+            <button class="btn btn-secondary btn-lg" onclick="saveConfig()">
+                <span class="btn-icon-left">💾</span> 保存配置
+            </button>
+            <button class="btn btn-primary btn-lg" id="startBtn" onclick="startBridge()">
+                <span class="btn-icon-left">▶</span> 启动桥接
+            </button>
+            <button class="btn btn-danger btn-lg" id="stopBtn" onclick="stopBridge()" disabled>
+                <span class="btn-icon-left">⏹</span> 停止桥接
+            </button>
+        </footer>
+    </div>
+
+    <!-- 添加对话框 -->
+    <div class="modal" id="addModal">
+        <div class="modal-overlay" onclick="hideAddDialog()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加监听</h3>
+                <button class="modal-close" onclick="hideAddDialog()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="addName">名称</label>
+                    <input type="text" id="addName" placeholder="输入好友昵称或群名称">
+                </div>
+                <div class="form-group">
+                    <label>类型</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="addType" value="friend" checked>
+                            <span>好友</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="addType" value="group">
+                            <span>群聊</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideAddDialog()">取消</button>
+                <button class="btn btn-primary" onclick="addListenChat()">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

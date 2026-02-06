@@ -6,7 +6,11 @@
   "scripts": {
     "start": "electron .",
     "build": "node build.js",
-    "test": "electron dist/win-unpacked/OpenClaw.exe"
+    "test": "electron dist/win-unpacked/OpenClaw.exe",
+    "test-log": "node test-log.js",
+    "clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
+    "clean:win": "rmdir /s /q dist 2>nul || echo 已清理",
+    "rebuild": "npm run clean && npm run build"
   },
   "build": {
     "appId": "ai.openclaw.desktop",
@@ -18,6 +22,11 @@
       {
         "from": "bundled-config",
         "to": "bundled-config",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "bundled-openclaw",
+        "to": "bundled-openclaw",
         "filter": ["**/*"]
       }
     ],
