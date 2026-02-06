@@ -1,6 +1,7 @@
 import { ErrorCodes, errorShape } from "./protocol/index.js";
 import { agentHandlers } from "./server-methods/agent.js";
 import { agentsHandlers } from "./server-methods/agents.js";
+import { assistantHandlers } from "./server-methods/assistant.js";
 import { browserHandlers } from "./server-methods/browser.js";
 import { channelsHandlers } from "./server-methods/channels.js";
 import { chatHandlers } from "./server-methods/chat.js";
@@ -72,6 +73,9 @@ const READ_METHODS = new Set([
   "node.list",
   "node.describe",
   "chat.history",
+  "assistant.info",
+  "assistant.capabilities",
+  "assistant.heartbeat",
 ]);
 const WRITE_METHODS = new Set([
   "send",
@@ -88,6 +92,9 @@ const WRITE_METHODS = new Set([
   "chat.send",
   "chat.abort",
   "browser.request",
+  "assistant.chat",
+  "assistant.confirm.request",
+  "assistant.confirm.response",
 ]);
 
 function authorizeGatewayMethod(method: string, client: GatewayRequestOptions["client"]) {
@@ -185,6 +192,7 @@ export const coreGatewayHandlers: GatewayRequestHandlers = {
   ...agentHandlers,
   ...agentsHandlers,
   ...browserHandlers,
+  ...assistantHandlers,
 };
 
 export async function handleGatewayRequest(

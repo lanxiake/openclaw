@@ -82,6 +82,13 @@ const BASE_METHODS = [
   "chat.history",
   "chat.abort",
   "chat.send",
+  // Windows Assistant methods
+  "assistant.info",
+  "assistant.chat",
+  "assistant.confirm.request",
+  "assistant.confirm.response",
+  "assistant.capabilities",
+  "assistant.heartbeat",
 ];
 
 export function listGatewayMethods(): string[] {
@@ -108,4 +115,7 @@ export const GATEWAY_EVENTS = [
   "voicewake.changed",
   "exec.approval.requested",
   "exec.approval.resolved",
+  // Windows Assistant events
+  "confirm.request",
+  "assistant.notification",
 ];

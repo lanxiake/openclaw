@@ -270,13 +270,17 @@ export class SystemService {
     const regex = new RegExp(pattern, 'i')
 
     const search = async (currentPath: string) => {
-      if (results.length >= maxResults) return
+      if (results.length >= maxResults) {
+        return
+      }
 
       try {
         const entries = await fs.readdir(currentPath, { withFileTypes: true })
 
         for (const entry of entries) {
-          if (results.length >= maxResults) break
+          if (results.length >= maxResults) {
+            break
+          }
 
           const filePath = join(currentPath, entry.name)
 

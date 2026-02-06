@@ -4,7 +4,7 @@
  * 管理 Windows 系统托盘图标和菜单
  */
 
-import { Tray, Menu, nativeImage, app } from 'electron'
+import { Tray, Menu, nativeImage } from 'electron'
 import { join } from 'path'
 
 // 日志输出
