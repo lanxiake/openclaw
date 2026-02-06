@@ -1,0 +1,94 @@
+/**
+ * TitleBar Styles - 标题栏样式
+ */
+
+.title-bar {
+  display: flex;
+  align-items: center;
+  height: var(--title-bar-height);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.title-bar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-left: var(--spacing-sm);
+  -webkit-app-region: no-drag;
+}
+
+.title-bar-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 0 var(--spacing-sm);
+  -webkit-app-region: drag;
+}
+
+.app-name {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: background-color var(--transition-fast);
+}
+
+.status-dot.connected {
+  background-color: var(--color-success);
+  box-shadow: 0 0 4px var(--color-success);
+}
+
+.status-dot.disconnected {
+  background-color: var(--color-error);
+}
+
+.title-bar-drag-region {
+  flex: 1;
+  height: 100%;
+}
+
+.title-bar-controls {
+  display: flex;
+  height: 100%;
+  -webkit-app-region: no-drag;
+}
+
+.title-bar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 100%;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  transition: all var(--transition-fast);
+}
+
+.title-bar-button:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.title-bar-button.close-button:hover {
+  background-color: var(--color-error);
+  color: white;
+}
+
+.menu-button {
+  width: 32px;
+  height: 24px;
+  border-radius: var(--border-radius);
+}
+
+.menu-button:hover {
+  background-color: var(--bg-tertiary);
+}
