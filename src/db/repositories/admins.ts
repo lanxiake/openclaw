@@ -202,14 +202,14 @@ export class AdminRepository {
     const [result] = await this.db
       .update(admins)
       .set({
-        failedLoginAttempts: sql`(${admins.failedLoginAttempts}::int + 1)::text`,
+        failedLoginAttempts: sql`${admins.failedLoginAttempts} + 1`,
         lastFailedLoginAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(admins.id, id))
       .returning({ failedLoginAttempts: admins.failedLoginAttempts });
 
-    return parseInt(result?.failedLoginAttempts || "0", 10);
+    return result?.failedLoginAttempts || 0;
   }
 
   /**

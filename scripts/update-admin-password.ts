@@ -3,21 +3,9 @@
  */
 
 import postgres from "postgres";
-import { scrypt, randomBytes } from "node:crypto";
-import { promisify } from "node:util";
-
-const scryptAsync = promisify(scrypt);
+import { hashPassword } from "../src/db/utils/password.js";
 
 const connectionString = process.env["DATABASE_URL"] || "postgresql://openclaw_admin:Oc@2026!Pg#Secure@10.157.152.40:22001/openclaw_prod";
-
-/**
- * 哈希密码
- */
-async function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(16).toString("hex");
-  const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `$scrypt$16384$8$1$${salt}$${derivedKey.toString("hex")}`;
-}
 
 async function updateAdminPassword() {
   console.log("[TEST] 连接数据库...");
