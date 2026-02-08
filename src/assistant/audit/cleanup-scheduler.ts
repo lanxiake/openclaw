@@ -158,9 +158,7 @@ export class AuditCleanupScheduler {
       const service = getEnhancedAuditService();
 
       // 清理过期审计日志
-      const deletedAuditLogs = await service.cleanupOldLogs(
-        this.config.auditLogRetentionDays
-      );
+      const deletedAuditLogs = await service.cleanupOldLogs(this.config.auditLogRetentionDays);
 
       // 清理过期导出
       const deletedExports = await service.cleanupExpiredExports();

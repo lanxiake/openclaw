@@ -6,11 +6,7 @@
 
 import { eq } from "drizzle-orm";
 import { getDatabase } from "../../db/index.js";
-import {
-  skillStoreItems,
-  type SkillStoreItem,
-  type SkillStatus,
-} from "../../db/schema/index.js";
+import { skillStoreItems, type SkillStoreItem, type SkillStatus } from "../../db/schema/index.js";
 
 // 日志标签
 const LOG_TAG = "[SkillReviewService]";
@@ -30,7 +26,7 @@ export interface ReviewResult {
 export async function approveSkill(
   skillId: string,
   adminId: string,
-  note?: string
+  note?: string,
 ): Promise<ReviewResult> {
   console.log(`${LOG_TAG} approveSkill`, skillId, adminId);
 
@@ -75,7 +71,7 @@ export async function approveSkill(
 export async function rejectSkill(
   skillId: string,
   adminId: string,
-  reason: string
+  reason: string,
 ): Promise<ReviewResult> {
   console.log(`${LOG_TAG} rejectSkill`, skillId, adminId, reason);
 
@@ -197,7 +193,7 @@ export async function batchUpdateStatus(
   skillIds: string[],
   status: SkillStatus,
   adminId?: string,
-  note?: string
+  note?: string,
 ): Promise<{ success: number; failed: number }> {
   console.log(`${LOG_TAG} batchUpdateStatus`, skillIds.length, status);
 

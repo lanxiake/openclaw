@@ -10,9 +10,7 @@ import {
   verifyAdminAccessToken,
   extractAdminBearerToken,
 } from "../../assistant/admin-auth/index.js";
-import {
-  getAdminDashboardService,
-} from "../../assistant/admin-console/admin-dashboard-service.js";
+import { getAdminDashboardService } from "../../assistant/admin-console/admin-dashboard-service.js";
 
 // 日志标签
 const LOG_TAG = "admin-dashboard";
@@ -21,7 +19,7 @@ const LOG_TAG = "admin-dashboard";
  * 验证管理员身份
  */
 function validateAdminAuth(
-  params: Record<string, unknown>
+  params: Record<string, unknown>,
 ): { adminId: string; role: string } | null {
   const authHeader = params["authorization"] as string | undefined;
   const token = extractAdminBearerToken(authHeader);
@@ -53,7 +51,7 @@ export const adminDashboardMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -78,8 +76,8 @@ export const adminDashboardMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INTERNAL_ERROR,
-          error instanceof Error ? error.message : "获取统计数据失败"
-        )
+          error instanceof Error ? error.message : "获取统计数据失败",
+        ),
       );
     }
   },
@@ -102,7 +100,7 @@ export const adminDashboardMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -116,7 +114,7 @@ export const adminDashboardMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "无效的趋势类型", {
             details: { errorCode: "INVALID_TYPE" },
-          })
+          }),
         );
         return;
       }
@@ -143,8 +141,8 @@ export const adminDashboardMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INTERNAL_ERROR,
-          error instanceof Error ? error.message : "获取趋势数据失败"
-        )
+          error instanceof Error ? error.message : "获取趋势数据失败",
+        ),
       );
     }
   },
@@ -165,7 +163,7 @@ export const adminDashboardMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -190,8 +188,8 @@ export const adminDashboardMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INTERNAL_ERROR,
-          error instanceof Error ? error.message : "获取订阅分布失败"
-        )
+          error instanceof Error ? error.message : "获取订阅分布失败",
+        ),
       );
     }
   },
@@ -213,15 +211,13 @@ export const adminDashboardMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
 
       const limit =
-        typeof params["limit"] === "number"
-          ? Math.min(Math.max(1, params["limit"]), 50)
-          : 10;
+        typeof params["limit"] === "number" ? Math.min(Math.max(1, params["limit"]), 50) : 10;
 
       context.logGateway.info(`[${LOG_TAG}] Getting activities`, {
         adminId: auth.adminId,
@@ -244,8 +240,8 @@ export const adminDashboardMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INTERNAL_ERROR,
-          error instanceof Error ? error.message : "获取活动数据失败"
-        )
+          error instanceof Error ? error.message : "获取活动数据失败",
+        ),
       );
     }
   },

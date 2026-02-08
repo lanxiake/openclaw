@@ -54,7 +54,7 @@ export type {
   ProviderConfig,
   IMemoryProvider,
   ProviderConstructor,
-} from './interfaces/index.js'
+} from "./interfaces/index.js";
 
 // 工作记忆接口
 export type {
@@ -68,7 +68,7 @@ export type {
   WorkingMemory,
   SessionInfo,
   IWorkingMemoryProvider,
-} from './interfaces/index.js'
+} from "./interfaces/index.js";
 
 // 情节记忆接口
 export type {
@@ -83,7 +83,7 @@ export type {
   EpisodeSearchResult,
   TimelineEntry,
   IEpisodicMemoryProvider,
-} from './interfaces/index.js'
+} from "./interfaces/index.js";
 
 // 画像记忆接口
 export type {
@@ -94,8 +94,8 @@ export type {
   BehaviorPattern,
   ExtractedProfile,
   IProfileMemoryProvider,
-} from './interfaces/index.js'
-export { DEFAULT_USER_PREFERENCES } from './interfaces/index.js'
+} from "./interfaces/index.js";
+export { DEFAULT_USER_PREFERENCES } from "./interfaces/index.js";
 
 // 知识记忆接口
 export type {
@@ -116,7 +116,7 @@ export type {
   GraphAnswer,
   DocumentListOptions,
   IKnowledgeMemoryProvider,
-} from './interfaces/index.js'
+} from "./interfaces/index.js";
 
 // 对象存储接口
 export type {
@@ -129,7 +129,7 @@ export type {
   BucketInfo,
   StorageUsage,
   IObjectStorageProvider,
-} from './interfaces/index.js'
+} from "./interfaces/index.js";
 
 // ==================== 提供者 ====================
 
@@ -148,7 +148,7 @@ export {
   createProfileMemoryProvider,
   createKnowledgeMemoryProvider,
   createObjectStorageProvider,
-} from './providers/index.js'
+} from "./providers/index.js";
 
 // 内置提供者
 export {
@@ -160,7 +160,7 @@ export {
   SQLiteKnowledgeMemoryAdapter,
   type SQLiteKnowledgeConfig,
   LocalObjectStorageProvider,
-} from './providers/index.js'
+} from "./providers/index.js";
 
 // ==================== 配置 ====================
 
@@ -195,7 +195,7 @@ export {
   // 验证函数
   validateConfig,
   safeValidateConfig,
-} from './config/index.js'
+} from "./config/index.js";
 
 // ==================== 管理器 ====================
 
@@ -205,4 +205,4 @@ export {
   type MemoryManagerOptions,
   MemoryManager,
   createMemoryManager,
-} from './manager.js'
+} from "./manager.js";

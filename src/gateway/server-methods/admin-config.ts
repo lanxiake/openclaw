@@ -85,7 +85,8 @@ OpenClaw 团队`,
     name: "验证码短信",
     code: "verification_sms",
     channel: "sms" as const,
-    content: "【OpenClaw】您的验证码是 {{code}}，{{expireMinutes}} 分钟内有效。请勿将验证码告知他人。",
+    content:
+      "【OpenClaw】您的验证码是 {{code}}，{{expireMinutes}} 分钟内有效。请勿将验证码告知他人。",
     variables: ["code", "expireMinutes"],
     enabled: true,
     updatedAt: "2024-01-15T10:30:00Z",
@@ -136,7 +137,8 @@ OpenClaw 团队`,
     name: "新设备登录提醒",
     code: "new_device_login",
     channel: "push" as const,
-    content: "您的账号在新设备上登录：{{deviceName}}，IP: {{ipAddress}}。如非本人操作，请立即修改密码。",
+    content:
+      "您的账号在新设备上登录：{{deviceName}}，IP: {{ipAddress}}。如非本人操作，请立即修改密码。",
     variables: ["deviceName", "ipAddress"],
     enabled: true,
     updatedAt: "2024-01-15T10:30:00Z",
@@ -276,7 +278,7 @@ const createConfigHandler: GatewayRequestHandler = async ({ params, context, res
         adminId,
         adminName,
         enableHistory: true,
-      }
+      },
     );
 
     respond(true, {
@@ -489,7 +491,10 @@ const getSiteConfig: GatewayRequestHandler = async ({ respond }) => {
   try {
     // 从数据库获取站点相关配置
     const siteName = await getConfigValue<string>(CONFIG_KEYS.SITE_NAME, "OpenClaw AI Assistant");
-    const siteDescription = await getConfigValue<string>(CONFIG_KEYS.SITE_DESCRIPTION, "智能 AI 助手平台");
+    const siteDescription = await getConfigValue<string>(
+      CONFIG_KEYS.SITE_DESCRIPTION,
+      "智能 AI 助手平台",
+    );
 
     respond(true, {
       success: true,
@@ -565,9 +570,12 @@ const getFeatureFlags: GatewayRequestHandler = async ({ respond }) => {
     const maintenanceMode = await getConfigValue<boolean>(CONFIG_KEYS.MAINTENANCE_MODE, false);
     const maintenanceMessage = await getConfigValue<string>(
       CONFIG_KEYS.MAINTENANCE_MESSAGE,
-      "系统维护中，请稍后再试..."
+      "系统维护中，请稍后再试...",
     );
-    const notificationEnabled = await getConfigValue<boolean>(CONFIG_KEYS.NOTIFICATION_ENABLED, true);
+    const notificationEnabled = await getConfigValue<boolean>(
+      CONFIG_KEYS.NOTIFICATION_ENABLED,
+      true,
+    );
 
     respond(true, {
       success: true,
@@ -704,11 +712,15 @@ const setSecurityConfig: GatewayRequestHandler = async ({ params, context, respo
     }
     if (config.loginLockoutDuration !== undefined) {
       // 从分钟转换为秒
-      await setConfigValue(CONFIG_KEYS.LOCKOUT_DURATION, (config.loginLockoutDuration as number) * 60, {
-        adminId,
-        adminName,
-        enableHistory: true,
-      });
+      await setConfigValue(
+        CONFIG_KEYS.LOCKOUT_DURATION,
+        (config.loginLockoutDuration as number) * 60,
+        {
+          adminId,
+          adminName,
+          enableHistory: true,
+        },
+      );
     }
     if (config.sessionTimeout !== undefined) {
       // 从分钟转换为秒
@@ -749,11 +761,14 @@ const getAllConfig: GatewayRequestHandler = async ({ respond }) => {
   try {
     // 获取各类配置
     const siteName = await getConfigValue<string>(CONFIG_KEYS.SITE_NAME, "OpenClaw AI Assistant");
-    const siteDescription = await getConfigValue<string>(CONFIG_KEYS.SITE_DESCRIPTION, "智能 AI 助手平台");
+    const siteDescription = await getConfigValue<string>(
+      CONFIG_KEYS.SITE_DESCRIPTION,
+      "智能 AI 助手平台",
+    );
     const maintenanceMode = await getConfigValue<boolean>(CONFIG_KEYS.MAINTENANCE_MODE, false);
     const maintenanceMessage = await getConfigValue<string>(
       CONFIG_KEYS.MAINTENANCE_MESSAGE,
-      "系统维护中，请稍后再试..."
+      "系统维护中，请稍后再试...",
     );
     const maxLoginAttempts = await getConfigValue<number>(CONFIG_KEYS.MAX_LOGIN_ATTEMPTS, 5);
     const lockoutDuration = await getConfigValue<number>(CONFIG_KEYS.LOCKOUT_DURATION, 1800);

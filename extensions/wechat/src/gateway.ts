@@ -172,7 +172,7 @@ export function removeGateway(accountId: string): void {
 export function handleWeChatUpgrade(
   req: import("node:http").IncomingMessage,
   socket: import("node:stream").Duplex,
-  head: Buffer
+  head: Buffer,
 ): boolean {
   const url = new URL(req.url ?? "/", "http://localhost");
 

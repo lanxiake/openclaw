@@ -37,15 +37,18 @@ message(
 Captures the entire screen.
 
 **Usage:**
+
 ```bash
 python screenshot.py [-o OUTPUT] [-b]
 ```
 
 **Options:**
+
 - `-o, --output PATH`: Save screenshot to specified path
 - `-b, --base64`: Return base64 encoded image data
 
 **Examples:**
+
 ```bash
 # Save to file
 python screenshot.py -o screen.png
@@ -57,6 +60,7 @@ python screenshot.py -b
 ## Requirements
 
 The script requires:
+
 - Python 3
 - Pillow (PIL) library
 

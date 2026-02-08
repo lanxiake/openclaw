@@ -45,24 +45,15 @@ export function getDatabaseConfigFromEnv(): DatabaseConfig {
   if (!connectionString) {
     throw new Error(
       "DATABASE_URL environment variable is not set. " +
-        "Please configure PostgreSQL connection string."
+        "Please configure PostgreSQL connection string.",
     );
   }
 
   return {
     connectionString,
-    maxConnections: parseInt(
-      process.env["DATABASE_MAX_CONNECTIONS"] || "10",
-      10
-    ),
-    connectionTimeoutMs: parseInt(
-      process.env["DATABASE_CONNECTION_TIMEOUT_MS"] || "10000",
-      10
-    ),
-    idleTimeoutMs: parseInt(
-      process.env["DATABASE_IDLE_TIMEOUT_MS"] || "300000",
-      10
-    ),
+    maxConnections: parseInt(process.env["DATABASE_MAX_CONNECTIONS"] || "10", 10),
+    connectionTimeoutMs: parseInt(process.env["DATABASE_CONNECTION_TIMEOUT_MS"] || "10000", 10),
+    idleTimeoutMs: parseInt(process.env["DATABASE_IDLE_TIMEOUT_MS"] || "300000", 10),
     ssl: parseSslOption(process.env["DATABASE_SSL"]),
   };
 }
@@ -70,9 +61,7 @@ export function getDatabaseConfigFromEnv(): DatabaseConfig {
 /**
  * 解析 SSL 配置选项
  */
-function parseSslOption(
-  value: string | undefined
-): boolean | "require" | "prefer" {
+function parseSslOption(value: string | undefined): boolean | "require" | "prefer" {
   if (!value) return false;
   const lower = value.toLowerCase();
   if (lower === "true" || lower === "1") return true;
@@ -178,8 +167,7 @@ export async function healthCheck(): Promise<{
     return { healthy: true, latencyMs };
   } catch (error) {
     const latencyMs = Date.now() - startTime;
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
     logger.error("[db] Health check failed", { error: errorMessage, latencyMs });
 
@@ -201,8 +189,7 @@ export async function closeConnection(): Promise<void> {
       await sqlClient.end({ timeout: 5 });
       logger.info("[db] Database connection pool closed successfully");
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
       logger.error("[db] Error closing database connection", {
         error: errorMessage,
       });
@@ -231,9 +218,7 @@ export async function resetConnection(): Promise<void> {
  * @param callback 事务回调函数
  * @returns 事务执行结果
  */
-export async function transaction<T>(
-  callback: (tx: Database) => Promise<T>
-): Promise<T> {
+export async function transaction<T>(callback: (tx: Database) => Promise<T>): Promise<T> {
   const db = getDatabase();
   // Drizzle ORM 的事务 API
   return db.transaction(callback);

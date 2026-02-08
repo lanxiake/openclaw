@@ -4,13 +4,7 @@
  * 记录用户和系统操作，支持风险分级和月度分区
  */
 
-import {
-  pgTable,
-  text,
-  timestamp,
-  jsonb,
-  index,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 
@@ -50,16 +44,7 @@ export const auditLogs = pgTable(
     deviceId: text("device_id"),
     /** 操作类别 */
     category: text("category", {
-      enum: [
-        "auth",
-        "user",
-        "device",
-        "subscription",
-        "payment",
-        "skill",
-        "system",
-        "security",
-      ],
+      enum: ["auth", "user", "device", "subscription", "payment", "skill", "system", "security"],
     }).notNull(),
     /** 操作动作 */
     action: text("action").notNull(),
@@ -90,9 +75,7 @@ export const auditLogs = pgTable(
     /** 错误信息 */
     errorMessage: text("error_message"),
     /** 创建时间 (用于分区) */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 联合索引：用户 + 时间 (查询用户操作历史)
@@ -107,7 +90,7 @@ export const auditLogs = pgTable(
     index("audit_logs_created_at_idx").on(table.createdAt),
     // 索引：IP 地址 (安全审计)
     index("audit_logs_ip_address_idx").on(table.ipAddress),
-  ]
+  ],
 );
 
 /**
@@ -171,8 +154,7 @@ export const exportLogs = pgTable(
     /** 主键 UUID */
     id: text("id").primaryKey(),
     /** 用户 ID */
-    userId: text("user_id")
-      .references(() => users.id, { onDelete: "set null" }),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
     /** 导出类型 */
     exportType: text("export_type", {
       enum: ["user_data", "audit_logs", "chat_history", "files"],
@@ -194,9 +176,7 @@ export const exportLogs = pgTable(
     /** 错误信息 */
     errorMessage: text("error_message"),
     /** 请求时间 */
-    requestedAt: timestamp("requested_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    requestedAt: timestamp("requested_at", { withTimezone: true }).defaultNow().notNull(),
     /** 完成时间 */
     completedAt: timestamp("completed_at", { withTimezone: true }),
     /** 过期时间 */
@@ -213,7 +193,7 @@ export const exportLogs = pgTable(
     index("export_logs_status_idx").on(table.status),
     // 索引：过期时间 (用于清理)
     index("export_logs_expires_at_idx").on(table.expiresAt),
-  ]
+  ],
 );
 
 /**

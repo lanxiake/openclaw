@@ -251,9 +251,15 @@
   color: var(--text-primary);
 }
 
-.overview-snapshot-value.success { color: var(--success-color); }
-.overview-snapshot-value.warning { color: var(--warning-color); }
-.overview-snapshot-value.danger { color: var(--danger-color); }
+.overview-snapshot-value.success {
+  color: var(--success-color);
+}
+.overview-snapshot-value.warning {
+  color: var(--warning-color);
+}
+.overview-snapshot-value.danger {
+  color: var(--danger-color);
+}
 
 /* 错误提示 */
 .overview-error {

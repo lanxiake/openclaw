@@ -110,7 +110,8 @@ function parseCondition(condition: unknown): (row: unknown) => boolean {
     // 旧的简单条件处理（向后兼容）
     // 处理 eq 条件 (例如: eq(users.id, "123"))
     if (cond.operator === "=" || cond.type === "eq") {
-      const field = (cond.left as { name: string })?.name || (cond.column as { name: string })?.name;
+      const field =
+        (cond.left as { name: string })?.name || (cond.column as { name: string })?.name;
       const value = cond.right || cond.value;
       return (row: unknown) => (row as Record<string, unknown>)[field] === value;
     }
@@ -131,14 +132,16 @@ function parseCondition(condition: unknown): (row: unknown) => boolean {
 
     // 处理 gt 条件 (大于)
     if (cond.operator === ">" || cond.type === "gt") {
-      const field = (cond.left as { name: string })?.name || (cond.column as { name: string })?.name;
+      const field =
+        (cond.left as { name: string })?.name || (cond.column as { name: string })?.name;
       const value = cond.right || cond.value;
       return (row: unknown) => (row as Record<string, unknown>)[field] > value;
     }
 
     // 处理 lt 条件 (小于)
     if (cond.operator === "<" || cond.type === "lt") {
-      const field = (cond.left as { name: string })?.name || (cond.column as { name: string })?.name;
+      const field =
+        (cond.left as { name: string })?.name || (cond.column as { name: string })?.name;
       const value = cond.right || cond.value;
       return (row: unknown) => (row as Record<string, unknown>)[field] < value;
     }
@@ -206,7 +209,7 @@ class MockQueryBuilder {
    */
   then<TResult1 = unknown[], TResult2 = never>(
     onfulfilled?: ((value: unknown[]) => TResult1 | PromiseLike<TResult1>) | null,
-    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): Promise<TResult1 | TResult2> {
     return this.execute().then(onfulfilled, onrejected);
   }
@@ -257,7 +260,7 @@ class MockInsertBuilder {
    */
   then<TResult1 = unknown[], TResult2 = never>(
     onfulfilled?: ((value: unknown[]) => TResult1 | PromiseLike<TResult1>) | null,
-    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): Promise<TResult1 | TResult2> {
     return this.execute().then(onfulfilled, onrejected);
   }
@@ -323,7 +326,7 @@ class MockUpdateBuilder {
    */
   then<TResult1 = unknown[], TResult2 = never>(
     onfulfilled?: ((value: unknown[]) => TResult1 | PromiseLike<TResult1>) | null,
-    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): Promise<TResult1 | TResult2> {
     return this.execute().then(onfulfilled, onrejected);
   }
@@ -378,7 +381,7 @@ class MockDeleteBuilder {
    */
   then<TResult1 = unknown[], TResult2 = never>(
     onfulfilled?: ((value: unknown[]) => TResult1 | PromiseLike<TResult1>) | null,
-    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): Promise<TResult1 | TResult2> {
     return this.execute().then(onfulfilled, onrejected);
   }
@@ -399,7 +402,7 @@ function createTableProxy(tableName: string) {
         }
         return undefined;
       },
-    }
+    },
   );
 }
 
@@ -435,7 +438,7 @@ export const mockDb = {
       get(_target, tableName) {
         return createTableProxy(String(tableName));
       },
-    }
+    },
   ),
 
   transaction: async <T>(callback: (tx: unknown) => Promise<T>): Promise<T> => {

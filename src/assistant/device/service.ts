@@ -64,7 +64,7 @@ function pairedDeviceToDeviceInfo(device: PairedDevice): DeviceInfo {
  */
 async function userDeviceToUserDeviceInfo(
   userDevice: UserDevice,
-  deviceInfo?: DeviceInfo
+  deviceInfo?: DeviceInfo,
 ): Promise<UserDeviceInfo> {
   return {
     id: userDevice.id,
@@ -168,9 +168,7 @@ export async function getDeviceInfo(deviceId: string): Promise<DeviceInfo | null
  * 3. 设备配额未满
  * 4. 设备未被其他用户绑定
  */
-export async function linkDevice(
-  request: LinkDeviceRequest
-): Promise<DeviceOperationResult> {
+export async function linkDevice(request: LinkDeviceRequest): Promise<DeviceOperationResult> {
   const userRepo = getUserRepository();
   const deviceRepo = getUserDeviceRepository();
 
@@ -326,9 +324,7 @@ export async function linkDevice(
 /**
  * 解绑设备
  */
-export async function unlinkDevice(
-  request: UnlinkDeviceRequest
-): Promise<DeviceOperationResult> {
+export async function unlinkDevice(request: UnlinkDeviceRequest): Promise<DeviceOperationResult> {
   const userRepo = getUserRepository();
   const deviceRepo = getUserDeviceRepository();
 
@@ -376,9 +372,7 @@ export async function unlinkDevice(
 
     // 4. 获取设备信息用于返回
     const pairedDevice = await getPairedDevice(deviceId);
-    const deviceInfo = pairedDevice
-      ? pairedDeviceToDeviceInfo(pairedDevice)
-      : undefined;
+    const deviceInfo = pairedDevice ? pairedDeviceToDeviceInfo(pairedDevice) : undefined;
     const userDeviceInfo = await userDeviceToUserDeviceInfo(existingLink, deviceInfo);
 
     // 5. 删除关联
@@ -449,9 +443,7 @@ export async function listUserDevices(userId: string): Promise<DeviceListResult>
     const devicesWithInfo: UserDeviceInfo[] = [];
     for (const ud of userDevices) {
       const pairedDevice = await getPairedDevice(ud.deviceId);
-      const deviceInfo = pairedDevice
-        ? pairedDeviceToDeviceInfo(pairedDevice)
-        : undefined;
+      const deviceInfo = pairedDevice ? pairedDeviceToDeviceInfo(pairedDevice) : undefined;
       devicesWithInfo.push(await userDeviceToUserDeviceInfo(ud, deviceInfo));
     }
 
@@ -484,7 +476,7 @@ export async function listUserDevices(userId: string): Promise<DeviceListResult>
 export async function updateDeviceAlias(
   userId: string,
   deviceId: string,
-  alias: string
+  alias: string,
 ): Promise<DeviceOperationResult> {
   const deviceRepo = getUserDeviceRepository();
 
@@ -508,16 +500,11 @@ export async function updateDeviceAlias(
     });
 
     const pairedDevice = await getPairedDevice(deviceId);
-    const deviceInfo = pairedDevice
-      ? pairedDeviceToDeviceInfo(pairedDevice)
-      : undefined;
+    const deviceInfo = pairedDevice ? pairedDeviceToDeviceInfo(pairedDevice) : undefined;
 
     return {
       success: true,
-      device: await userDeviceToUserDeviceInfo(
-        { ...existingLink, alias },
-        deviceInfo
-      ),
+      device: await userDeviceToUserDeviceInfo({ ...existingLink, alias }, deviceInfo),
     };
   } catch (error) {
     logger.error("[device-service] Update alias error", {
@@ -539,7 +526,7 @@ export async function updateDeviceAlias(
  */
 export async function setPrimaryDevice(
   userId: string,
-  deviceId: string
+  deviceId: string,
 ): Promise<DeviceOperationResult> {
   const deviceRepo = getUserDeviceRepository();
 
@@ -561,16 +548,11 @@ export async function setPrimaryDevice(
     });
 
     const pairedDevice = await getPairedDevice(deviceId);
-    const deviceInfo = pairedDevice
-      ? pairedDeviceToDeviceInfo(pairedDevice)
-      : undefined;
+    const deviceInfo = pairedDevice ? pairedDeviceToDeviceInfo(pairedDevice) : undefined;
 
     return {
       success: true,
-      device: await userDeviceToUserDeviceInfo(
-        { ...existingLink, isPrimary: true },
-        deviceInfo
-      ),
+      device: await userDeviceToUserDeviceInfo({ ...existingLink, isPrimary: true }, deviceInfo),
     };
   } catch (error) {
     logger.error("[device-service] Set primary error", {
@@ -590,10 +572,7 @@ export async function setPrimaryDevice(
 /**
  * 更新设备最后活跃时间
  */
-export async function updateDeviceActivity(
-  userId: string,
-  deviceId: string
-): Promise<void> {
+export async function updateDeviceActivity(userId: string, deviceId: string): Promise<void> {
   const deviceRepo = getUserDeviceRepository();
 
   try {

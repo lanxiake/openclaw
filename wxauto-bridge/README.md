@@ -62,23 +62,24 @@ python bridge_app.py
   "gateway_url": "ws://localhost:18789",
   "auth_token": "your-auth-token",
   "listen_chats": [
-    {"name": "文件传输助手", "type": "friend", "enabled": true},
-    {"name": "工作群", "type": "group", "enabled": true}
+    { "name": "文件传输助手", "type": "friend", "enabled": true },
+    { "name": "工作群", "type": "group", "enabled": true }
   ]
 }
 ```
 
 ### 配置项说明
 
-| 配置项 | 说明 | 默认值 |
-|--------|------|--------|
-| `gateway_url` | OpenClaw Gateway WebSocket 地址 | `ws://localhost:18789` |
-| `auth_token` | 认证 Token（与 Gateway 配置一致） | 自动生成 |
-| `listen_chats` | 监听的聊天列表 | `[]` |
+| 配置项         | 说明                              | 默认值                 |
+| -------------- | --------------------------------- | ---------------------- |
+| `gateway_url`  | OpenClaw Gateway WebSocket 地址   | `ws://localhost:18789` |
+| `auth_token`   | 认证 Token（与 Gateway 配置一致） | 自动生成               |
+| `listen_chats` | 监听的聊天列表                    | `[]`                   |
 
 ### 监听列表配置
 
 每个监听项包含：
+
 - `name`: 聊天名称（好友昵称或群名称）
 - `type`: 类型，`friend`（好友）或 `group`（群聊）
 - `enabled`: 是否启用监听
@@ -96,12 +97,12 @@ package.bat
 
 ## 脚本说明
 
-| 脚本 | 说明 |
-|------|------|
-| `package.bat` | 打包脚本，生成独立 exe 文件 |
-| `start.bat` | 启动脚本，运行打包后的 exe |
-| `dev.ps1` | 开发脚本（PowerShell），用于开发调试 |
-| `dev.bat` | 开发脚本（批处理），用于开发调试 |
+| 脚本          | 说明                                 |
+| ------------- | ------------------------------------ |
+| `package.bat` | 打包脚本，生成独立 exe 文件          |
+| `start.bat`   | 启动脚本，运行打包后的 exe           |
+| `dev.ps1`     | 开发脚本（PowerShell），用于开发调试 |
+| `dev.bat`     | 开发脚本（批处理），用于开发调试     |
 
 ## 界面功能
 
@@ -118,17 +119,17 @@ package.bat
 
 ### 支持的方法
 
-| 方向 | 方法 | 说明 |
-|------|------|------|
-| Gateway → Bridge | `send` | 发送消息 |
-| Gateway → Bridge | `sendFile` | 发送文件 |
-| Gateway → Bridge | `getStatus` | 获取微信状态 |
-| Gateway → Bridge | `getContacts` | 获取联系人列表 |
-| Gateway → Bridge | `addListen` | 添加聊天监听 |
-| Gateway → Bridge | `removeListen` | 移除聊天监听 |
-| Bridge → Gateway | `wechat.message` | 推送新消息 |
-| Bridge → Gateway | `wechat.status` | 状态变更通知 |
-| Bridge → Gateway | `wechat.connected` | 连接成功通知 |
+| 方向             | 方法               | 说明           |
+| ---------------- | ------------------ | -------------- |
+| Gateway → Bridge | `send`             | 发送消息       |
+| Gateway → Bridge | `sendFile`         | 发送文件       |
+| Gateway → Bridge | `getStatus`        | 获取微信状态   |
+| Gateway → Bridge | `getContacts`      | 获取联系人列表 |
+| Gateway → Bridge | `addListen`        | 添加聊天监听   |
+| Gateway → Bridge | `removeListen`     | 移除聊天监听   |
+| Bridge → Gateway | `wechat.message`   | 推送新消息     |
+| Bridge → Gateway | `wechat.status`    | 状态变更通知   |
+| Bridge → Gateway | `wechat.connected` | 连接成功通知   |
 
 ## 注意事项
 

@@ -21,7 +21,7 @@ function scryptAsync(
   password: string | Buffer,
   salt: Buffer,
   keylen: number,
-  options: { N: number; r: number; p: number; maxmem: number }
+  options: { N: number; r: number; p: number; maxmem: number },
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     scryptCb(password, salt, keylen, options, (err, derivedKey) => {
@@ -61,10 +61,7 @@ export async function hashPassword(password: string): Promise<string> {
  * @param hash 存储的哈希值
  * @returns 是否匹配
  */
-export async function verifyPassword(
-  password: string,
-  hash: string
-): Promise<boolean> {
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   try {
     const parts = hash.split("$");
     if (parts.length !== 7 || parts[1] !== "scrypt") {

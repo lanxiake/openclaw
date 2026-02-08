@@ -175,7 +175,7 @@ const mockAlerts = [
 function validateStringParam(
   params: Record<string, unknown>,
   key: string,
-  required = false
+  required = false,
 ): string | undefined {
   const value = params[key];
 
@@ -199,7 +199,7 @@ function validateStringParam(
 function validateNumberParam(
   params: Record<string, unknown>,
   key: string,
-  defaultValue?: number
+  defaultValue?: number,
 ): number | undefined {
   const value = params[key];
 
@@ -277,11 +277,46 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
           errorRate: 1.0,
         },
         byEndpoint: [
-          { method: "GET", path: "/api/users", count: 35420, avgTime: 45, errorCount: 35, errorRate: 0.1 },
-          { method: "POST", path: "/api/chat", count: 28560, avgTime: 120, errorCount: 285, errorRate: 1.0 },
-          { method: "GET", path: "/api/skills", count: 22340, avgTime: 65, errorCount: 112, errorRate: 0.5 },
-          { method: "POST", path: "/api/auth/login", count: 15680, avgTime: 180, errorCount: 470, errorRate: 3.0 },
-          { method: "GET", path: "/api/subscriptions", count: 12450, avgTime: 55, errorCount: 62, errorRate: 0.5 },
+          {
+            method: "GET",
+            path: "/api/users",
+            count: 35420,
+            avgTime: 45,
+            errorCount: 35,
+            errorRate: 0.1,
+          },
+          {
+            method: "POST",
+            path: "/api/chat",
+            count: 28560,
+            avgTime: 120,
+            errorCount: 285,
+            errorRate: 1.0,
+          },
+          {
+            method: "GET",
+            path: "/api/skills",
+            count: 22340,
+            avgTime: 65,
+            errorCount: 112,
+            errorRate: 0.5,
+          },
+          {
+            method: "POST",
+            path: "/api/auth/login",
+            count: 15680,
+            avgTime: 180,
+            errorCount: 470,
+            errorRate: 3.0,
+          },
+          {
+            method: "GET",
+            path: "/api/subscriptions",
+            count: 12450,
+            avgTime: 55,
+            errorCount: 62,
+            errorRate: 0.5,
+          },
         ],
         byStatusCode: [
           { code: 200, count: 118920 },
@@ -358,7 +393,13 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
       const limit = validateNumberParam(params, "limit", 50) || 50;
       const offset = validateNumberParam(params, "offset", 0) || 0;
 
-      context.logGateway.info(`[${LOG_TAG}] 获取日志列表`, { level, source, search, limit, offset });
+      context.logGateway.info(`[${LOG_TAG}] 获取日志列表`, {
+        level,
+        source,
+        search,
+        limit,
+        offset,
+      });
 
       // 过滤日志
       let filtered = [...mockLogs];
@@ -376,7 +417,7 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
         filtered = filtered.filter(
           (log) =>
             log.message.toLowerCase().includes(searchLower) ||
-            log.source.toLowerCase().includes(searchLower)
+            log.source.toLowerCase().includes(searchLower),
         );
       }
 
@@ -392,7 +433,7 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
           total,
           hasMore: offset + limit < total,
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -447,7 +488,7 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
           total: filtered.length,
           unacknowledged,
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -473,7 +514,11 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
       const alert = mockAlerts.find((a) => a.id === alertId);
 
       if (!alert) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `Alert not found: ${alertId}`));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, `Alert not found: ${alertId}`),
+        );
         return;
       }
 
@@ -506,7 +551,11 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
       const alert = mockAlerts.find((a) => a.id === alertId);
 
       if (!alert) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `Alert not found: ${alertId}`));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, `Alert not found: ${alertId}`),
+        );
         return;
       }
 

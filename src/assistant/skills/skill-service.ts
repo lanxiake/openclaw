@@ -79,15 +79,33 @@ export async function getSkillStats(): Promise<SkillStats> {
   const db = await getDatabase();
 
   // 查询各状态数量
-  const [totalResult, publishedResult, pendingResult, unpublishedResult, rejectedResult, featuredResult] =
-    await Promise.all([
-      db.select({ count: count() }).from(skillStoreItems),
-      db.select({ count: count() }).from(skillStoreItems).where(eq(skillStoreItems.status, "published")),
-      db.select({ count: count() }).from(skillStoreItems).where(eq(skillStoreItems.status, "pending")),
-      db.select({ count: count() }).from(skillStoreItems).where(eq(skillStoreItems.status, "unpublished")),
-      db.select({ count: count() }).from(skillStoreItems).where(eq(skillStoreItems.status, "rejected")),
-      db.select({ count: count() }).from(skillStoreItems).where(eq(skillStoreItems.isFeatured, true)),
-    ]);
+  const [
+    totalResult,
+    publishedResult,
+    pendingResult,
+    unpublishedResult,
+    rejectedResult,
+    featuredResult,
+  ] = await Promise.all([
+    db.select({ count: count() }).from(skillStoreItems),
+    db
+      .select({ count: count() })
+      .from(skillStoreItems)
+      .where(eq(skillStoreItems.status, "published")),
+    db
+      .select({ count: count() })
+      .from(skillStoreItems)
+      .where(eq(skillStoreItems.status, "pending")),
+    db
+      .select({ count: count() })
+      .from(skillStoreItems)
+      .where(eq(skillStoreItems.status, "unpublished")),
+    db
+      .select({ count: count() })
+      .from(skillStoreItems)
+      .where(eq(skillStoreItems.status, "rejected")),
+    db.select({ count: count() }).from(skillStoreItems).where(eq(skillStoreItems.isFeatured, true)),
+  ]);
 
   return {
     total: totalResult[0]?.count ?? 0,
@@ -127,8 +145,8 @@ export async function getSkillList(query: SkillListQuery): Promise<SkillListResu
     conditions.push(
       or(
         ilike(skillStoreItems.name, `%${search}%`),
-        ilike(skillStoreItems.description, `%${search}%`)
-      )
+        ilike(skillStoreItems.description, `%${search}%`),
+      ),
     );
   }
 
@@ -207,7 +225,9 @@ export async function getSkill(skillId: string): Promise<SkillStoreItem | null> 
 /**
  * 创建技能
  */
-export async function createSkill(data: Omit<NewSkillStoreItem, "id" | "createdAt" | "updatedAt">): Promise<SkillStoreItem> {
+export async function createSkill(
+  data: Omit<NewSkillStoreItem, "id" | "createdAt" | "updatedAt">,
+): Promise<SkillStoreItem> {
   console.log(`${LOG_TAG} createSkill`, data.name);
 
   const db = await getDatabase();
@@ -238,7 +258,7 @@ export async function createSkill(data: Omit<NewSkillStoreItem, "id" | "createdA
  */
 export async function updateSkill(
   skillId: string,
-  data: Partial<Omit<NewSkillStoreItem, "id" | "createdAt">>
+  data: Partial<Omit<NewSkillStoreItem, "id" | "createdAt">>,
 ): Promise<SkillStoreItem | null> {
   console.log(`${LOG_TAG} updateSkill`, skillId);
 
@@ -284,9 +304,7 @@ export async function deleteSkill(skillId: string): Promise<boolean> {
     return false;
   }
 
-  const result = await db
-    .delete(skillStoreItems)
-    .where(eq(skillStoreItems.id, skillId));
+  const result = await db.delete(skillStoreItems).where(eq(skillStoreItems.id, skillId));
 
   // 更新分类的技能数量
   if (skill.categoryId) {
@@ -384,7 +402,9 @@ export async function getCategory(categoryId: string): Promise<SkillCategory | n
 /**
  * 创建分类
  */
-export async function createCategory(data: Omit<NewSkillCategory, "id" | "createdAt" | "updatedAt">): Promise<SkillCategory> {
+export async function createCategory(
+  data: Omit<NewSkillCategory, "id" | "createdAt" | "updatedAt">,
+): Promise<SkillCategory> {
   console.log(`${LOG_TAG} createCategory`, data.name);
 
   const db = await getDatabase();
@@ -410,7 +430,7 @@ export async function createCategory(data: Omit<NewSkillCategory, "id" | "create
  */
 export async function updateCategory(
   categoryId: string,
-  data: Partial<Omit<NewSkillCategory, "id" | "createdAt">>
+  data: Partial<Omit<NewSkillCategory, "id" | "createdAt">>,
 ): Promise<SkillCategory | null> {
   console.log(`${LOG_TAG} updateCategory`, categoryId);
 
@@ -457,10 +477,7 @@ async function updateCategorySkillCount(categoryId: string): Promise<void> {
     .select({ count: count() })
     .from(skillStoreItems)
     .where(
-      and(
-        eq(skillStoreItems.categoryId, categoryId),
-        eq(skillStoreItems.status, "published")
-      )
+      and(eq(skillStoreItems.categoryId, categoryId), eq(skillStoreItems.status, "published")),
     );
 
   await db
@@ -485,12 +502,7 @@ export async function getFeaturedSkills(): Promise<SkillStoreItem[]> {
   return db
     .select()
     .from(skillStoreItems)
-    .where(
-      and(
-        eq(skillStoreItems.isFeatured, true),
-        eq(skillStoreItems.status, "published")
-      )
-    )
+    .where(and(eq(skillStoreItems.isFeatured, true), eq(skillStoreItems.status, "published")))
     .orderBy(asc(skillStoreItems.featuredOrder));
 }
 
@@ -500,7 +512,7 @@ export async function getFeaturedSkills(): Promise<SkillStoreItem[]> {
 export async function setFeatured(
   skillId: string,
   featured: boolean,
-  order?: number
+  order?: number,
 ): Promise<SkillStoreItem | null> {
   console.log(`${LOG_TAG} setFeatured`, skillId, featured, order);
 
@@ -523,7 +535,7 @@ export async function setFeatured(
  * 更新推荐排序
  */
 export async function updateFeaturedOrder(
-  items: Array<{ id: string; order: number }>
+  items: Array<{ id: string; order: number }>,
 ): Promise<void> {
   console.log(`${LOG_TAG} updateFeaturedOrder`, items.length);
 

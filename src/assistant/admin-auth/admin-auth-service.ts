@@ -13,7 +13,11 @@ import {
   type AdminPermissions,
 } from "../../db/index.js";
 import { verifyPassword } from "../../db/utils/password.js";
-import { generateAdminAccessToken, ADMIN_TOKEN_CONFIG, type AdminAccessTokenPayload } from "./admin-jwt.js";
+import {
+  generateAdminAccessToken,
+  ADMIN_TOKEN_CONFIG,
+  type AdminAccessTokenPayload,
+} from "./admin-jwt.js";
 
 const logger = getLogger();
 
@@ -105,7 +109,7 @@ export async function adminLogin(request: AdminLoginRequest): Promise<AdminAuthR
     // 1. 检查 IP 级别限流
     const ipAttempts = await attemptRepo.getRecentFailureCountByIp(
       request.ipAddress || "unknown",
-      RATE_LIMIT_CONFIG.ipAttemptWindowMs
+      RATE_LIMIT_CONFIG.ipAttemptWindowMs,
     );
     if (ipAttempts >= RATE_LIMIT_CONFIG.maxIpAttempts) {
       logger.warn("[admin-auth] Login blocked: IP rate limit exceeded", {
@@ -181,7 +185,7 @@ export async function adminLogin(request: AdminLoginRequest): Promise<AdminAuthR
     // 5. 检查账户级别限流
     const userAttempts = await attemptRepo.getRecentFailureCount(
       request.username,
-      RATE_LIMIT_CONFIG.loginAttemptWindowMs
+      RATE_LIMIT_CONFIG.loginAttemptWindowMs,
     );
     if (userAttempts >= RATE_LIMIT_CONFIG.maxLoginAttempts) {
       // 锁定账户
@@ -312,8 +316,11 @@ export async function adminLogin(request: AdminLoginRequest): Promise<AdminAuthR
   } catch (error) {
     logger.error("[admin-auth] Login error", {
       error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
       username: request.username,
     });
+    // 临时调试：将详细错误打印到标准错误
+    console.error("[admin-auth] LOGIN_ERROR detail:", error);
 
     return {
       success: false,
@@ -327,7 +334,7 @@ export async function adminLogin(request: AdminLoginRequest): Promise<AdminAuthR
  * 刷新管理员 Token
  */
 export async function adminRefreshToken(
-  request: AdminRefreshTokenRequest
+  request: AdminRefreshTokenRequest,
 ): Promise<AdminAuthResult> {
   const adminRepo = getAdminRepository();
   const sessionRepo = getAdminSessionRepository();
@@ -411,7 +418,7 @@ export async function adminRefreshToken(
  */
 export async function adminLogout(
   refreshToken: string,
-  options?: { ipAddress?: string; userAgent?: string; adminId?: string; adminUsername?: string }
+  options?: { ipAddress?: string; userAgent?: string; adminId?: string; adminUsername?: string },
 ): Promise<{ success: boolean }> {
   const sessionRepo = getAdminSessionRepository();
 
@@ -448,7 +455,7 @@ export async function adminLogout(
  */
 export async function adminLogoutAll(
   adminId: string,
-  options?: { ipAddress?: string; userAgent?: string; adminUsername?: string }
+  options?: { ipAddress?: string; userAgent?: string; adminUsername?: string },
 ): Promise<{ success: boolean }> {
   const sessionRepo = getAdminSessionRepository();
 

@@ -4,13 +4,21 @@
   "description": "OpenClaw Windows Desktop Application",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
     "build": "node build.js",
-    "test": "electron dist/win-unpacked/OpenClaw.exe",
-    "test-log": "node test-log.js",
     "clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
     "clean:win": "rmdir /s /q dist 2>nul || echo 已清理",
-    "rebuild": "npm run clean && npm run build"
+    "rebuild": "npm run clean && npm run build",
+    "start": "electron .",
+    "test": "electron dist/win-unpacked/OpenClaw.exe",
+    "test-log": "node test-log.js"
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.3",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "electron": "^40.1.0",
+    "electron-builder": "^26.7.0"
   },
   "build": {
     "appId": "ai.openclaw.desktop",
@@ -22,12 +30,16 @@
       {
         "from": "bundled-config",
         "to": "bundled-config",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "bundled-openclaw",
         "to": "bundled-openclaw",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "win": {
@@ -41,13 +53,5 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
-  },
-  "dependencies": {
-    "fs-extra": "^11.3.3",
-    "ws": "^8.19.0"
-  },
-  "devDependencies": {
-    "electron": "^40.1.0",
-    "electron-builder": "^26.7.0"
   }
 }

@@ -4,7 +4,7 @@
  * @module memory/pluggable/providers/working
  */
 
-export { MemoryWorkingMemoryProvider, type MemoryWorkingConfig } from './memory.js'
+export { MemoryWorkingMemoryProvider, type MemoryWorkingConfig } from "./memory.js";
 
 // 注册所有提供者（导入时自动注册）
-import './memory.js'
+import "./memory.js";

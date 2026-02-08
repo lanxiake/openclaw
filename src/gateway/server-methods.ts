@@ -42,6 +42,12 @@ import { usageHandlers } from "./server-methods/usage.js";
 import { voicewakeHandlers } from "./server-methods/voicewake.js";
 import { webHandlers } from "./server-methods/web.js";
 import { wizardHandlers } from "./server-methods/wizard.js";
+import {
+  checkUserQuota,
+  recordQuotaUsage,
+  createQuotaExceededError,
+} from "./middleware/quota-check.js";
+import { createEmptyRequestContext } from "./user-context.js";
 
 const ADMIN_SCOPE = "operator.admin";
 const READ_SCOPE = "operator.read";
@@ -332,11 +338,32 @@ export async function handleGatewayRequest(
   opts: GatewayRequestOptions & { extraHandlers?: GatewayRequestHandlers },
 ): Promise<void> {
   const { req, respond, client, isWebchatConnect, context } = opts;
+
+  // 1. 角色/权限检查
   const authError = authorizeGatewayMethod(req.method, client);
   if (authError) {
     respond(false, undefined, authError);
     return;
   }
+
+  // 2. 配额检查 (多租户模式)
+  // 从 client 获取已认证用户信息
+  const authenticatedUser = (client as { authenticatedUser?: { userId: string } })
+    ?.authenticatedUser;
+  const userId = authenticatedUser?.userId;
+
+  if (userId) {
+    // 创建请求上下文用于配额检查
+    const quotaContext = createEmptyRequestContext(req.id);
+    const quotaResult = await checkUserQuota(userId, req.method, quotaContext);
+
+    if (quotaResult && !quotaResult.allowed) {
+      respond(false, undefined, createQuotaExceededError(quotaResult));
+      return;
+    }
+  }
+
+  // 3. 查找并执行处理器
   const handler = opts.extraHandlers?.[req.method] ?? coreGatewayHandlers[req.method];
   if (!handler) {
     respond(
@@ -346,6 +373,8 @@ export async function handleGatewayRequest(
     );
     return;
   }
+
+  // 4. 执行处理器
   await handler({
     req,
     params: (req.params ?? {}) as Record<string, unknown>,
@@ -354,4 +383,14 @@ export async function handleGatewayRequest(
     respond,
     context,
   });
+
+  // 5. 记录配额使用 (成功执行后)
+  // 注意：这里简化处理，实际应该在 handler 成功返回后记录
+  // 更精确的实现需要包装 respond 函数来检测成功响应
+  if (userId) {
+    const quotaContext = createEmptyRequestContext(req.id);
+    void recordQuotaUsage(userId, req.method, quotaContext).catch(() => {
+      // 配额记录失败不影响请求处理
+    });
+  }
 }

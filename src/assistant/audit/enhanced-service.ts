@@ -507,11 +507,7 @@ export class EnhancedAuditService {
    * @param filePath - 文件路径
    * @param fileSize - 文件大小
    */
-  async markExportCompleted(
-    exportId: string,
-    filePath: string,
-    fileSize: number
-  ): Promise<void> {
+  async markExportCompleted(exportId: string, filePath: string, fileSize: number): Promise<void> {
     await this.exportRepo.markCompleted(exportId, filePath, fileSize);
 
     logger.info("[enhanced-audit] 标记导出完成", {

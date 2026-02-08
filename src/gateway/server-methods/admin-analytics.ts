@@ -144,7 +144,7 @@ const getUserDemographics: GatewayRequestHandler = async ({ respond }) => {
     const byActiveHour = Array.from({ length: 24 }, (_, hour) => ({
       hour,
       count: Math.floor(
-        1000 * (hour >= 9 && hour <= 22 ? 1 + Math.sin((hour - 9) * Math.PI / 13) : 0.3)
+        1000 * (hour >= 9 && hour <= 22 ? 1 + Math.sin(((hour - 9) * Math.PI) / 13) : 0.3),
       ),
     }));
 

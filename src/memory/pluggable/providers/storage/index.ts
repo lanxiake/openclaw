@@ -4,4 +4,4 @@
  * @module memory/pluggable/providers/storage
  */
 
-export { LocalObjectStorageProvider } from './local.js'
+export { LocalObjectStorageProvider } from "./local.js";

@@ -39,7 +39,9 @@ async function handleWeChatInboundMessage(params: {
 
   // For group messages, only respond if @'d (unless requireMention is disabled)
   if (isGroup && !message.isAtMe) {
-    log?.info(`[${account.accountId}] Ignoring group message not @'ing me: from=${senderName}, chat=${chatId}`);
+    log?.info(
+      `[${account.accountId}] Ignoring group message not @'ing me: from=${senderName}, chat=${chatId}`,
+    );
     return;
   }
 
@@ -66,7 +68,9 @@ async function handleWeChatInboundMessage(params: {
     OriginatingTo: `wechat:${chatId}`,
   });
 
-  log?.info(`[${account.accountId}] Processing message context: SessionKey=${ctxPayload.SessionKey}, From=${ctxPayload.From}, isGroup=${isGroup}, isAtMe=${message.isAtMe}`);
+  log?.info(
+    `[${account.accountId}] Processing message context: SessionKey=${ctxPayload.SessionKey}, From=${ctxPayload.From}, isGroup=${isGroup}, isAtMe=${message.isAtMe}`,
+  );
 
   // Dispatch message using OpenClaw's message processing pipeline
   await runtime.channel.reply.dispatchReplyWithBufferedBlockDispatcher({
@@ -80,7 +84,9 @@ async function handleWeChatInboundMessage(params: {
           return;
         }
 
-        log?.info(`[${account.accountId}] Delivering reply to ${chatId}, isGroup=${isGroup}, sender=${senderName}`);
+        log?.info(
+          `[${account.accountId}] Delivering reply to ${chatId}, isGroup=${isGroup}, sender=${senderName}`,
+        );
         const gw = getGateway(account.accountId);
         if (gw?.isConnected()) {
           // For group messages, @ the sender; for direct messages, just send
@@ -94,7 +100,9 @@ async function handleWeChatInboundMessage(params: {
         }
       },
       onError: (err, info) => {
-        log?.error(`[${account.accountId}] Reply ${info.kind} failed: ${err instanceof Error ? err.message : String(err)}`);
+        log?.error(
+          `[${account.accountId}] Reply ${info.kind} failed: ${err instanceof Error ? err.message : String(err)}`,
+        );
       },
     },
   });
@@ -217,7 +225,7 @@ export const wechatPlugin: ChannelPlugin<ResolvedWeChatAccount> = {
     }),
     resolveAllowFrom: ({ cfg, accountId }) =>
       (resolveWeChatAccount({ cfg, accountId }).config.allowFrom ?? []).map((entry) =>
-        String(entry)
+        String(entry),
       ),
     formatAllowFrom: ({ allowFrom }) =>
       allowFrom
@@ -497,7 +505,9 @@ export const wechatPlugin: ChannelPlugin<ResolvedWeChatAccount> = {
         listenChats: account.config.listenChats,
         onMessage: async (message: WeChatMessage) => {
           // Log metadata only, not message content
-          log?.info(`[${account.accountId}] Received message from ${message.from}, chatType=${message.chatType}`);
+          log?.info(
+            `[${account.accountId}] Received message from ${message.from}, chatType=${message.chatType}`,
+          );
 
           try {
             // Load current config
@@ -511,7 +521,9 @@ export const wechatPlugin: ChannelPlugin<ResolvedWeChatAccount> = {
               log,
             });
           } catch (err) {
-            log?.error(`[${account.accountId}] Failed to handle inbound message: ${err instanceof Error ? err.message : String(err)}`);
+            log?.error(
+              `[${account.accountId}] Failed to handle inbound message: ${err instanceof Error ? err.message : String(err)}`,
+            );
             if (err instanceof Error && err.stack) {
               log?.error(`[${account.accountId}] Stack trace: ${err.stack}`);
             }
@@ -519,9 +531,7 @@ export const wechatPlugin: ChannelPlugin<ResolvedWeChatAccount> = {
         },
         onStatus: (status) => {
           if (status.connected) {
-            log?.info(
-              `[${account.accountId}] Connected as ${status.nickname} (${status.wxid})`
-            );
+            log?.info(`[${account.accountId}] Connected as ${status.nickname} (${status.wxid})`);
           } else if (status.error) {
             log?.error(`[${account.accountId}] Connection error: ${status.error}`);
           }

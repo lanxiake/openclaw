@@ -408,10 +408,7 @@ export function isPaidPlan(planId: SubscriptionPlanId): boolean {
 /**
  * 获取计划显示价格
  */
-export function getPlanDisplayPrice(
-  planId: SubscriptionPlanId,
-  period: BillingPeriod
-): string {
+export function getPlanDisplayPrice(planId: SubscriptionPlanId, period: BillingPeriod): string {
   const plan = DEFAULT_SUBSCRIPTION_PLANS.find((p) => p.id === planId);
   if (!plan) return "¥0";
 

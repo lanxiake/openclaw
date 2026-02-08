@@ -51,20 +51,16 @@ export const plans = pgTable(
     /** 排序权重 */
     sortOrder: integer("sort_order").default(0).notNull(),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     /** 更新时间 */
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 索引：激活状态
     index("plans_is_active_idx").on(table.isActive),
     // 索引：排序
     index("plans_sort_order_idx").on(table.sortOrder),
-  ]
+  ],
 );
 
 /**
@@ -112,20 +108,16 @@ export const skills = pgTable(
     /** 是否激活 */
     isActive: boolean("is_active").default(true).notNull(),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     /** 更新时间 */
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 索引：类型
     index("skills_type_idx").on(table.type),
     // 索引：激活状态
     index("skills_is_active_idx").on(table.isActive),
-  ]
+  ],
 );
 
 /**
@@ -151,21 +143,16 @@ export const userSkills = pgTable(
     /** 是否激活 */
     isActive: boolean("is_active").default(true).notNull(),
     /** 购买时间 */
-    purchasedAt: timestamp("purchased_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    purchasedAt: timestamp("purchased_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 联合唯一索引：用户+技能
-    uniqueIndex("user_skills_user_skill_unique_idx").on(
-      table.userId,
-      table.skillId
-    ),
+    uniqueIndex("user_skills_user_skill_unique_idx").on(table.userId, table.skillId),
     // 索引：用户 ID
     index("user_skills_user_id_idx").on(table.userId),
     // 索引：过期时间
     index("user_skills_expires_at_idx").on(table.expiresAt),
-  ]
+  ],
 );
 
 /**
@@ -193,11 +180,9 @@ export const subscriptions = pgTable(
       enum: ["monthly", "yearly"],
     }).notNull(),
     /** 当前周期开始时间 */
-    currentPeriodStart: timestamp("current_period_start", { withTimezone: true })
-      .notNull(),
+    currentPeriodStart: timestamp("current_period_start", { withTimezone: true }).notNull(),
     /** 当前周期结束时间 */
-    currentPeriodEnd: timestamp("current_period_end", { withTimezone: true })
-      .notNull(),
+    currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }).notNull(),
     /** 取消时间 */
     canceledAt: timestamp("canceled_at", { withTimezone: true }),
     /** 取消原因 */
@@ -207,13 +192,9 @@ export const subscriptions = pgTable(
     /** 外部订阅 ID (支付平台) */
     externalSubscriptionId: text("external_subscription_id"),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     /** 更新时间 */
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 索引：用户 ID
@@ -222,7 +203,7 @@ export const subscriptions = pgTable(
     index("subscriptions_status_idx").on(table.status),
     // 索引：当前周期结束 (用于续费提醒)
     index("subscriptions_current_period_end_idx").on(table.currentPeriodEnd),
-  ]
+  ],
 );
 
 /**
@@ -234,8 +215,7 @@ export const paymentOrders = pgTable(
     /** 主键 UUID */
     id: text("id").primaryKey(),
     /** 用户 ID */
-    userId: text("user_id")
-      .references(() => users.id, { onDelete: "set null" }),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
     /** 订单号 (业务唯一) */
     orderNo: text("order_no").unique().notNull(),
     /** 订单类型 */
@@ -243,11 +223,9 @@ export const paymentOrders = pgTable(
       enum: ["subscription", "skill", "tokens", "storage"],
     }).notNull(),
     /** 关联订阅 ID */
-    subscriptionId: text("subscription_id")
-      .references(() => subscriptions.id),
+    subscriptionId: text("subscription_id").references(() => subscriptions.id),
     /** 关联技能 ID */
-    skillId: text("skill_id")
-      .references(() => skills.id),
+    skillId: text("skill_id").references(() => skills.id),
     /** 金额 (分) */
     amount: integer("amount").notNull(),
     /** 货币 */
@@ -275,13 +253,9 @@ export const paymentOrders = pgTable(
     /** 退款金额 (分) */
     refundAmount: integer("refund_amount"),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     /** 更新时间 */
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
     /** 订单元数据 */
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
   },
@@ -294,7 +268,7 @@ export const paymentOrders = pgTable(
     index("payment_orders_order_type_idx").on(table.orderType),
     // 索引：创建时间
     index("payment_orders_created_at_idx").on(table.createdAt),
-  ]
+  ],
 );
 
 /**
@@ -334,16 +308,14 @@ export const couponCodes = pgTable(
     /** 是否激活 */
     isActive: boolean("is_active").default(true).notNull(),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 索引：激活状态
     index("coupon_codes_is_active_idx").on(table.isActive),
     // 索引：过期时间
     index("coupon_codes_expires_at_idx").on(table.expiresAt),
-  ]
+  ],
 );
 
 /**

@@ -101,16 +101,14 @@ export function getCodeSender(): CodeSender {
 /**
  * 发送验证码
  */
-export async function sendVerificationCode(
-  request: SendCodeRequest
-): Promise<SendCodeResult> {
+export async function sendVerificationCode(request: SendCodeRequest): Promise<SendCodeResult> {
   const codeRepo = getVerificationCodeRepository();
 
   try {
     // 1. 检查发送频率
     const recentCount = await codeRepo.getRecentSendCount(
       request.target,
-      60 * 60 * 1000 // 1 小时
+      60 * 60 * 1000, // 1 小时
     );
 
     if (recentCount >= CODE_CONFIG.maxPerHour) {
@@ -130,7 +128,7 @@ export async function sendVerificationCode(
       request.target,
       request.targetType,
       request.purpose,
-      CODE_CONFIG.expiresInMs
+      CODE_CONFIG.expiresInMs,
     );
 
     // 3. 发送验证码
@@ -209,7 +207,7 @@ export async function sendVerificationCode(
 export async function verifyCode(
   target: string,
   code: string,
-  purpose: "register" | "login" | "reset_password" | "bind" | "verify"
+  purpose: "register" | "login" | "reset_password" | "bind" | "verify",
 ): Promise<boolean> {
   const codeRepo = getVerificationCodeRepository();
   return codeRepo.verify(target, code, purpose);

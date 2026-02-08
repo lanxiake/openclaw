@@ -188,11 +188,7 @@ export const assistantHandlers: GatewayRequestHandlers = {
       respond(true, response, undefined);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      respond(
-        false,
-        undefined,
-        errorShape(ErrorCodes.INVALID_REQUEST, errorMessage),
-      );
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, errorMessage));
     }
   },
 
@@ -204,10 +200,7 @@ export const assistantHandlers: GatewayRequestHandlers = {
     try {
       const action = validateStringParam(params, "action", true);
       const description = validateStringParam(params, "description", true);
-      const level = (validateStringParam(params, "level") ?? "medium") as
-        | "low"
-        | "medium"
-        | "high";
+      const level = (validateStringParam(params, "level") ?? "medium") as "low" | "medium" | "high";
       const timeoutMs = validateNumberParam(params, "timeoutMs") ?? 30000;
 
       if (!action || !description) {
@@ -266,11 +259,7 @@ export const assistantHandlers: GatewayRequestHandlers = {
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      respond(
-        false,
-        undefined,
-        errorShape(ErrorCodes.UNAVAILABLE, errorMessage),
-      );
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, errorMessage));
     }
   },
 
@@ -316,11 +305,7 @@ export const assistantHandlers: GatewayRequestHandlers = {
       respond(true, { requestId, approved }, undefined);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      respond(
-        false,
-        undefined,
-        errorShape(ErrorCodes.INVALID_REQUEST, errorMessage),
-      );
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, errorMessage));
     }
   },
 
@@ -429,11 +414,7 @@ export const assistantHandlers: GatewayRequestHandlers = {
       respond(true, result, undefined);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      respond(
-        false,
-        undefined,
-        errorShape(ErrorCodes.UNAVAILABLE, errorMessage),
-      );
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, errorMessage));
     }
   },
 
@@ -497,11 +478,7 @@ export const assistantHandlers: GatewayRequestHandlers = {
       respond(true, { requestId, received: true }, undefined);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      respond(
-        false,
-        undefined,
-        errorShape(ErrorCodes.INVALID_REQUEST, errorMessage),
-      );
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, errorMessage));
     }
   },
 };

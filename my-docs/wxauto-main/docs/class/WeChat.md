@@ -4,9 +4,7 @@ bookFlatSection: true
 title: "WeChat类"
 ---
 
-
 ## WeChat 类方法
-
 
 ### 初始化参数
 
@@ -60,7 +58,7 @@ wx.SendUrlCard(url="https://example.com", friends="张三", timeout=10)
 | ------- | --------------------- | ------ | -------------------------------------- |
 | url     | str                   | 必填   | 链接地址                               |
 | friends | Union[str, List[str]] | None   | 发送对象，可以是单个用户名或用户名列表 |
-| message | str | None   | 附加消息，默认不发送 |
+| message | str                   | None   | 附加消息，默认不发送                   |
 | timeout | int                   | 10     | 等待时间（秒）                         |
 
 **返回值**：
@@ -122,9 +120,9 @@ wx.AddListenChat(nickname="张三", callback=on_message)
 
 **参数**：
 
-| 参数     | 类型                                              | 默认值 | 描述                                                       |
-| -------- | ------------------------------------------------- | ------ | ---------------------------------------------------------- |
-| nickname | str                                               | 必填   | 要监听的聊天对象                                           |
+| 参数     | 类型                                                                         | 默认值 | 描述                                                                                 |
+| -------- | ---------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------ |
+| nickname | str                                                                          | 必填   | 要监听的聊天对象                                                                     |
 | callback | Callable[[[Message](/docs/class/message/), [Chat](/docs/class/chat/)], None] | 必填   | 回调函数，参数为([Message](/docs/class/message/)对象, [Chat](/docs/class/chat/)对象) |
 
 **返回值**：
@@ -172,9 +170,9 @@ wx.StopListening()
 
 **参数**：
 
-| 参数     | 类型 | 默认值 | 描述                 |
-| -------- | ---- | ------ | -------------------- |
-| remove | bool  | True   | 是否移出所有子窗口 |
+| 参数   | 类型 | 默认值 | 描述               |
+| ------ | ---- | ------ | ------------------ |
+| remove | bool | True   | 是否移出所有子窗口 |
 
 **返回值**：无
 
@@ -212,18 +210,18 @@ messages = wx.GetNextNewMessage(filter_mute=False)
 - 类型：Dict[str, List[[Message](/docs/class/message/)]
 - 描述：消息列表，键为聊天名称，值为消息列表
 - 示例：
-    ```python
-    {'chat_name': 'wxauto交流',
-      'chat_type': 'group',
-      'msg': [
-          <wxauto - TimeMessage(2025年5月2...) at 0x227379555d0>,
-          <wxauto - FriendImageMessage([图片]) at 0x2273795ca10>,
-          <wxauto - FriendTextMessage(/[微笑]) at 0x22737967c50>,
-          <wxauto - FriendTextMessage(你点击发送会自动...) at 0x227366c4f50>, 
-          ...
-        ]
-    }
-    ```
+  ```python
+  {'chat_name': 'wxauto交流',
+    'chat_type': 'group',
+    'msg': [
+        <wxauto - TimeMessage(2025年5月2...) at 0x227379555d0>,
+        <wxauto - FriendImageMessage([图片]) at 0x2273795ca10>,
+        <wxauto - FriendTextMessage(/[微笑]) at 0x22737967c50>,
+        <wxauto - FriendTextMessage(你点击发送会自动...) at 0x227366c4f50>,
+        ...
+      ]
+  }
+  ```
 
 ### 获取好友列表 GetFriendDetails
 
@@ -234,11 +232,11 @@ messages = wx.GetFriendDetails(n=10)
 
 **参数**：
 
-| 参数        | 类型 | 默认值 | 描述                 |
-| ----------- | ---- | ------ | -------------------- |
-|        n    | int  | None   | 获取前n个好友详情信息 |
-| tag         | str  | None   | 从指定拼音首字母开始 |
-| timeout     | int  | 0xFFFFF | 获取超时时间（秒） |
+| 参数    | 类型 | 默认值  | 描述                  |
+| ------- | ---- | ------- | --------------------- |
+| n       | int  | None    | 获取前n个好友详情信息 |
+| tag     | str  | None    | 从指定拼音首字母开始  |
+| timeout | int  | 0xFFFFF | 获取超时时间（秒）    |
 
 **返回值**：
 
@@ -246,13 +244,12 @@ messages = wx.GetFriendDetails(n=10)
 - 描述：好友详情信息列表
 
 > [!warning]
+>
 > 1. 该方法运行时间较长，约0.5~1秒一个好友的速度，好友多的话可将n设置为一个较小的值，先测试一下
 > 2. 如果遇到企业微信的好友且为已离职状态，可能导致微信卡死，需重启（此为微信客户端BUG）
 > 3. 该方法未经过大量测试，可能存在未知问题，如有问题请微信群内反馈
 
-
 ### 获取新的好友申请列表 GetNewFriends
-
 
 ```python
 newfriends = wx.GetNewFriends(acceptable=True)
@@ -331,7 +328,6 @@ wx.SwitchToContact()
 
 **返回值**：无
 
-
 ### 是否在线 IsOnline
 
 ```python
@@ -367,10 +363,10 @@ wx.GetContactGroups()
 > [!NOTE]
 > 自动化操作个体差异较大，根据实际情况调整以下参数，速度不合适可能导致漏掉部分群聊
 
-| 参数  | 类型    | 默认值   | 描述     |
-| ------ | -------- | -------- | ----- |
-| speed  | int   | 1     | 滚动速度 |
-| interval | float    | 0.1     |  滚动时间间隔  |
+| 参数     | 类型  | 默认值 | 描述         |
+| -------- | ----- | ------ | ------------ |
+| speed    | int   | 1      | 滚动速度     |
+| interval | float | 0.1    | 滚动时间间隔 |
 
 **返回值**：
 

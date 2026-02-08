@@ -8,9 +8,9 @@
 
 ## 修订记录
 
-| 版本 | 日期 | 修订内容 |
-|------|------|----------|
-| 1.0 | 2026-02-07 | 初始设计：整体架构、页面路由、组件设计、REST API |
+| 版本 | 日期       | 修订内容                                         |
+| ---- | ---------- | ------------------------------------------------ |
+| 1.0  | 2026-02-07 | 初始设计：整体架构、页面路由、组件设计、REST API |
 
 ---
 
@@ -19,6 +19,7 @@
 ### 1.1 背景
 
 根据产品架构设计（01-产品架构设计.md），Web Dashboard 需要提供以下核心功能：
+
 - 设备管理：查看和管理已配对的设备
 - 技能商店：浏览、购买和管理技能
 - 使用统计：查看使用情况和费用统计
@@ -28,11 +29,11 @@
 
 Web 管理后台是面向**最终用户**和**运营管理员**的统一管理界面：
 
-| 角色 | 功能范围 |
-|------|----------|
-| 普通用户 | 设备管理、技能订阅、个人设置、使用统计 |
+| 角色       | 功能范围                                |
+| ---------- | --------------------------------------- |
+| 普通用户   | 设备管理、技能订阅、个人设置、使用统计  |
 | 运营管理员 | 上述功能 + 用户管理、系统监控、审计日志 |
-| 超级管理员 | 上述功能 + 系统配置、权限管理 |
+| 超级管理员 | 上述功能 + 系统配置、权限管理           |
 
 ### 1.3 设计原则
 
@@ -48,20 +49,20 @@ Web 管理后台是面向**最终用户**和**运营管理员**的统一管理�
 
 ### 2.1 技术选型
 
-| 层级 | 技术 | 版本 | 说明 |
-|------|------|------|------|
-| 框架 | React | 18+ | 组件化 UI 框架 |
-| 构建 | Vite | 5.x | 快速构建和 HMR |
-| 语言 | TypeScript | 5.x | 类型安全 |
-| UI | shadcn/ui | latest | TailwindCSS 组件库 |
-| 样式 | TailwindCSS | 3.x | 原子化 CSS |
-| 状态 | Zustand | 4.x | 轻量状态管理 |
-| 路由 | React Router | 6.x | 声明式路由 |
-| 请求 | TanStack Query | 5.x | 数据获取和缓存 |
-| 表单 | React Hook Form | 7.x | 表单验证 |
-| 验证 | Zod | 3.x | Schema 验证 |
-| 图表 | Recharts | 2.x | 数据可视化 |
-| 图标 | Lucide React | latest | 图标库 |
+| 层级 | 技术            | 版本   | 说明               |
+| ---- | --------------- | ------ | ------------------ |
+| 框架 | React           | 18+    | 组件化 UI 框架     |
+| 构建 | Vite            | 5.x    | 快速构建和 HMR     |
+| 语言 | TypeScript      | 5.x    | 类型安全           |
+| UI   | shadcn/ui       | latest | TailwindCSS 组件库 |
+| 样式 | TailwindCSS     | 3.x    | 原子化 CSS         |
+| 状态 | Zustand         | 4.x    | 轻量状态管理       |
+| 路由 | React Router    | 6.x    | 声明式路由         |
+| 请求 | TanStack Query  | 5.x    | 数据获取和缓存     |
+| 表单 | React Hook Form | 7.x    | 表单验证           |
+| 验证 | Zod             | 3.x    | Schema 验证        |
+| 图表 | Recharts        | 2.x    | 数据可视化         |
+| 图标 | Lucide React    | latest | 图标库             |
 
 ### 2.2 项目结构
 
@@ -376,21 +377,21 @@ export const router = createBrowserRouter([
 
 ### 3.2 页面权限矩阵
 
-| 页面路径 | 普通用户 | 运营管理员 | 超级管理员 | 所需权限 |
-|----------|----------|------------|------------|----------|
-| `/` (仪表盘) | ✅ | ✅ | ✅ | - |
-| `/devices` | ✅ | ✅ | ✅ | - |
-| `/devices/:id` | ✅ | ✅ | ✅ | 仅限自己的设备 |
-| `/skills` | ✅ | ✅ | ✅ | - |
-| `/skills/my` | ✅ | ✅ | ✅ | - |
-| `/subscription` | ✅ | ✅ | ✅ | - |
-| `/settings/*` | ✅ | ✅ | ✅ | - |
-| `/admin` | ❌ | ✅ | ✅ | `operator.read` |
-| `/admin/users` | ❌ | ✅ | ✅ | `operator.read` |
-| `/admin/users/:id` (编辑) | ❌ | ❌ | ✅ | `operator.write` |
-| `/admin/audit` | ❌ | ✅ | ✅ | `operator.read` |
-| `/admin/system` | ❌ | ✅ | ✅ | `operator.read` |
-| `/admin/config` | ❌ | ❌ | ✅ | `admin` |
+| 页面路径                  | 普通用户 | 运营管理员 | 超级管理员 | 所需权限         |
+| ------------------------- | -------- | ---------- | ---------- | ---------------- |
+| `/` (仪表盘)              | ✅       | ✅         | ✅         | -                |
+| `/devices`                | ✅       | ✅         | ✅         | -                |
+| `/devices/:id`            | ✅       | ✅         | ✅         | 仅限自己的设备   |
+| `/skills`                 | ✅       | ✅         | ✅         | -                |
+| `/skills/my`              | ✅       | ✅         | ✅         | -                |
+| `/subscription`           | ✅       | ✅         | ✅         | -                |
+| `/settings/*`             | ✅       | ✅         | ✅         | -                |
+| `/admin`                  | ❌       | ✅         | ✅         | `operator.read`  |
+| `/admin/users`            | ❌       | ✅         | ✅         | `operator.read`  |
+| `/admin/users/:id` (编辑) | ❌       | ❌         | ✅         | `operator.write` |
+| `/admin/audit`            | ❌       | ✅         | ✅         | `operator.read`  |
+| `/admin/system`           | ❌       | ✅         | ✅         | `operator.read`  |
+| `/admin/config`           | ❌       | ❌         | ✅         | `admin`          |
 
 ---
 
@@ -853,37 +854,37 @@ export function ConfirmDialog({
 ```typescript
 // src/stores/authStore.ts
 
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { api } from '@/lib/api'
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { api } from "@/lib/api";
 
 interface User {
-  id: string
-  phone?: string
-  email?: string
-  displayName: string
-  avatarUrl?: string
-  status: string
-  scopes: string[]
+  id: string;
+  phone?: string;
+  email?: string;
+  displayName: string;
+  avatarUrl?: string;
+  status: string;
+  scopes: string[];
 }
 
 interface AuthState {
   /** 用户信息 */
-  user: User | null
+  user: User | null;
   /** 访问 Token */
-  accessToken: string | null
+  accessToken: string | null;
   /** 刷新 Token */
-  refreshToken: string | null
+  refreshToken: string | null;
   /** 是否已认证 */
-  isAuthenticated: boolean
+  isAuthenticated: boolean;
   /** 登录 */
-  login: (phone: string, code: string) => Promise<void>
+  login: (phone: string, code: string) => Promise<void>;
   /** 登出 */
-  logout: () => Promise<void>
+  logout: () => Promise<void>;
   /** 刷新 Token */
-  refreshAccessToken: () => Promise<void>
+  refreshAccessToken: () => Promise<void>;
   /** 检查权限 */
-  hasScope: (scope: string) => boolean
+  hasScope: (scope: string) => boolean;
 }
 
 /**
@@ -904,33 +905,33 @@ export const useAuthStore = create<AuthState>()(
        * @param code - 验证码
        */
       login: async (phone: string, code: string) => {
-        console.log('[authStore] 开始登录:', phone)
+        console.log("[authStore] 开始登录:", phone);
 
-        const response = await api.post('/api/v1/auth/login', {
+        const response = await api.post("/api/v1/auth/login", {
           phone,
           code,
-        })
+        });
 
-        const { user, accessToken, refreshToken } = response.data
+        const { user, accessToken, refreshToken } = response.data;
 
-        console.log('[authStore] 登录成功:', user.displayName)
+        console.log("[authStore] 登录成功:", user.displayName);
 
         set({
           user,
           accessToken,
           refreshToken,
           isAuthenticated: true,
-        })
+        });
       },
 
       /**
        * 用户登出
        */
       logout: async () => {
-        console.log('[authStore] 登出')
+        console.log("[authStore] 登出");
 
         try {
-          await api.post('/api/v1/auth/logout')
+          await api.post("/api/v1/auth/logout");
         } catch {
           // 忽略登出请求失败
         }
@@ -940,50 +941,50 @@ export const useAuthStore = create<AuthState>()(
           accessToken: null,
           refreshToken: null,
           isAuthenticated: false,
-        })
+        });
       },
 
       /**
        * 刷新访问 Token
        */
       refreshAccessToken: async () => {
-        const { refreshToken } = get()
+        const { refreshToken } = get();
         if (!refreshToken) {
-          throw new Error('No refresh token')
+          throw new Error("No refresh token");
         }
 
-        console.log('[authStore] 刷新 Token')
+        console.log("[authStore] 刷新 Token");
 
-        const response = await api.post('/api/v1/auth/refresh', {
+        const response = await api.post("/api/v1/auth/refresh", {
           refreshToken,
-        })
+        });
 
-        const { accessToken, refreshToken: newRefreshToken } = response.data
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
 
         set({
           accessToken,
           refreshToken: newRefreshToken,
-        })
+        });
       },
 
       /**
        * 检查用户是否具有指定权限
        */
       hasScope: (scope: string) => {
-        const { user } = get()
-        if (!user) return false
-        return user.scopes.includes(scope) || user.scopes.includes('admin')
+        const { user } = get();
+        if (!user) return false;
+        return user.scopes.includes(scope) || user.scopes.includes("admin");
       },
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       partialize: (state) => ({
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
       }),
-    }
-  )
-)
+    },
+  ),
+);
 ```
 
 #### 4.3.2 uiStore - UI 状态
@@ -991,20 +992,20 @@ export const useAuthStore = create<AuthState>()(
 ```typescript
 // src/stores/uiStore.ts
 
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface UIState {
   /** 侧边栏是否折叠 */
-  sidebarCollapsed: boolean
+  sidebarCollapsed: boolean;
   /** 暗色模式 */
-  darkMode: boolean
+  darkMode: boolean;
   /** 切换侧边栏 */
-  toggleSidebar: () => void
+  toggleSidebar: () => void;
   /** 切换暗色模式 */
-  toggleDarkMode: () => void
+  toggleDarkMode: () => void;
   /** 设置暗色模式 */
-  setDarkMode: (dark: boolean) => void
+  setDarkMode: (dark: boolean) => void;
 }
 
 /**
@@ -1017,28 +1018,28 @@ export const useUIStore = create<UIState>()(
       darkMode: false,
 
       toggleSidebar: () => {
-        set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }))
+        set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }));
       },
 
       toggleDarkMode: () => {
         set((state) => {
-          const newDarkMode = !state.darkMode
+          const newDarkMode = !state.darkMode;
           // 更新 DOM
-          document.documentElement.classList.toggle('dark', newDarkMode)
-          return { darkMode: newDarkMode }
-        })
+          document.documentElement.classList.toggle("dark", newDarkMode);
+          return { darkMode: newDarkMode };
+        });
       },
 
       setDarkMode: (dark: boolean) => {
-        document.documentElement.classList.toggle('dark', dark)
-        set({ darkMode: dark })
+        document.documentElement.classList.toggle("dark", dark);
+        set({ darkMode: dark });
       },
     }),
     {
-      name: 'ui-storage',
-    }
-  )
-)
+      name: "ui-storage",
+    },
+  ),
+);
 ```
 
 ---
@@ -1049,52 +1050,52 @@ export const useUIStore = create<UIState>()(
 
 #### 5.1.1 基础规范
 
-| 规范 | 说明 |
-|------|------|
-| 基础路径 | `/api/v1` |
-| 协议 | HTTPS |
-| 编码 | UTF-8 |
-| 格式 | JSON |
-| 认证 | Bearer Token (JWT) |
+| 规范     | 说明               |
+| -------- | ------------------ |
+| 基础路径 | `/api/v1`          |
+| 协议     | HTTPS              |
+| 编码     | UTF-8              |
+| 格式     | JSON               |
+| 认证     | Bearer Token (JWT) |
 
 #### 5.1.2 响应格式
 
 ```typescript
 // 成功响应
 interface ApiSuccessResponse<T> {
-  success: true
-  data: T
+  success: true;
+  data: T;
   meta?: {
-    total?: number
-    page?: number
-    limit?: number
-    hasMore?: boolean
-  }
+    total?: number;
+    page?: number;
+    limit?: number;
+    hasMore?: boolean;
+  };
 }
 
 // 错误响应
 interface ApiErrorResponse {
-  success: false
+  success: false;
   error: {
-    code: string       // 错误码
-    message: string    // 用户友好的错误消息
-    details?: unknown  // 详细错误信息（仅开发环境）
-  }
+    code: string; // 错误码
+    message: string; // 用户友好的错误消息
+    details?: unknown; // 详细错误信息（仅开发环境）
+  };
 }
 ```
 
 #### 5.1.3 错误码规范
 
-| 错误码 | HTTP 状态码 | 说明 |
-|--------|-------------|------|
-| `AUTH_REQUIRED` | 401 | 需要认证 |
-| `AUTH_EXPIRED` | 401 | Token 已过期 |
-| `AUTH_INVALID` | 401 | Token 无效 |
-| `FORBIDDEN` | 403 | 无权限 |
-| `NOT_FOUND` | 404 | 资源不存在 |
-| `VALIDATION_ERROR` | 400 | 参数验证失败 |
-| `RATE_LIMITED` | 429 | 请求频率限制 |
-| `INTERNAL_ERROR` | 500 | 服务器内部错误 |
+| 错误码             | HTTP 状态码 | 说明           |
+| ------------------ | ----------- | -------------- |
+| `AUTH_REQUIRED`    | 401         | 需要认证       |
+| `AUTH_EXPIRED`     | 401         | Token 已过期   |
+| `AUTH_INVALID`     | 401         | Token 无效     |
+| `FORBIDDEN`        | 403         | 无权限         |
+| `NOT_FOUND`        | 404         | 资源不存在     |
+| `VALIDATION_ERROR` | 400         | 参数验证失败   |
+| `RATE_LIMITED`     | 429         | 请求频率限制   |
+| `INTERNAL_ERROR`   | 500         | 服务器内部错误 |
 
 ### 5.2 认证 API
 
@@ -1607,12 +1608,12 @@ Authorization: Bearer <accessToken>
 
 ### 6.2 权限范围定义
 
-| 权限 | 说明 | 角色 |
-|------|------|------|
-| (无权限) | 普通用户功能 | 所有登录用户 |
-| `operator.read` | 查看管理数据 | 运营管理员、超级管理员 |
-| `operator.write` | 修改管理数据 | 超级管理员 |
-| `admin` | 系统配置 | 超级管理员 |
+| 权限             | 说明         | 角色                   |
+| ---------------- | ------------ | ---------------------- |
+| (无权限)         | 普通用户功能 | 所有登录用户           |
+| `operator.read`  | 查看管理数据 | 运营管理员、超级管理员 |
+| `operator.write` | 修改管理数据 | 超级管理员             |
+| `admin`          | 系统配置     | 超级管理员             |
 
 ### 6.3 前端权限组件
 
@@ -1660,42 +1661,39 @@ export function Permission({ scope, children, fallback = null }: PermissionProps
 ```typescript
 // src/gateway/middleware/permission.ts
 
-import { FastifyRequest, FastifyReply } from 'fastify'
+import { FastifyRequest, FastifyReply } from "fastify";
 
 /**
  * API 权限定义
  */
-const API_PERMISSIONS: Record<string, { scopes?: string[], public?: boolean }> = {
+const API_PERMISSIONS: Record<string, { scopes?: string[]; public?: boolean }> = {
   // 公开 API
-  'POST /api/v1/auth/send-code': { public: true },
-  'POST /api/v1/auth/login': { public: true },
-  'POST /api/v1/auth/refresh': { public: true },
+  "POST /api/v1/auth/send-code": { public: true },
+  "POST /api/v1/auth/login": { public: true },
+  "POST /api/v1/auth/refresh": { public: true },
 
   // 用户 API (无需特殊权限)
-  'GET /api/v1/devices': {},
-  'GET /api/v1/devices/:deviceId': {},
-  'DELETE /api/v1/devices/:deviceId': {},
-  'GET /api/v1/skills': {},
-  'GET /api/v1/skills/my': {},
+  "GET /api/v1/devices": {},
+  "GET /api/v1/devices/:deviceId": {},
+  "DELETE /api/v1/devices/:deviceId": {},
+  "GET /api/v1/skills": {},
+  "GET /api/v1/skills/my": {},
 
   // 管理员 API
-  'GET /api/v1/admin/users': { scopes: ['operator.read'] },
-  'GET /api/v1/admin/users/:userId': { scopes: ['operator.read'] },
-  'PATCH /api/v1/admin/users/:userId/status': { scopes: ['operator.write'] },
-  'GET /api/v1/admin/audit-logs': { scopes: ['operator.read'] },
-  'GET /api/v1/admin/config': { scopes: ['admin'] },
-  'PUT /api/v1/admin/config': { scopes: ['admin'] },
-}
+  "GET /api/v1/admin/users": { scopes: ["operator.read"] },
+  "GET /api/v1/admin/users/:userId": { scopes: ["operator.read"] },
+  "PATCH /api/v1/admin/users/:userId/status": { scopes: ["operator.write"] },
+  "GET /api/v1/admin/audit-logs": { scopes: ["operator.read"] },
+  "GET /api/v1/admin/config": { scopes: ["admin"] },
+  "PUT /api/v1/admin/config": { scopes: ["admin"] },
+};
 
 /**
  * 权限检查中间件
  */
-export async function permissionMiddleware(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
-  const routeKey = `${request.method} ${request.routeOptions.url}`
-  const permission = API_PERMISSIONS[routeKey]
+export async function permissionMiddleware(request: FastifyRequest, reply: FastifyReply) {
+  const routeKey = `${request.method} ${request.routeOptions.url}`;
+  const permission = API_PERMISSIONS[routeKey];
 
   // 未定义的路由默认需要认证
   if (!permission) {
@@ -1703,17 +1701,17 @@ export async function permissionMiddleware(
       return reply.status(401).send({
         success: false,
         error: {
-          code: 'AUTH_REQUIRED',
-          message: '请先登录',
+          code: "AUTH_REQUIRED",
+          message: "请先登录",
         },
-      })
+      });
     }
-    return
+    return;
   }
 
   // 公开 API
   if (permission.public) {
-    return
+    return;
   }
 
   // 需要认证
@@ -1721,32 +1719,32 @@ export async function permissionMiddleware(
     return reply.status(401).send({
       success: false,
       error: {
-        code: 'AUTH_REQUIRED',
-        message: '请先登录',
+        code: "AUTH_REQUIRED",
+        message: "请先登录",
       },
-    })
+    });
   }
 
   // 检查权限
   if (permission.scopes && permission.scopes.length > 0) {
-    const userScopes = request.user.scopes || []
+    const userScopes = request.user.scopes || [];
     const hasPermission = permission.scopes.some(
-      scope => userScopes.includes(scope) || userScopes.includes('admin')
-    )
+      (scope) => userScopes.includes(scope) || userScopes.includes("admin"),
+    );
 
     if (!hasPermission) {
       console.log(
         `[permission] 权限不足: 用户 ${request.user.id} 尝试访问 ${routeKey}`,
-        `所需: ${permission.scopes.join(', ')}, 拥有: ${userScopes.join(', ')}`
-      )
+        `所需: ${permission.scopes.join(", ")}, 拥有: ${userScopes.join(", ")}`,
+      );
 
       return reply.status(403).send({
         success: false,
         error: {
-          code: 'FORBIDDEN',
-          message: '无权限执行此操作',
+          code: "FORBIDDEN",
+          message: "无权限执行此操作",
         },
-      })
+      });
     }
   }
 }
@@ -1758,49 +1756,49 @@ export async function permissionMiddleware(
 
 ### 7.1 认证安全
 
-| 安全措施 | 实现方式 |
-|----------|----------|
-| JWT 短有效期 | Access Token 15 分钟过期 |
-| 刷新 Token 轮转 | 每次刷新生成新的 Refresh Token |
-| Token 存储 | Access Token 仅存内存，Refresh Token 存 httpOnly Cookie |
-| 登录尝试限制 | 5 次失败后锁定 15 分钟 |
-| 验证码限制 | 每个手机号 60 秒内只能发送一次 |
+| 安全措施        | 实现方式                                                |
+| --------------- | ------------------------------------------------------- |
+| JWT 短有效期    | Access Token 15 分钟过期                                |
+| 刷新 Token 轮转 | 每次刷新生成新的 Refresh Token                          |
+| Token 存储      | Access Token 仅存内存，Refresh Token 存 httpOnly Cookie |
+| 登录尝试限制    | 5 次失败后锁定 15 分钟                                  |
+| 验证码限制      | 每个手机号 60 秒内只能发送一次                          |
 
 ### 7.2 请求安全
 
-| 安全措施 | 实现方式 |
-|----------|----------|
-| HTTPS | 强制 HTTPS，HSTS 头 |
-| CORS | 限制允许的源 |
-| CSRF | 使用 SameSite Cookie + CSRF Token |
+| 安全措施      | 实现方式                              |
+| ------------- | ------------------------------------- |
+| HTTPS         | 强制 HTTPS，HSTS 头                   |
+| CORS          | 限制允许的源                          |
+| CSRF          | 使用 SameSite Cookie + CSRF Token     |
 | Rate Limiting | 全局 100 req/min，敏感接口 10 req/min |
-| 请求大小限制 | 最大 10MB |
+| 请求大小限制  | 最大 10MB                             |
 
 ### 7.3 数据安全
 
-| 安全措施 | 实现方式 |
-|----------|----------|
-| 输入验证 | Zod schema 验证所有输入 |
+| 安全措施     | 实现方式                    |
+| ------------ | --------------------------- |
+| 输入验证     | Zod schema 验证所有输入     |
 | SQL 注入防护 | 使用 Drizzle ORM 参数化查询 |
-| XSS 防护 | React 自动转义 + CSP 头 |
-| 敏感数据脱敏 | 手机号、邮箱等在日志中脱敏 |
+| XSS 防护     | React 自动转义 + CSP 头     |
+| 敏感数据脱敏 | 手机号、邮箱等在日志中脱敏  |
 
 ### 7.4 审计日志
 
 所有敏感操作都记录审计日志：
 
-| 操作类型 | 描述 |
-|----------|------|
-| `auth.login` | 用户登录 |
-| `auth.logout` | 用户登出 |
-| `auth.password-change` | 密码修改 |
-| `device.link` | 设备配对 |
-| `device.unlink` | 设备解绑 |
-| `skill.subscribe` | 技能订阅 |
-| `skill.unsubscribe` | 取消订阅 |
-| `user.update` | 用户信息更新 |
-| `user.suspend` | 用户停用 |
-| `config.update` | 系统配置修改 |
+| 操作类型               | 描述         |
+| ---------------------- | ------------ |
+| `auth.login`           | 用户登录     |
+| `auth.logout`          | 用户登出     |
+| `auth.password-change` | 密码修改     |
+| `device.link`          | 设备配对     |
+| `device.unlink`        | 设备解绑     |
+| `skill.subscribe`      | 技能订阅     |
+| `skill.unsubscribe`    | 取消订阅     |
+| `user.update`          | 用户信息更新 |
+| `user.suspend`         | 用户停用     |
+| `config.update`        | 系统配置修改 |
 
 ---
 
@@ -1861,22 +1859,22 @@ export async function permissionMiddleware(
 
 ### 9.1 开发阶段
 
-| 阶段 | 内容 | 优先级 |
-|------|------|--------|
-| Phase 1 | 项目初始化、布局组件、认证流程 | P0 |
-| Phase 2 | 设备管理、技能商店 | P0 |
-| Phase 3 | 订阅管理、用户设置 | P1 |
-| Phase 4 | 管理员功能、审计日志 | P1 |
-| Phase 5 | 系统监控、性能优化 | P2 |
+| 阶段    | 内容                           | 优先级 |
+| ------- | ------------------------------ | ------ |
+| Phase 1 | 项目初始化、布局组件、认证流程 | P0     |
+| Phase 2 | 设备管理、技能商店             | P0     |
+| Phase 3 | 订阅管理、用户设置             | P1     |
+| Phase 4 | 管理员功能、审计日志           | P1     |
+| Phase 5 | 系统监控、性能优化             | P2     |
 
 ### 9.2 测试计划
 
-| 测试类型 | 工具 | 覆盖率目标 |
-|----------|------|------------|
-| 单元测试 | Vitest | 80% |
-| 组件测试 | Testing Library | 70% |
-| E2E 测试 | Playwright | 关键流程 100% |
-| API 测试 | Vitest | 90% |
+| 测试类型 | 工具            | 覆盖率目标    |
+| -------- | --------------- | ------------- |
+| 单元测试 | Vitest          | 80%           |
+| 组件测试 | Testing Library | 70%           |
+| E2E 测试 | Playwright      | 关键流程 100% |
+| API 测试 | Vitest          | 90%           |
 
 ---
 
@@ -1886,80 +1884,80 @@ export async function permissionMiddleware(
 // src/types/user.ts
 
 export interface User {
-  id: string
-  phone?: string
-  email?: string
-  displayName: string
-  avatarUrl?: string
-  status: 'active' | 'suspended' | 'deleted'
-  isPhoneVerified: boolean
-  isEmailVerified: boolean
-  timezone: string
-  locale: string
-  scopes: string[]
-  createdAt: string
-  lastLoginAt?: string
+  id: string;
+  phone?: string;
+  email?: string;
+  displayName: string;
+  avatarUrl?: string;
+  status: "active" | "suspended" | "deleted";
+  isPhoneVerified: boolean;
+  isEmailVerified: boolean;
+  timezone: string;
+  locale: string;
+  scopes: string[];
+  createdAt: string;
+  lastLoginAt?: string;
 }
 
 // src/types/device.ts
 
 export interface Device {
-  id: string
-  displayName: string
-  platform: 'windows' | 'macos' | 'linux' | 'android' | 'ios'
-  platformVersion?: string
-  appVersion?: string
-  role: 'owner' | 'member' | 'guest'
-  scopes: string[]
-  status: 'online' | 'offline'
-  lastActiveAt: string
-  linkedAt: string
+  id: string;
+  displayName: string;
+  platform: "windows" | "macos" | "linux" | "android" | "ios";
+  platformVersion?: string;
+  appVersion?: string;
+  role: "owner" | "member" | "guest";
+  scopes: string[];
+  status: "online" | "offline";
+  lastActiveAt: string;
+  linkedAt: string;
 }
 
 // src/types/skill.ts
 
 export interface Skill {
-  id: string
-  name: string
-  slug: string
-  description: string
-  icon: string
-  category: string
-  price: number
-  pricePeriod: 'month' | 'year' | 'once'
-  rating: number
-  reviewCount: number
-  installCount: number
-  isActive: boolean
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  icon: string;
+  category: string;
+  price: number;
+  pricePeriod: "month" | "year" | "once";
+  rating: number;
+  reviewCount: number;
+  installCount: number;
+  isActive: boolean;
 }
 
 export interface UserSkill {
-  id: string
-  skill: Skill
-  installedAt: string
-  configuration: Record<string, unknown>
-  isFavorite: boolean
+  id: string;
+  skill: Skill;
+  installedAt: string;
+  configuration: Record<string, unknown>;
+  isFavorite: boolean;
 }
 
 // src/types/subscription.ts
 
 export interface Subscription {
-  id: string
-  plan: Plan
-  skill?: Skill
-  status: 'active' | 'canceled' | 'expired'
-  startedAt: string
-  expiresAt: string
-  autoRenew: boolean
+  id: string;
+  plan: Plan;
+  skill?: Skill;
+  status: "active" | "canceled" | "expired";
+  startedAt: string;
+  expiresAt: string;
+  autoRenew: boolean;
 }
 
 export interface Plan {
-  id: string
-  name: string
-  slug: string
-  price: number
-  period: 'month' | 'year'
-  features: string[]
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  period: "month" | "year";
+  features: string[];
 }
 ```
 

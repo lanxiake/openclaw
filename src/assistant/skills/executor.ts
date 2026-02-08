@@ -26,17 +26,13 @@ const log = createSubsystemLogger("skill-executor");
 export type ConfirmHandler = (
   action: string,
   description: string,
-  level: "low" | "medium" | "high"
+  level: "low" | "medium" | "high",
 ) => Promise<boolean>;
 
 /**
  * 进度报告处理器类型
  */
-export type ProgressHandler = (
-  skillId: string,
-  percent: number,
-  message?: string
-) => void;
+export type ProgressHandler = (skillId: string, percent: number, message?: string) => void;
 
 /**
  * 技能执行器配置
@@ -64,7 +60,7 @@ function createExecutionContext(
     params: Record<string, unknown>;
     trigger: SkillTrigger;
   },
-  config: SkillExecutorConfig
+  config: SkillExecutorConfig,
 ): SkillExecutionContext {
   const skillId = skill.metadata.id;
 
@@ -119,7 +115,7 @@ function createExecutionContext(
  */
 function checkSkillPermissions(
   skill: AssistantSkillDefinition,
-  params: Record<string, unknown>
+  params: Record<string, unknown>,
 ): { allowed: boolean; reason?: string } {
   const permissions = skill.metadata.permissions;
 
@@ -135,7 +131,7 @@ function checkSkillPermissions(
       // 检查读取权限
       if (permissions.fileSystem.read) {
         const readAllowed = permissions.fileSystem.read.some((pattern) =>
-          matchPathPattern(path, pattern)
+          matchPathPattern(path, pattern),
         );
         if (!readAllowed) {
           return { allowed: false, reason: `无权读取路径: ${path}` };
@@ -145,7 +141,7 @@ function checkSkillPermissions(
       // 检查写入权限
       if (permissions.fileSystem.write && params.content !== undefined) {
         const writeAllowed = permissions.fileSystem.write.some((pattern) =>
-          matchPathPattern(path, pattern)
+          matchPathPattern(path, pattern),
         );
         if (!writeAllowed) {
           return { allowed: false, reason: `无权写入路径: ${path}` };
@@ -177,8 +173,7 @@ function matchPathPattern(path: string, pattern: string): boolean {
   if (normalizedPattern.endsWith("/*")) {
     const prefix = normalizedPattern.slice(0, -2);
     return (
-      normalizedPath.startsWith(prefix) &&
-      !normalizedPath.slice(prefix.length + 1).includes("/")
+      normalizedPath.startsWith(prefix) && !normalizedPath.slice(prefix.length + 1).includes("/")
     );
   }
 
@@ -200,7 +195,7 @@ export async function executeSkill(
     params?: Record<string, unknown>;
     trigger?: SkillTrigger;
   },
-  config: SkillExecutorConfig = {}
+  config: SkillExecutorConfig = {},
 ): Promise<SkillExecutionResult> {
   const startTime = Date.now();
   const sessionId = params.sessionId || randomUUID();
@@ -253,7 +248,7 @@ export async function executeSkill(
       params: executionParams,
       trigger: params.trigger || { type: "ai-invoke", aiInvocable: true },
     },
-    config
+    config,
   );
 
   // 检查是否需要确认
@@ -279,7 +274,7 @@ export async function executeSkill(
     const result = await Promise.race([
       skill.execute(context),
       new Promise<SkillExecutionResult>((_, reject) =>
-        setTimeout(() => reject(new Error("执行超时")), timeout)
+        setTimeout(() => reject(new Error("执行超时")), timeout),
       ),
     ]);
 
@@ -325,7 +320,7 @@ export async function executeSkillByCommand(
     args?: string;
     params?: Record<string, unknown>;
   },
-  config: SkillExecutorConfig = {}
+  config: SkillExecutorConfig = {},
 ): Promise<SkillExecutionResult> {
   const skillId = registry.commandMap.get(command);
 
@@ -344,7 +339,7 @@ export async function executeSkillByCommand(
       params: params.params || { args: params.args },
       trigger: { type: "command", command },
     },
-    config
+    config,
   );
 }
 
@@ -360,7 +355,7 @@ export async function executeSkillsByEvent(
     deviceId?: string;
     eventData?: Record<string, unknown>;
   },
-  config: SkillExecutorConfig = {}
+  config: SkillExecutorConfig = {},
 ): Promise<Map<string, SkillExecutionResult>> {
   const results = new Map<string, SkillExecutionResult>();
   const skillIds = registry.eventMap.get(event) || [];
@@ -376,7 +371,7 @@ export async function executeSkillsByEvent(
         params: params.eventData,
         trigger: { type: "event", event },
       },
-      config
+      config,
     );
 
     results.set(skillId, result);
@@ -392,7 +387,7 @@ export async function executeSkillsByEvent(
  */
 export function validateSkillParams(
   skill: AssistantSkillDefinition,
-  params: Record<string, unknown>
+  params: Record<string, unknown>,
 ): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   const paramDefs = skill.parameters || [];

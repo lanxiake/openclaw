@@ -36,7 +36,7 @@ const LOG_TAG = "admin-skills";
 function validateStringParam(
   params: Record<string, unknown>,
   key: string,
-  required = false
+  required = false,
 ): string | undefined {
   const value = params[key];
 
@@ -60,7 +60,7 @@ function validateStringParam(
 function validateNumberParam(
   params: Record<string, unknown>,
   key: string,
-  defaultValue?: number
+  defaultValue?: number,
 ): number | undefined {
   const value = params[key];
 
@@ -161,7 +161,9 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
       const search = validateStringParam(params, "search");
       const status = validateStringParam(params, "status") as SkillStatus | undefined;
       const categoryId = validateStringParam(params, "category");
-      const subscriptionLevel = validateStringParam(params, "subscription") as SubscriptionLevel | undefined;
+      const subscriptionLevel = validateStringParam(params, "subscription") as
+        | SubscriptionLevel
+        | undefined;
       const featured = params.featured as boolean | undefined;
       const sortBy = validateStringParam(params, "sortBy") || "createdAt";
       const sortOrder = validateStringParam(params, "sortOrder") || "desc";
@@ -219,7 +221,7 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
           page: result.page,
           pageSize: result.pageSize,
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -245,7 +247,11 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
       const skill = await getSkill(skillId);
 
       if (!skill) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `Skill not found: ${skillId}`));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, `Skill not found: ${skillId}`),
+        );
         return;
       }
 
@@ -280,7 +286,8 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
         createdAt: skill.createdAt?.toISOString() || "",
         updatedAt: skill.updatedAt?.toISOString() || "",
         publishedAt: skill.publishedAt?.toISOString() || undefined,
-        readme: skill.readme || `# ${skill.name}\n\n${skill.description || ""}\n\n## 使用方法\n\n...`,
+        readme:
+          skill.readme || `# ${skill.name}\n\n${skill.description || ""}\n\n## 使用方法\n\n...`,
         changelog: `## v${skill.version}\n- 当前版本`,
         triggers: [],
         parameters: [],
@@ -311,7 +318,11 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
       const notes = validateStringParam(params, "notes");
 
       if (!skillId || !action) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameters"));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameters"),
+        );
         return;
       }
 
@@ -333,7 +344,11 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
       }
 
       if (!result.success) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, result.error || "审核失败"));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "审核失败"),
+        );
         return;
       }
 
@@ -345,7 +360,7 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
           status: result.skill?.status,
           message: action === "approve" ? "技能已通过审核" : "技能已拒绝",
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -364,7 +379,11 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
       const reason = validateStringParam(params, "reason");
 
       if (!skillId || !action) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameters"));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameters"),
+        );
         return;
       }
 
@@ -383,7 +402,11 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
       }
 
       if (!result.success) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, result.error || "操作失败"));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "操作失败"),
+        );
         return;
       }
 
@@ -395,7 +418,7 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
           status: result.skill?.status,
           message: action === "publish" ? "技能已上架" : "技能已下架",
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -414,7 +437,11 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
       const order = validateNumberParam(params, "order");
 
       if (!skillId || featured === undefined) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameters"));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameters"),
+        );
         return;
       }
 
@@ -423,7 +450,11 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
       const result = await setFeatured(skillId, featured, order);
 
       if (!result) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `Skill not found: ${skillId}`));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, `Skill not found: ${skillId}`),
+        );
         return;
       }
 
@@ -436,7 +467,7 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
           featuredOrder: result.featuredOrder,
           message: featured ? "技能已设为推荐" : "技能已取消推荐",
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -475,7 +506,7 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
           categories,
           total: result.total,
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -496,7 +527,11 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
       const sortOrder = validateNumberParam(params, "sortOrder", 0);
 
       if (!name || !code) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameters"));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameters"),
+        );
         return;
       }
 
@@ -529,7 +564,7 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
           category: responseCategory,
           message: "分类创建成功",
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -567,7 +602,11 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
       const category = await updateCategory(categoryId, updateData);
 
       if (!category) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `Category not found: ${categoryId}`));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, `Category not found: ${categoryId}`),
+        );
         return;
       }
 
@@ -591,7 +630,7 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
           category: responseCategory,
           message: "分类更新成功",
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -617,7 +656,11 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
       const success = await deleteCategory(categoryId);
 
       if (!success) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `Category not found: ${categoryId}`));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, `Category not found: ${categoryId}`),
+        );
         return;
       }
 
@@ -628,7 +671,7 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
           categoryId,
           message: "分类删除成功",
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -682,7 +725,7 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
           skills,
           total: skills.length,
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -719,7 +762,7 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
           success: true,
           message: "推荐排序更新成功",
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";

@@ -144,11 +144,7 @@ export const assistantSubscriptionMethods: GatewayRequestHandlers = {
 
       const plan = getPlan(planId);
       if (!plan) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, `计划不存在: ${planId}`),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `计划不存在: ${planId}`));
         return;
       }
 
@@ -197,7 +193,8 @@ export const assistantSubscriptionMethods: GatewayRequestHandlers = {
     try {
       const userId = validateStringParam(params, "userId") ?? "default";
       const planId = validateStringParam(params, "planId", true) as SubscriptionPlanId;
-      const billingPeriod = (validateStringParam(params, "billingPeriod") ?? "monthly") as BillingPeriod;
+      const billingPeriod = (validateStringParam(params, "billingPeriod") ??
+        "monthly") as BillingPeriod;
       const paymentMethodId = validateStringParam(params, "paymentMethodId");
       const startTrial = validateBooleanParam(params, "startTrial");
 
@@ -206,11 +203,7 @@ export const assistantSubscriptionMethods: GatewayRequestHandlers = {
       // 验证计划存在
       const plan = getPlan(planId);
       if (!plan) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, `无效的计划: ${planId}`),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `无效的计划: ${planId}`));
         return;
       }
 
@@ -245,15 +238,13 @@ export const assistantSubscriptionMethods: GatewayRequestHandlers = {
     try {
       const subscriptionId = validateStringParam(params, "subscriptionId", true);
       const planId = validateStringParam(params, "planId") as SubscriptionPlanId | undefined;
-      const billingPeriod = validateStringParam(params, "billingPeriod") as BillingPeriod | undefined;
+      const billingPeriod = validateStringParam(params, "billingPeriod") as
+        | BillingPeriod
+        | undefined;
       const cancelAtPeriodEnd = validateBooleanParam(params, "cancelAtPeriodEnd");
 
       if (!subscriptionId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing subscriptionId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing subscriptionId"));
         return;
       }
 
@@ -292,11 +283,7 @@ export const assistantSubscriptionMethods: GatewayRequestHandlers = {
       const feedback = validateStringParam(params, "feedback");
 
       if (!subscriptionId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing subscriptionId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing subscriptionId"));
         return;
       }
 
@@ -338,11 +325,7 @@ export const assistantSubscriptionMethods: GatewayRequestHandlers = {
         | "storage";
 
       if (!quotaType) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing quotaType"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing quotaType"));
         return;
       }
 
@@ -409,11 +392,7 @@ export const assistantSubscriptionMethods: GatewayRequestHandlers = {
       const amount = validateNumberParam(params, "amount") ?? 1;
 
       if (!type) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing type"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing type"));
         return;
       }
 
@@ -443,13 +422,15 @@ export const assistantSubscriptionMethods: GatewayRequestHandlers = {
       const monthlyUsage = await getUserMonthlyUsage(userId);
 
       // 计算配额使用百分比
-      const conversationUsage = plan.quotas.dailyConversations === -1
-        ? 0
-        : Math.round((dailyUsage.conversations / plan.quotas.dailyConversations) * 100);
+      const conversationUsage =
+        plan.quotas.dailyConversations === -1
+          ? 0
+          : Math.round((dailyUsage.conversations / plan.quotas.dailyConversations) * 100);
 
-      const aiCallUsage = plan.quotas.monthlyAiCalls === -1
-        ? 0
-        : Math.round((monthlyUsage.aiCalls / plan.quotas.monthlyAiCalls) * 100);
+      const aiCallUsage =
+        plan.quotas.monthlyAiCalls === -1
+          ? 0
+          : Math.round((monthlyUsage.aiCalls / plan.quotas.monthlyAiCalls) * 100);
 
       respond(
         true,

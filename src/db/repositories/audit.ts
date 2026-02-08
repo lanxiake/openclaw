@@ -104,8 +104,7 @@ export class AuditLogRepository {
       conditions.push(lte(auditLogs.createdAt, params.endDate));
     }
 
-    const whereClause =
-      conditions.length > 0 ? and(...conditions) : undefined;
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     // 获取总数
     const [countResult] = await this.db
@@ -132,20 +131,14 @@ export class AuditLogRepository {
    * 根据 ID 获取日志
    */
   async findById(id: string): Promise<AuditLog | null> {
-    const [log] = await this.db
-      .select()
-      .from(auditLogs)
-      .where(eq(auditLogs.id, id));
+    const [log] = await this.db.select().from(auditLogs).where(eq(auditLogs.id, id));
     return log ?? null;
   }
 
   /**
    * 获取用户最近的审计日志
    */
-  async getRecentByUser(
-    userId: string,
-    limit: number = 20
-  ): Promise<AuditLog[]> {
+  async getRecentByUser(userId: string, limit: number = 20): Promise<AuditLog[]> {
     return this.db
       .select()
       .from(auditLogs)
@@ -157,18 +150,12 @@ export class AuditLogRepository {
   /**
    * 获取高风险操作日志
    */
-  async getHighRiskLogs(
-    since: Date,
-    limit: number = 100
-  ): Promise<AuditLog[]> {
+  async getHighRiskLogs(since: Date, limit: number = 100): Promise<AuditLog[]> {
     return this.db
       .select()
       .from(auditLogs)
       .where(
-        and(
-          gte(auditLogs.createdAt, since),
-          sql`${auditLogs.riskLevel} IN ('high', 'critical')`
-        )
+        and(gte(auditLogs.createdAt, since), sql`${auditLogs.riskLevel} IN ('high', 'critical')`),
       )
       .orderBy(desc(auditLogs.createdAt))
       .limit(limit);
@@ -181,9 +168,7 @@ export class AuditLogRepository {
    */
   async cleanupOld(retentionDays: number = 365): Promise<number> {
     const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
-    const result = await this.db
-      .delete(auditLogs)
-      .where(sql`${auditLogs.createdAt} < ${cutoff}`);
+    const result = await this.db.delete(auditLogs).where(sql`${auditLogs.createdAt} < ${cutoff}`);
     const count = (result as unknown as { rowCount?: number }).rowCount ?? 0;
     if (count > 0) {
       logger.info("[audit-repo] Cleaned up old audit logs", {
@@ -213,7 +198,7 @@ export class ExportLogRepository {
   }): Promise<ExportLog> {
     const id = generateId();
     const expiresAt = new Date(
-      Date.now() + (data.expiresInMs ?? 7 * 24 * 60 * 60 * 1000) // 默认 7 天
+      Date.now() + (data.expiresInMs ?? 7 * 24 * 60 * 60 * 1000), // 默认 7 天
     );
 
     const [log] = await this.db
@@ -243,20 +228,13 @@ export class ExportLogRepository {
    * 更新导出状态为处理中
    */
   async markProcessing(id: string): Promise<void> {
-    await this.db
-      .update(exportLogs)
-      .set({ status: "processing" })
-      .where(eq(exportLogs.id, id));
+    await this.db.update(exportLogs).set({ status: "processing" }).where(eq(exportLogs.id, id));
   }
 
   /**
    * 标记导出完成
    */
-  async markCompleted(
-    id: string,
-    filePath: string,
-    fileSize: number
-  ): Promise<void> {
+  async markCompleted(id: string, filePath: string, fileSize: number): Promise<void> {
     await this.db
       .update(exportLogs)
       .set({
@@ -309,20 +287,14 @@ export class ExportLogRepository {
    * 根据 ID 获取导出记录
    */
   async findById(id: string): Promise<ExportLog | null> {
-    const [log] = await this.db
-      .select()
-      .from(exportLogs)
-      .where(eq(exportLogs.id, id));
+    const [log] = await this.db.select().from(exportLogs).where(eq(exportLogs.id, id));
     return log ?? null;
   }
 
   /**
    * 获取用户的导出历史
    */
-  async findByUserId(
-    userId: string,
-    limit: number = 20
-  ): Promise<ExportLog[]> {
+  async findByUserId(userId: string, limit: number = 20): Promise<ExportLog[]> {
     return this.db
       .select()
       .from(exportLogs)
@@ -342,8 +314,8 @@ export class ExportLogRepository {
       .where(
         and(
           sql`${exportLogs.expiresAt} < NOW()`,
-          sql`${exportLogs.status} IN ('completed', 'processing', 'pending')`
-        )
+          sql`${exportLogs.status} IN ('completed', 'processing', 'pending')`,
+        ),
       );
 
     // 删除很老的记录

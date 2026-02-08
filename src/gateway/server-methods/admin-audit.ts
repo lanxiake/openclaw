@@ -23,7 +23,7 @@ const LOG_TAG = "admin-audit";
  * 验证管理员身份并返回管理员信息
  */
 async function validateAdminAuth(
-  params: Record<string, unknown>
+  params: Record<string, unknown>,
 ): Promise<{ adminId: string; role: string; username: string } | null> {
   const authHeader = params["authorization"] as string | undefined;
   const token = extractAdminBearerToken(authHeader);
@@ -45,7 +45,7 @@ async function validateAdminAuth(
 function validateStringParam(
   params: Record<string, unknown>,
   key: string,
-  required = false
+  required = false,
 ): string | undefined {
   const value = params[key];
   if (value === undefined || value === null) {
@@ -66,7 +66,7 @@ function validateStringParam(
 function validateNumberParam(
   params: Record<string, unknown>,
   key: string,
-  defaultValue?: number
+  defaultValue?: number,
 ): number | undefined {
   const value = params[key];
   if (value === undefined || value === null) {
@@ -95,7 +95,7 @@ export const adminAuditMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -135,8 +135,8 @@ export const adminAuditMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取审计日志列表失败"
-        )
+          error instanceof Error ? error.message : "获取审计日志列表失败",
+        ),
       );
     }
   },
@@ -153,7 +153,7 @@ export const adminAuditMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -169,7 +169,7 @@ export const adminAuditMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "日志不存在", {
             details: { errorCode: "LOG_NOT_FOUND" },
-          })
+          }),
         );
         return;
       }
@@ -184,8 +184,8 @@ export const adminAuditMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取审计日志详情失败"
-        )
+          error instanceof Error ? error.message : "获取审计日志详情失败",
+        ),
       );
     }
   },
@@ -202,7 +202,7 @@ export const adminAuditMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -220,8 +220,8 @@ export const adminAuditMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取统计信息失败"
-        )
+          error instanceof Error ? error.message : "获取统计信息失败",
+        ),
       );
     }
   },
@@ -238,7 +238,7 @@ export const adminAuditMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -256,8 +256,8 @@ export const adminAuditMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取操作类型列表失败"
-        )
+          error instanceof Error ? error.message : "获取操作类型列表失败",
+        ),
       );
     }
   },
@@ -274,7 +274,7 @@ export const adminAuditMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -322,8 +322,8 @@ export const adminAuditMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "导出审计日志失败"
-        )
+          error instanceof Error ? error.message : "导出审计日志失败",
+        ),
       );
     }
   },
@@ -340,7 +340,7 @@ export const adminAuditMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -358,8 +358,8 @@ export const adminAuditMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取管理员列表失败"
-        )
+          error instanceof Error ? error.message : "获取管理员列表失败",
+        ),
       );
     }
   },

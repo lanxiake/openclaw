@@ -3,6 +3,7 @@ weight: 1
 bookFlatSection: true
 title: "Chat类"
 ---
+
 ## Chat 类属性
 
 在了解`Chat`类的方法之前，我想先介绍一下为什么要做这个类。
@@ -11,10 +12,10 @@ title: "Chat类"
 同时也不需要每来一条信息都切换聊天窗口去获取。
 所以，`Chat`类就是用来创建一个独立的聊天窗口，并获取这个聊天窗口的信息。
 
-| 属性     | 类型   | 描述             |
-| -------- | ------ | ---------------- |
-| who  | str    | 当前子窗口的聊天对象名  |
-| chat_type  | str    | 聊天窗口类型  |
+| 属性      | 类型 | 描述                   |
+| --------- | ---- | ---------------------- |
+| who       | str  | 当前子窗口的聊天对象名 |
+| chat_type | str  | 聊天窗口类型           |
 
 ### 聊天窗口类型 chat_type
 
@@ -28,7 +29,6 @@ title: "Chat类"
 ```python
 chat_type = chat.chat_type
 ```
-
 
 ## Chat 类方法
 
@@ -49,18 +49,19 @@ info = chat.ChatInfo()
 - 类型：`dict`
 - 描述：聊天窗口信息
 - 返回值示例：
+
 ```python
 # 好友
-{'chat_type': 'friend', 'chat_name': '张三'}  
+{'chat_type': 'friend', 'chat_name': '张三'}
 
 # 群聊
-{'group_member_count': 500, 'chat_type': 'group', 'chat_name': '工作群'}  
+{'group_member_count': 500, 'chat_type': 'group', 'chat_name': '工作群'}
 
 # 客服
-{'company': '@肯德基', 'chat_type': 'service', 'chat_name': '店长xxx'} 
+{'company': '@肯德基', 'chat_type': 'service', 'chat_name': '店长xxx'}
 
 # 公众号
-{'chat_type': 'official', 'chat_name': '肯德基'} 
+{'chat_type': 'official', 'chat_name': '肯德基'}
 ```
 
 ### @所有人 AtAll
@@ -78,23 +79,22 @@ wx.AtAll(content, group)
 
 msg (str): 发送的消息
 
-​      who (str, optional): 发送给谁. Defaults to None.
+​ who (str, optional): 发送给谁. Defaults to None.
 
-​      exact (bool, optional): 是否精确匹配. Defaults to False.
+​ exact (bool, optional): 是否精确匹配. Defaults to False.
 
 **参数**：
 
-| 参数  | 类型   | 默认值 | 描述                                                         |
-| ----- | ------ | ------ | ------------------------------------------------------------ |
-| msg   | str    | None   | 发送的消息                                                   |
-| who   | str    | None   | 发送给谁                                                     |
-| exact | bool   | False  | 是否精确匹配                                                 |
+| 参数  | 类型 | 默认值 | 描述         |
+| ----- | ---- | ------ | ------------ |
+| msg   | str  | None   | 发送的消息   |
+| who   | str  | None   | 发送给谁     |
+| exact | bool | False  | 是否精确匹配 |
 
 **返回值**：
 
 - 类型：[`WxResponse`](/docs/class/other/#wxresponse)
 - 描述：是否发送成功
-
 
 ### 发送消息 SendMsg
 
@@ -104,13 +104,13 @@ wx.SendMsg(msg="你好", who="张三", clear=True, at="李四", exact=False)
 
 **参数**：
 
-| 参数  | 类型                  | 默认值 | 描述                                                         |
-| ----- | --------------------- | ------ | ------------------------------------------------------------ |
-| msg   | str                   | 必填   | 消息内容                                                     |
+| 参数  | 类型                  | 默认值 | 描述                                                             |
+| ----- | --------------------- | ------ | ---------------------------------------------------------------- |
+| msg   | str                   | 必填   | 消息内容                                                         |
 | who   | str                   | None   | 发送对象，不指定则发送给当前聊天对象，**当子窗口时，该参数无效** |
-| clear | bool                  | True   | 发送后是否清空编辑框                                         |
-| at    | Union[str, List[str]] | None   | @对象，不指定则不@任何人                                     |
-| exact | bool                  | False  | 搜索who好友时是否精确匹配，**当子窗口时，该参数无效**        |
+| clear | bool                  | True   | 发送后是否清空编辑框                                             |
+| at    | Union[str, List[str]] | None   | @对象，不指定则不@任何人                                         |
+| exact | bool                  | False  | 搜索who好友时是否精确匹配，**当子窗口时，该参数无效**            |
 
 **返回值**：
 
@@ -125,12 +125,12 @@ wx.SendTypingText(msg="你好", who="张三", clear=True, exact=False)
 
 **参数**：
 
-| 参数  | 类型 | 默认值 | 描述                                                         |
-| ----- | ---- | ------ | ------------------------------------------------------------ |
-| msg   | str  | 必填   | 要发送的文本消息                                             |
+| 参数  | 类型 | 默认值 | 描述                                                             |
+| ----- | ---- | ------ | ---------------------------------------------------------------- |
+| msg   | str  | 必填   | 要发送的文本消息                                                 |
 | who   | str  | None   | 发送对象，不指定则发送给当前聊天对象，**当子窗口时，该参数无效** |
-| clear | bool | True   | 是否清除原本的内容                                           |
-| exact | bool | False  | 搜索who好友时是否精确匹配，**当子窗口时，该参数无效**        |
+| clear | bool | True   | 是否清除原本的内容                                               |
+| exact | bool | False  | 搜索who好友时是否精确匹配，**当子窗口时，该参数无效**            |
 
 **返回值**：
 
@@ -152,11 +152,11 @@ wx.SendFiles(filepath="C:/文件.txt", who="张三", exact=False)
 
 **参数**：
 
-| 参数     | 类型      | 默认值 | 描述                                                         |
-| -------- | --------- | ------ | ------------------------------------------------------------ |
-| filepath | str\|list | 必填   | 要复制文件的绝对路径                                         |
+| 参数     | 类型      | 默认值 | 描述                                                             |
+| -------- | --------- | ------ | ---------------------------------------------------------------- |
+| filepath | str\|list | 必填   | 要复制文件的绝对路径                                             |
 | who      | str       | None   | 发送对象，不指定则发送给当前聊天对象，**当子窗口时，该参数无效** |
-| exact    | bool      | False  | 搜索who好友时是否精确匹配，**当子窗口时，该参数无效**        |
+| exact    | bool      | False  | 搜索who好友时是否精确匹配，**当子窗口时，该参数无效**            |
 
 **返回值**：
 
@@ -171,11 +171,11 @@ wx.SendEmotion(emotion_index=0, who="张三", exact=False)
 
 **参数**：
 
-| 参数          | 类型 | 默认值 | 描述                                                         |
-| ------------- | ---- | ------ | ------------------------------------------------------------ |
-| emotion_index | str  | 必填   | 表情索引，从0开始                                            |
+| 参数          | 类型 | 默认值 | 描述                                                             |
+| ------------- | ---- | ------ | ---------------------------------------------------------------- |
+| emotion_index | str  | 必填   | 表情索引，从0开始                                                |
 | who           | str  | None   | 发送对象，不指定则发送给当前聊天对象，**当子窗口时，该参数无效** |
-| exact         | bool | False  | 搜索who好友时是否精确匹配，**当子窗口时，该参数无效**        |
+| exact         | bool | False  | 搜索who好友时是否精确匹配，**当子窗口时，该参数无效**            |
 
 **返回值**：
 
@@ -242,10 +242,10 @@ wx.RemoveGroupMembers(group="群名", members=["成员名1", "成员名2"])
 
 **参数**：
 
-| 参数    | 类型    | 默认值 | 描述    |
-| ------- | ------- | ------ | ------- |
-| group   | str     | None   | 群名    |
-| members | str     | None   | 成员名  |
+| 参数    | 类型 | 默认值 | 描述   |
+| ------- | ---- | ------ | ------ |
+| group   | str  | None   | 群名   |
+| members | str  | None   | 成员名 |
 
 **返回值**：
 
@@ -267,15 +267,15 @@ else:
 
 **参数**：
 
-| 参数    | 类型    | 默认值 | 描述    |
-| ------- | ------- | ------ | ------- |
-| index   | int     | None   | 群聊索引 |
-| who     | str     | None   | 群名，当`Chat`对象时该参数无效，仅`WeChat`对象有效 |
-| addmsg  | str     | None   | 申请理由，当群主开启验证时需要，不填写则取消申请 |
-| remark  | str     | None   | 添加好友后的备注名 |
-| tags    | list    | None   | 添加好友后的标签 |
-| permission | Literal['朋友圈', '仅聊天'] | '仅聊天' | 添加好友后的权限 |
-| exact   | bool    | False  | 是否精确匹配群聊名 |
+| 参数       | 类型                        | 默认值   | 描述                                               |
+| ---------- | --------------------------- | -------- | -------------------------------------------------- |
+| index      | int                         | None     | 群聊索引                                           |
+| who        | str                         | None     | 群名，当`Chat`对象时该参数无效，仅`WeChat`对象有效 |
+| addmsg     | str                         | None     | 申请理由，当群主开启验证时需要，不填写则取消申请   |
+| remark     | str                         | None     | 添加好友后的备注名                                 |
+| tags       | list                        | None     | 添加好友后的标签                                   |
+| permission | Literal['朋友圈', '仅聊天'] | '仅聊天' | 添加好友后的权限                                   |
+| exact      | bool                        | False    | 是否精确匹配群聊名                                 |
 
 **返回值**：
 
@@ -290,9 +290,9 @@ wx.ManageFriend(tags=["标签1", "标签2"])
 
 **参数**：
 
-| 参数   | 类型    | 默认值 | 描述     |
-| ------ | ------- | ------ | -------- |
-| remark | str     | None   | 备注名   |
+| 参数   | 类型      | 默认值 | 描述     |
+| ------ | --------- | ------ | -------- |
+| remark | str       | None   | 备注名   |
 | tags   | List[str] | None   | 标签列表 |
 
 **返回值**：
@@ -312,13 +312,13 @@ wx.ManageGroup(quit=True)   # 谨慎使用
 
 **参数**：
 
-| 参数   | 类型    | 默认值 | 描述     |
-| ------ | ------- | ------ | -------- |
-| name   | str     | None   | 群名称   |
-| remark | str     | None   | 备注名   |
-| myname | str     | None   | 我的群昵称 |
-| notice | str     | None   | 群公告   |
-| quit   | bool    | False  | 是否退出群，当该项为True时，其他参数无效 |
+| 参数   | 类型 | 默认值 | 描述                                     |
+| ------ | ---- | ------ | ---------------------------------------- |
+| name   | str  | None   | 群名称                                   |
+| remark | str  | None   | 备注名                                   |
+| myname | str  | None   | 我的群昵称                               |
+| notice | str  | None   | 群公告                                   |
+| quit   | bool | False  | 是否退出群，当该项为True时，其他参数无效 |
 
 ### 关闭窗口 Close
 
@@ -330,15 +330,15 @@ wx.Close()
 
 **参数**：
 
-| 参数   | 类型    | 默认值 | 描述     |
-| ------ | ------- | ------ | -------- |
-| targets   | Union[List[str], str]     | None   | 要转发的对象  |
+| 参数    | 类型                  | 默认值 | 描述         |
+| ------- | --------------------- | ------ | ------------ |
+| targets | Union[List[str], str] | None   | 要转发的对象 |
 
 **返回值**：
 
 - 类型：[`WxResponse`](/docs/class/other/#wxresponse)
 - 描述：是否成功转发
-  
+
 ### 获取对话框 GetDialog
 
 ```python
@@ -348,9 +348,9 @@ if dialog := wx.GetDialog():
 
 **参数**：
 
-| 参数   | 类型    | 默认值 | 描述     |
-| ------ | ------- | ------ | -------- |
-| wait   | int     | 3   | 隐性等待时间  |
+| 参数 | 类型 | 默认值 | 描述         |
+| ---- | ---- | ------ | ------------ |
+| wait | int  | 3      | 隐性等待时间 |
 
 **返回值**：
 

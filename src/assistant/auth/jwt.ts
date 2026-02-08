@@ -62,7 +62,7 @@ export function getJwtSecret(): string {
   if (!secret) {
     throw new Error(
       "JWT_SECRET environment variable is not set. " +
-        "Please configure a secure random string for JWT signing."
+        "Please configure a secure random string for JWT signing.",
     );
   }
   if (secret.length < 32) {
@@ -78,10 +78,7 @@ export function getJwtSecret(): string {
  * @param options 可选配置
  * @returns Token 对 (accessToken + expiresIn)
  */
-export function generateAccessToken(
-  userId: string,
-  options?: { expiresIn?: string }
-): TokenPair {
+export function generateAccessToken(userId: string, options?: { expiresIn?: string }): TokenPair {
   const secret = getJwtSecret();
   const expiresIn = options?.expiresIn || TOKEN_CONFIG.accessTokenExpiresIn;
 
@@ -187,10 +184,7 @@ export function decodeToken(token: string): UserAccessTokenPayload | null {
  * @param thresholdSeconds 阈值秒数 (默认 5 分钟)
  * @returns 是否即将过期
  */
-export function isTokenExpiringSoon(
-  token: string,
-  thresholdSeconds: number = 5 * 60
-): boolean {
+export function isTokenExpiringSoon(token: string, thresholdSeconds: number = 5 * 60): boolean {
   const decoded = decodeToken(token);
   if (!decoded) return true;
 

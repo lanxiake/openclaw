@@ -44,6 +44,8 @@ import type { GatewayRequestContext, GatewayRequestHandlers } from "../../server
 import { handleGatewayRequest } from "../../server-methods.js";
 import { formatError } from "../../server-utils.js";
 import { formatForLog, logWs } from "../../ws-log.js";
+import type { AuthenticatedUser } from "../../user-context.js";
+import { verifyAccessToken } from "../../../assistant/auth/jwt.js";
 
 import { truncateCloseReason } from "../close-reason.js";
 import {
@@ -741,6 +743,38 @@ export function attachGatewayWsMessageHandler(params: {
           ? await ensureDeviceToken({ deviceId: device.id, role, scopes })
           : null;
 
+        // ============================================================================
+        // 用户认证 (多租户模式)
+        // 如果客户端提供了 userAuth.accessToken，验证并提取用户信息
+        // ============================================================================
+        let authenticatedUser: AuthenticatedUser | undefined;
+        const userAuthParams = (connectParams as { userAuth?: { accessToken?: string } }).userAuth;
+        if (userAuthParams?.accessToken) {
+          const tokenPayload = verifyAccessToken(userAuthParams.accessToken);
+          if (tokenPayload) {
+            authenticatedUser = {
+              userId: tokenPayload.sub,
+              authenticatedAt: new Date(tokenPayload.iat * 1000),
+              tokenExpiresAt: new Date(tokenPayload.exp * 1000),
+            };
+            logWsControl.info(`user authenticated conn=${connId} userId=${tokenPayload.sub}`);
+          } else {
+            // Token 无效，但不阻止连接 (向后兼容)
+            // 只是不设置 authenticatedUser，后续配额检查会拒绝需要认证的操作
+            logWsControl.warn(
+              `user auth failed conn=${connId} remote=${remoteAddr ?? "?"} client=${clientLabel} - invalid or expired token`,
+            );
+          }
+        }
+
+        // 解析客户端能力声明
+        const clientCaps = Array.isArray(connectParams.caps) ? connectParams.caps : [];
+        const capabilities = {
+          localSkillExecution: clientCaps.includes("skill.local"),
+          fileOperations: clientCaps.includes("file.ops"),
+          systemCommands: clientCaps.includes("system.cmd"),
+        };
+
         if (role === "node") {
           const cfg = loadConfig();
           const allowlist = resolveNodeCommandAllowlist(cfg, {
@@ -833,6 +867,8 @@ export function attachGatewayWsMessageHandler(params: {
           connect: connectParams,
           connId,
           presenceKey,
+          authenticatedUser,
+          capabilities,
         };
         setClient(nextClient);
         setHandshakeState("connected");

@@ -24,18 +24,18 @@ const logger = getLogger();
  * 回滚状态
  */
 export type RollbackStatus =
-  | "pending"     // 待回滚
+  | "pending" // 待回滚
   | "in_progress" // 回滚中
-  | "completed"   // 已完成
-  | "failed";     // 失败
+  | "completed" // 已完成
+  | "failed"; // 失败
 
 /**
  * 回滚类型
  */
 export type RollbackType =
-  | "full"        // 完整回滚
-  | "partial"     // 部分回滚 (指定用户/设备)
-  | "dry_run";    // 模拟运行
+  | "full" // 完整回滚
+  | "partial" // 部分回滚 (指定用户/设备)
+  | "dry_run"; // 模拟运行
 
 /**
  * 回滚任务
@@ -203,7 +203,7 @@ export class MigrationRollbackService {
       reason?: string;
       userIds?: string[];
       deviceIds?: string[];
-    }
+    },
   ): Promise<RollbackResult> {
     if (!this.getMigratedUsers || !this.getUserDevices) {
       throw new Error("未设置必要的回调");
@@ -246,9 +246,7 @@ export class MigrationRollbackService {
       let usersToProcess = users.filter(isVirtual);
 
       if (type === "partial" && options?.userIds) {
-        usersToProcess = usersToProcess.filter((u) =>
-          options.userIds!.includes(u.id)
-        );
+        usersToProcess = usersToProcess.filter((u) => options.userIds!.includes(u.id));
       }
 
       logger.info("[rollback] 找到虚拟用户", {

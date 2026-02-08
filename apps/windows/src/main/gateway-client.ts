@@ -7,6 +7,9 @@
 
 import WebSocket from 'ws'
 import { EventEmitter } from 'events'
+import type { SkillExecuteRequest, SkillExecuteResult } from '../../../../src/gateway/protocol/skill-execution'
+import { SKILL_EXECUTE_EVENT, SKILL_RESULT_METHOD } from '../../../../src/gateway/protocol/skill-execution'
+import type { ClientSkillRuntime } from './skill-runtime'
 
 // 日志输出
 const log = {
@@ -109,6 +112,7 @@ export interface GatewayClientEvents {
   message: (message: Message) => void
   'confirm:request': (request: ConfirmRequest) => void
   'command:execute': (request: CommandExecuteRequest) => void
+  'skill:execute': (request: SkillExecuteRequest) => void
 }
 
 /**
@@ -151,6 +155,7 @@ export class GatewayClient extends EventEmitter {
   private _isConnected = false
   private handshakeComplete = false
   private connectNonce: string | null = null
+  private skillRuntime: ClientSkillRuntime | null = null
 
   constructor(config: GatewayClientConfig) {
     super()
@@ -162,6 +167,21 @@ export class GatewayClient extends EventEmitter {
       heartbeatInterval: config.heartbeatInterval ?? 30000,
       requestTimeout: config.requestTimeout ?? 30000,
     }
+  }
+
+  /**
+   * 设置技能运行时
+   */
+  setSkillRuntime(runtime: ClientSkillRuntime): void {
+    this.skillRuntime = runtime
+    log.info('SkillRuntime 已设置')
+  }
+
+  /**
+   * 获取技能运行时
+   */
+  getSkillRuntime(): ClientSkillRuntime | null {
+    return this.skillRuntime
   }
 
   /**
@@ -303,7 +323,12 @@ export class GatewayClient extends EventEmitter {
         platform: 'win32',
         mode: 'ui', // 使用有效的客户端 mode
       },
-      caps: [],
+      // 声明客户端能力
+      caps: [
+        'skill.local',    // 支持本地技能执行
+        'file.ops',       // 支持文件操作
+        'system.cmd',     // 支持系统命令
+      ],
       auth: this.config.token ? { token: this.config.token } : undefined,
       role: 'operator',
       scopes: ['operator.admin'],
@@ -420,11 +445,73 @@ export class GatewayClient extends EventEmitter {
           return
         }
 
+        // 技能执行请求
+        if (message.event === SKILL_EXECUTE_EVENT) {
+          log.info('收到技能执行请求:', message.payload)
+          const request = message.payload as SkillExecuteRequest
+          this.emit('skill:execute', request)
+          // 如果有 SkillRuntime，自动执行技能
+          this.handleSkillExecuteRequest(request)
+          return
+        }
+
         // 其他事件
         this.emit('message', message)
       }
     } catch (error) {
       log.error('解析消息失败:', error)
+    }
+  }
+
+  /**
+   * 处理技能执行请求
+   */
+  private async handleSkillExecuteRequest(request: SkillExecuteRequest): Promise<void> {
+    if (!this.skillRuntime) {
+      log.warn('SkillRuntime 未设置，无法执行技能')
+      // 返回错误结果
+      const errorResult: SkillExecuteResult = {
+        requestId: request.requestId,
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'SkillRuntime not initialized',
+        },
+        executionTimeMs: 0,
+      }
+      await this.sendSkillResult(errorResult)
+      return
+    }
+
+    try {
+      log.info(`开始执行技能: ${request.skillId}`)
+      const result = await this.skillRuntime.executeSkill(request)
+      log.info(`技能执行完成: ${request.skillId}`, result)
+      await this.sendSkillResult(result)
+    } catch (error) {
+      log.error(`技能执行失败: ${request.skillId}`, error)
+      const errorResult: SkillExecuteResult = {
+        requestId: request.requestId,
+        success: false,
+        error: {
+          code: 'EXECUTION_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+        executionTimeMs: 0,
+      }
+      await this.sendSkillResult(errorResult)
+    }
+  }
+
+  /**
+   * 发送技能执行结果到 Gateway
+   */
+  private async sendSkillResult(result: SkillExecuteResult): Promise<void> {
+    try {
+      await this.call(SKILL_RESULT_METHOD, result)
+      log.info(`技能结果已发送: ${result.requestId}`)
+    } catch (error) {
+      log.error(`发送技能结果失败: ${result.requestId}`, error)
     }
   }
 

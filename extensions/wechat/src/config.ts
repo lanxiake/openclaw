@@ -26,9 +26,7 @@ function resolveAuthToken(params: {
 
   // Priority: account config > base config > env var > cached generated
   const configuredToken =
-    accountConfig?.authToken ??
-    baseConfig?.authToken ??
-    process.env.WECHAT_AUTH_TOKEN;
+    accountConfig?.authToken ?? baseConfig?.authToken ?? process.env.WECHAT_AUTH_TOKEN;
 
   if (configuredToken) {
     return configuredToken;
@@ -45,7 +43,7 @@ function resolveAuthToken(params: {
       `[wechat:${accountId}] Generated auth token: ${cachedToken}\n` +
         `  Configure your bridge with: --token ${cachedToken}\n` +
         `  Or set WECHAT_AUTH_TOKEN environment variable\n` +
-        `  Or add to config: channels.wechat.authToken: "${cachedToken}"`
+        `  Or add to config: channels.wechat.authToken: "${cachedToken}"`,
     );
   }
   return cachedToken;
@@ -132,8 +130,7 @@ export function resolveWeChatAccount(params: {
   }
 
   // Resolve enabled state
-  const enabled =
-    accountConfig?.enabled ?? wechat?.enabled ?? bridgeUrlSource !== "none";
+  const enabled = accountConfig?.enabled ?? wechat?.enabled ?? bridgeUrlSource !== "none";
 
   // Resolve name
   const name = accountConfig?.name ?? wechat?.name ?? accountId;

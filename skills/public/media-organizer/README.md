@@ -21,21 +21,25 @@ This skill is ready to use. No additional dependencies required except PowerShel
 ### Quick Start
 
 1. **Organize media files**:
+
    ```powershell
    powershell -ExecutionPolicy Bypass -File "scripts/organize_media.ps1" -SourcePath "E:\" -TargetBase "E:\Photos-Videos"
    ```
 
 2. **Generate media list**:
+
    ```powershell
    powershell -ExecutionPolicy Bypass -File "scripts/generate_media_list.ps1" -BasePath "E:\Photos-Videos"
    ```
 
 3. **Copy gallery template**:
+
    ```powershell
    Copy-Item "assets/index.html" -Destination "E:\Photos-Videos\index.html"
    ```
 
 4. **Start web server** (optional):
+
    ```powershell
    powershell -ExecutionPolicy Bypass -File "scripts/start_server.ps1" -Port 8080 -Path "E:\Photos-Videos"
    ```
@@ -70,6 +74,7 @@ powershell -ExecutionPolicy Bypass -File "test_skill.ps1"
 ```
 
 The test suite will:
+
 - Verify skill structure
 - Create test media files
 - Run organization scripts
@@ -83,6 +88,7 @@ The test suite will:
 Scans source path for media files and organizes them by date.
 
 **Parameters:**
+
 - `-SourcePath`: Source drive/folder to scan (default: E:\)
 - `-TargetBase`: Destination folder for organized files (default: E:\Photos-Videos)
 
@@ -91,6 +97,7 @@ Scans source path for media files and organizes them by date.
 Generates media_list.json for the web gallery.
 
 **Parameters:**
+
 - `-BasePath`: Root path of organized media (default: E:\Photos-Videos)
 
 ### start_server.ps1
@@ -98,6 +105,7 @@ Generates media_list.json for the web gallery.
 Starts a local HTTP server for browsing the gallery.
 
 **Parameters:**
+
 - `-Port`: Server port (default: 8080)
 - `-Path`: Gallery root path (default: E:\Photos-Videos)
 
@@ -146,6 +154,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ## Test Results
 
 ✅ All 12 tests passed:
+
 1. Skill structure validation
 2. Required scripts exist
 3. Required assets exist

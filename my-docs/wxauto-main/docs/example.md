@@ -94,6 +94,7 @@ wx.SendTypingText("各位好：\n{@张三} 请负责前端部分\n{@李四} 请�
 ### 5. 获取多个微信客户端/登录窗口
 
 #### 5.1 获取多个微信客户端
+
 ```python
 from wxauto import get_wx_clients
 

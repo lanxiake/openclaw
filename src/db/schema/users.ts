@@ -4,15 +4,7 @@
  * 用户只管理身份标识，不包含权限（权限在设备层）
  */
 
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  jsonb,
-  index,
-  uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations, sql } from "drizzle-orm";
 
@@ -55,13 +47,9 @@ export const users = pgTable(
     /** 上次登录时间 */
     lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     /** 更新时间 */
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
     /** 用户偏好设置 (JSON) */
     preferences: jsonb("preferences").$type<UserPreferences>(),
     /** 用户配置 (JSON) */
@@ -84,7 +72,7 @@ export const users = pgTable(
     index("users_created_at_idx").on(table.createdAt),
     // 索引：活跃状态
     index("users_is_active_idx").on(table.isActive),
-  ]
+  ],
 );
 
 /**
@@ -123,23 +111,18 @@ export const userDevices = pgTable(
     /** 是否为主设备 */
     isPrimary: boolean("is_primary").default(false).notNull(),
     /** 绑定时间 */
-    linkedAt: timestamp("linked_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    linkedAt: timestamp("linked_at", { withTimezone: true }).defaultNow().notNull(),
     /** 最后活跃时间 */
     lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
   },
   (table) => [
     // 联合唯一索引：用户+设备
-    uniqueIndex("user_devices_user_device_unique_idx").on(
-      table.userId,
-      table.deviceId
-    ),
+    uniqueIndex("user_devices_user_device_unique_idx").on(table.userId, table.deviceId),
     // 索引：用户 ID
     index("user_devices_user_id_idx").on(table.userId),
     // 索引：设备 ID
     index("user_devices_device_id_idx").on(table.deviceId),
-  ]
+  ],
 );
 
 /**
@@ -167,9 +150,7 @@ export const userSessions = pgTable(
     /** 是否已撤销 */
     revoked: boolean("revoked").default(false).notNull(),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     /** 最后刷新时间 */
     lastRefreshedAt: timestamp("last_refreshed_at", { withTimezone: true }),
   },
@@ -180,7 +161,7 @@ export const userSessions = pgTable(
     index("user_sessions_refresh_token_hash_idx").on(table.refreshTokenHash),
     // 索引：过期时间 (用于清理)
     index("user_sessions_expires_at_idx").on(table.expiresAt),
-  ]
+  ],
 );
 
 /**
@@ -208,21 +189,16 @@ export const loginAttempts = pgTable(
     /** User Agent */
     userAgent: text("user_agent"),
     /** 尝试时间 */
-    attemptedAt: timestamp("attempted_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    attemptedAt: timestamp("attempted_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 联合索引：标识+IP (用于计数)
-    index("login_attempts_identifier_ip_idx").on(
-      table.identifier,
-      table.ipAddress
-    ),
+    index("login_attempts_identifier_ip_idx").on(table.identifier, table.ipAddress),
     // 索引：尝试时间 (用于清理过期记录)
     index("login_attempts_attempted_at_idx").on(table.attemptedAt),
     // 索引：IP 地址 (用于 IP 级别限流)
     index("login_attempts_ip_address_idx").on(table.ipAddress),
-  ]
+  ],
 );
 
 /**
@@ -254,19 +230,14 @@ export const verificationCodes = pgTable(
     /** 尝试次数 */
     attempts: text("attempts").default("0").notNull(),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 联合索引：目标+用途 (用于查找最新验证码)
-    index("verification_codes_target_purpose_idx").on(
-      table.target,
-      table.purpose
-    ),
+    index("verification_codes_target_purpose_idx").on(table.target, table.purpose),
     // 索引：过期时间 (用于清理)
     index("verification_codes_expires_at_idx").on(table.expiresAt),
-  ]
+  ],
 );
 
 /**
@@ -306,10 +277,8 @@ export const insertUserSessionSchema = createInsertSchema(userSessions);
 export const selectUserSessionSchema = createSelectSchema(userSessions);
 export const insertLoginAttemptSchema = createInsertSchema(loginAttempts);
 export const selectLoginAttemptSchema = createSelectSchema(loginAttempts);
-export const insertVerificationCodeSchema =
-  createInsertSchema(verificationCodes);
-export const selectVerificationCodeSchema =
-  createSelectSchema(verificationCodes);
+export const insertVerificationCodeSchema = createInsertSchema(verificationCodes);
+export const selectVerificationCodeSchema = createSelectSchema(verificationCodes);
 
 // 类型导出
 export type User = typeof users.$inferSelect;

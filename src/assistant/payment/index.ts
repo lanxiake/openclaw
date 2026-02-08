@@ -13,7 +13,7 @@
  */
 
 // 导出类型
-export * from './types.js'
+export * from "./types.js";
 
 // 导出服务函数
 export {
@@ -37,7 +37,7 @@ export {
   getPaymentConfig,
   updatePaymentConfig,
   getAvailableProviders,
-} from './service.js'
+} from "./service.js";
 
 // 导出微信支付
 export {
@@ -55,7 +55,7 @@ export {
   type WechatTradeType,
   type WechatPayNotification,
   type WechatPayResult,
-} from './providers/wechat-pay.js'
+} from "./providers/wechat-pay.js";
 
 // 导出支付宝支付
 export {
@@ -74,7 +74,7 @@ export {
   type AlipayTradeType,
   type AlipayNotification,
   type AlipayQueryResponse,
-} from './providers/alipay.js'
+} from "./providers/alipay.js";
 
 // 导出回调处理器
 export {
@@ -89,7 +89,7 @@ export {
   type OrderUpdateCallback,
   type TransactionRecordCallback,
   type WechatCallbackRequest,
-} from './providers/callback-handler.js'
+} from "./providers/callback-handler.js";
 
 // 导出优惠券系统
 export {
@@ -116,7 +116,7 @@ export {
   type ValidateCouponRequest,
   type ValidateCouponResponse,
   type CouponErrorCode,
-} from './coupon.js'
+} from "./coupon.js";
 
 // 导出自动续费
 export {
@@ -131,4 +131,4 @@ export {
   type RenewalNotification,
   type RenewalNotificationType,
   type RenewalConfig,
-} from './auto-renewal.js'
+} from "./auto-renewal.js";

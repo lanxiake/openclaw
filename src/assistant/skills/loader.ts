@@ -65,9 +65,7 @@ function getDefaultSkillDirs(): { builtin: string; installed: string } {
 /**
  * 发现技能候选项
  */
-async function discoverSkillCandidates(
-  config: SkillLoaderConfig
-): Promise<SkillCandidate[]> {
+async function discoverSkillCandidates(config: SkillLoaderConfig): Promise<SkillCandidate[]> {
   const candidates: SkillCandidate[] = [];
   const defaults = getDefaultSkillDirs();
 
@@ -172,7 +170,7 @@ async function parseSkillManifest(manifestPath: string): Promise<SkillManifest |
  */
 async function loadSkillModule(
   skillDir: string,
-  manifest: SkillManifest
+  manifest: SkillManifest,
 ): Promise<AssistantSkillDefinition | null> {
   const mainPath = join(skillDir, manifest.main);
 
@@ -216,13 +214,9 @@ function createSkillRecord(
   candidate: SkillCandidate,
   manifest: SkillManifest,
   definition: AssistantSkillDefinition | null,
-  error?: string
+  error?: string,
 ): SkillRecord {
-  const status: SkillLoadStatus = error
-    ? "error"
-    : definition
-      ? "loaded"
-      : "pending";
+  const status: SkillLoadStatus = error ? "error" : definition ? "loaded" : "pending";
 
   return {
     id: manifest.metadata.id,
@@ -309,9 +303,7 @@ function buildSkillIndexes(registry: SkillRegistry): void {
 /**
  * 加载所有技能
  */
-export async function loadAssistantSkills(
-  config: SkillLoaderConfig = {}
-): Promise<SkillRegistry> {
+export async function loadAssistantSkills(config: SkillLoaderConfig = {}): Promise<SkillRegistry> {
   log.info("开始加载 AI 助理技能");
 
   const registry = createEmptySkillRegistry();
@@ -376,10 +368,7 @@ export async function loadAssistantSkills(
 /**
  * 卸载技能
  */
-export async function unloadSkill(
-  registry: SkillRegistry,
-  skillId: string
-): Promise<boolean> {
+export async function unloadSkill(registry: SkillRegistry, skillId: string): Promise<boolean> {
   const record = registry.skills.get(skillId);
 
   if (!record) {
@@ -411,10 +400,7 @@ export async function unloadSkill(
 /**
  * 重新加载技能
  */
-export async function reloadSkill(
-  registry: SkillRegistry,
-  skillId: string
-): Promise<boolean> {
+export async function reloadSkill(registry: SkillRegistry, skillId: string): Promise<boolean> {
   const record = registry.skills.get(skillId);
 
   if (!record) {
@@ -436,7 +422,7 @@ export async function reloadSkill(
   const newRecord = createSkillRecord(
     { path: record.source, manifestPath: join(record.source, "skill.json"), origin: record.origin },
     manifest,
-    definition
+    definition,
   );
 
   if (definition?.init) {
@@ -461,10 +447,7 @@ export async function reloadSkill(
 /**
  * 根据命令查找技能
  */
-export function findSkillByCommand(
-  registry: SkillRegistry,
-  command: string
-): SkillRecord | null {
+export function findSkillByCommand(registry: SkillRegistry, command: string): SkillRecord | null {
   const skillId = registry.commandMap.get(command);
 
   if (!skillId) {
@@ -477,10 +460,7 @@ export function findSkillByCommand(
 /**
  * 根据关键词查找技能
  */
-export function findSkillsByKeyword(
-  registry: SkillRegistry,
-  keyword: string
-): SkillRecord[] {
+export function findSkillsByKeyword(registry: SkillRegistry, keyword: string): SkillRecord[] {
   const skillIds = registry.keywordMap.get(keyword) || [];
   return skillIds
     .map((id) => registry.skills.get(id))
@@ -522,7 +502,7 @@ export interface SkillInstallOptions {
  */
 export async function installSkill(
   registry: SkillRegistry,
-  options: SkillInstallOptions
+  options: SkillInstallOptions,
 ): Promise<{ success: boolean; skillId?: string; error?: string }> {
   const { sourceUrl, localPath, force } = options;
 
@@ -564,7 +544,7 @@ export async function installSkill(
     const record = createSkillRecord(
       { path: skillDir, manifestPath, origin: "installed" },
       manifest,
-      definition
+      definition,
     );
 
     // 初始化技能
@@ -595,10 +575,7 @@ export async function installSkill(
 /**
  * 启用技能
  */
-export async function enableSkill(
-  registry: SkillRegistry,
-  skillId: string
-): Promise<boolean> {
+export async function enableSkill(registry: SkillRegistry, skillId: string): Promise<boolean> {
   const record = registry.skills.get(skillId);
 
   if (!record) {
@@ -623,10 +600,7 @@ export async function enableSkill(
 /**
  * 禁用技能
  */
-export async function disableSkill(
-  registry: SkillRegistry,
-  skillId: string
-): Promise<boolean> {
+export async function disableSkill(registry: SkillRegistry, skillId: string): Promise<boolean> {
   const record = registry.skills.get(skillId);
 
   if (!record) {
@@ -665,7 +639,7 @@ export async function disableSkill(
  */
 export async function toggleSkillStatus(
   registry: SkillRegistry,
-  skillId: string
+  skillId: string,
 ): Promise<{ enabled: boolean; error?: string }> {
   const record = registry.skills.get(skillId);
 
@@ -699,10 +673,7 @@ export function getSkillConfig(skillId: string): Record<string, unknown> | null 
 /**
  * 设置技能配置
  */
-export function setSkillConfig(
-  skillId: string,
-  config: Record<string, unknown>
-): void {
+export function setSkillConfig(skillId: string, config: Record<string, unknown>): void {
   skillConfigs.set(skillId, config);
   log.debug(`技能配置已更新: ${skillId}`, { keys: Object.keys(config) });
 }

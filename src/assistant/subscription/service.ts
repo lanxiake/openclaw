@@ -214,7 +214,7 @@ async function logSubscriptionEvent(
   type: SubscriptionEventType,
   userId: string,
   subscriptionId: string | undefined,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): Promise<void> {
   ensureDataDir();
   const filePath = getEventsFilePath();
@@ -262,9 +262,7 @@ function calculatePeriodEnd(start: Date, period: BillingPeriod): Date {
 /**
  * 获取用户订阅
  */
-export async function getUserSubscription(
-  userId: string
-): Promise<UserSubscription | null> {
+export async function getUserSubscription(userId: string): Promise<UserSubscription | null> {
   const store = await loadSubscriptions();
   const subscriptionId = store.userSubscriptions.get(userId);
   if (!subscriptionId) {
@@ -308,7 +306,7 @@ export function isSubscriptionActive(subscription: UserSubscription): boolean {
  * 创建订阅
  */
 export async function createSubscription(
-  request: CreateSubscriptionRequest
+  request: CreateSubscriptionRequest,
 ): Promise<UserSubscription> {
   const store = await loadSubscriptions();
 
@@ -363,7 +361,7 @@ export async function createSubscription(
  * 更新订阅
  */
 export async function updateSubscription(
-  request: UpdateSubscriptionRequest
+  request: UpdateSubscriptionRequest,
 ): Promise<UserSubscription> {
   const store = await loadSubscriptions();
   const subscription = store.subscriptions.get(request.subscriptionId);
@@ -389,12 +387,9 @@ export async function updateSubscription(
   subscription.updatedAt = now.toISOString();
 
   await saveSubscriptions();
-  await logSubscriptionEvent(
-    "subscription.updated",
-    subscription.userId,
-    subscription.id,
-    { changes: request }
-  );
+  await logSubscriptionEvent("subscription.updated", subscription.userId, subscription.id, {
+    changes: request,
+  });
 
   log.info("更新订阅", {
     subscriptionId: subscription.id,
@@ -408,7 +403,7 @@ export async function updateSubscription(
  * 取消订阅
  */
 export async function cancelSubscription(
-  request: CancelSubscriptionRequest
+  request: CancelSubscriptionRequest,
 ): Promise<UserSubscription> {
   const store = await loadSubscriptions();
   const subscription = store.subscriptions.get(request.subscriptionId);
@@ -429,16 +424,11 @@ export async function cancelSubscription(
   subscription.updatedAt = now.toISOString();
 
   await saveSubscriptions();
-  await logSubscriptionEvent(
-    "subscription.canceled",
-    subscription.userId,
-    subscription.id,
-    {
-      immediately: request.immediately,
-      reason: request.reason,
-      feedback: request.feedback,
-    }
-  );
+  await logSubscriptionEvent("subscription.canceled", subscription.userId, subscription.id, {
+    immediately: request.immediately,
+    reason: request.reason,
+    feedback: request.feedback,
+  });
 
   log.info("取消订阅", {
     subscriptionId: subscription.id,
@@ -451,9 +441,7 @@ export async function cancelSubscription(
 /**
  * 续订订阅
  */
-export async function renewSubscription(
-  subscriptionId: string
-): Promise<UserSubscription> {
+export async function renewSubscription(subscriptionId: string): Promise<UserSubscription> {
   const store = await loadSubscriptions();
   const subscription = store.subscriptions.get(subscriptionId);
 
@@ -472,14 +460,9 @@ export async function renewSubscription(
   subscription.updatedAt = now.toISOString();
 
   await saveSubscriptions();
-  await logSubscriptionEvent(
-    "subscription.renewed",
-    subscription.userId,
-    subscription.id,
-    {
-      newPeriodEnd: newPeriodEnd.toISOString(),
-    }
-  );
+  await logSubscriptionEvent("subscription.renewed", subscription.userId, subscription.id, {
+    newPeriodEnd: newPeriodEnd.toISOString(),
+  });
 
   log.info("续订订阅", { subscriptionId });
 
@@ -562,7 +545,7 @@ export async function getUserMonthlyUsage(userId: string): Promise<UserUsage> {
 export async function incrementUsage(
   userId: string,
   type: "conversations" | "aiCalls" | "skillExecutions" | "fileOperations",
-  amount: number = 1
+  amount: number = 1,
 ): Promise<void> {
   const dailyUsage = await getUserDailyUsage(userId);
   const monthlyUsage = await getUserMonthlyUsage(userId);
@@ -582,7 +565,7 @@ export async function incrementUsage(
  */
 export async function checkQuota(
   userId: string,
-  quotaType: "conversations" | "aiCalls" | "skills" | "devices" | "storage"
+  quotaType: "conversations" | "aiCalls" | "skills" | "devices" | "storage",
 ): Promise<QuotaCheckResult> {
   const plan = await getUserPlan(userId);
   const quotas = plan.quotas;
@@ -679,10 +662,7 @@ export function getPlan(planId: SubscriptionPlanId): SubscriptionPlan | null {
 /**
  * 比较两个计划
  */
-export function comparePlans(
-  planIdA: SubscriptionPlanId,
-  planIdB: SubscriptionPlanId
-): number {
+export function comparePlans(planIdA: SubscriptionPlanId, planIdB: SubscriptionPlanId): number {
   const planA = DEFAULT_SUBSCRIPTION_PLANS.find((p) => p.id === planIdA);
   const planB = DEFAULT_SUBSCRIPTION_PLANS.find((p) => p.id === planIdB);
 
@@ -695,7 +675,7 @@ export function comparePlans(
  */
 export function canUpgrade(
   currentPlanId: SubscriptionPlanId,
-  targetPlanId: SubscriptionPlanId
+  targetPlanId: SubscriptionPlanId,
 ): boolean {
   return comparePlans(currentPlanId, targetPlanId) < 0;
 }
@@ -705,7 +685,7 @@ export function canUpgrade(
  */
 export function canDowngrade(
   currentPlanId: SubscriptionPlanId,
-  targetPlanId: SubscriptionPlanId
+  targetPlanId: SubscriptionPlanId,
 ): boolean {
   return comparePlans(currentPlanId, targetPlanId) > 0;
 }

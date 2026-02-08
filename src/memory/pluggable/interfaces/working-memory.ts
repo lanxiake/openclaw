@@ -7,7 +7,7 @@
  * @module memory/pluggable/interfaces
  */
 
-import type { IMemoryProvider, HealthStatus } from './memory-provider.js'
+import type { IMemoryProvider, HealthStatus } from "./memory-provider.js";
 
 // ==================== 基础类型 ====================
 
@@ -16,28 +16,28 @@ import type { IMemoryProvider, HealthStatus } from './memory-provider.js'
  */
 export interface SessionOptions {
   /** 上下文窗口大小（tokens） */
-  contextWindow?: number
+  contextWindow?: number;
   /** 会话超时时间（毫秒），默认 30 分钟 */
-  ttl?: number
+  ttl?: number;
   /** 额外元数据 */
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>;
 }
 
 /**
  * 消息角色
  */
-export type MessageRole = 'user' | 'assistant' | 'system' | 'tool'
+export type MessageRole = "user" | "assistant" | "system" | "tool";
 
 /**
  * 工具调用
  */
 export interface ToolCall {
   /** 调用 ID */
-  id: string
+  id: string;
   /** 工具名称 */
-  name: string
+  name: string;
   /** 调用参数 */
-  arguments: Record<string, unknown>
+  arguments: Record<string, unknown>;
 }
 
 /**
@@ -45,11 +45,11 @@ export interface ToolCall {
  */
 export interface ToolResult {
   /** 对应的调用 ID */
-  callId: string
+  callId: string;
   /** 执行输出 */
-  output: unknown
+  output: unknown;
   /** 错误信息（如果失败） */
-  error?: string
+  error?: string;
 }
 
 /**
@@ -57,19 +57,19 @@ export interface ToolResult {
  */
 export interface Message {
   /** 消息 ID */
-  id: string
+  id: string;
   /** 发送者角色 */
-  role: MessageRole
+  role: MessageRole;
   /** 消息内容 */
-  content: string
+  content: string;
   /** 工具调用列表（assistant 消息可能包含） */
-  toolCalls?: ToolCall[]
+  toolCalls?: ToolCall[];
   /** 工具执行结果（tool 消息包含） */
-  toolResult?: ToolResult
+  toolResult?: ToolResult;
   /** 额外元数据 */
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>;
   /** 创建时间 */
-  createdAt: Date
+  createdAt: Date;
 }
 
 /**
@@ -77,19 +77,19 @@ export interface Message {
  */
 export interface ToolState {
   /** 调用 ID */
-  callId: string
+  callId: string;
   /** 工具名称 */
-  name: string
+  name: string;
   /** 执行状态 */
-  status: 'pending' | 'running' | 'completed' | 'failed'
+  status: "pending" | "running" | "completed" | "failed";
   /** 开始时间 */
-  startedAt: Date
+  startedAt: Date;
   /** 完成时间 */
-  completedAt?: Date
+  completedAt?: Date;
   /** 执行结果 */
-  result?: unknown
+  result?: unknown;
   /** 错误信息 */
-  error?: string
+  error?: string;
 }
 
 /**
@@ -99,17 +99,17 @@ export interface ToolState {
  */
 export interface PendingConfirm {
   /** 确认 ID */
-  id: string
+  id: string;
   /** 操作描述 */
-  operation: string
+  operation: string;
   /** 操作类型 */
-  type: 'destructive' | 'sensitive' | 'cost'
+  type: "destructive" | "sensitive" | "cost";
   /** 操作详情 */
-  details: Record<string, unknown>
+  details: Record<string, unknown>;
   /** 过期时间 */
-  expiresAt: Date
+  expiresAt: Date;
   /** 创建时间 */
-  createdAt: Date
+  createdAt: Date;
 }
 
 /**
@@ -119,25 +119,25 @@ export interface PendingConfirm {
  */
 export interface WorkingMemory {
   /** 会话 ID */
-  sessionId: string
+  sessionId: string;
   /** 用户 ID */
-  userId: string
+  userId: string;
   /** 对话消息列表 */
-  messages: Message[]
+  messages: Message[];
   /** 上下文窗口大小（tokens） */
-  contextWindow: number
+  contextWindow: number;
   /** 正在执行的工具状态 */
-  activeTools: ToolState[]
+  activeTools: ToolState[];
   /** 待确认操作队列 */
-  pendingConfirms: PendingConfirm[]
+  pendingConfirms: PendingConfirm[];
   /** 临时变量存储 */
-  variables: Record<string, unknown>
+  variables: Record<string, unknown>;
   /** 创建时间 */
-  createdAt: Date
+  createdAt: Date;
   /** 最后活动时间 */
-  lastActiveAt: Date
+  lastActiveAt: Date;
   /** 超时时间（毫秒） */
-  ttl: number
+  ttl: number;
 }
 
 /**
@@ -147,17 +147,17 @@ export interface WorkingMemory {
  */
 export interface SessionInfo {
   /** 会话 ID */
-  sessionId: string
+  sessionId: string;
   /** 用户 ID */
-  userId: string
+  userId: string;
   /** 消息数量 */
-  messageCount: number
+  messageCount: number;
   /** 创建时间 */
-  createdAt: Date
+  createdAt: Date;
   /** 最后活动时间 */
-  lastActiveAt: Date
+  lastActiveAt: Date;
   /** 超时时间（毫秒） */
-  ttl: number
+  ttl: number;
 }
 
 // ==================== 提供者接口 ====================
@@ -189,7 +189,7 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param options - 会话选项
    * @returns 新会话 ID
    */
-  createSession(userId: string, options?: SessionOptions): Promise<string>
+  createSession(userId: string, options?: SessionOptions): Promise<string>;
 
   /**
    * 获取会话
@@ -197,7 +197,7 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param sessionId - 会话 ID
    * @returns 会话对象，不存在或已过期返回 null
    */
-  getSession(sessionId: string): Promise<WorkingMemory | null>
+  getSession(sessionId: string): Promise<WorkingMemory | null>;
 
   /**
    * 更新会话
@@ -205,14 +205,14 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param sessionId - 会话 ID
    * @param updates - 要更新的字段
    */
-  updateSession(sessionId: string, updates: Partial<WorkingMemory>): Promise<void>
+  updateSession(sessionId: string, updates: Partial<WorkingMemory>): Promise<void>;
 
   /**
    * 删除会话
    *
    * @param sessionId - 会话 ID
    */
-  deleteSession(sessionId: string): Promise<void>
+  deleteSession(sessionId: string): Promise<void>;
 
   /**
    * 列出用户的所有会话
@@ -220,7 +220,7 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param userId - 用户 ID
    * @returns 会话信息列表，按最后活动时间降序排列
    */
-  listSessions(userId: string): Promise<SessionInfo[]>
+  listSessions(userId: string): Promise<SessionInfo[]>;
 
   // ==================== 消息管理 ====================
 
@@ -231,7 +231,7 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param message - 消息内容（不含 id 和 createdAt）
    * @returns 新消息 ID
    */
-  addMessage(sessionId: string, message: Omit<Message, 'id' | 'createdAt'>): Promise<string>
+  addMessage(sessionId: string, message: Omit<Message, "id" | "createdAt">): Promise<string>;
 
   /**
    * 获取会话消息
@@ -240,7 +240,7 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param limit - 最大返回数量（从最新开始）
    * @returns 消息列表
    */
-  getMessages(sessionId: string, limit?: number): Promise<Message[]>
+  getMessages(sessionId: string, limit?: number): Promise<Message[]>;
 
   /**
    * 获取上下文窗口
@@ -251,7 +251,7 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param maxTokens - 最大 token 数
    * @returns 消息列表
    */
-  getContextWindow(sessionId: string, maxTokens: number): Promise<Message[]>
+  getContextWindow(sessionId: string, maxTokens: number): Promise<Message[]>;
 
   // ==================== 状态管理 ====================
 
@@ -262,7 +262,7 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param key - 变量名
    * @param value - 变量值
    */
-  setVariable(sessionId: string, key: string, value: unknown): Promise<void>
+  setVariable(sessionId: string, key: string, value: unknown): Promise<void>;
 
   /**
    * 获取临时变量
@@ -271,14 +271,14 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param key - 变量名
    * @returns 变量值，不存在返回 undefined
    */
-  getVariable(sessionId: string, key: string): Promise<unknown>
+  getVariable(sessionId: string, key: string): Promise<unknown>;
 
   /**
    * 清除所有临时变量
    *
    * @param sessionId - 会话 ID
    */
-  clearVariables(sessionId: string): Promise<void>
+  clearVariables(sessionId: string): Promise<void>;
 
   // ==================== 工具状态 ====================
 
@@ -288,7 +288,7 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param sessionId - 会话 ID
    * @param state - 工具状态（不含 startedAt）
    */
-  addToolState(sessionId: string, state: Omit<ToolState, 'startedAt'>): Promise<void>
+  addToolState(sessionId: string, state: Omit<ToolState, "startedAt">): Promise<void>;
 
   /**
    * 更新工具执行状态
@@ -297,7 +297,7 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param callId - 调用 ID
    * @param updates - 要更新的字段
    */
-  updateToolState(sessionId: string, callId: string, updates: Partial<ToolState>): Promise<void>
+  updateToolState(sessionId: string, callId: string, updates: Partial<ToolState>): Promise<void>;
 
   /**
    * 获取所有工具状态
@@ -305,7 +305,7 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param sessionId - 会话 ID
    * @returns 工具状态列表
    */
-  getToolStates(sessionId: string): Promise<ToolState[]>
+  getToolStates(sessionId: string): Promise<ToolState[]>;
 
   // ==================== 待确认操作 ====================
 
@@ -318,8 +318,8 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    */
   addPendingConfirm(
     sessionId: string,
-    confirm: Omit<PendingConfirm, 'id' | 'createdAt'>
-  ): Promise<string>
+    confirm: Omit<PendingConfirm, "id" | "createdAt">,
+  ): Promise<string>;
 
   /**
    * 解决待确认操作
@@ -328,7 +328,7 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param confirmId - 确认 ID
    * @param confirmed - 是否确认执行
    */
-  resolvePendingConfirm(sessionId: string, confirmId: string, confirmed: boolean): Promise<void>
+  resolvePendingConfirm(sessionId: string, confirmId: string, confirmed: boolean): Promise<void>;
 
   /**
    * 获取待确认操作列表
@@ -336,5 +336,5 @@ export interface IWorkingMemoryProvider extends IMemoryProvider {
    * @param sessionId - 会话 ID
    * @returns 未过期的待确认操作列表
    */
-  getPendingConfirms(sessionId: string): Promise<PendingConfirm[]>
+  getPendingConfirms(sessionId: string): Promise<PendingConfirm[]>;
 }

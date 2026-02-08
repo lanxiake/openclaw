@@ -7,11 +7,7 @@
 import { eq, and, or, gt, lt, desc, asc, like, sql, inArray } from "drizzle-orm";
 
 import { getDatabase, type Database } from "../../db/connection.js";
-import {
-  adminAuditLogs,
-  admins,
-  type AdminAuditLog,
-} from "../../db/schema/index.js";
+import { adminAuditLogs, admins, type AdminAuditLog } from "../../db/schema/index.js";
 import { getLogger } from "../../logging/logger.js";
 
 const logger = getLogger();
@@ -158,8 +154,8 @@ export class AdminAuditService {
         or(
           like(adminAuditLogs.adminUsername, `%${search}%`),
           like(adminAuditLogs.targetName, `%${search}%`),
-          like(adminAuditLogs.action, `%${search}%`)
-        )
+          like(adminAuditLogs.action, `%${search}%`),
+        ),
       );
     }
 
@@ -173,9 +169,7 @@ export class AdminAuditService {
 
     // 排序
     const orderColumn =
-      orderBy === "riskLevel"
-        ? adminAuditLogs.riskLevel
-        : adminAuditLogs.createdAt;
+      orderBy === "riskLevel" ? adminAuditLogs.riskLevel : adminAuditLogs.createdAt;
     const orderFn = orderDir === "asc" ? asc : desc;
 
     // 分页查询
@@ -216,10 +210,7 @@ export class AdminAuditService {
    * 获取审计日志详情
    */
   async getAuditLogDetail(logId: string): Promise<AuditLogDetail | null> {
-    const [log] = await this.db
-      .select()
-      .from(adminAuditLogs)
-      .where(eq(adminAuditLogs.id, logId));
+    const [log] = await this.db.select().from(adminAuditLogs).where(eq(adminAuditLogs.id, logId));
 
     if (!log) {
       return null;
@@ -354,7 +345,7 @@ export class AdminAuditService {
    */
   async exportAuditLogs(
     params: AuditLogListParams = {},
-    format: "json" | "csv" = "json"
+    format: "json" | "csv" = "json",
   ): Promise<{ data: string; filename: string }> {
     // 获取所有符合条件的日志（不分页）
     const allLogs: AuditLogListItem[] = [];
@@ -395,7 +386,10 @@ export class AdminAuditService {
         log.createdAt.toISOString(),
       ]);
 
-      const csv = [headers.join(","), ...rows.map((row) => row.map((cell) => `"${cell}"`).join(","))].join("\n");
+      const csv = [
+        headers.join(","),
+        ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+      ].join("\n");
 
       return {
         data: csv,

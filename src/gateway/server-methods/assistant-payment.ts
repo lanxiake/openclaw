@@ -185,11 +185,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const orderId = validateStringParam(params, "orderId", true);
 
       if (!orderId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"));
         return;
       }
 
@@ -216,11 +212,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const userId = validateStringParam(params, "userId", true);
 
       if (!userId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing userId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing userId"));
         return;
       }
 
@@ -249,11 +241,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const orderId = validateStringParam(params, "orderId", true);
 
       if (!orderId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"));
         return;
       }
 
@@ -307,11 +295,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const orderId = validateStringParam(params, "orderId", true);
 
       if (!orderId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"));
         return;
       }
 
@@ -334,11 +318,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const success = validateBooleanParam(params, "success") ?? true;
 
       if (!orderId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"));
         return;
       }
 
@@ -362,11 +342,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const amount = validateNumberParam(params, "amount");
 
       if (!orderId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"));
         return;
       }
 
@@ -374,7 +350,13 @@ export const paymentMethods: GatewayRequestHandlers = {
 
       const refund = await createRefund({
         orderId,
-        reason: (reason as 'requested_by_customer' | 'duplicate' | 'fraudulent' | 'subscription_canceled' | 'other') ?? 'requested_by_customer',
+        reason:
+          (reason as
+            | "requested_by_customer"
+            | "duplicate"
+            | "fraudulent"
+            | "subscription_canceled"
+            | "other") ?? "requested_by_customer",
         amount,
       });
 
@@ -393,11 +375,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const refundId = validateStringParam(params, "refundId", true);
 
       if (!refundId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing refundId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing refundId"));
         return;
       }
 
@@ -424,11 +402,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const orderId = validateStringParam(params, "orderId", true);
 
       if (!orderId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing orderId"));
         return;
       }
 
@@ -449,7 +423,10 @@ export const paymentMethods: GatewayRequestHandlers = {
     try {
       const type = validateStringParam(params, "type", true) as "subscription" | "skill" | "addon";
       const itemId = validateStringParam(params, "itemId", true);
-      const billingPeriod = validateStringParam(params, "billingPeriod") as "monthly" | "yearly" | undefined;
+      const billingPeriod = validateStringParam(params, "billingPeriod") as
+        | "monthly"
+        | "yearly"
+        | undefined;
       const couponCode = validateStringParam(params, "couponCode");
 
       if (!type || !itemId) {
@@ -524,7 +501,9 @@ export const paymentMethods: GatewayRequestHandlers = {
     try {
       const userId = validateStringParam(params, "userId", true);
       const planId = validateStringParam(params, "planId", true);
-      const billingPeriod = (validateStringParam(params, "billingPeriod") ?? "monthly") as "monthly" | "yearly";
+      const billingPeriod = (validateStringParam(params, "billingPeriod") ?? "monthly") as
+        | "monthly"
+        | "yearly";
       const provider = validateStringParam(params, "provider", true) as PaymentProvider;
       const couponCode = validateStringParam(params, "couponCode");
 
@@ -648,11 +627,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const code = validateStringParam(params, "code");
 
       if (!id && !code) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing id or code"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing id or code"));
         return;
       }
 
@@ -679,11 +654,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const id = validateStringParam(params, "id", true);
 
       if (!id) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing id"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing id"));
         return;
       }
 
@@ -719,11 +690,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const id = validateStringParam(params, "id", true);
 
       if (!id) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing id"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing id"));
         return;
       }
 
@@ -851,11 +818,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const userId = validateStringParam(params, "userId", true);
 
       if (!userId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing userId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing userId"));
         return;
       }
 
@@ -963,7 +926,13 @@ export const paymentMethods: GatewayRequestHandlers = {
 
       const scheduler = getRenewalScheduler();
       const tasks = scheduler.getTasks({
-        status: validateStringParam(params, "status") as "pending" | "processing" | "success" | "failed" | "retrying" | undefined,
+        status: validateStringParam(params, "status") as
+          | "pending"
+          | "processing"
+          | "success"
+          | "failed"
+          | "retrying"
+          | undefined,
         userId: validateStringParam(params, "userId"),
         subscriptionId: validateStringParam(params, "subscriptionId"),
       });
@@ -983,11 +952,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const taskId = validateStringParam(params, "taskId", true);
 
       if (!taskId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing taskId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing taskId"));
         return;
       }
 
@@ -1016,11 +981,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const subscriptionId = validateStringParam(params, "subscriptionId", true);
 
       if (!subscriptionId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing subscriptionId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing subscriptionId"));
         return;
       }
 
@@ -1049,11 +1010,7 @@ export const paymentMethods: GatewayRequestHandlers = {
       const taskId = validateStringParam(params, "taskId", true);
 
       if (!taskId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing taskId"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing taskId"));
         return;
       }
 

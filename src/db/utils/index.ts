@@ -2,12 +2,7 @@
  * 工具函数统一导出
  */
 
-export {
-  generateId,
-  generateShortId,
-  generateOrderNo,
-  generateVerificationCode,
-} from "./id.js";
+export { generateId, generateShortId, generateOrderNo, generateVerificationCode } from "./id.js";
 
 export {
   hashPassword,

@@ -7,8 +7,8 @@
  * @module memory/pluggable/interfaces
  */
 
-import type { IMemoryProvider } from './memory-provider.js'
-import type { Message } from './working-memory.js'
+import type { IMemoryProvider } from "./memory-provider.js";
+import type { Message } from "./working-memory.js";
 
 // ==================== 基础类型 ====================
 
@@ -17,55 +17,55 @@ import type { Message } from './working-memory.js'
  */
 export interface ConversationSummary {
   /** 摘要 ID */
-  id: string
+  id: string;
   /** 来源会话 ID */
-  sessionId: string
+  sessionId: string;
   /** AI 生成的摘要文本 */
-  summary: string
+  summary: string;
   /** 主要话题列表 */
-  keyTopics: string[]
+  keyTopics: string[];
   /** 做出的决定 */
-  decisions: string[]
+  decisions: string[];
   /** 消息数量 */
-  messageCount: number
+  messageCount: number;
   /** Token 数量 */
-  tokenCount: number
+  tokenCount: number;
   /** 时间戳 */
-  timestamp: Date
+  timestamp: Date;
 }
 
 /**
  * 关键事件类型
  */
 export type KeyEventType =
-  | 'task_completed'      // 任务完成
-  | 'preference_changed'  // 偏好变更
-  | 'important_info'      // 重要信息
-  | 'milestone'           // 里程碑
-  | 'decision'            // 决定
-  | 'error'               // 错误
-  | 'feedback'            // 反馈
+  | "task_completed" // 任务完成
+  | "preference_changed" // 偏好变更
+  | "important_info" // 重要信息
+  | "milestone" // 里程碑
+  | "decision" // 决定
+  | "error" // 错误
+  | "feedback"; // 反馈
 
 /**
  * 关键事件
  */
 export interface KeyEvent {
   /** 事件 ID */
-  id: string
+  id: string;
   /** 事件类型 */
-  type: KeyEventType
+  type: KeyEventType;
   /** 事件描述 */
-  description: string
+  description: string;
   /** 相关上下文 */
-  context: string
+  context: string;
   /** 重要性分数 (0-1) */
-  importance: number
+  importance: number;
   /** 相关会话 ID 列表 */
-  relatedSessions: string[]
+  relatedSessions: string[];
   /** 时间戳 */
-  timestamp: Date
+  timestamp: Date;
   /** 额外元数据 */
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -73,17 +73,17 @@ export interface KeyEvent {
  */
 export interface EmotionalRecord {
   /** 来源会话 ID */
-  sessionId: string
+  sessionId: string;
   /** 情绪倾向 */
-  sentiment: 'positive' | 'neutral' | 'negative'
+  sentiment: "positive" | "neutral" | "negative";
   /** 满意度分数 (0-1) */
-  satisfaction: number
+  satisfaction: number;
   /** 挫败感分数 (0-1) */
-  frustration: number
+  frustration: number;
   /** 检测置信度 (0-1) */
-  confidence: number
+  confidence: number;
   /** 时间戳 */
-  timestamp: Date
+  timestamp: Date;
 }
 
 /**
@@ -91,13 +91,13 @@ export interface EmotionalRecord {
  */
 export interface EmotionTrend {
   /** 平均情绪值 */
-  averageSentiment: number
+  averageSentiment: number;
   /** 满意度趋势 */
-  satisfactionTrend: number[]
+  satisfactionTrend: number[];
   /** 挫败感趋势 */
-  frustrationTrend: number[]
+  frustrationTrend: number[];
   /** 时间点列表 */
-  timestamps: Date[]
+  timestamps: Date[];
 }
 
 // ==================== 查询选项 ====================
@@ -107,15 +107,15 @@ export interface EmotionTrend {
  */
 export interface EpisodicQueryOptions {
   /** 开始日期 */
-  startDate?: Date
+  startDate?: Date;
   /** 结束日期 */
-  endDate?: Date
+  endDate?: Date;
   /** 话题过滤 */
-  topics?: string[]
+  topics?: string[];
   /** 最大返回数量 */
-  limit?: number
+  limit?: number;
   /** 偏移量 */
-  offset?: number
+  offset?: number;
 }
 
 /**
@@ -123,17 +123,17 @@ export interface EpisodicQueryOptions {
  */
 export interface EventQueryOptions {
   /** 事件类型过滤 */
-  types?: KeyEventType[]
+  types?: KeyEventType[];
   /** 开始日期 */
-  startDate?: Date
+  startDate?: Date;
   /** 结束日期 */
-  endDate?: Date
+  endDate?: Date;
   /** 最小重要性 */
-  minImportance?: number
+  minImportance?: number;
   /** 最大返回数量 */
-  limit?: number
+  limit?: number;
   /** 偏移量 */
-  offset?: number
+  offset?: number;
 }
 
 /**
@@ -141,13 +141,13 @@ export interface EventQueryOptions {
  */
 export interface EpisodicSearchOptions {
   /** 最大返回数量 */
-  limit?: number
+  limit?: number;
   /** 最小相关度分数 */
-  minScore?: number
+  minScore?: number;
   /** 开始日期 */
-  startDate?: Date
+  startDate?: Date;
   /** 结束日期 */
-  endDate?: Date
+  endDate?: Date;
 }
 
 // ==================== 结果类型 ====================
@@ -157,19 +157,19 @@ export interface EpisodicSearchOptions {
  */
 export interface EpisodeSearchResult {
   /** 结果 ID */
-  id: string
+  id: string;
   /** 内容 */
-  content: string
+  content: string;
   /** 相关度分数 */
-  score: number
+  score: number;
   /** 结果类型 */
-  type: 'conversation' | 'event' | 'memory'
+  type: "conversation" | "event" | "memory";
   /** 时间戳 */
-  timestamp: Date
+  timestamp: Date;
   /** 来源会话 ID */
-  sessionId?: string
+  sessionId?: string;
   /** 额外元数据 */
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -177,19 +177,19 @@ export interface EpisodeSearchResult {
  */
 export interface TimelineEntry {
   /** 条目 ID */
-  id: string
+  id: string;
   /** 条目类型 */
-  type: 'conversation' | 'event' | 'milestone'
+  type: "conversation" | "event" | "milestone";
   /** 标题 */
-  title: string
+  title: string;
   /** 描述 */
-  description: string
+  description: string;
   /** 时间戳 */
-  timestamp: Date
+  timestamp: Date;
   /** 重要性分数 */
-  importance: number
+  importance: number;
   /** 额外元数据 */
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>;
 }
 
 // ==================== 提供者接口 ====================
@@ -228,7 +228,7 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
    * @param sessionId - 会话 ID
    * @param messages - 对话消息列表
    */
-  addConversation(userId: string, sessionId: string, messages: Message[]): Promise<void>
+  addConversation(userId: string, sessionId: string, messages: Message[]): Promise<void>;
 
   /**
    * 生成对话摘要
@@ -239,7 +239,7 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
    * @param sessionId - 会话 ID
    * @returns 对话摘要
    */
-  summarizeConversation(userId: string, sessionId: string): Promise<ConversationSummary>
+  summarizeConversation(userId: string, sessionId: string): Promise<ConversationSummary>;
 
   /**
    * 获取对话历史
@@ -250,8 +250,8 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
    */
   getConversationHistory(
     userId: string,
-    options?: EpisodicQueryOptions
-  ): Promise<ConversationSummary[]>
+    options?: EpisodicQueryOptions,
+  ): Promise<ConversationSummary[]>;
 
   /**
    * 删除对话
@@ -259,7 +259,7 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
    * @param userId - 用户 ID
    * @param sessionId - 会话 ID
    */
-  deleteConversation(userId: string, sessionId: string): Promise<void>
+  deleteConversation(userId: string, sessionId: string): Promise<void>;
 
   // ==================== 关键事件 ====================
 
@@ -270,7 +270,7 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
    * @param event - 事件信息（不含 id）
    * @returns 事件 ID
    */
-  addKeyEvent(userId: string, event: Omit<KeyEvent, 'id'>): Promise<string>
+  addKeyEvent(userId: string, event: Omit<KeyEvent, "id">): Promise<string>;
 
   /**
    * 获取关键事件
@@ -279,7 +279,7 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
    * @param options - 查询选项
    * @returns 事件列表
    */
-  getKeyEvents(userId: string, options?: EventQueryOptions): Promise<KeyEvent[]>
+  getKeyEvents(userId: string, options?: EventQueryOptions): Promise<KeyEvent[]>;
 
   /**
    * 更新关键事件
@@ -288,7 +288,7 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
    * @param eventId - 事件 ID
    * @param updates - 要更新的字段
    */
-  updateKeyEvent(userId: string, eventId: string, updates: Partial<KeyEvent>): Promise<void>
+  updateKeyEvent(userId: string, eventId: string, updates: Partial<KeyEvent>): Promise<void>;
 
   /**
    * 删除关键事件
@@ -296,7 +296,7 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
    * @param userId - 用户 ID
    * @param eventId - 事件 ID
    */
-  deleteKeyEvent(userId: string, eventId: string): Promise<void>
+  deleteKeyEvent(userId: string, eventId: string): Promise<void>;
 
   // ==================== 搜索 ====================
 
@@ -313,8 +313,8 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
   searchEpisodes(
     userId: string,
     query: string,
-    options?: EpisodicSearchOptions
-  ): Promise<EpisodeSearchResult[]>
+    options?: EpisodicSearchOptions,
+  ): Promise<EpisodeSearchResult[]>;
 
   /**
    * 获取时间线
@@ -326,7 +326,7 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
    * @param endDate - 结束日期
    * @returns 时间线条目列表
    */
-  getTimeline(userId: string, startDate: Date, endDate: Date): Promise<TimelineEntry[]>
+  getTimeline(userId: string, startDate: Date, endDate: Date): Promise<TimelineEntry[]>;
 
   // ==================== 情绪追踪 ====================
 
@@ -340,8 +340,8 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
   recordEmotion(
     userId: string,
     sessionId: string,
-    emotion: Omit<EmotionalRecord, 'sessionId'>
-  ): Promise<void>
+    emotion: Omit<EmotionalRecord, "sessionId">,
+  ): Promise<void>;
 
   /**
    * 获取情绪趋势
@@ -351,5 +351,5 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
    * @param endDate - 结束日期
    * @returns 情绪趋势数据
    */
-  getEmotionTrend(userId: string, startDate: Date, endDate: Date): Promise<EmotionTrend>
+  getEmotionTrend(userId: string, startDate: Date, endDate: Date): Promise<EmotionTrend>;
 }

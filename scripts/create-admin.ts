@@ -89,7 +89,8 @@ async function main() {
   // 创建一些测试套餐 (如果不存在)
   console.log("\n📦 Checking test plans...\n");
 
-  const existingPlans = await sql`SELECT code FROM plans WHERE code IN ('free', 'pro', 'enterprise')`;
+  const existingPlans =
+    await sql`SELECT code FROM plans WHERE code IN ('free', 'pro', 'enterprise')`;
   const existingCodes = new Set(existingPlans.map((p) => p.code));
 
   if (existingCodes.size === 3) {

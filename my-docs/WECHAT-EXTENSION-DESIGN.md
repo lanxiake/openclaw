@@ -27,12 +27,12 @@
 
 ### 核心变化
 
-| 对比项 | 原方案 | 新方案 |
-|--------|--------|--------|
-| **服务端** | wxauto-bridge (Python) | OpenClaw Gateway (Node.js) |
-| **客户端** | OpenClaw 插件 | wxauto-bridge (Python) |
-| **连接方向** | OpenClaw → Bridge | Bridge → OpenClaw |
-| **协议** | HTTP + WebSocket | 纯 WebSocket (JSON-RPC) |
+| 对比项       | 原方案                 | 新方案                     |
+| ------------ | ---------------------- | -------------------------- |
+| **服务端**   | wxauto-bridge (Python) | OpenClaw Gateway (Node.js) |
+| **客户端**   | OpenClaw 插件          | wxauto-bridge (Python)     |
+| **连接方向** | OpenClaw → Bridge      | Bridge → OpenClaw          |
+| **协议**     | HTTP + WebSocket       | 纯 WebSocket (JSON-RPC)    |
 
 ### 优势
 
@@ -54,6 +54,7 @@ ws://localhost:18789/channels/wechat
 ### 消息格式（JSON-RPC 2.0）
 
 **Bridge → OpenClaw（入站消息）**：
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -70,6 +71,7 @@ ws://localhost:18789/channels/wechat
 ```
 
 **OpenClaw → Bridge（发送命令）**：
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -84,6 +86,7 @@ ws://localhost:18789/channels/wechat
 ```
 
 **Bridge → OpenClaw（命令响应）**：
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -97,17 +100,17 @@ ws://localhost:18789/channels/wechat
 
 ### 支持的方法
 
-| 方向 | 方法 | 说明 |
-|------|------|------|
-| OC → Bridge | `send` | 发送消息 |
-| OC → Bridge | `sendFile` | 发送文件 |
-| OC → Bridge | `getStatus` | 获取微信状态 |
-| OC → Bridge | `getContacts` | 获取联系人列表 |
-| OC → Bridge | `addListen` | 添加聊天监听 |
-| OC → Bridge | `removeListen` | 移除聊天监听 |
-| Bridge → OC | `wechat.message` | 推送新消息 |
-| Bridge → OC | `wechat.status` | 状态变更通知 |
-| Bridge → OC | `wechat.connected` | 连接成功通知 |
+| 方向        | 方法               | 说明           |
+| ----------- | ------------------ | -------------- |
+| OC → Bridge | `send`             | 发送消息       |
+| OC → Bridge | `sendFile`         | 发送文件       |
+| OC → Bridge | `getStatus`        | 获取微信状态   |
+| OC → Bridge | `getContacts`      | 获取联系人列表 |
+| OC → Bridge | `addListen`        | 添加聊天监听   |
+| OC → Bridge | `removeListen`     | 移除聊天监听   |
+| Bridge → OC | `wechat.message`   | 推送新消息     |
+| Bridge → OC | `wechat.status`    | 状态变更通知   |
+| Bridge → OC | `wechat.connected` | 连接成功通知   |
 
 ---
 
@@ -421,17 +424,20 @@ openclaw/
 ## 下一步实施计划
 
 ### 阶段一：基础框架
+
 1. 创建 `extensions/wechat/` 插件骨架
 2. 实现 WebSocket 端点 `/channels/wechat`
 3. 创建 `wxauto-bridge/` Python 项目
 4. 实现基础连接和心跳
 
 ### 阶段二：消息收发
+
 1. 实现 `send` 命令（出站）
 2. 实现 `wechat.message` 推送（入站）
 3. 实现消息路由到 Agent
 
 ### 阶段三：完善功能
+
 1. 添加文件/图片发送
 2. 实现 `addListen`/`removeListen`
 3. 添加配对（pairing）机制
@@ -463,11 +469,13 @@ openclaw/
 ```
 
 **你自己如何和 OpenClaw 对话**：
+
 - 方式1：给"文件传输助手"发消息（配置监听）
 - 方式2：CLI 命令：`openclaw message send "你好" --channel wechat --to "张三"`
 - 方式3：OpenClaw Web UI
 
 **配置示例**：
+
 ```json
 {
   "channels": {
@@ -505,27 +513,29 @@ openclaw/
 ```
 
 **部署步骤**：
+
 1. 注册专用微信号作为机器人
 2. 在 Windows 服务器登录机器人微信
 3. 让用户添加机器人好友或拉入群聊
 4. 配置权限控制
 
 **配置示例**：
+
 ```json
 {
   "channels": {
     "wechat": {
       "enabled": true,
-      "dmPolicy": "open",           // 允许所有私聊
-      "allowFrom": ["*"],           // 或指定用户列表
+      "dmPolicy": "open", // 允许所有私聊
+      "allowFrom": ["*"], // 或指定用户列表
       "groups": {
         "工作群": {
-          "requireMention": true,   // 群里需要 @机器人
-          "allowFrom": ["*"]        // 群内所有人可用
+          "requireMention": true, // 群里需要 @机器人
+          "allowFrom": ["*"] // 群内所有人可用
         },
         "VIP群": {
-          "requireMention": false,  // 不需要 @，所有消息都响应
-          "allowFrom": ["管理员A", "管理员B"]  // 仅特定人可用
+          "requireMention": false, // 不需要 @，所有消息都响应
+          "allowFrom": ["管理员A", "管理员B"] // 仅特定人可用
         }
       }
     }
@@ -534,6 +544,7 @@ openclaw/
 ```
 
 **用户使用方式**：
+
 - **私聊**：直接给机器人发消息
 - **群聊**：`@机器人 你好` 或直接发消息（取决于 requireMention 配置）
 
@@ -563,6 +574,7 @@ openclaw/
 ```
 
 **推荐的远程访问方案**：
+
 - **Tailscale/ZeroTier**：免费内网穿透，安全
 - **frp/ngrok**：端口转发
 - **云服务器**：直接部署在云 Windows 服务器
@@ -573,19 +585,19 @@ openclaw/
 
 ### DM 策略（私聊）
 
-| 策略 | 说明 | 配置 |
-|------|------|------|
-| `pairing` | 需要审批才能使用（默认） | `"dmPolicy": "pairing"` |
+| 策略        | 说明                      | 配置                      |
+| ----------- | ------------------------- | ------------------------- |
+| `pairing`   | 需要审批才能使用（默认）  | `"dmPolicy": "pairing"`   |
 | `allowlist` | 仅 allowFrom 列表中的用户 | `"dmPolicy": "allowlist"` |
-| `open` | 任何人都可以私聊 | `"dmPolicy": "open"` |
+| `open`      | 任何人都可以私聊          | `"dmPolicy": "open"`      |
 
 ### 群组策略
 
-| 配置项 | 说明 |
-|--------|------|
-| `requireMention` | 是否需要 @机器人 |
-| `allowFrom` | 群内允许触发的用户列表 |
-| `toolPolicy` | 允许使用的工具/命令 |
+| 配置项           | 说明                   |
+| ---------------- | ---------------------- |
+| `requireMention` | 是否需要 @机器人       |
+| `allowFrom`      | 群内允许触发的用户列表 |
+| `toolPolicy`     | 允许使用的工具/命令    |
 
 ### 配对审批流程（pairing 模式）
 

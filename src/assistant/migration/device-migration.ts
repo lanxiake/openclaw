@@ -26,19 +26,19 @@ const logger = getLogger();
  * 迁移状态
  */
 export type MigrationStatus =
-  | "pending"     // 待迁移
+  | "pending" // 待迁移
   | "in_progress" // 迁移中
-  | "completed"   // 已完成
-  | "failed"      // 失败
+  | "completed" // 已完成
+  | "failed" // 失败
   | "rolled_back"; // 已回滚
 
 /**
  * 迁移模式
  */
 export type MigrationMode =
-  | "dry_run"     // 模拟运行，不实际写入
-  | "dual_write"  // 双写模式
-  | "full";       // 完整迁移
+  | "dry_run" // 模拟运行，不实际写入
+  | "dual_write" // 双写模式
+  | "full"; // 完整迁移
 
 /**
  * 迁移任务
@@ -335,11 +335,7 @@ export class DeviceMigrationService {
         linkedAt: new Date(device.createdAtMs),
         lastActiveAt: device.tokens
           ? new Date(
-              Math.max(
-                ...Object.values(device.tokens).map(
-                  (t) => t.lastUsedAtMs || t.createdAtMs
-                )
-              )
+              Math.max(...Object.values(device.tokens).map((t) => t.lastUsedAtMs || t.createdAtMs)),
             )
           : undefined,
       });
@@ -631,9 +627,7 @@ export function getMigrationService(): DeviceMigrationService {
 /**
  * 初始化迁移服务
  */
-export function initMigrationService(
-  config?: Partial<MigrationConfig>
-): DeviceMigrationService {
+export function initMigrationService(config?: Partial<MigrationConfig>): DeviceMigrationService {
   migrationServiceInstance = new DeviceMigrationService(config);
   return migrationServiceInstance;
 }

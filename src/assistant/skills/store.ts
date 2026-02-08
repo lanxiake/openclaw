@@ -423,7 +423,7 @@ export async function queryStoreSkills(filters: StoreFilters): Promise<StoreQuer
       (s) =>
         s.name.toLowerCase().includes(query) ||
         s.description.toLowerCase().includes(query) ||
-        s.tags.some((t) => t.toLowerCase().includes(query))
+        s.tags.some((t) => t.toLowerCase().includes(query)),
     );
   }
 
@@ -521,7 +521,7 @@ export async function getStoreStats(): Promise<StoreStats> {
     id: cat.id,
     name: cat.name,
     icon: cat.icon,
-    count: cat.id === "all" ? index.skills.size : (index.categories.get(cat.id)?.size || 0),
+    count: cat.id === "all" ? index.skills.size : index.categories.get(cat.id)?.size || 0,
   }));
 
   // 获取热门标签（按使用次数排序）

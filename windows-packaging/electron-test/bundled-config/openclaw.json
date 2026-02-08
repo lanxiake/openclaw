@@ -21,10 +21,7 @@
             "id": "claude-opus-4-5-20251101",
             "name": "Claude Opus 4.5",
             "reasoning": true,
-            "input": [
-              "text",
-              "image"
-            ],
+            "input": ["text", "image"],
             "cost": {
               "input": 0,
               "output": 0,
@@ -38,10 +35,7 @@
             "id": "claude-sonnet-4-5-20250929",
             "name": "Claude Sonnet 4.5",
             "reasoning": false,
-            "input": [
-              "text",
-              "image"
-            ],
+            "input": ["text", "image"],
             "cost": {
               "input": 0,
               "output": 0,
@@ -55,9 +49,7 @@
             "id": "claude-haiku-4-5-20251001",
             "name": "Claude Haiku 4.5",
             "reasoning": false,
-            "input": [
-              "text"
-            ],
+            "input": ["text"],
             "cost": {
               "input": 0,
               "output": 0,
@@ -121,11 +113,7 @@
       "mode": "token",
       "token": "6650fbba7f48361f815d65c7f0ee22e49bae0ff1a2bb87b0"
     },
-    "trustedProxies": [
-      "::1",
-      "127.0.0.1",
-      "tc-appb.cpolar.top"
-    ],
+    "trustedProxies": ["::1", "127.0.0.1", "tc-appb.cpolar.top"],
     "tailscale": {
       "mode": "off",
       "resetOnExit": false

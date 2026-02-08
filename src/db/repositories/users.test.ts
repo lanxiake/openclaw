@@ -507,11 +507,7 @@ describe("VerificationCodeRepository", () => {
       const target = "+8613800138016";
       console.log("[TEST] 目标手机号:", target);
 
-      const { code, expiresAt } = await codeRepo.create(
-        target,
-        "phone",
-        "register"
-      );
+      const { code, expiresAt } = await codeRepo.create(target, "phone", "register");
 
       console.log("[TEST] 生成的验证码:", code);
       console.log("[TEST] 过期时间:", expiresAt);

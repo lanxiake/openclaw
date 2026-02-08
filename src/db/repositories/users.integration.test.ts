@@ -328,11 +328,7 @@ describe("VerificationCodeRepository (Integration)", () => {
       const target = `+86138${Date.now().toString().slice(-8)}`;
       console.log("[TEST] 目标手机号:", target);
 
-      const { code, expiresAt } = await codeRepo.create(
-        target,
-        "phone",
-        "register"
-      );
+      const { code, expiresAt } = await codeRepo.create(target, "phone", "register");
 
       console.log("[TEST] 生成的验证码:", code);
       console.log("[TEST] 过期时间:", expiresAt);

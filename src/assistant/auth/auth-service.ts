@@ -269,7 +269,7 @@ export async function login(request: LoginRequest): Promise<AuthResult> {
     // 1. 检查 IP 级别限流
     const ipAttempts = await attemptRepo.getRecentFailureCountByIp(
       request.ipAddress || "unknown",
-      RATE_LIMIT_CONFIG.ipAttemptWindowMs
+      RATE_LIMIT_CONFIG.ipAttemptWindowMs,
     );
     if (ipAttempts >= RATE_LIMIT_CONFIG.maxIpAttempts) {
       logger.warn("[auth] Login blocked: IP rate limit exceeded", {
@@ -321,7 +321,7 @@ export async function login(request: LoginRequest): Promise<AuthResult> {
     const userAttempts = await attemptRepo.getRecentFailureCount(
       request.identifier,
       request.ipAddress || "unknown",
-      RATE_LIMIT_CONFIG.loginAttemptWindowMs
+      RATE_LIMIT_CONFIG.loginAttemptWindowMs,
     );
     if (userAttempts >= RATE_LIMIT_CONFIG.maxLoginAttempts) {
       logger.warn("[auth] Login blocked: account locked", {
@@ -361,11 +361,7 @@ export async function login(request: LoginRequest): Promise<AuthResult> {
       credentialsValid = await verifyPassword(request.password, user.passwordHash);
     } else if (request.code) {
       // 验证码登录
-      credentialsValid = await codeRepo.verify(
-        request.identifier,
-        request.code,
-        "login"
-      );
+      credentialsValid = await codeRepo.verify(request.identifier, request.code, "login");
     }
 
     if (!credentialsValid) {
@@ -482,9 +478,7 @@ export async function login(request: LoginRequest): Promise<AuthResult> {
 /**
  * 刷新 Token
  */
-export async function refreshToken(
-  request: RefreshTokenRequest
-): Promise<AuthResult> {
+export async function refreshToken(request: RefreshTokenRequest): Promise<AuthResult> {
   const userRepo = getUserRepository();
   const sessionRepo = getUserSessionRepository();
 
@@ -562,7 +556,7 @@ export async function refreshToken(
  */
 export async function logout(
   refreshToken: string,
-  options?: { ipAddress?: string; userAgent?: string; userId?: string }
+  options?: { ipAddress?: string; userAgent?: string; userId?: string },
 ): Promise<{ success: boolean }> {
   const sessionRepo = getUserSessionRepository();
 
@@ -597,7 +591,7 @@ export async function logout(
  */
 export async function logoutAll(
   userId: string,
-  options?: { ipAddress?: string; userAgent?: string }
+  options?: { ipAddress?: string; userAgent?: string },
 ): Promise<{ success: boolean }> {
   const sessionRepo = getUserSessionRepository();
 

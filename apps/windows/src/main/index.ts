@@ -16,6 +16,7 @@ import { TrayManager } from './tray-manager'
 import { SystemService } from './system-service'
 import { DevicePairingService } from './device-pairing-service'
 import { UpdaterService, setupUpdaterIpcHandlers } from './updater-service'
+import { ClientSkillRuntime } from './skill-runtime'
 import {
   validateUrl,
   validatePid,
@@ -37,6 +38,7 @@ let gatewayClient: GatewayClient | null = null
 let systemService: SystemService | null = null
 let devicePairingService: DevicePairingService | null = null
 let updaterService: UpdaterService | null = null
+let skillRuntime: ClientSkillRuntime | null = null
 let isQuitting = false
 
 /**
@@ -312,6 +314,54 @@ async function initDevicePairingService(): Promise<void> {
       log.info('已加载配对 Token')
     }
   }
+}
+
+/**
+ * 初始化技能运行时
+ */
+async function initSkillRuntime(): Promise<void> {
+  log.info('初始化技能运行时')
+
+  // 创建技能运行时实例
+  skillRuntime = new ClientSkillRuntime()
+
+  // 设置 SystemService 引用
+  if (systemService) {
+    skillRuntime.setSystemService(systemService)
+  }
+
+  // 设置确认对话框处理器
+  skillRuntime.setConfirmHandler(async (skillName: string, params: Record<string, unknown>) => {
+    if (!mainWindow) {
+      return false
+    }
+
+    mainWindow.show()
+    mainWindow.focus()
+
+    const result = await dialog.showMessageBox(mainWindow, {
+      type: 'question',
+      title: '技能执行确认',
+      message: `技能 "${skillName}" 请求执行以下操作：`,
+      detail: JSON.stringify(params, null, 2),
+      buttons: ['取消', '允许'],
+      defaultId: 0,
+      cancelId: 0,
+    })
+
+    return result.response === 1
+  })
+
+  // 初始化技能运行时
+  const skillsDir = join(app.getPath('userData'), 'skills')
+  await skillRuntime.initialize(skillsDir)
+
+  // 将 SkillRuntime 设置到 GatewayClient
+  if (gatewayClient) {
+    gatewayClient.setSkillRuntime(skillRuntime)
+  }
+
+  log.info('技能运行时初始化完成')
 }
 
 /**
@@ -776,6 +826,7 @@ async function initialize(): Promise<void> {
   setupIpcHandlers()
   await initGatewayClient()
   await initDevicePairingService()
+  await initSkillRuntime()  // 初始化技能运行时
   initUpdaterService()
 
   log.info('OpenClaw Assistant 启动完成')

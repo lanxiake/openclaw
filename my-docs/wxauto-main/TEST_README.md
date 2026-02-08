@@ -1,6 +1,7 @@
 # wxauto 微信自动化测试说明
 
 ## 测试环境
+
 - **微信路径**: `C:\Mysoft\Weixin\Weixin.exe`
 - **测试对象**: 文件传输助手
 - **Python 版本**: 3.9+
@@ -9,12 +10,15 @@
 ## 测试前准备
 
 ### 1. 确保微信已打开并登录
+
 - 打开微信客户端（位于 `C:\Mysoft\Weixin\Weixin.exe`）
 - 确保微信已完成登录
 - 微信需要保持在前台或后台运行
 
 ### 2. 安装必要的依赖
+
 测试脚本依赖以下 Python 包：
+
 ```bash
 pip install comtypes pywin32 psutil
 ```
@@ -24,12 +28,15 @@ pip install comtypes pywin32 psutil
 ## 快速开始
 
 ### 方式一：使用批处理脚本（推荐）
+
 双击运行 `run_test.bat` 文件，脚本会：
+
 1. 检查 Python 环境
 2. 自动安装缺失的依赖
 3. 运行测试程序
 
 ### 方式二：直接运行 Python 脚本
+
 ```bash
 cd my-docs/wxauto-main
 python test_wechat.py
@@ -38,6 +45,7 @@ python test_wechat.py
 ## 测试内容
 
 ### 测试 1: 基本连接测试
+
 - 连接到已打开的微信客户端
 - 检查微信在线状态
 - 获取当前登录用户信息
@@ -45,6 +53,7 @@ python test_wechat.py
 **预期结果**: 成功连接并显示用户信息
 
 ### 测试 2: 发送消息测试
+
 - 向文件传输助手发送测试消息
 - 获取聊天记录
 - 显示最近的消息
@@ -52,11 +61,13 @@ python test_wechat.py
 **预期结果**: 消息成功发送，可以在文件传输助手中看到测试消息
 
 ### 测试 3: 消息监听测试
+
 - 监听文件传输助手的新消息
 - 自动回复收到的消息
 - 运行 30 秒后自动结束
 
-**预期结果**: 
+**预期结果**:
+
 - 当你向文件传输助手发送消息时，终端会显示收到的消息
 - 微信会自动回复确认消息
 
@@ -67,6 +78,7 @@ python test_wechat.py
    - 扫码登录
 
 2. **运行测试脚本**
+
    ```bash
    run_test.bat
    ```
@@ -87,6 +99,7 @@ python test_wechat.py
 ## 测试脚本说明
 
 ### test_wechat.py
+
 主测试脚本，包含三个测试函数：
 
 - `test_basic_connection()`: 测试连接和基本功能
@@ -94,11 +107,12 @@ python test_wechat.py
 - `test_message_listener()`: 测试消息监听和自动回复
 
 ### 消息监听回调函数
+
 ```python
 def on_message(msg, chat):
     # 打印收到的消息
     print(f"收到消息: {msg.content}")
-    
+
     # 自动回复
     if isinstance(msg, FriendMessage):
         msg.reply(f"已收到: {msg.content[:20]}...")
@@ -107,25 +121,33 @@ def on_message(msg, chat):
 ## 常见问题
 
 ### 1. 提示"无法连接到微信"
+
 **解决方案**:
+
 - 确保微信已打开并完成登录
 - 检查微信路径是否正确：`C:\Mysoft\Weixin\Weixin.exe`
 - 尝试重启微信
 
 ### 2. 提示"找不到文件传输助手"
+
 **解决方案**:
+
 - 在微信中手动打开文件传输助手（至少打开一次）
 - 向文件传输助手发送过至少一条消息
 - 确保文件传输助手在最近联系人列表中
 
 ### 3. 消息监听没有反应
+
 **解决方案**:
+
 - 确保在监听期间向文件传输助手发送消息
 - 检查消息是否真的发送成功
 - 查看终端是否有错误提示
 
 ### 4. 依赖安装失败
+
 **解决方案**:
+
 ```bash
 # 手动安装依赖
 pip install comtypes
@@ -137,18 +159,22 @@ python -m pip install --upgrade pip
 ```
 
 ### 5. 权限问题
+
 **解决方案**:
+
 - 以管理员身份运行命令提示符或 PowerShell
 - 右键点击 `run_test.bat`，选择"以管理员身份运行"
 
 ## 技术说明
 
 ### wxauto 工作原理
+
 - 基于 Windows UI Automation 技术
 - 通过 COM 接口控制微信窗口
 - 使用 pywin32 和 comtypes 库进行底层调用
 
 ### 支持的消息类型
+
 - 文本消息 (text)
 - 图片消息 (image)
 - 文件消息 (file)
@@ -157,6 +183,7 @@ python -m pip install --upgrade pip
 - 等等...
 
 ### 监听机制
+
 - 使用后台线程轮询新消息
 - 默认轮询间隔: 1 秒
 - 使用回调函数处理收到的消息
@@ -166,11 +193,13 @@ python -m pip install --upgrade pip
 如果基本测试成功，你可以尝试：
 
 1. **测试发送文件**
+
 ```python
 wx.SendFiles("test.txt", who="文件传输助手")
 ```
 
 2. **测试获取消息类型**
+
 ```python
 msgs = wx.GetAllMessage()
 for msg in msgs:
@@ -178,6 +207,7 @@ for msg in msgs:
 ```
 
 3. **测试消息引用回复**
+
 ```python
 def on_message(msg, chat):
     msg.quote("这是引用回复")
@@ -186,6 +216,7 @@ def on_message(msg, chat):
 ## 注意事项
 
 ⚠ **重要提醒**:
+
 1. wxauto 项目已于 2025-10-28 停止维护
 2. 仅支持 Windows 系统
 3. 需要微信版本 3.9.x
@@ -195,6 +226,7 @@ def on_message(msg, chat):
 ## 测试报告
 
 测试完成后，请记录：
+
 - [ ] 测试 1（连接）是否成功
 - [ ] 测试 2（发送消息）是否成功
 - [ ] 测试 3（消息监听）是否成功
@@ -205,6 +237,7 @@ def on_message(msg, chat):
 ## 联系方式
 
 如有问题，请查看：
+
 - wxauto 文档: `docs/` 目录
 - 源代码: `wxauto/` 目录
 - 示例代码: `docs/example.md`

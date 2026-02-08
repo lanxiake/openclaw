@@ -24,7 +24,7 @@ const LOG_TAG = "admin-users";
  * 验证管理员身份并返回管理员信息
  */
 async function validateAdminAuth(
-  params: Record<string, unknown>
+  params: Record<string, unknown>,
 ): Promise<{ adminId: string; role: string; username: string } | null> {
   const authHeader = params["authorization"] as string | undefined;
   const token = extractAdminBearerToken(authHeader);
@@ -47,7 +47,7 @@ async function validateAdminAuth(
 function validateStringParam(
   params: Record<string, unknown>,
   key: string,
-  required = false
+  required = false,
 ): string | undefined {
   const value = params[key];
   if (value === undefined || value === null) {
@@ -68,7 +68,7 @@ function validateStringParam(
 function validateNumberParam(
   params: Record<string, unknown>,
   key: string,
-  defaultValue?: number
+  defaultValue?: number,
 ): number | undefined {
   const value = params[key];
   if (value === undefined || value === null) {
@@ -107,7 +107,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -119,7 +119,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -130,7 +130,10 @@ export const adminUserMethods: GatewayRequestHandlers = {
         subscriptionStatus: validateStringParam(params, "subscriptionStatus") as any,
         page: validateNumberParam(params, "page", 1),
         pageSize: validateNumberParam(params, "pageSize", 20),
-        orderBy: validateStringParam(params, "orderBy") as "createdAt" | "lastLoginAt" | "displayName",
+        orderBy: validateStringParam(params, "orderBy") as
+          | "createdAt"
+          | "lastLoginAt"
+          | "displayName",
         orderDir: validateStringParam(params, "orderDir") as "asc" | "desc",
       };
 
@@ -147,8 +150,8 @@ export const adminUserMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取用户列表失败"
-        )
+          error instanceof Error ? error.message : "获取用户列表失败",
+        ),
       );
     }
   },
@@ -169,7 +172,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -185,7 +188,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "用户不存在", {
             details: { errorCode: "USER_NOT_FOUND" },
-          })
+          }),
         );
         return;
       }
@@ -200,8 +203,8 @@ export const adminUserMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取用户详情失败"
-        )
+          error instanceof Error ? error.message : "获取用户详情失败",
+        ),
       );
     }
   },
@@ -223,7 +226,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -235,7 +238,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -257,7 +260,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
         auth.username,
         reason,
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       if (result.success) {
@@ -266,7 +269,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "停用失败")
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "停用失败"),
         );
       }
     } catch (error) {
@@ -278,8 +281,8 @@ export const adminUserMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "停用用户失败"
-        )
+          error instanceof Error ? error.message : "停用用户失败",
+        ),
       );
     }
   },
@@ -300,7 +303,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -312,7 +315,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -332,7 +335,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
         auth.adminId,
         auth.username,
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       if (result.success) {
@@ -341,7 +344,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "激活失败")
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "激活失败"),
         );
       }
     } catch (error) {
@@ -353,8 +356,8 @@ export const adminUserMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "激活用户失败"
-        )
+          error instanceof Error ? error.message : "激活用户失败",
+        ),
       );
     }
   },
@@ -376,7 +379,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -388,7 +391,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足，仅超级管理员可重置密码", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -399,11 +402,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
       const userAgent = params["userAgent"] as string | undefined;
 
       if (newPassword.length < 8) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "密码长度至少 8 位")
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "密码长度至少 8 位"));
         return;
       }
 
@@ -419,7 +418,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
         auth.adminId,
         auth.username,
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       if (result.success) {
@@ -428,7 +427,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "重置密码失败")
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "重置密码失败"),
         );
       }
     } catch (error) {
@@ -440,8 +439,8 @@ export const adminUserMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "重置密码失败"
-        )
+          error instanceof Error ? error.message : "重置密码失败",
+        ),
       );
     }
   },
@@ -463,7 +462,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -475,7 +474,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -498,7 +497,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
         auth.adminId,
         auth.username,
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       if (result.success) {
@@ -507,7 +506,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "解绑设备失败")
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "解绑设备失败"),
         );
       }
     } catch (error) {
@@ -519,8 +518,8 @@ export const adminUserMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "解绑设备失败"
-        )
+          error instanceof Error ? error.message : "解绑设备失败",
+        ),
       );
     }
   },
@@ -541,7 +540,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -553,7 +552,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -573,7 +572,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
         auth.adminId,
         auth.username,
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       if (result.success) {
@@ -582,7 +581,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "强制登出失败")
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "强制登出失败"),
         );
       }
     } catch (error) {
@@ -594,8 +593,8 @@ export const adminUserMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "强制登出失败"
-        )
+          error instanceof Error ? error.message : "强制登出失败",
+        ),
       );
     }
   },
@@ -615,7 +614,7 @@ export const adminUserMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -633,8 +632,8 @@ export const adminUserMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取统计失败"
-        )
+          error instanceof Error ? error.message : "获取统计失败",
+        ),
       );
     }
   },

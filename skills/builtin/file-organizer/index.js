@@ -15,7 +15,21 @@ const FILE_TYPE_MAP = {
   videos: [".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm", ".m4v"],
   audio: [".mp3", ".wav", ".flac", ".aac", ".ogg", ".wma", ".m4a"],
   archives: [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
-  code: [".js", ".ts", ".py", ".java", ".c", ".cpp", ".h", ".css", ".html", ".json", ".xml", ".yaml", ".yml"],
+  code: [
+    ".js",
+    ".ts",
+    ".py",
+    ".java",
+    ".c",
+    ".cpp",
+    ".h",
+    ".css",
+    ".html",
+    ".json",
+    ".xml",
+    ".yaml",
+    ".yml",
+  ],
   executables: [".exe", ".msi", ".bat", ".cmd", ".ps1", ".sh"],
 };
 
@@ -347,10 +361,7 @@ const skillDefinition = {
           plan: plan.slice(0, 20), // 只返回前 20 项
           grouped,
         },
-        suggestions: [
-          "如需执行整理，请设置 preview: false",
-          "可以修改 mode 参数更改整理方式",
-        ],
+        suggestions: ["如需执行整理，请设置 preview: false", "可以修改 mode 参数更改整理方式"],
       };
     }
 
@@ -358,7 +369,7 @@ const skillDefinition = {
     const confirmed = await context.confirm(
       "文件整理",
       `将移动 ${stats.totalFiles} 个文件 (${formatFileSize(stats.totalSize)}) 到 ${stats.targetDirs} 个目录`,
-      "medium"
+      "medium",
     );
 
     if (!confirmed) {
@@ -374,9 +385,10 @@ const skillDefinition = {
 
     context.progress(100, "整理完成");
 
-    const summary = results.failed.length > 0
-      ? `整理完成: 成功 ${results.success.length} 个，失败 ${results.failed.length} 个`
-      : `整理完成: 成功移动 ${results.success.length} 个文件`;
+    const summary =
+      results.failed.length > 0
+        ? `整理完成: 成功 ${results.success.length} 个，失败 ${results.failed.length} 个`
+        : `整理完成: 成功移动 ${results.success.length} 个文件`;
 
     return {
       success: results.failed.length === 0,
@@ -389,9 +401,8 @@ const skillDefinition = {
         targetPath: finalTargetPath,
         failed: results.failed.map((f) => ({ file: f.fileName, error: f.error })),
       },
-      suggestions: results.failed.length > 0
-        ? ["部分文件移动失败，请检查权限或磁盘空间"]
-        : undefined,
+      suggestions:
+        results.failed.length > 0 ? ["部分文件移动失败，请检查权限或磁盘空间"] : undefined,
     };
   },
 };

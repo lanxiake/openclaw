@@ -5,11 +5,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import {
-  hashPassword,
-  verifyPassword,
-  validatePasswordStrength,
-} from "./password.js";
+import { hashPassword, verifyPassword, validatePasswordStrength } from "./password.js";
 
 describe("password utils", () => {
   describe("hashPassword", () => {

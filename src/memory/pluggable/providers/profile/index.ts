@@ -4,4 +4,4 @@
  * @module memory/pluggable/providers/profile
  */
 
-export { MemoryProfileMemoryProvider } from './memory.js'
+export { MemoryProfileMemoryProvider } from "./memory.js";

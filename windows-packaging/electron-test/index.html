@@ -1,243 +1,291 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src ws: wss: http://localhost:* https://*; img-src 'self' data: blob:;">
-  <title>OpenClaw</title>
-  <link rel="stylesheet" href="renderer/styles/main.css">
-  <link rel="stylesheet" href="renderer/styles/components.css">
-  <link rel="stylesheet" href="renderer/styles/chat.css">
-  <link rel="stylesheet" href="renderer/styles/overview.css">
-  <link rel="stylesheet" href="renderer/styles/skills.css">
-</head>
-<body>
-  <div class="app-container">
-    <!-- 导航栏 -->
-    <nav class="nav-bar">
-      <div class="nav-logo">
-        <div class="nav-logo-icon">🦞</div>
-        <span class="nav-logo-text">OpenClaw</span>
-      </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src ws: wss: http://localhost:* https://*; img-src 'self' data: blob:;"
+    />
+    <title>OpenClaw</title>
+    <link rel="stylesheet" href="renderer/styles/main.css" />
+    <link rel="stylesheet" href="renderer/styles/components.css" />
+    <link rel="stylesheet" href="renderer/styles/chat.css" />
+    <link rel="stylesheet" href="renderer/styles/overview.css" />
+    <link rel="stylesheet" href="renderer/styles/skills.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- 导航栏 -->
+      <nav class="nav-bar">
+        <div class="nav-logo">
+          <div class="nav-logo-icon">🦞</div>
+          <span class="nav-logo-text">OpenClaw</span>
+        </div>
 
-      <div class="nav-tabs">
-        <button class="nav-tab active" data-page="chat">
-          <span class="nav-tab-icon">💬</span>
-          <span>对话</span>
-        </button>
-        <button class="nav-tab" data-page="overview">
-          <span class="nav-tab-icon">📊</span>
-          <span>概览</span>
-        </button>
-        <button class="nav-tab" data-page="skills">
-          <span class="nav-tab-icon">⚡</span>
-          <span>技能</span>
-        </button>
-      </div>
+        <div class="nav-tabs">
+          <button class="nav-tab active" data-page="chat">
+            <span class="nav-tab-icon">💬</span>
+            <span>对话</span>
+          </button>
+          <button class="nav-tab" data-page="overview">
+            <span class="nav-tab-icon">📊</span>
+            <span>概览</span>
+          </button>
+          <button class="nav-tab" data-page="skills">
+            <span class="nav-tab-icon">⚡</span>
+            <span>技能</span>
+          </button>
+        </div>
 
-      <div class="nav-spacer"></div>
+        <div class="nav-spacer"></div>
 
-      <div class="nav-status" id="nav-status">
-        <span class="nav-status-dot disconnected" id="status-dot"></span>
-        <span id="status-text">正在连接...</span>
-      </div>
-    </nav>
+        <div class="nav-status" id="nav-status">
+          <span class="nav-status-dot disconnected" id="status-dot"></span>
+          <span id="status-text">正在连接...</span>
+        </div>
+      </nav>
 
-    <!-- 内容区域 -->
-    <main class="content-area">
-      <!-- 对话页面 -->
-      <div class="page active" id="page-chat">
-        <div class="chat-page">
-          <!-- 会话栏 -->
-          <div class="chat-session-bar">
-            <select class="chat-session-select" id="session-select">
-              <option value="default">默认会话</option>
-            </select>
-            <button class="btn btn-sm" id="btn-new-session">新建会话</button>
-            <div class="nav-spacer"></div>
-            <button class="btn btn-sm btn-danger" id="btn-stop" style="display: none;">停止生成</button>
-          </div>
-
-          <!-- 消息列表 -->
-          <div class="chat-messages" id="chat-messages">
-            <div class="chat-empty">
-              <div class="chat-empty-icon">💬</div>
-              <div class="chat-empty-title">开始对话</div>
-              <div class="chat-empty-desc">
-                在下方输入框中输入消息，按 Enter 发送。<br>
-                支持粘贴图片作为附件。
-              </div>
-            </div>
-          </div>
-
-          <!-- 输入区域 -->
-          <div class="chat-input-area">
-            <div class="chat-attachments" id="chat-attachments"></div>
-            <div class="chat-input-container">
-              <textarea
-                class="chat-input"
-                id="chat-input"
-                placeholder="输入消息... (Enter 发送, Shift+Enter 换行)"
-                rows="1"
-              ></textarea>
-              <button class="chat-send-btn" id="btn-send" title="发送消息">
-                ➤
+      <!-- 内容区域 -->
+      <main class="content-area">
+        <!-- 对话页面 -->
+        <div class="page active" id="page-chat">
+          <div class="chat-page">
+            <!-- 会话栏 -->
+            <div class="chat-session-bar">
+              <select class="chat-session-select" id="session-select">
+                <option value="default">默认会话</option>
+              </select>
+              <button class="btn btn-sm" id="btn-new-session">新建会话</button>
+              <div class="nav-spacer"></div>
+              <button class="btn btn-sm btn-danger" id="btn-stop" style="display: none">
+                停止生成
               </button>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- 概览页面 -->
-      <div class="page" id="page-overview">
-        <div class="overview-page">
-          <!-- 连接配置 -->
-          <div class="overview-header">
-            <div class="overview-status-card">
-              <div class="overview-status-header">
-                <div class="overview-status-title">网关连接</div>
-                <div class="overview-status-badge disconnected" id="overview-status-badge">
-                  <span class="overview-status-badge-dot"></span>
-                  <span id="overview-status-text">未连接</span>
+            <!-- 消息列表 -->
+            <div class="chat-messages" id="chat-messages">
+              <div class="chat-empty">
+                <div class="chat-empty-icon">💬</div>
+                <div class="chat-empty-title">开始对话</div>
+                <div class="chat-empty-desc">
+                  在下方输入框中输入消息，按 Enter 发送。<br />
+                  支持粘贴图片作为附件。
                 </div>
               </div>
+            </div>
 
-              <div class="overview-form">
-                <div class="overview-form-group">
-                  <label class="overview-form-label">WebSocket 地址</label>
-                  <input type="text" class="overview-form-input mono" id="input-gateway-url" placeholder="ws://127.0.0.1:18789">
-                </div>
-                <div class="overview-form-group">
-                  <label class="overview-form-label">网关令牌</label>
-                  <div class="input-with-toggle">
-                    <input type="password" class="overview-form-input mono" id="input-gateway-token" placeholder="OPENCLAW_GATEWAY_TOKEN">
-                    <button type="button" class="input-toggle-btn" id="toggle-gateway-token" title="显示/隐藏令牌">👁️</button>
+            <!-- 输入区域 -->
+            <div class="chat-input-area">
+              <div class="chat-attachments" id="chat-attachments"></div>
+              <div class="chat-input-container">
+                <textarea
+                  class="chat-input"
+                  id="chat-input"
+                  placeholder="输入消息... (Enter 发送, Shift+Enter 换行)"
+                  rows="1"
+                ></textarea>
+                <button class="chat-send-btn" id="btn-send" title="发送消息">➤</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 概览页面 -->
+        <div class="page" id="page-overview">
+          <div class="overview-page">
+            <!-- 连接配置 -->
+            <div class="overview-header">
+              <div class="overview-status-card">
+                <div class="overview-status-header">
+                  <div class="overview-status-title">网关连接</div>
+                  <div class="overview-status-badge disconnected" id="overview-status-badge">
+                    <span class="overview-status-badge-dot"></span>
+                    <span id="overview-status-text">未连接</span>
                   </div>
                 </div>
-                <div class="overview-form-group">
-                  <label class="overview-form-label">密码 (可选)</label>
-                  <div class="input-with-toggle">
-                    <input type="password" class="overview-form-input" id="input-password" placeholder="系统密码或共享密码">
-                    <button type="button" class="input-toggle-btn" id="toggle-password" title="显示/隐藏密码">👁️</button>
+
+                <div class="overview-form">
+                  <div class="overview-form-group">
+                    <label class="overview-form-label">WebSocket 地址</label>
+                    <input
+                      type="text"
+                      class="overview-form-input mono"
+                      id="input-gateway-url"
+                      placeholder="ws://127.0.0.1:18789"
+                    />
+                  </div>
+                  <div class="overview-form-group">
+                    <label class="overview-form-label">网关令牌</label>
+                    <div class="input-with-toggle">
+                      <input
+                        type="password"
+                        class="overview-form-input mono"
+                        id="input-gateway-token"
+                        placeholder="OPENCLAW_GATEWAY_TOKEN"
+                      />
+                      <button
+                        type="button"
+                        class="input-toggle-btn"
+                        id="toggle-gateway-token"
+                        title="显示/隐藏令牌"
+                      >
+                        👁️
+                      </button>
+                    </div>
+                  </div>
+                  <div class="overview-form-group">
+                    <label class="overview-form-label">密码 (可选)</label>
+                    <div class="input-with-toggle">
+                      <input
+                        type="password"
+                        class="overview-form-input"
+                        id="input-password"
+                        placeholder="系统密码或共享密码"
+                      />
+                      <button
+                        type="button"
+                        class="input-toggle-btn"
+                        id="toggle-password"
+                        title="显示/隐藏密码"
+                      >
+                        👁️
+                      </button>
+                    </div>
+                  </div>
+                  <div class="overview-form-group">
+                    <label class="overview-form-label">默认会话</label>
+                    <input
+                      type="text"
+                      class="overview-form-input"
+                      id="input-session-key"
+                      placeholder="default"
+                    />
                   </div>
                 </div>
-                <div class="overview-form-group">
-                  <label class="overview-form-label">默认会话</label>
-                  <input type="text" class="overview-form-input" id="input-session-key" placeholder="default">
+
+                <div class="overview-form-actions">
+                  <button class="btn btn-primary" id="btn-connect">连接</button>
+                  <button class="btn" id="btn-refresh">刷新</button>
+                  <span class="text-muted text-sm">修改配置后点击连接以应用更改</span>
+                </div>
+
+                <div class="overview-error" id="overview-error" style="display: none">
+                  <div class="overview-error-title">连接错误</div>
+                  <div class="overview-error-message" id="overview-error-message"></div>
                 </div>
               </div>
+            </div>
 
-              <div class="overview-form-actions">
-                <button class="btn btn-primary" id="btn-connect">连接</button>
-                <button class="btn" id="btn-refresh">刷新</button>
-                <span class="text-muted text-sm">修改配置后点击连接以应用更改</span>
+            <!-- 统计信息 -->
+            <div class="overview-stats">
+              <div class="overview-stat-card">
+                <div class="overview-stat-icon">🖥️</div>
+                <div class="overview-stat-value" id="stat-instances">0</div>
+                <div class="overview-stat-label">在线实例</div>
+                <div class="overview-stat-desc">最近5分钟的活跃连接</div>
               </div>
+              <div class="overview-stat-card">
+                <div class="overview-stat-icon">💬</div>
+                <div class="overview-stat-value" id="stat-sessions">0</div>
+                <div class="overview-stat-label">会话数量</div>
+                <div class="overview-stat-desc">网关追踪的会话</div>
+              </div>
+              <div class="overview-stat-card">
+                <div class="overview-stat-icon">⏰</div>
+                <div class="overview-stat-value" id="stat-cron">--</div>
+                <div class="overview-stat-label">定时任务</div>
+                <div class="overview-stat-desc" id="stat-cron-next">下次运行: --</div>
+              </div>
+              <div class="overview-stat-card">
+                <div class="overview-stat-icon">⏱️</div>
+                <div class="overview-stat-value" id="stat-uptime">--</div>
+                <div class="overview-stat-label">运行时间</div>
+                <div class="overview-stat-desc">网关启动后的时长</div>
+              </div>
+            </div>
 
-              <div class="overview-error" id="overview-error" style="display: none;">
-                <div class="overview-error-title">连接错误</div>
-                <div class="overview-error-message" id="overview-error-message"></div>
+            <!-- 快照信息 -->
+            <div class="overview-snapshot">
+              <div class="overview-snapshot-title">系统快照</div>
+              <div class="overview-snapshot-grid">
+                <div class="overview-snapshot-item">
+                  <div class="overview-snapshot-label">连接状态</div>
+                  <div class="overview-snapshot-value" id="snapshot-status">未连接</div>
+                </div>
+                <div class="overview-snapshot-item">
+                  <div class="overview-snapshot-label">Tick 间隔</div>
+                  <div class="overview-snapshot-value" id="snapshot-tick">--</div>
+                </div>
+                <div class="overview-snapshot-item">
+                  <div class="overview-snapshot-label">频道刷新</div>
+                  <div class="overview-snapshot-value" id="snapshot-channels">--</div>
+                </div>
+                <div class="overview-snapshot-item">
+                  <div class="overview-snapshot-label">网关端口</div>
+                  <div class="overview-snapshot-value" id="snapshot-port">18789</div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- 统计信息 -->
-          <div class="overview-stats">
-            <div class="overview-stat-card">
-              <div class="overview-stat-icon">🖥️</div>
-              <div class="overview-stat-value" id="stat-instances">0</div>
-              <div class="overview-stat-label">在线实例</div>
-              <div class="overview-stat-desc">最近5分钟的活跃连接</div>
-            </div>
-            <div class="overview-stat-card">
-              <div class="overview-stat-icon">💬</div>
-              <div class="overview-stat-value" id="stat-sessions">0</div>
-              <div class="overview-stat-label">会话数量</div>
-              <div class="overview-stat-desc">网关追踪的会话</div>
-            </div>
-            <div class="overview-stat-card">
-              <div class="overview-stat-icon">⏰</div>
-              <div class="overview-stat-value" id="stat-cron">--</div>
-              <div class="overview-stat-label">定时任务</div>
-              <div class="overview-stat-desc" id="stat-cron-next">下次运行: --</div>
-            </div>
-            <div class="overview-stat-card">
-              <div class="overview-stat-icon">⏱️</div>
-              <div class="overview-stat-value" id="stat-uptime">--</div>
-              <div class="overview-stat-label">运行时间</div>
-              <div class="overview-stat-desc">网关启动后的时长</div>
-            </div>
-          </div>
-
-          <!-- 快照信息 -->
-          <div class="overview-snapshot">
-            <div class="overview-snapshot-title">系统快照</div>
-            <div class="overview-snapshot-grid">
-              <div class="overview-snapshot-item">
-                <div class="overview-snapshot-label">连接状态</div>
-                <div class="overview-snapshot-value" id="snapshot-status">未连接</div>
-              </div>
-              <div class="overview-snapshot-item">
-                <div class="overview-snapshot-label">Tick 间隔</div>
-                <div class="overview-snapshot-value" id="snapshot-tick">--</div>
-              </div>
-              <div class="overview-snapshot-item">
-                <div class="overview-snapshot-label">频道刷新</div>
-                <div class="overview-snapshot-value" id="snapshot-channels">--</div>
-              </div>
-              <div class="overview-snapshot-item">
-                <div class="overview-snapshot-label">网关端口</div>
-                <div class="overview-snapshot-value" id="snapshot-port">18789</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 提示信息 -->
-          <div class="overview-tips">
-            <div class="overview-tips-title">使用提示</div>
-            <div class="overview-tips-grid">
-              <div class="overview-tip">
-                <div class="overview-tip-title">🔒 安全连接</div>
-                <div class="overview-tip-desc">建议使用 Tailscale Serve 保持网关在本地回环，同时启用 tailnet 认证。</div>
-              </div>
-              <div class="overview-tip">
-                <div class="overview-tip-title">🔄 会话管理</div>
-                <div class="overview-tip-desc">使用 /new 命令或会话管理功能重置上下文，保持对话清晰。</div>
-              </div>
-              <div class="overview-tip">
-                <div class="overview-tip-title">⏰ 定时任务</div>
-                <div class="overview-tip-desc">为定期运行的任务使用独立会话，避免上下文混淆。</div>
+            <!-- 提示信息 -->
+            <div class="overview-tips">
+              <div class="overview-tips-title">使用提示</div>
+              <div class="overview-tips-grid">
+                <div class="overview-tip">
+                  <div class="overview-tip-title">🔒 安全连接</div>
+                  <div class="overview-tip-desc">
+                    建议使用 Tailscale Serve 保持网关在本地回环，同时启用 tailnet 认证。
+                  </div>
+                </div>
+                <div class="overview-tip">
+                  <div class="overview-tip-title">🔄 会话管理</div>
+                  <div class="overview-tip-desc">
+                    使用 /new 命令或会话管理功能重置上下文，保持对话清晰。
+                  </div>
+                </div>
+                <div class="overview-tip">
+                  <div class="overview-tip-title">⏰ 定时任务</div>
+                  <div class="overview-tip-desc">
+                    为定期运行的任务使用独立会话，避免上下文混淆。
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- 技能页面 -->
-      <div class="page" id="page-skills">
-        <div class="skills-page">
-          <!-- 工具栏 -->
-          <div class="skills-toolbar">
-            <div class="skills-search">
-              <span class="skills-search-icon">🔍</span>
-              <input type="text" class="skills-search-input" id="skills-search" placeholder="搜索技能...">
+        <!-- 技能页面 -->
+        <div class="page" id="page-skills">
+          <div class="skills-page">
+            <!-- 工具栏 -->
+            <div class="skills-toolbar">
+              <div class="skills-search">
+                <span class="skills-search-icon">🔍</span>
+                <input
+                  type="text"
+                  class="skills-search-input"
+                  id="skills-search"
+                  placeholder="搜索技能..."
+                />
+              </div>
+              <div class="skills-count" id="skills-count">0 个技能</div>
+              <div class="nav-spacer"></div>
+              <button class="btn" id="btn-refresh-skills">刷新</button>
             </div>
-            <div class="skills-count" id="skills-count">0 个技能</div>
-            <div class="nav-spacer"></div>
-            <button class="btn" id="btn-refresh-skills">刷新</button>
-          </div>
 
-          <!-- 技能列表 -->
-          <div class="skills-list" id="skills-list">
-            <div class="skills-loading">
-              <div class="spinner"></div>
-              <div class="loading-text">正在加载技能列表...</div>
+            <!-- 技能列表 -->
+            <div class="skills-list" id="skills-list">
+              <div class="skills-loading">
+                <div class="spinner"></div>
+                <div class="loading-text">正在加载技能列表...</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </main>
-  </div>
+      </main>
+    </div>
 
-  <script src="renderer/app.js"></script>
-</body>
+    <script src="renderer/app.js"></script>
+  </body>
 </html>

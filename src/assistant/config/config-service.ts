@@ -67,19 +67,11 @@ export interface ConfigSearchResult {
 /**
  * 获取所有配置
  */
-export async function getAllConfigs(
-  params: ConfigSearchParams = {}
-): Promise<ConfigSearchResult> {
+export async function getAllConfigs(params: ConfigSearchParams = {}): Promise<ConfigSearchResult> {
   console.log("[ConfigService] 获取所有配置, params:", params);
 
   const db = await getDatabase();
-  const {
-    group,
-    search,
-    includeSensitive = false,
-    offset = 0,
-    limit = 100,
-  } = params;
+  const { group, search, includeSensitive = false, offset = 0, limit = 100 } = params;
 
   // 构建查询条件
   const conditions = [];
@@ -90,7 +82,7 @@ export async function getAllConfigs(
 
   if (search) {
     conditions.push(
-      sql`(${systemConfigs.key} ILIKE ${`%${search}%`} OR ${systemConfigs.description} ILIKE ${`%${search}%`})`
+      sql`(${systemConfigs.key} ILIKE ${`%${search}%`} OR ${systemConfigs.description} ILIKE ${`%${search}%`})`,
     );
   }
 
@@ -139,17 +131,13 @@ export async function getAllConfigs(
  */
 export async function getConfigByKey(
   key: string,
-  options: { includeSensitive?: boolean } = {}
+  options: { includeSensitive?: boolean } = {},
 ): Promise<SystemConfig | null> {
   console.log("[ConfigService] 获取配置:", key);
 
   const db = await getDatabase();
 
-  const result = await db
-    .select()
-    .from(systemConfigs)
-    .where(eq(systemConfigs.key, key))
-    .limit(1);
+  const result = await db.select().from(systemConfigs).where(eq(systemConfigs.key, key)).limit(1);
 
   if (result.length === 0) {
     console.log("[ConfigService] 配置不存在:", key);
@@ -172,10 +160,7 @@ export async function getConfigByKey(
 /**
  * 获取配置值（仅返回值）
  */
-export async function getConfigValue<T = unknown>(
-  key: string,
-  defaultValue?: T
-): Promise<T> {
+export async function getConfigValue<T = unknown>(key: string, defaultValue?: T): Promise<T> {
   console.log("[ConfigService] 获取配置值:", key);
 
   const db = await getDatabase();
@@ -200,7 +185,7 @@ export async function getConfigValue<T = unknown>(
 export async function setConfigValue(
   key: string,
   value: unknown,
-  options: ConfigServiceOptions = {}
+  options: ConfigServiceOptions = {},
 ): Promise<SystemConfig> {
   console.log("[ConfigService] 设置配置值:", key);
 
@@ -208,11 +193,7 @@ export async function setConfigValue(
   const { enableHistory = true, adminId, adminName, ipAddress, userAgent } = options;
 
   // 检查配置是否存在
-  const existing = await db
-    .select()
-    .from(systemConfigs)
-    .where(eq(systemConfigs.key, key))
-    .limit(1);
+  const existing = await db.select().from(systemConfigs).where(eq(systemConfigs.key, key)).limit(1);
 
   if (existing.length === 0) {
     throw new Error(`配置项不存在: ${key}`);
@@ -273,7 +254,7 @@ export async function createConfig(
     defaultValue?: unknown;
     validationRules?: Record<string, unknown>;
   },
-  options: ConfigServiceOptions = {}
+  options: ConfigServiceOptions = {},
 ): Promise<SystemConfig> {
   console.log("[ConfigService] 创建配置:", data.key);
 
@@ -336,21 +317,14 @@ export async function createConfig(
 /**
  * 删除配置
  */
-export async function deleteConfig(
-  key: string,
-  options: ConfigServiceOptions = {}
-): Promise<void> {
+export async function deleteConfig(key: string, options: ConfigServiceOptions = {}): Promise<void> {
   console.log("[ConfigService] 删除配置:", key);
 
   const db = await getDatabase();
   const { enableHistory = true, adminId, adminName, ipAddress, userAgent } = options;
 
   // 获取现有配置
-  const existing = await db
-    .select()
-    .from(systemConfigs)
-    .where(eq(systemConfigs.key, key))
-    .limit(1);
+  const existing = await db.select().from(systemConfigs).where(eq(systemConfigs.key, key)).limit(1);
 
   if (existing.length === 0) {
     throw new Error(`配置项不存在: ${key}`);
@@ -390,7 +364,7 @@ export async function deleteConfig(
  */
 export async function setConfigsBatch(
   configs: Array<{ key: string; value: unknown }>,
-  options: ConfigServiceOptions = {}
+  options: ConfigServiceOptions = {},
 ): Promise<SystemConfig[]> {
   console.log("[ConfigService] 批量设置配置:", configs.length, "项");
 
@@ -422,7 +396,7 @@ export async function getConfigHistory(
     endDate?: Date;
     offset?: number;
     limit?: number;
-  } = {}
+  } = {},
 ): Promise<{ history: ConfigChangeHistory[]; total: number }> {
   console.log("[ConfigService] 获取配置变更历史:", params);
 
@@ -514,18 +488,14 @@ export async function getConfigGroups(): Promise<
  */
 export async function resetConfigToDefault(
   key: string,
-  options: ConfigServiceOptions = {}
+  options: ConfigServiceOptions = {},
 ): Promise<SystemConfig | null> {
   console.log("[ConfigService] 重置配置为默认值:", key);
 
   const db = await getDatabase();
 
   // 获取配置
-  const existing = await db
-    .select()
-    .from(systemConfigs)
-    .where(eq(systemConfigs.key, key))
-    .limit(1);
+  const existing = await db.select().from(systemConfigs).where(eq(systemConfigs.key, key)).limit(1);
 
   if (existing.length === 0) {
     throw new Error(`配置项不存在: ${key}`);
@@ -551,9 +521,7 @@ export async function resetConfigToDefault(
  *
  * 用于首次部署或重置系统配置
  */
-export async function initializeDefaultConfigs(
-  options: ConfigServiceOptions = {}
-): Promise<void> {
+export async function initializeDefaultConfigs(options: ConfigServiceOptions = {}): Promise<void> {
   console.log("[ConfigService] 初始化默认配置");
 
   const defaultConfigs = [

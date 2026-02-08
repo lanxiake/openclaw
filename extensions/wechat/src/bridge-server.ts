@@ -163,7 +163,9 @@ export class WeChatBridgeServer {
         this.handleNotification(msg as JsonRpcNotification);
       }
     } catch (err) {
-      this.log.error(`Failed to parse message: ${err instanceof Error ? err.message : String(err)}`);
+      this.log.error(
+        `Failed to parse message: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 
@@ -190,7 +192,9 @@ export class WeChatBridgeServer {
         if (this.options.listenChats?.length) {
           for (const chat of this.options.listenChats) {
             this.addListen(chat).catch((err) => {
-              this.log.error(`Failed to add listen: ${err instanceof Error ? err.message : String(err)}`);
+              this.log.error(
+                `Failed to add listen: ${err instanceof Error ? err.message : String(err)}`,
+              );
             });
           }
         }
@@ -209,7 +213,9 @@ export class WeChatBridgeServer {
           isAtMe?: boolean;
         };
         // Log metadata only, not message content
-        this.log.info(`Received message: from=${params.from}, to=${params.to}, chatType=${params.chatType}, isAtMe=${params.isAtMe}`);
+        this.log.info(
+          `Received message: from=${params.from}, to=${params.to}, chatType=${params.chatType}, isAtMe=${params.isAtMe}`,
+        );
         this.options.onMessage({
           from: params.from,
           to: params.to,

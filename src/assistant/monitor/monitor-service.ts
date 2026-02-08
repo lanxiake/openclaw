@@ -110,11 +110,12 @@ export function getCpuUsage(): number {
     previousCpuTime = now;
 
     // 计算当前时刻的瞬时使用率
-    const avgUsage = cpus.reduce((acc, cpu) => {
-      const total = Object.values(cpu.times).reduce((a, b) => a + b, 0);
-      const idle = cpu.times.idle;
-      return acc + (1 - idle / total) * 100;
-    }, 0) / cpus.length;
+    const avgUsage =
+      cpus.reduce((acc, cpu) => {
+        const total = Object.values(cpu.times).reduce((a, b) => a + b, 0);
+        const idle = cpu.times.idle;
+        return acc + (1 - idle / total) * 100;
+      }, 0) / cpus.length;
 
     return Math.round(avgUsage * 100) / 100;
   }
@@ -324,12 +325,7 @@ export async function getTodayApiStats(): Promise<{
         total: count(),
       })
       .from(auditLogs)
-      .where(
-        and(
-          gte(auditLogs.createdAt, todayStart),
-          eq(auditLogs.resourceType, "api")
-        )
-      );
+      .where(and(gte(auditLogs.createdAt, todayStart), eq(auditLogs.resourceType, "api")));
 
     // 统计错误请求
     const errorResult = await db
@@ -341,8 +337,8 @@ export async function getTodayApiStats(): Promise<{
         and(
           gte(auditLogs.createdAt, todayStart),
           eq(auditLogs.resourceType, "api"),
-          eq(auditLogs.riskLevel, "high")
-        )
+          eq(auditLogs.riskLevel, "high"),
+        ),
       );
 
     return {
@@ -393,7 +389,7 @@ export async function getMonitorStats(): Promise<MonitorStats> {
  */
 export function generateResourceHistory(
   period: "hour" | "day" | "week",
-  currentResources: SystemResources
+  currentResources: SystemResources,
 ): Array<{
   timestamp: string;
   cpu: number;
@@ -427,8 +423,22 @@ export function generateResourceHistory(
 
     timeline.push({
       timestamp,
-      cpu: Math.max(0, Math.min(100, currentResources.cpu.usage + (Math.random() - 0.5) * currentResources.cpu.usage * variance)),
-      memory: Math.max(0, Math.min(100, currentResources.memory.usagePercent + (Math.random() - 0.5) * currentResources.memory.usagePercent * variance)),
+      cpu: Math.max(
+        0,
+        Math.min(
+          100,
+          currentResources.cpu.usage +
+            (Math.random() - 0.5) * currentResources.cpu.usage * variance,
+        ),
+      ),
+      memory: Math.max(
+        0,
+        Math.min(
+          100,
+          currentResources.memory.usagePercent +
+            (Math.random() - 0.5) * currentResources.memory.usagePercent * variance,
+        ),
+      ),
       disk: currentResources.disk.usagePercent, // 磁盘变化小，保持不变
     });
   }

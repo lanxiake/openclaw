@@ -9,11 +9,29 @@ import type { ConnectParams, ErrorShape, RequestFrame } from "../protocol/index.
 import type { ChannelRuntimeSnapshot } from "../server-channels.js";
 import type { DedupeEntry } from "../server-shared.js";
 import type { createSubsystemLogger } from "../../logging/subsystem.js";
+import type { AuthenticatedUser } from "../user-context.js";
 
 type SubsystemLogger = ReturnType<typeof createSubsystemLogger>;
 
+/**
+ * 网关客户端信息
+ *
+ * 包含连接参数和可选的用户认证信息
+ */
 export type GatewayClient = {
+  /** 连接参数 */
   connect: ConnectParams;
+  /** 已认证的用户信息 (多租户模式) */
+  authenticatedUser?: AuthenticatedUser;
+  /** 客户端能力声明 */
+  capabilities?: {
+    /** 是否支持本地技能执行 */
+    localSkillExecution?: boolean;
+    /** 是否支持文件操作 */
+    fileOperations?: boolean;
+    /** 是否支持系统命令 */
+    systemCommands?: boolean;
+  };
 };
 
 export type RespondFn = (

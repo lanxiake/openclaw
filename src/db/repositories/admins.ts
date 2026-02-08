@@ -25,11 +25,7 @@ import {
   type AdminPermissions,
 } from "../schema/index.js";
 import { generateId } from "../utils/id.js";
-import {
-  hashPassword,
-  hashRefreshToken,
-  generateRefreshToken,
-} from "../utils/password.js";
+import { hashPassword, hashRefreshToken, generateRefreshToken } from "../utils/password.js";
 import { getLogger } from "../../logging/logger.js";
 
 const logger = getLogger();
@@ -43,9 +39,7 @@ export class AdminRepository {
   /**
    * 创建管理员
    */
-  async create(
-    data: Omit<NewAdmin, "id" | "createdAt" | "updatedAt">
-  ): Promise<Admin> {
+  async create(data: Omit<NewAdmin, "id" | "createdAt" | "updatedAt">): Promise<Admin> {
     const id = generateId();
     const now = new Date();
 
@@ -85,10 +79,7 @@ export class AdminRepository {
    * 根据用户名查找管理员
    */
   async findByUsername(username: string): Promise<Admin | null> {
-    const [admin] = await this.db
-      .select()
-      .from(admins)
-      .where(eq(admins.username, username));
+    const [admin] = await this.db.select().from(admins).where(eq(admins.username, username));
     return admin ?? null;
   }
 
@@ -128,8 +119,8 @@ export class AdminRepository {
         or(
           like(admins.username, `%${options.search}%`),
           like(admins.displayName, `%${options.search}%`),
-          like(admins.email, `%${options.search}%`)
-        )
+          like(admins.email, `%${options.search}%`),
+        ),
       );
     }
 
@@ -145,11 +136,7 @@ export class AdminRepository {
     const orderColumn = options?.orderBy === "username" ? admins.username : admins.createdAt;
     const orderFn = options?.orderDir === "asc" ? asc : desc;
 
-    let query = this.db
-      .select()
-      .from(admins)
-      .where(whereClause)
-      .orderBy(orderFn(orderColumn));
+    let query = this.db.select().from(admins).where(whereClause).orderBy(orderFn(orderColumn));
 
     if (options?.limit) {
       query = query.limit(options.limit) as typeof query;
@@ -168,7 +155,7 @@ export class AdminRepository {
    */
   async update(
     id: string,
-    data: Partial<Omit<NewAdmin, "id" | "createdAt">>
+    data: Partial<Omit<NewAdmin, "id" | "createdAt">>,
   ): Promise<Admin | null> {
     const updateData = {
       ...data,
@@ -321,13 +308,13 @@ export class AdminSessionRepository {
    */
   async create(
     adminId: string,
-    options: { userAgent?: string; ipAddress?: string; expiresInMs?: number }
+    options: { userAgent?: string; ipAddress?: string; expiresInMs?: number },
   ): Promise<{ session: AdminSession; refreshToken: string }> {
     const id = generateId();
     const refreshToken = generateRefreshToken();
     const refreshTokenHash = hashRefreshToken(refreshToken);
     const expiresAt = new Date(
-      Date.now() + (options.expiresInMs ?? 24 * 60 * 60 * 1000) // 默认 24 小时
+      Date.now() + (options.expiresInMs ?? 24 * 60 * 60 * 1000), // 默认 24 小时
     );
 
     const [session] = await this.db
@@ -362,8 +349,8 @@ export class AdminSessionRepository {
         and(
           eq(adminSessions.refreshTokenHash, hash),
           eq(adminSessions.revoked, false),
-          gt(adminSessions.expiresAt, new Date())
-        )
+          gt(adminSessions.expiresAt, new Date()),
+        ),
       );
     return session ?? null;
   }
@@ -379,8 +366,8 @@ export class AdminSessionRepository {
         and(
           eq(adminSessions.adminId, adminId),
           eq(adminSessions.revoked, false),
-          gt(adminSessions.expiresAt, new Date())
-        )
+          gt(adminSessions.expiresAt, new Date()),
+        ),
       )
       .orderBy(desc(adminSessions.createdAt));
   }
@@ -390,13 +377,11 @@ export class AdminSessionRepository {
    */
   async refresh(
     sessionId: string,
-    newExpiresInMs?: number
+    newExpiresInMs?: number,
   ): Promise<{ session: AdminSession; refreshToken: string } | null> {
     const newRefreshToken = generateRefreshToken();
     const newHash = hashRefreshToken(newRefreshToken);
-    const newExpiresAt = new Date(
-      Date.now() + (newExpiresInMs ?? 24 * 60 * 60 * 1000)
-    );
+    const newExpiresAt = new Date(Date.now() + (newExpiresInMs ?? 24 * 60 * 60 * 1000));
 
     const [session] = await this.db
       .update(adminSessions)
@@ -450,12 +435,7 @@ export class AdminSessionRepository {
   async cleanupExpired(): Promise<number> {
     const result = await this.db
       .delete(adminSessions)
-      .where(
-        or(
-          sql`${adminSessions.expiresAt} < NOW()`,
-          eq(adminSessions.revoked, true)
-        )
-      );
+      .where(or(sql`${adminSessions.expiresAt} < NOW()`, eq(adminSessions.revoked, true)));
     const count = (result as unknown as { rowCount?: number }).rowCount ?? 0;
     if (count > 0) {
       logger.info("[admin-session-repo] Cleaned up expired sessions", { count });
@@ -536,8 +516,8 @@ export class AdminAuditLogRepository {
         or(
           like(adminAuditLogs.adminUsername, `%${options.search}%`),
           like(adminAuditLogs.action, `%${options.search}%`),
-          like(adminAuditLogs.targetName, `%${options.search}%`)
-        )
+          like(adminAuditLogs.targetName, `%${options.search}%`),
+        ),
       );
     }
 
@@ -572,10 +552,7 @@ export class AdminAuditLogRepository {
    * 根据 ID 获取审计日志详情
    */
   async findById(id: string): Promise<AdminAuditLog | null> {
-    const [log] = await this.db
-      .select()
-      .from(adminAuditLogs)
-      .where(eq(adminAuditLogs.id, id));
+    const [log] = await this.db.select().from(adminAuditLogs).where(eq(adminAuditLogs.id, id));
     return log ?? null;
   }
 }
@@ -589,9 +566,7 @@ export class AdminLoginAttemptRepository {
   /**
    * 记录登录尝试
    */
-  async record(
-    data: Omit<NewAdminLoginAttempt, "id" | "attemptedAt">
-  ): Promise<void> {
+  async record(data: Omit<NewAdminLoginAttempt, "id" | "attemptedAt">): Promise<void> {
     const id = generateId();
     await this.db.insert(adminLoginAttempts).values({
       ...data,
@@ -605,7 +580,7 @@ export class AdminLoginAttemptRepository {
    */
   async getRecentFailureCount(
     username: string,
-    windowMs: number = 15 * 60 * 1000 // 15 分钟
+    windowMs: number = 15 * 60 * 1000, // 15 分钟
   ): Promise<number> {
     const since = new Date(Date.now() - windowMs);
     const result = await this.db
@@ -615,8 +590,8 @@ export class AdminLoginAttemptRepository {
         and(
           eq(adminLoginAttempts.username, username),
           eq(adminLoginAttempts.success, false),
-          gt(adminLoginAttempts.attemptedAt, since)
-        )
+          gt(adminLoginAttempts.attemptedAt, since),
+        ),
       );
     return result[0]?.count ?? 0;
   }
@@ -626,7 +601,7 @@ export class AdminLoginAttemptRepository {
    */
   async getRecentFailureCountByIp(
     ipAddress: string,
-    windowMs: number = 60 * 60 * 1000 // 1 小时
+    windowMs: number = 60 * 60 * 1000, // 1 小时
   ): Promise<number> {
     const since = new Date(Date.now() - windowMs);
     const result = await this.db
@@ -636,8 +611,8 @@ export class AdminLoginAttemptRepository {
         and(
           eq(adminLoginAttempts.ipAddress, ipAddress),
           eq(adminLoginAttempts.success, false),
-          gt(adminLoginAttempts.attemptedAt, since)
-        )
+          gt(adminLoginAttempts.attemptedAt, since),
+        ),
       );
     return result[0]?.count ?? 0;
   }
@@ -681,9 +656,7 @@ export function getAdminAuditLogRepository(db?: Database): AdminAuditLogReposito
   return adminAuditLogRepoInstance;
 }
 
-export function getAdminLoginAttemptRepository(
-  db?: Database
-): AdminLoginAttemptRepository {
+export function getAdminLoginAttemptRepository(db?: Database): AdminLoginAttemptRepository {
   if (!adminLoginAttemptRepoInstance || db) {
     adminLoginAttemptRepoInstance = new AdminLoginAttemptRepository(db);
   }

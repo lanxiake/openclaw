@@ -25,11 +25,7 @@ import {
   type NewVerificationCode,
 } from "../schema/index.js";
 import { generateId, generateVerificationCode } from "../utils/id.js";
-import {
-  hashPassword,
-  hashRefreshToken,
-  generateRefreshToken,
-} from "../utils/password.js";
+import { hashPassword, hashRefreshToken, generateRefreshToken } from "../utils/password.js";
 import { getLogger } from "../../logging/logger.js";
 
 const logger = getLogger();
@@ -80,10 +76,7 @@ export class UserRepository {
    * 根据手机号查找用户
    */
   async findByPhone(phone: string): Promise<User | null> {
-    const [user] = await this.db
-      .select()
-      .from(users)
-      .where(eq(users.phone, phone));
+    const [user] = await this.db.select().from(users).where(eq(users.phone, phone));
     return user ?? null;
   }
 
@@ -91,10 +84,7 @@ export class UserRepository {
    * 根据邮箱查找用户
    */
   async findByEmail(email: string): Promise<User | null> {
-    const [user] = await this.db
-      .select()
-      .from(users)
-      .where(eq(users.email, email.toLowerCase()));
+    const [user] = await this.db.select().from(users).where(eq(users.email, email.toLowerCase()));
     return user ?? null;
   }
 
@@ -102,10 +92,7 @@ export class UserRepository {
    * 根据微信 OpenID 查找用户
    */
   async findByWechatOpenId(openId: string): Promise<User | null> {
-    const [user] = await this.db
-      .select()
-      .from(users)
-      .where(eq(users.wechatOpenId, openId));
+    const [user] = await this.db.select().from(users).where(eq(users.wechatOpenId, openId));
     return user ?? null;
   }
 
@@ -124,10 +111,7 @@ export class UserRepository {
   /**
    * 更新用户
    */
-  async update(
-    id: string,
-    data: Partial<Omit<NewUser, "id" | "createdAt">>
-  ): Promise<User | null> {
+  async update(id: string, data: Partial<Omit<NewUser, "id" | "createdAt">>): Promise<User | null> {
     const updateData = {
       ...data,
       updatedAt: new Date(),
@@ -138,11 +122,7 @@ export class UserRepository {
       updateData.passwordHash = await hashPassword(updateData.passwordHash);
     }
 
-    const [user] = await this.db
-      .update(users)
-      .set(updateData)
-      .where(eq(users.id, id))
-      .returning();
+    const [user] = await this.db.update(users).set(updateData).where(eq(users.id, id)).returning();
 
     if (user) {
       logger.info("[user-repo] User updated", { userId: id });
@@ -219,7 +199,7 @@ export class UserDeviceRepository {
   async linkDevice(
     userId: string,
     deviceId: string,
-    options?: { alias?: string; isPrimary?: boolean }
+    options?: { alias?: string; isPrimary?: boolean },
   ): Promise<UserDevice> {
     const id = generateId();
 
@@ -245,9 +225,7 @@ export class UserDeviceRepository {
   async unlinkDevice(userId: string, deviceId: string): Promise<void> {
     await this.db
       .delete(userDevices)
-      .where(
-        and(eq(userDevices.userId, userId), eq(userDevices.deviceId, deviceId))
-      );
+      .where(and(eq(userDevices.userId, userId), eq(userDevices.deviceId, deviceId)));
     logger.info("[user-device-repo] Device unlinked", { userId, deviceId });
   }
 
@@ -255,10 +233,7 @@ export class UserDeviceRepository {
    * 获取用户的所有设备
    */
   async findByUserId(userId: string): Promise<UserDevice[]> {
-    return this.db
-      .select()
-      .from(userDevices)
-      .where(eq(userDevices.userId, userId));
+    return this.db.select().from(userDevices).where(eq(userDevices.userId, userId));
   }
 
   /**
@@ -279,9 +254,7 @@ export class UserDeviceRepository {
     await this.db
       .update(userDevices)
       .set({ lastActiveAt: new Date() })
-      .where(
-        and(eq(userDevices.userId, userId), eq(userDevices.deviceId, deviceId))
-      );
+      .where(and(eq(userDevices.userId, userId), eq(userDevices.deviceId, deviceId)));
   }
 
   /**
@@ -298,9 +271,7 @@ export class UserDeviceRepository {
     await this.db
       .update(userDevices)
       .set({ isPrimary: true })
-      .where(
-        and(eq(userDevices.userId, userId), eq(userDevices.deviceId, deviceId))
-      );
+      .where(and(eq(userDevices.userId, userId), eq(userDevices.deviceId, deviceId)));
 
     logger.info("[user-device-repo] Primary device set", { userId, deviceId });
   }
@@ -317,13 +288,13 @@ export class UserSessionRepository {
    */
   async create(
     userId: string,
-    options: { userAgent?: string; ipAddress?: string; expiresInMs?: number }
+    options: { userAgent?: string; ipAddress?: string; expiresInMs?: number },
   ): Promise<{ session: UserSession; refreshToken: string }> {
     const id = generateId();
     const refreshToken = generateRefreshToken();
     const refreshTokenHash = hashRefreshToken(refreshToken);
     const expiresAt = new Date(
-      Date.now() + (options.expiresInMs ?? 7 * 24 * 60 * 60 * 1000) // 默认 7 天
+      Date.now() + (options.expiresInMs ?? 7 * 24 * 60 * 60 * 1000), // 默认 7 天
     );
 
     const [session] = await this.db
@@ -349,9 +320,7 @@ export class UserSessionRepository {
   /**
    * 根据 Refresh Token 查找会话
    */
-  async findByRefreshToken(
-    refreshToken: string
-  ): Promise<UserSession | null> {
+  async findByRefreshToken(refreshToken: string): Promise<UserSession | null> {
     const hash = hashRefreshToken(refreshToken);
     const [session] = await this.db
       .select()
@@ -360,8 +329,8 @@ export class UserSessionRepository {
         and(
           eq(userSessions.refreshTokenHash, hash),
           eq(userSessions.revoked, false),
-          gt(userSessions.expiresAt, new Date())
-        )
+          gt(userSessions.expiresAt, new Date()),
+        ),
       );
     return session ?? null;
   }
@@ -371,13 +340,11 @@ export class UserSessionRepository {
    */
   async refresh(
     sessionId: string,
-    newExpiresInMs?: number
+    newExpiresInMs?: number,
   ): Promise<{ session: UserSession; refreshToken: string } | null> {
     const newRefreshToken = generateRefreshToken();
     const newHash = hashRefreshToken(newRefreshToken);
-    const newExpiresAt = new Date(
-      Date.now() + (newExpiresInMs ?? 7 * 24 * 60 * 60 * 1000)
-    );
+    const newExpiresAt = new Date(Date.now() + (newExpiresInMs ?? 7 * 24 * 60 * 60 * 1000));
 
     const [session] = await this.db
       .update(userSessions)
@@ -397,10 +364,7 @@ export class UserSessionRepository {
    * 撤销会话
    */
   async revoke(sessionId: string): Promise<void> {
-    await this.db
-      .update(userSessions)
-      .set({ revoked: true })
-      .where(eq(userSessions.id, sessionId));
+    await this.db.update(userSessions).set({ revoked: true }).where(eq(userSessions.id, sessionId));
     logger.debug("[user-session-repo] Session revoked", { sessionId });
   }
 
@@ -421,12 +385,7 @@ export class UserSessionRepository {
   async cleanupExpired(): Promise<number> {
     const result = await this.db
       .delete(userSessions)
-      .where(
-        or(
-          sql`${userSessions.expiresAt} < NOW()`,
-          eq(userSessions.revoked, true)
-        )
-      );
+      .where(or(sql`${userSessions.expiresAt} < NOW()`, eq(userSessions.revoked, true)));
     const count = (result as unknown as { rowCount?: number }).rowCount ?? 0;
     if (count > 0) {
       logger.info("[user-session-repo] Cleaned up expired sessions", { count });
@@ -459,7 +418,7 @@ export class LoginAttemptRepository {
   async getRecentFailureCount(
     identifier: string,
     ipAddress: string,
-    windowMs: number = 15 * 60 * 1000 // 15 分钟
+    windowMs: number = 15 * 60 * 1000, // 15 分钟
   ): Promise<number> {
     const since = new Date(Date.now() - windowMs);
     const result = await this.db
@@ -469,8 +428,8 @@ export class LoginAttemptRepository {
         and(
           eq(loginAttempts.identifier, identifier),
           eq(loginAttempts.success, false),
-          gt(loginAttempts.attemptedAt, since)
-        )
+          gt(loginAttempts.attemptedAt, since),
+        ),
       );
     return result[0]?.count ?? 0;
   }
@@ -480,7 +439,7 @@ export class LoginAttemptRepository {
    */
   async getRecentFailureCountByIp(
     ipAddress: string,
-    windowMs: number = 60 * 60 * 1000 // 1 小时
+    windowMs: number = 60 * 60 * 1000, // 1 小时
   ): Promise<number> {
     const since = new Date(Date.now() - windowMs);
     const result = await this.db
@@ -490,8 +449,8 @@ export class LoginAttemptRepository {
         and(
           eq(loginAttempts.ipAddress, ipAddress),
           eq(loginAttempts.success, false),
-          gt(loginAttempts.attemptedAt, since)
-        )
+          gt(loginAttempts.attemptedAt, since),
+        ),
       );
     return result[0]?.count ?? 0;
   }
@@ -521,7 +480,7 @@ export class VerificationCodeRepository {
     target: string,
     targetType: "phone" | "email",
     purpose: "register" | "login" | "reset_password" | "bind" | "verify",
-    expiresInMs: number = 5 * 60 * 1000 // 5 分钟
+    expiresInMs: number = 5 * 60 * 1000, // 5 分钟
   ): Promise<{ code: string; expiresAt: Date }> {
     const id = generateId();
     const code = generateVerificationCode();
@@ -550,7 +509,7 @@ export class VerificationCodeRepository {
   async verify(
     target: string,
     code: string,
-    purpose: "register" | "login" | "reset_password" | "bind" | "verify"
+    purpose: "register" | "login" | "reset_password" | "bind" | "verify",
   ): Promise<boolean> {
     // 查找有效验证码
     const [record] = await this.db
@@ -562,8 +521,8 @@ export class VerificationCodeRepository {
           eq(verificationCodes.code, code),
           eq(verificationCodes.purpose, purpose),
           eq(verificationCodes.used, false),
-          gt(verificationCodes.expiresAt, new Date())
-        )
+          gt(verificationCodes.expiresAt, new Date()),
+        ),
       )
       .limit(1);
 
@@ -578,8 +537,8 @@ export class VerificationCodeRepository {
           and(
             eq(verificationCodes.target, target),
             eq(verificationCodes.purpose, purpose),
-            eq(verificationCodes.used, false)
-          )
+            eq(verificationCodes.used, false),
+          ),
         );
       return false;
     }
@@ -602,18 +561,13 @@ export class VerificationCodeRepository {
    */
   async getRecentSendCount(
     target: string,
-    windowMs: number = 60 * 60 * 1000 // 1 小时
+    windowMs: number = 60 * 60 * 1000, // 1 小时
   ): Promise<number> {
     const since = new Date(Date.now() - windowMs);
     const result = await this.db
       .select({ count: sql<number>`count(*)::int` })
       .from(verificationCodes)
-      .where(
-        and(
-          eq(verificationCodes.target, target),
-          gt(verificationCodes.createdAt, since)
-        )
-      );
+      .where(and(eq(verificationCodes.target, target), gt(verificationCodes.createdAt, since)));
     return result[0]?.count ?? 0;
   }
 
@@ -623,12 +577,7 @@ export class VerificationCodeRepository {
   async cleanupExpired(): Promise<number> {
     const result = await this.db
       .delete(verificationCodes)
-      .where(
-        or(
-          sql`${verificationCodes.expiresAt} < NOW()`,
-          eq(verificationCodes.used, true)
-        )
-      );
+      .where(or(sql`${verificationCodes.expiresAt} < NOW()`, eq(verificationCodes.used, true)));
     return (result as unknown as { rowCount?: number }).rowCount ?? 0;
   }
 }
@@ -646,14 +595,10 @@ export function getUserSessionRepository(db?: Database): UserSessionRepository {
   return new UserSessionRepository(db);
 }
 
-export function getLoginAttemptRepository(
-  db?: Database
-): LoginAttemptRepository {
+export function getLoginAttemptRepository(db?: Database): LoginAttemptRepository {
   return new LoginAttemptRepository(db);
 }
 
-export function getVerificationCodeRepository(
-  db?: Database
-): VerificationCodeRepository {
+export function getVerificationCodeRepository(db?: Database): VerificationCodeRepository {
   return new VerificationCodeRepository(db);
 }

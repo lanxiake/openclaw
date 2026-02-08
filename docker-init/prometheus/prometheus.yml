@@ -7,7 +7,7 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
   external_labels:
-    monitor: 'openclaw-monitor'
+    monitor: "openclaw-monitor"
 
 # 告警规则文件 (可选)
 # rule_files:
@@ -16,9 +16,9 @@ global:
 # 抓取配置
 scrape_configs:
   # Prometheus 自身监控
-  - job_name: 'prometheus'
+  - job_name: "prometheus"
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ["localhost:9090"]
 
   # PostgreSQL 监控 (需要 postgres_exporter)
   # - job_name: 'postgres'

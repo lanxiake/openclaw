@@ -65,7 +65,7 @@ export function getAdminJwtSecret(): string {
   if (!secret) {
     throw new Error(
       "ADMIN_JWT_SECRET or JWT_SECRET environment variable is not set. " +
-        "Please configure a secure random string for JWT signing."
+        "Please configure a secure random string for JWT signing.",
     );
   }
   if (secret.length < 32) {
@@ -85,7 +85,7 @@ export function getAdminJwtSecret(): string {
 export function generateAdminAccessToken(
   adminId: string,
   role: string,
-  options?: { expiresIn?: string }
+  options?: { expiresIn?: string },
 ): AdminTokenPair {
   const secret = getAdminJwtSecret();
   const expiresIn = options?.expiresIn || ADMIN_TOKEN_CONFIG.accessTokenExpiresIn;
@@ -197,7 +197,7 @@ export function decodeAdminToken(token: string): AdminAccessTokenPayload | null 
  */
 export function isAdminTokenExpiringSoon(
   token: string,
-  thresholdSeconds: number = 5 * 60
+  thresholdSeconds: number = 5 * 60,
 ): boolean {
   const decoded = decodeAdminToken(token);
   if (!decoded) return true;

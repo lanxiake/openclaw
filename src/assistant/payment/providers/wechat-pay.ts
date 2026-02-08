@@ -213,7 +213,7 @@ function generateSignature(
   timestamp: number,
   nonceStr: string,
   body: string,
-  privateKey: string
+  privateKey: string,
 ): string {
   const message = `${method}\n${url}\n${timestamp}\n${nonceStr}\n${body}\n`;
   const sign = crypto.createSign("RSA-SHA256");
@@ -224,11 +224,7 @@ function generateSignature(
 /**
  * 生成 Authorization 头
  */
-function generateAuthorizationHeader(
-  method: string,
-  url: string,
-  body: string = ""
-): string {
+function generateAuthorizationHeader(method: string, url: string, body: string = ""): string {
   if (!wechatPayConfig) {
     throw new Error("微信支付未初始化");
   }
@@ -241,7 +237,7 @@ function generateAuthorizationHeader(
     timestamp,
     nonceStr,
     body,
-    wechatPayConfig.privateKey
+    wechatPayConfig.privateKey,
   );
 
   return `WECHATPAY2-SHA256-RSA2048 mchid="${wechatPayConfig.mchId}",nonce_str="${nonceStr}",signature="${signature}",timestamp="${timestamp}",serial_no="${wechatPayConfig.serialNo}"`;
@@ -253,15 +249,13 @@ function generateAuthorizationHeader(
 async function sendWechatPayRequest<T>(
   method: "GET" | "POST",
   path: string,
-  body?: Record<string, unknown>
+  body?: Record<string, unknown>,
 ): Promise<T> {
   if (!wechatPayConfig) {
     throw new Error("微信支付未初始化");
   }
 
-  const baseUrl = wechatPayConfig.sandbox
-    ? WECHAT_PAY_SANDBOX_API_BASE
-    : WECHAT_PAY_API_BASE;
+  const baseUrl = wechatPayConfig.sandbox ? WECHAT_PAY_SANDBOX_API_BASE : WECHAT_PAY_API_BASE;
 
   const url = `${baseUrl}${path}`;
   const bodyStr = body ? JSON.stringify(body) : "";
@@ -294,9 +288,7 @@ async function sendWechatPayRequest<T>(
 /**
  * 创建 Native 支付订单（扫码支付）
  */
-export async function createNativeOrder(
-  order: PaymentOrder
-): Promise<InitiatePaymentResponse> {
+export async function createNativeOrder(order: PaymentOrder): Promise<InitiatePaymentResponse> {
   if (!wechatPayConfig) {
     return { success: false, error: "微信支付未配置" };
   }
@@ -317,7 +309,7 @@ export async function createNativeOrder(
     const response = await sendWechatPayRequest<WechatUnifiedOrderResponse>(
       "POST",
       "/v3/pay/transactions/native",
-      request as unknown as Record<string, unknown>
+      request as unknown as Record<string, unknown>,
     );
 
     if (!response.code_url) {
@@ -350,7 +342,7 @@ export async function createNativeOrder(
  */
 export async function createJsapiOrder(
   order: PaymentOrder,
-  openid: string
+  openid: string,
 ): Promise<InitiatePaymentResponse> {
   if (!wechatPayConfig) {
     return { success: false, error: "微信支付未配置" };
@@ -375,7 +367,7 @@ export async function createJsapiOrder(
     const response = await sendWechatPayRequest<WechatUnifiedOrderResponse>(
       "POST",
       "/v3/pay/transactions/jsapi",
-      request as unknown as Record<string, unknown>
+      request as unknown as Record<string, unknown>,
     );
 
     if (!response.prepay_id) {
@@ -393,7 +385,7 @@ export async function createJsapiOrder(
       timestamp,
       nonceStr,
       packageStr,
-      wechatPayConfig.privateKey
+      wechatPayConfig.privateKey,
     );
 
     logger.info("[wechat-pay] JSAPI 订单创建成功", {
@@ -429,7 +421,7 @@ export async function createJsapiOrder(
  */
 export async function createH5Order(
   order: PaymentOrder,
-  clientIp: string
+  clientIp: string,
 ): Promise<InitiatePaymentResponse> {
   if (!wechatPayConfig) {
     return { success: false, error: "微信支付未配置" };
@@ -457,7 +449,7 @@ export async function createH5Order(
     const response = await sendWechatPayRequest<WechatUnifiedOrderResponse>(
       "POST",
       "/v3/pay/transactions/h5",
-      request as unknown as Record<string, unknown>
+      request as unknown as Record<string, unknown>,
     );
 
     if (!response.h5_url) {
@@ -496,7 +488,7 @@ export async function queryOrder(orderId: string): Promise<WechatPayResult | nul
   try {
     const response = await sendWechatPayRequest<WechatPayResult>(
       "GET",
-      `/v3/pay/transactions/out-trade-no/${orderId}?mchid=${wechatPayConfig.mchId}`
+      `/v3/pay/transactions/out-trade-no/${orderId}?mchid=${wechatPayConfig.mchId}`,
     );
 
     logger.debug("[wechat-pay] 查询订单状态", {
@@ -524,11 +516,9 @@ export async function closeOrder(orderId: string): Promise<boolean> {
   }
 
   try {
-    await sendWechatPayRequest<void>(
-      "POST",
-      `/v3/pay/transactions/out-trade-no/${orderId}/close`,
-      { mchid: wechatPayConfig.mchId }
-    );
+    await sendWechatPayRequest<void>("POST", `/v3/pay/transactions/out-trade-no/${orderId}/close`, {
+      mchid: wechatPayConfig.mchId,
+    });
 
     logger.info("[wechat-pay] 关闭订单成功", { orderId });
     return true;
@@ -548,7 +538,7 @@ export async function closeOrder(orderId: string): Promise<boolean> {
 export function decryptNotification(
   ciphertext: string,
   nonce: string,
-  associatedData: string
+  associatedData: string,
 ): WechatPayResult {
   if (!wechatPayConfig) {
     throw new Error("微信支付未配置");
@@ -577,7 +567,7 @@ export function verifyNotificationSignature(
   nonce: string,
   body: string,
   signature: string,
-  _serial: string
+  _serial: string,
 ): boolean {
   if (!wechatPayConfig || !wechatPayConfig.platformCert) {
     logger.warn("[wechat-pay] 无法验证签名：缺少平台证书");
@@ -603,7 +593,7 @@ export async function handleWechatPayNotification(
     signature: string;
     serial: string;
   },
-  rawBody: string
+  rawBody: string,
 ): Promise<{
   success: boolean;
   result?: WechatPayResult;
@@ -615,7 +605,7 @@ export async function handleWechatPayNotification(
     headers.nonce,
     rawBody,
     headers.signature,
-    headers.serial
+    headers.serial,
   );
 
   if (!isValid) {
@@ -628,7 +618,7 @@ export async function handleWechatPayNotification(
     const result = decryptNotification(
       notification.resource.ciphertext,
       notification.resource.nonce,
-      notification.resource.associated_data || ""
+      notification.resource.associated_data || "",
     );
 
     logger.info("[wechat-pay] 收到支付回调", {
@@ -715,7 +705,7 @@ export async function createRefund(params: {
  */
 export async function handleWechatPayment(
   order: PaymentOrder,
-  request: InitiatePaymentRequest
+  request: InitiatePaymentRequest,
 ): Promise<InitiatePaymentResponse> {
   if (!wechatPayConfig?.enabled) {
     return { success: false, error: "微信支付未启用" };

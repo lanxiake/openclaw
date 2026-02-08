@@ -4,15 +4,7 @@
  * 管理后台管理员相关数据结构
  */
 
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  jsonb,
-  index,
-  uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 
@@ -121,13 +113,9 @@ export const admins = pgTable(
     /** 密码修改时间 */
     passwordChangedAt: timestamp("password_changed_at", { withTimezone: true }),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     /** 更新时间 */
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
     /** 创建者 ID (外键) */
     createdBy: text("created_by"),
   },
@@ -142,7 +130,7 @@ export const admins = pgTable(
     index("admins_status_idx").on(table.status),
     // 索引：创建时间
     index("admins_created_at_idx").on(table.createdAt),
-  ]
+  ],
 );
 
 /**
@@ -170,9 +158,7 @@ export const adminSessions = pgTable(
     /** 是否已撤销 */
     revoked: boolean("revoked").default(false).notNull(),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     /** 最后活跃时间 */
     lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
   },
@@ -183,7 +169,7 @@ export const adminSessions = pgTable(
     index("admin_sessions_refresh_token_hash_idx").on(table.refreshTokenHash),
     // 索引：过期时间
     index("admin_sessions_expires_at_idx").on(table.expiresAt),
-  ]
+  ],
 );
 
 /**
@@ -197,8 +183,7 @@ export const adminAuditLogs = pgTable(
     /** 主键 UUID */
     id: text("id").primaryKey(),
     /** 管理员 ID (外键) */
-    adminId: text("admin_id")
-      .references(() => admins.id, { onDelete: "set null" }),
+    adminId: text("admin_id").references(() => admins.id, { onDelete: "set null" }),
     /** 管理员用户名 (冗余，防止删除后无法追溯) */
     adminUsername: text("admin_username").notNull(),
     /** 操作类型 */
@@ -226,9 +211,7 @@ export const adminAuditLogs = pgTable(
       .default("low")
       .notNull(),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 索引：管理员 ID
@@ -241,7 +224,7 @@ export const adminAuditLogs = pgTable(
     index("admin_audit_logs_risk_level_idx").on(table.riskLevel),
     // 索引：创建时间
     index("admin_audit_logs_created_at_idx").on(table.createdAt),
-  ]
+  ],
 );
 
 /**
@@ -279,21 +262,16 @@ export const adminLoginAttempts = pgTable(
     /** User Agent */
     userAgent: text("user_agent"),
     /** 尝试时间 */
-    attemptedAt: timestamp("attempted_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    attemptedAt: timestamp("attempted_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 联合索引：用户名+IP
-    index("admin_login_attempts_username_ip_idx").on(
-      table.username,
-      table.ipAddress
-    ),
+    index("admin_login_attempts_username_ip_idx").on(table.username, table.ipAddress),
     // 索引：尝试时间
     index("admin_login_attempts_attempted_at_idx").on(table.attemptedAt),
     // 索引：IP 地址
     index("admin_login_attempts_ip_address_idx").on(table.ipAddress),
-  ]
+  ],
 );
 
 /**

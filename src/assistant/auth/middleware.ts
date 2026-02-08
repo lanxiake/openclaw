@@ -8,11 +8,7 @@ import type { Request, Response, NextFunction } from "express";
 
 import { getLogger } from "../../logging/logger.js";
 import { getUserRepository } from "../../db/index.js";
-import {
-  verifyAccessToken,
-  extractBearerToken,
-  type UserAccessTokenPayload,
-} from "./jwt.js";
+import { verifyAccessToken, extractBearerToken, type UserAccessTokenPayload } from "./jwt.js";
 
 const logger = getLogger();
 
@@ -47,11 +43,7 @@ export interface AuthMiddlewareOptions {
 export function authMiddleware(options: AuthMiddlewareOptions = {}) {
   const { required = true, verifyUser = true } = options;
 
-  return async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       // 1. 提取 Token
       const token = extractBearerToken(req.headers.authorization);

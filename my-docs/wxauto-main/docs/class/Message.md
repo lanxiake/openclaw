@@ -65,21 +65,21 @@ Message (基类)
         └── FriendOtherMessage (其他消息)
 ``` -->
 
-|                                                      |   [自己发送的消息`SelfMessage`](#selfmessage)  |   [对方发来的消息`FriendMessage`](#friendmessage)  |
-| :--------------------------------------------------: | :-----------------------------------------: | :---------------------------------------------: |
-|         [文本消息`TextMessage`](#textmessage)         |                SelfTextMessage             |               FriendTextMessage                  |
-|        [引用消息`QuoteMessage`](#quotemessage)        |                SelfQuoteMessage            |               FriendQuoteMessage                 |
-|        [语音消息`VoiceMessage`](#voicemessage)        |                SelfVoiceMessage            |               FriendVoiceMessage                 |
-|        [图片消息`ImageMessage`](#imagemessage)        |                SelfImageMessage            |               FriendImageMessage                 |
-|        [视频消息`VideoMessage`](#videomessage)        |                SelfVideoMessage            |               FriendVideoMessage                 |
-|         [文件消息`FileMessage`](#filemessage)         |                SelfFileMessage             |               FriendFileMessage                  |
-|     [位置消息`LocationMessage`](#locationmessage)     |              SelfLocationMessage           |             FriendLocationMessage                |
-|         [链接消息`LinkMessage`](#linkmessage)         |                SelfLinkMessage             |               FriendLinkMessage                  |
-|      [表情消息`EmotionMessage`](#emotionmessage)      |               SelfEmotionMessage           |              FriendEmotionMessage                |
-|        [合并消息`MergeMessage`](#mergemessage)        |                SelfMergeMessage            |               FriendMergeMessage                 |
-| [名片消息`PersonalCardMessage`](#personalcardmessage) |            SelfPersonalCardMessage         |           FriendPersonalCardMessage              |
-|      [笔记消息`NoteMessage`](#notemessage)            |                SelfNoteMessage             |               FriendNoteMessage                  |
-|        [其他消息`OtherMessage`](#othermessage)        |                SelfOtherMessage            |               FriendOtherMessage                 |
+|                                                       | [自己发送的消息`SelfMessage`](#selfmessage) | [对方发来的消息`FriendMessage`](#friendmessage) |
+| :---------------------------------------------------: | :-----------------------------------------: | :---------------------------------------------: |
+|         [文本消息`TextMessage`](#textmessage)         |               SelfTextMessage               |                FriendTextMessage                |
+|        [引用消息`QuoteMessage`](#quotemessage)        |              SelfQuoteMessage               |               FriendQuoteMessage                |
+|        [语音消息`VoiceMessage`](#voicemessage)        |              SelfVoiceMessage               |               FriendVoiceMessage                |
+|        [图片消息`ImageMessage`](#imagemessage)        |              SelfImageMessage               |               FriendImageMessage                |
+|        [视频消息`VideoMessage`](#videomessage)        |              SelfVideoMessage               |               FriendVideoMessage                |
+|         [文件消息`FileMessage`](#filemessage)         |               SelfFileMessage               |                FriendFileMessage                |
+|     [位置消息`LocationMessage`](#locationmessage)     |             SelfLocationMessage             |              FriendLocationMessage              |
+|         [链接消息`LinkMessage`](#linkmessage)         |               SelfLinkMessage               |                FriendLinkMessage                |
+|      [表情消息`EmotionMessage`](#emotionmessage)      |             SelfEmotionMessage              |              FriendEmotionMessage               |
+|        [合并消息`MergeMessage`](#mergemessage)        |              SelfMergeMessage               |               FriendMergeMessage                |
+| [名片消息`PersonalCardMessage`](#personalcardmessage) |           SelfPersonalCardMessage           |            FriendPersonalCardMessage            |
+|         [笔记消息`NoteMessage`](#notemessage)         |               SelfNoteMessage               |                FriendNoteMessage                |
+|        [其他消息`OtherMessage`](#othermessage)        |              SelfOtherMessage               |               FriendOtherMessage                |
 
 简单的使用示例：
 
@@ -107,15 +107,15 @@ if isinstance(msg, FriendMessage):
 
 **属性**（所有消息类型都包含以下属性）：
 
-| 属性名 | 类型 | 描述  |
-| :-----: | :---: | -------- |
-| type  | str | 消息内容类型 |
-| attr  | str | 消息来源类型 |
-| info | Dict | 消息的详细信息 |
-| id | str | 消息UI ID（不重复，切换UI后会变） |
-| hash | str | 消息hash值（可能重复，切换UI后不变） |
-| sender | str | 消息发送者 |
-| content | str | 消息内容 |
+| 属性名  | 类型 | 描述                                 |
+| :-----: | :--: | ------------------------------------ |
+|  type   | str  | 消息内容类型                         |
+|  attr   | str  | 消息来源类型                         |
+|  info   | Dict | 消息的详细信息                       |
+|   id    | str  | 消息UI ID（不重复，切换UI后会变）    |
+|  hash   | str  | 消息hash值（可能重复，切换UI后不变） |
+| sender  | str  | 消息发送者                           |
+| content | str  | 消息内容                             |
 
 ### chat_info
 
@@ -130,21 +130,22 @@ chat_info = msg.chat_info()
 - 类型：`dict`
 - 描述：聊天窗口信息
 - 返回值示例：
+
 ```python
 # 好友
-{'chat_type': 'friend', 'chat_name': '张三'}  
+{'chat_type': 'friend', 'chat_name': '张三'}
 
 # 群聊
-{'group_member_count': 500, 'chat_type': 'group', 'chat_name': '工作群'}  
+{'group_member_count': 500, 'chat_type': 'group', 'chat_name': '工作群'}
 
 # 客服
-{'company': '@肯德基', 'chat_type': 'service', 'chat_name': '店长xxx'} 
+{'company': '@肯德基', 'chat_type': 'service', 'chat_name': '店长xxx'}
 
 # 公众号
-{'chat_type': 'official', 'chat_name': '肯德基'} 
+{'chat_type': 'official', 'chat_name': '肯德基'}
 ```
 
-###  get_all_text
+### get_all_text
 
 获取消息中所有文本内容
 
@@ -170,9 +171,9 @@ msg.roll_into_view()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| attr | str |  system | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| attr   | str  | system | 消息属性 |
 
 ## TickleMessage
 
@@ -180,15 +181,15 @@ msg.roll_into_view()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| attr | str |  tickle | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| attr   | str  | tickle | 消息属性 |
 
 特有属性：
 
-| 属性     | 类型   | 描述             |
-| -------- | ------ | ---------------- |
-| tickle_list     | str    | 拍一拍消息列表  |
+| 属性        | 类型 | 描述           |
+| ----------- | ---- | -------------- |
+| tickle_list | str  | 拍一拍消息列表 |
 
 ## TimeMessage
 
@@ -196,15 +197,15 @@ msg.roll_into_view()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| attr | str |  time | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| attr   | str  | time   | 消息属性 |
 
 特有属性：
 
-| 属性     | 类型   | 描述             |
-| -------- | ------ | ---------------- |
-| time     | str    | 时间  YYYY-MM-DD HH:MM:SS  |
+| 属性 | 类型 | 描述                     |
+| ---- | ---- | ------------------------ |
+| time | str  | 时间 YYYY-MM-DD HH:MM:SS |
 
 ## HumanMessage
 
@@ -212,15 +213,15 @@ msg.roll_into_view()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| attr | str |  friend | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| attr   | str  | friend | 消息属性 |
 
 特有属性：
 
-| 属性     | 类型   | 描述             |
-| -------- | ------ | ---------------- |
-| sender_remark  | str    | **群消息**中，该消息发送人自己设置的“我在本群的昵称”  |
+| 属性          | 类型 | 描述                                                 |
+| ------------- | ---- | ---------------------------------------------------- |
+| sender_remark | str  | **群消息**中，该消息发送人自己设置的“我在本群的昵称” |
 
 ### click
 
@@ -253,11 +254,11 @@ msg.quote("回复内容")
 
 **参数**：
 
-| 参数名 | 类型   |  默认值  | 描述           |
-| ------ | ------ | -------- | -------------- |
-| text   | str    | 无       | 引用内容       |
-| at     | Union[List[str], str] | 无       | @用户列表     |
-| timeout | int    | 3        | 超时时间，单位为秒 |
+| 参数名  | 类型                  | 默认值 | 描述               |
+| ------- | --------------------- | ------ | ------------------ |
+| text    | str                   | 无     | 引用内容           |
+| at      | Union[List[str], str] | 无     | @用户列表          |
+| timeout | int                   | 3      | 超时时间，单位为秒 |
 
 **返回值**：
 
@@ -276,17 +277,16 @@ msg.forward("张三", message="转发会议材料给你，请查收")
 
 **参数**：
 
-| 参数名 | 类型   |  默认值  | 描述           |
-| ------ | ------ | -------- | -------------- |
-| targets    | Union[List[str], str]    | 无       | 转发对象名称   |
-| message    | str    | None       | 要附加的消息   |
-| timeout | int    | 3        | 超时时间，单位为秒 |
+| 参数名  | 类型                  | 默认值 | 描述               |
+| ------- | --------------------- | ------ | ------------------ |
+| targets | Union[List[str], str] | 无     | 转发对象名称       |
+| message | str                   | None   | 要附加的消息       |
+| timeout | int                   | 3      | 超时时间，单位为秒 |
 
 **返回值**：
 
 - 类型：[`WxResponse`](/docs/class/other/#wxresponse)
 - 描述：操作结果
-
 
 ### tickle
 
@@ -331,8 +331,6 @@ msg.download_head_image()
 
 好友、群友发送的消息，即聊天页面中，左侧人员发送的消息。继承自[HumanMessage](#humanmessage)
 
-
-
 ### sender_info
 
 获取发送人信息
@@ -345,8 +343,6 @@ msg.sender_info()
 
 - 类型：Dict[str, str]
 
-
-
 ### at
 
 @该消息发送人
@@ -357,18 +353,15 @@ msg.at('xxxxxx')
 
 **参数**：
 
-| 参数名 | 类型   |  默认值  | 描述           |
-| ------ | ------ | -------- | -------------- |
-| content   | str  | 必填       | 要发送的内容    |
-| quote     | bool | False     | 是否引用该消息    |
-
+| 参数名  | 类型 | 默认值 | 描述           |
+| ------- | ---- | ------ | -------------- |
+| content | str  | 必填   | 要发送的内容   |
+| quote   | bool | False  | 是否引用该消息 |
 
 **返回值**：
 
 - 类型：[`WxResponse`](/docs/class/other/#wxresponse)
 - 描述：操作结果
-
-
 
 ### add_friend
 
@@ -380,19 +373,18 @@ msg.add_friend()
 
 **参数**：
 
-| 参数名 | 类型   |  默认值  | 描述           |
-| ------ | ------ | -------- | -------------- |
-| addmsg   | str  | None      | 添加好友时的附加消息，默认为None    |
-| remark     | str | None     | 添加好友后的备注，默认为None    |
-| tags     | list | None     | 添加好友后的标签，默认为None    |
-| permission     | Literal['朋友圈', '仅聊天'] | '朋友圈'     | 添加好友后的权限，默认为'朋友圈'    |
-| timeout     | int | 3     | 搜索好友的超时时间，默认为3秒    |
+| 参数名     | 类型                        | 默认值   | 描述                             |
+| ---------- | --------------------------- | -------- | -------------------------------- |
+| addmsg     | str                         | None     | 添加好友时的附加消息，默认为None |
+| remark     | str                         | None     | 添加好友后的备注，默认为None     |
+| tags       | list                        | None     | 添加好友后的标签，默认为None     |
+| permission | Literal['朋友圈', '仅聊天'] | '朋友圈' | 添加好友后的权限，默认为'朋友圈' |
+| timeout    | int                         | 3        | 搜索好友的超时时间，默认为3秒    |
 
 **返回值**：
 
 - 类型：[`WxResponse`](/docs/class/other/#wxresponse)
 - 描述：操作结果
-
 
 ### multi_select
 
@@ -406,16 +398,15 @@ msg.multi_select()
 
 **返回值**：无
 
-
 ## SelfMessage
 
 自己发送的消息，即聊天页面中，右侧自己发送的消息。继承自[HumanMessage](#humanmessage)
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| attr | str |  self | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| attr   | str  | self   | 消息属性 |
 
 ## TextMessage
 
@@ -423,9 +414,9 @@ msg.multi_select()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  text | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| type   | str  | text   | 消息属性 |
 
 ## QuoteMessage
 
@@ -433,15 +424,15 @@ msg.multi_select()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  quote | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| type   | str  | quote  | 消息属性 |
 
 特有属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| quote_content | str |  引用消息内容 | 引用消息内容 |
+| 属性名        | 类型 | 属性值       | 描述         |
+| ------------- | ---- | ------------ | ------------ |
+| quote_content | str  | 引用消息内容 | 引用消息内容 |
 
 ### download_quote_image
 
@@ -453,10 +444,10 @@ msg.download_quote_image()
 
 **参数**：
 
-| 参数名 | 类型   |  默认值  | 描述         |
-| ----- | --- |----- | -------- |
-| dir_path     | str | None     | 下载路径，默认为None |
-| timeout     | int | 10     | 超时时间，默认为10秒    |
+| 参数名   | 类型 | 默认值 | 描述                 |
+| -------- | ---- | ------ | -------------------- |
+| dir_path | str  | None   | 下载路径，默认为None |
+| timeout  | int  | 10     | 超时时间，默认为10秒 |
 
 **返回值**：
 Path: 视频路径，成功时返回该类型
@@ -479,9 +470,9 @@ msg.click_quote()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  image | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| type   | str  | image  | 消息属性 |
 
 ### download
 
@@ -493,10 +484,10 @@ msg.download()
 
 **参数**：
 
-| 参数名 | 类型   |  默认值  | 描述           |
-| ------ | ------ | -------- | -------------- |
-| dir_path | Union[str, Path]  | None | 下载图片的目录，不填则默认[WxParam.DEFAULT_SAVE_PATH](#wxparam-类) |
-| timeout | int  |  10 | 下载超时时间 |
+| 参数名   | 类型             | 默认值 | 描述                                                               |
+| -------- | ---------------- | ------ | ------------------------------------------------------------------ |
+| dir_path | Union[str, Path] | None   | 下载图片的目录，不填则默认[WxParam.DEFAULT_SAVE_PATH](#wxparam-类) |
+| timeout  | int              | 10     | 下载超时时间                                                       |
 
 **返回值**：
 
@@ -509,9 +500,9 @@ msg.download()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  video | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| type   | str  | video  | 消息属性 |
 
 ### download
 
@@ -523,10 +514,10 @@ msg.download()
 
 **参数**：
 
-| 参数名 | 类型   |  默认值  | 描述           |
-| ------ | ------ | -------- | -------------- |
-| dir_path | Union[str, Path]  | None | 下载视频的目录，不填则默认[WxParam.DEFAULT_SAVE_PATH](#wxparam-类) |
-| timeout | int  |  10 | 下载超时时间 |
+| 参数名   | 类型             | 默认值 | 描述                                                               |
+| -------- | ---------------- | ------ | ------------------------------------------------------------------ |
+| dir_path | Union[str, Path] | None   | 下载视频的目录，不填则默认[WxParam.DEFAULT_SAVE_PATH](#wxparam-类) |
+| timeout  | int              | 10     | 下载超时时间                                                       |
 
 **返回值**：
 
@@ -539,9 +530,9 @@ msg.download()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  voice | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| type   | str  | voice  | 消息属性 |
 
 ### to_text
 
@@ -557,9 +548,9 @@ msg.to_text()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  file | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| type   | str  | file   | 消息属性 |
 
 ### download
 
@@ -571,11 +562,11 @@ msg.download()
 
 **参数**：
 
-| 参数名 | 类型   |  默认值  | 描述           |
-| ------ | ------ | -------- | -------------- |
-| dir_path | Union[str, Path]  | None | 下载文件的目录，不填则默认[WxParam.DEFAULT_SAVE_PATH](#wxparam-类) |
-| force_click | bool  |  False | 是否强制点击文件消息（当自动下载不可用时指定，否则会打开该文件） |
-| timeout | int  |  10 | 下载超时时间 |
+| 参数名      | 类型             | 默认值 | 描述                                                               |
+| ----------- | ---------------- | ------ | ------------------------------------------------------------------ |
+| dir_path    | Union[str, Path] | None   | 下载文件的目录，不填则默认[WxParam.DEFAULT_SAVE_PATH](#wxparam-类) |
+| force_click | bool             | False  | 是否强制点击文件消息（当自动下载不可用时指定，否则会打开该文件）   |
+| timeout     | int              | 10     | 下载超时时间                                                       |
 
 **返回值**：
 
@@ -588,15 +579,15 @@ msg.download()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  location | 消息属性 |
+| 属性名 | 类型 | 属性值   | 描述     |
+| ------ | ---- | -------- | -------- |
+| type   | str  | location | 消息属性 |
 
 特有属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| address | str |  地址信息 | 该消息卡片的地址信息 |
+| 属性名  | 类型 | 属性值   | 描述                 |
+| ------- | ---- | -------- | -------------------- |
+| address | str  | 地址信息 | 该消息卡片的地址信息 |
 
 ## LinkMessage
 
@@ -604,9 +595,9 @@ msg.download()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  link | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| type   | str  | link   | 消息属性 |
 
 ### get_url
 
@@ -616,9 +607,9 @@ msg.download()
 msg.get_url()
 ```
 
-| 参数名 | 类型   |  默认值  | 描述    |
-| ------ | ------ | -------- | ------ |
-| timeout | int  |  10 | 下载超时时间 |
+| 参数名  | 类型 | 默认值 | 描述         |
+| ------- | ---- | ------ | ------------ |
+| timeout | int  | 10     | 下载超时时间 |
 
 **返回值**：
 
@@ -630,9 +621,9 @@ msg.get_url()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  emotion | 消息属性 |
+| 属性名 | 类型 | 属性值  | 描述     |
+| ------ | ---- | ------- | -------- |
+| type   | str  | emotion | 消息属性 |
 
 ## MergeMessage
 
@@ -640,9 +631,9 @@ msg.get_url()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  merge | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| type   | str  | merge  | 消息属性 |
 
 ### get_messages
 
@@ -662,9 +653,9 @@ msg.get_messages()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  personal_card | 消息属性 |
+| 属性名 | 类型 | 属性值        | 描述     |
+| ------ | ---- | ------------- | -------- |
+| type   | str  | personal_card | 消息属性 |
 
 ### add_friend
 
@@ -674,13 +665,13 @@ msg.get_messages()
 msg.add_friend()
 ```
 
-| 参数名 | 类型   |  默认值  | 描述    |
-| ------ | ------ | -------- | ------ |
-| addmsg | str    | None     | 添加好友时的附加消息 |
-| remark | str    | None     | 添加好友后的备注 |
-| tags   | List[str]   | None     | 添加好友后的标签 |
-| permission | Literal['朋友圈', '仅聊天'] | '朋友圈' | 添加好友后的权限 |
-| timeout | int    | 3        | 搜索好友的超时时间 |
+| 参数名     | 类型                        | 默认值   | 描述                 |
+| ---------- | --------------------------- | -------- | -------------------- |
+| addmsg     | str                         | None     | 添加好友时的附加消息 |
+| remark     | str                         | None     | 添加好友后的备注     |
+| tags       | List[str]                   | None     | 添加好友后的标签     |
+| permission | Literal['朋友圈', '仅聊天'] | '朋友圈' | 添加好友后的权限     |
+| timeout    | int                         | 3        | 搜索好友的超时时间   |
 
 **返回值**：
 
@@ -692,9 +683,9 @@ msg.add_friend()
 
 固定属性：
 
-| 属性名 | 类型 | 属性值  | 描述  |
-| ----- | --- |----- | -------- |
-| type | str |  note | 消息属性 |
+| 属性名 | 类型 | 属性值 | 描述     |
+| ------ | ---- | ------ | -------- |
+| type   | str  | note   | 消息属性 |
 
 ### get_content
 
@@ -713,7 +704,6 @@ for content in note_content_list:
         print('文件路径：', content)
 ```
 
-
 ### save_files
 
 保存笔记中的文件
@@ -722,9 +712,9 @@ for content in note_content_list:
 msg.save_files()
 ```
 
-| 参数名 | 类型   |  默认值  | 描述    |
-| ------ | ------ | -------- | ------ |
-| dir_path | Union[str, Path]    | None     | 保存路径 |
+| 参数名   | 类型             | 默认值 | 描述     |
+| -------- | ---------------- | ------ | -------- |
+| dir_path | Union[str, Path] | None   | 保存路径 |
 
 **返回值**：
 
@@ -738,9 +728,9 @@ msg.save_files()
 msg.to_markdown()
 ```
 
-| 参数名 | 类型   |  默认值  | 描述    |
-| ------ | ------ | -------- | ------ |
-| dir_path | Union[str, Path]    | None     | 保存路径 |
+| 参数名   | 类型             | 默认值 | 描述     |
+| -------- | ---------------- | ------ | -------- |
+| dir_path | Union[str, Path] | None   | 保存路径 |
 
 **返回值**：
 

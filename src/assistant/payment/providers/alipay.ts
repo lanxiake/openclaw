@@ -50,9 +50,9 @@ export interface AlipayConfig extends PaymentProviderConfig {
  */
 export type AlipayTradeType =
   | "FACE_TO_FACE" // 当面付（扫码）
-  | "APP"          // APP 支付
-  | "WAP"          // 手机网站支付
-  | "PAGE";        // 电脑网站支付
+  | "APP" // APP 支付
+  | "WAP" // 手机网站支付
+  | "PAGE"; // 电脑网站支付
 
 /**
  * 支付宝统一下单请求
@@ -195,14 +195,18 @@ function formatDate(date: Date = new Date()): string {
 /**
  * 生成签名
  */
-function generateSign(params: Record<string, string>, privateKey: string, signType: "RSA2" | "RSA" = "RSA2"): string {
+function generateSign(
+  params: Record<string, string>,
+  privateKey: string,
+  signType: "RSA2" | "RSA" = "RSA2",
+): string {
   // 1. 按字母顺序排序参数
   const sortedKeys = Object.keys(params).sort();
 
   // 2. 拼接参数
   const signStr = sortedKeys
-    .filter(key => params[key] !== undefined && params[key] !== "" && key !== "sign")
-    .map(key => `${key}=${params[key]}`)
+    .filter((key) => params[key] !== undefined && params[key] !== "" && key !== "sign")
+    .map((key) => `${key}=${params[key]}`)
     .join("&");
 
   // 3. 签名
@@ -220,15 +224,18 @@ function verifySign(
   params: Record<string, string>,
   sign: string,
   publicKey: string,
-  signType: "RSA2" | "RSA" = "RSA2"
+  signType: "RSA2" | "RSA" = "RSA2",
 ): boolean {
   // 1. 按字母顺序排序参数
   const sortedKeys = Object.keys(params).sort();
 
   // 2. 拼接参数 (排除 sign 和 sign_type)
   const signStr = sortedKeys
-    .filter(key => params[key] !== undefined && params[key] !== "" && key !== "sign" && key !== "sign_type")
-    .map(key => `${key}=${params[key]}`)
+    .filter(
+      (key) =>
+        params[key] !== undefined && params[key] !== "" && key !== "sign" && key !== "sign_type",
+    )
+    .map((key) => `${key}=${params[key]}`)
     .join("&");
 
   // 3. 验证签名
@@ -264,7 +271,7 @@ function buildCommonParams(method: string): Record<string, string> {
  */
 async function sendAlipayRequest<T>(
   method: string,
-  bizContent: Record<string, unknown>
+  bizContent: Record<string, unknown>,
 ): Promise<T> {
   if (!alipayConfig) {
     throw new Error("支付宝未初始化");
@@ -272,7 +279,7 @@ async function sendAlipayRequest<T>(
 
   const gateway = alipayConfig.sandbox
     ? ALIPAY_SANDBOX_GATEWAY
-    : (alipayConfig.gateway || ALIPAY_GATEWAY);
+    : alipayConfig.gateway || ALIPAY_GATEWAY;
 
   // 构建请求参数
   const params = buildCommonParams(method);
@@ -332,9 +339,7 @@ async function sendAlipayRequest<T>(
 /**
  * 创建当面付订单（扫码支付）
  */
-export async function createFaceToFaceOrder(
-  order: PaymentOrder
-): Promise<InitiatePaymentResponse> {
+export async function createFaceToFaceOrder(order: PaymentOrder): Promise<InitiatePaymentResponse> {
   if (!alipayConfig) {
     return { success: false, error: "支付宝未配置" };
   }
@@ -349,7 +354,7 @@ export async function createFaceToFaceOrder(
 
     const response = await sendAlipayRequest<AlipayOrderResponse>(
       "alipay.trade.precreate",
-      bizContent
+      bizContent,
     );
 
     if (!response.qr_code) {
@@ -381,9 +386,7 @@ export async function createFaceToFaceOrder(
 /**
  * 创建 APP 支付订单
  */
-export async function createAppOrder(
-  order: PaymentOrder
-): Promise<InitiatePaymentResponse> {
+export async function createAppOrder(order: PaymentOrder): Promise<InitiatePaymentResponse> {
   if (!alipayConfig) {
     return { success: false, error: "支付宝未配置" };
   }
@@ -435,7 +438,7 @@ export async function createAppOrder(
  */
 export async function createWapOrder(
   order: PaymentOrder,
-  quitUrl?: string
+  quitUrl?: string,
 ): Promise<InitiatePaymentResponse> {
   if (!alipayConfig) {
     return { success: false, error: "支付宝未配置" };
@@ -461,7 +464,7 @@ export async function createWapOrder(
 
     const gateway = alipayConfig.sandbox
       ? ALIPAY_SANDBOX_GATEWAY
-      : (alipayConfig.gateway || ALIPAY_GATEWAY);
+      : alipayConfig.gateway || ALIPAY_GATEWAY;
 
     // 构建跳转 URL
     const payUrl = `${gateway}?${Object.entries(params)
@@ -492,9 +495,7 @@ export async function createWapOrder(
 /**
  * 创建电脑网站支付订单
  */
-export async function createPageOrder(
-  order: PaymentOrder
-): Promise<InitiatePaymentResponse> {
+export async function createPageOrder(order: PaymentOrder): Promise<InitiatePaymentResponse> {
   if (!alipayConfig) {
     return { success: false, error: "支付宝未配置" };
   }
@@ -517,7 +518,7 @@ export async function createPageOrder(
 
     const gateway = alipayConfig.sandbox
       ? ALIPAY_SANDBOX_GATEWAY
-      : (alipayConfig.gateway || ALIPAY_GATEWAY);
+      : alipayConfig.gateway || ALIPAY_GATEWAY;
 
     // 构建跳转 URL
     const payUrl = `${gateway}?${Object.entries(params)
@@ -554,10 +555,9 @@ export async function queryOrder(orderId: string): Promise<AlipayQueryResponse |
   }
 
   try {
-    const response = await sendAlipayRequest<AlipayQueryResponse>(
-      "alipay.trade.query",
-      { out_trade_no: orderId }
-    );
+    const response = await sendAlipayRequest<AlipayQueryResponse>("alipay.trade.query", {
+      out_trade_no: orderId,
+    });
 
     logger.debug("[alipay] 查询订单状态", {
       orderId,
@@ -584,10 +584,9 @@ export async function closeOrder(orderId: string): Promise<boolean> {
   }
 
   try {
-    await sendAlipayRequest<{ trade_no: string; out_trade_no: string }>(
-      "alipay.trade.close",
-      { out_trade_no: orderId }
-    );
+    await sendAlipayRequest<{ trade_no: string; out_trade_no: string }>("alipay.trade.close", {
+      out_trade_no: orderId,
+    });
 
     logger.info("[alipay] 关闭订单成功", { orderId });
     return true;
@@ -637,9 +636,7 @@ export function verifyNotification(params: Record<string, string>): boolean {
 /**
  * 处理支付宝异步通知
  */
-export async function handleAlipayNotification(
-  params: Record<string, string>
-): Promise<{
+export async function handleAlipayNotification(params: Record<string, string>): Promise<{
   success: boolean;
   result?: {
     orderId: string;
@@ -737,7 +734,7 @@ export async function createRefund(params: {
  */
 export async function queryRefund(
   orderId: string,
-  refundId: string
+  refundId: string,
 ): Promise<{
   success: boolean;
   status?: "SUCCESS" | "PROCESSING" | "FAILED";
@@ -790,7 +787,7 @@ export async function queryRefund(
  */
 export async function handleAlipayPayment(
   order: PaymentOrder,
-  request: InitiatePaymentRequest
+  request: InitiatePaymentRequest,
 ): Promise<InitiatePaymentResponse> {
   if (!alipayConfig?.enabled) {
     return { success: false, error: "支付宝支付未启用" };

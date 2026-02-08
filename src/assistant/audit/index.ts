@@ -24,7 +24,7 @@ export {
   DEFAULT_AUDIT_CONFIG,
   EVENT_SEVERITY_MAP,
   EVENT_TYPE_LABELS,
-} from './types.js'
+} from "./types.js";
 
 // 导出服务函数 (基于 JSON Lines 的本地审计)
 export {
@@ -37,7 +37,7 @@ export {
   getAuditConfig,
   updateAuditConfig,
   getRecentAuditLogs,
-} from './service.js'
+} from "./service.js";
 
 // 导出风险评估器
 export {
@@ -50,7 +50,7 @@ export {
   type RiskEvaluationResult,
   type RiskAlert,
   type AlertHandler,
-} from './risk-evaluator.js'
+} from "./risk-evaluator.js";
 
 // 导出增强版审计服务 (基于 PostgreSQL)
 export {
@@ -62,7 +62,7 @@ export {
   type PaginatedResult,
   type ExportRequest,
   type ExportResult,
-} from './enhanced-service.js'
+} from "./enhanced-service.js";
 
 // 导出清理调度器
 export {
@@ -73,4 +73,4 @@ export {
   executeCleanup,
   type CleanupTaskConfig,
   type CleanupResult,
-} from './cleanup-scheduler.js'
+} from "./cleanup-scheduler.js";

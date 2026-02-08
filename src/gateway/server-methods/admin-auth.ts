@@ -26,7 +26,7 @@ const LOG_TAG = "admin-auth";
 function validateStringParam(
   params: Record<string, unknown>,
   key: string,
-  required = false
+  required = false,
 ): string | undefined {
   const value = params[key];
   if (value === undefined || value === null) {
@@ -45,7 +45,9 @@ function validateStringParam(
  * 从请求参数中获取 Access Token 并验证
  * 返回管理员 ID 和角色，验证失败返回 null
  */
-function validateAdminAuth(params: Record<string, unknown>): { adminId: string; role: string } | null {
+function validateAdminAuth(
+  params: Record<string, unknown>,
+): { adminId: string; role: string } | null {
   const authHeader = params["authorization"] as string | undefined;
   const token = extractAdminBearerToken(authHeader);
   if (!token) return null;
@@ -114,7 +116,7 @@ export const adminAuthMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, result.error || "登录失败", {
             details: { errorCode: result.errorCode },
-          })
+          }),
         );
       }
     } catch (error) {
@@ -124,10 +126,7 @@ export const adminAuthMethods: GatewayRequestHandlers = {
       respond(
         false,
         undefined,
-        errorShape(
-          ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "登录失败"
-        )
+        errorShape(ErrorCodes.INVALID_REQUEST, error instanceof Error ? error.message : "登录失败"),
       );
     }
   },
@@ -162,11 +161,9 @@ export const adminAuthMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(
-            ErrorCodes.INVALID_REQUEST,
-            result.error || "刷新令牌失败",
-            { details: { errorCode: result.errorCode } }
-          )
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "刷新令牌失败", {
+            details: { errorCode: result.errorCode },
+          }),
         );
       }
     } catch (error) {
@@ -178,8 +175,8 @@ export const adminAuthMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "刷新令牌失败"
-        )
+          error instanceof Error ? error.message : "刷新令牌失败",
+        ),
       );
     }
   },
@@ -231,7 +228,7 @@ export const adminAuthMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -252,10 +249,7 @@ export const adminAuthMethods: GatewayRequestHandlers = {
       respond(
         false,
         undefined,
-        errorShape(
-          ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "登出失败"
-        )
+        errorShape(ErrorCodes.INVALID_REQUEST, error instanceof Error ? error.message : "登出失败"),
       );
     }
   },
@@ -275,7 +269,7 @@ export const adminAuthMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -287,7 +281,7 @@ export const adminAuthMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "管理员不存在", {
             details: { errorCode: "ADMIN_NOT_FOUND" },
-          })
+          }),
         );
         return;
       }
@@ -302,8 +296,8 @@ export const adminAuthMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取信息失败"
-        )
+          error instanceof Error ? error.message : "获取信息失败",
+        ),
       );
     }
   },

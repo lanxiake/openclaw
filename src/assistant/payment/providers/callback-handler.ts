@@ -30,9 +30,7 @@ import {
   type WechatPayNotification,
   type WechatPayResult,
 } from "./wechat-pay.js";
-import {
-  handleAlipayNotification,
-} from "./alipay.js";
+import { handleAlipayNotification } from "./alipay.js";
 
 const logger = getLogger();
 
@@ -58,7 +56,7 @@ const eventHandlers: Map<PaymentEventType | "*", Set<PaymentEventHandler>> = new
  */
 export function registerPaymentEventHandler(
   eventType: PaymentEventType | "*",
-  handler: PaymentEventHandler
+  handler: PaymentEventHandler,
 ): void {
   let handlers = eventHandlers.get(eventType);
   if (!handlers) {
@@ -75,7 +73,7 @@ export function registerPaymentEventHandler(
  */
 export function unregisterPaymentEventHandler(
   eventType: PaymentEventType | "*",
-  handler: PaymentEventHandler
+  handler: PaymentEventHandler,
 ): void {
   const handlers = eventHandlers.get(eventType);
   if (handlers) {
@@ -129,7 +127,7 @@ export type OrderUpdateCallback = (
   orderId: string,
   status: OrderStatus,
   externalOrderId?: string,
-  paidAt?: string
+  paidAt?: string,
 ) => Promise<PaymentOrder | null>;
 
 /**
@@ -195,9 +193,7 @@ export interface WechatCallbackRequest {
 /**
  * 处理微信支付回调
  */
-export async function processWechatCallback(
-  request: WechatCallbackRequest
-): Promise<{
+export async function processWechatCallback(request: WechatCallbackRequest): Promise<{
   success: boolean;
   message?: string;
 }> {
@@ -211,7 +207,7 @@ export async function processWechatCallback(
     const result = await handleWechatPayNotification(
       request.body,
       request.headers,
-      request.rawBody
+      request.rawBody,
     );
 
     if (!result.success || !result.result) {
@@ -233,21 +229,17 @@ export async function processWechatCallback(
           tradeType: payResult.trade_type,
           bankType: payResult.bank_type,
           payerOpenid: payResult.payer.openid,
-        }
+        },
       );
     } else if (payResult.trade_state === "CLOSED" || payResult.trade_state === "REVOKED") {
-      await handlePaymentFailed(
-        "wechat",
-        payResult.out_trade_no,
-        payResult.trade_state_desc
-      );
+      await handlePaymentFailed("wechat", payResult.out_trade_no, payResult.trade_state_desc);
     } else if (payResult.trade_state === "REFUND") {
       // 退款通知单独处理
       await handleRefundSuccess(
         "wechat",
         payResult.out_trade_no,
         payResult.transaction_id,
-        payResult.amount.total
+        payResult.amount.total,
       );
     }
 
@@ -270,9 +262,7 @@ export async function processWechatCallback(
 /**
  * 处理支付宝回调
  */
-export async function processAlipayCallback(
-  params: Record<string, string>
-): Promise<{
+export async function processAlipayCallback(params: Record<string, string>): Promise<{
   success: boolean;
   message?: string;
 }> {
@@ -304,7 +294,7 @@ export async function processAlipayCallback(
         {
           buyerId,
           sellerEmail: params.seller_email,
-        }
+        },
       );
     } else if (tradeStatus === "TRADE_CLOSED") {
       await handlePaymentFailed("alipay", orderId, "交易已关闭");
@@ -335,7 +325,7 @@ async function handlePaymentSuccess(
   externalOrderId: string,
   paidAt: string,
   amount: number,
-  extra?: Record<string, unknown>
+  extra?: Record<string, unknown>,
 ): Promise<void> {
   logger.info("[callback] 处理支付成功", {
     provider,
@@ -387,7 +377,7 @@ async function handlePaymentSuccess(
 async function handlePaymentFailed(
   provider: PaymentProvider,
   orderId: string,
-  reason: string
+  reason: string,
 ): Promise<void> {
   logger.info("[callback] 处理支付失败", {
     provider,
@@ -436,7 +426,7 @@ async function handleRefundSuccess(
   provider: PaymentProvider,
   orderId: string,
   refundId: string,
-  refundAmount: number
+  refundAmount: number,
 ): Promise<void> {
   logger.info("[callback] 处理退款成功", {
     provider,
@@ -488,7 +478,7 @@ async function handleRefundSuccess(
 async function handleRefundFailed(
   provider: PaymentProvider,
   orderId: string,
-  reason: string
+  reason: string,
 ): Promise<void> {
   logger.info("[callback] 处理退款失败", {
     provider,
@@ -525,7 +515,7 @@ export async function handleSubscriptionRenewed(
   orderId: string,
   subscriptionId: string,
   amount: number,
-  nextBillingDate: string
+  nextBillingDate: string,
 ): Promise<void> {
   logger.info("[callback] 处理订阅续费成功", {
     provider,

@@ -59,9 +59,12 @@ async function main() {
 
   // 查询套餐
   console.log("\n📦 Plans in database:");
-  const plans = await sql`SELECT id, name, code, price_monthly, price_yearly FROM plans ORDER BY sort_order`;
+  const plans =
+    await sql`SELECT id, name, code, price_monthly, price_yearly FROM plans ORDER BY sort_order`;
   for (const plan of plans) {
-    console.log(`  - ${plan.name} (${plan.code}): ¥${plan.price_monthly / 100}/月, ¥${plan.price_yearly / 100}/年`);
+    console.log(
+      `  - ${plan.name} (${plan.code}): ¥${plan.price_monthly / 100}/月, ¥${plan.price_yearly / 100}/年`,
+    );
   }
 
   // 统计表数据

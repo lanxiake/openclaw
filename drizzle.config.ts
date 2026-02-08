@@ -14,9 +14,7 @@ config();
 const connectionString = process.env["DATABASE_URL"];
 
 if (!connectionString) {
-  console.warn(
-    "Warning: DATABASE_URL not set. Drizzle commands will not work."
-  );
+  console.warn("Warning: DATABASE_URL not set. Drizzle commands will not work.");
 }
 
 export default defineConfig({

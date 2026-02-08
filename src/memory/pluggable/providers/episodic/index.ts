@@ -4,4 +4,4 @@
  * @module memory/pluggable/providers/episodic
  */
 
-export { MemoryEpisodicMemoryProvider } from './memory.js'
+export { MemoryEpisodicMemoryProvider } from "./memory.js";

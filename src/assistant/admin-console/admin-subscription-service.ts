@@ -168,9 +168,8 @@ export class AdminSubscriptionService {
       .where(whereClause);
 
     // 排序
-    const orderColumn = orderBy === "currentPeriodEnd"
-      ? subscriptions.currentPeriodEnd
-      : subscriptions.createdAt;
+    const orderColumn =
+      orderBy === "currentPeriodEnd" ? subscriptions.currentPeriodEnd : subscriptions.createdAt;
     const orderFn = orderDir === "asc" ? asc : desc;
 
     // 分页查询
@@ -231,11 +230,13 @@ export class AdminSubscriptionService {
           canceledAt: sub.canceledAt,
           createdAt: sub.createdAt,
         };
-      })
+      }),
     );
 
     // 过滤掉被搜索条件排除的项
-    const filteredSubscriptions = subscriptionsWithDetails.filter((s): s is SubscriptionListItem => s !== null);
+    const filteredSubscriptions = subscriptionsWithDetails.filter(
+      (s): s is SubscriptionListItem => s !== null,
+    );
 
     return {
       subscriptions: filteredSubscriptions,
@@ -266,7 +267,7 @@ export class AdminSubscriptionService {
     adminUsername: string,
     reason?: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const [sub] = await this.db
@@ -337,7 +338,7 @@ export class AdminSubscriptionService {
     adminId: string,
     adminUsername: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<{ success: boolean; error?: string; newEndDate?: Date }> {
     try {
       const [sub] = await this.db
@@ -375,7 +376,11 @@ export class AdminSubscriptionService {
         targetType: "subscription",
         targetId: subscriptionId,
         targetName: user?.displayName || user?.phone || sub.userId,
-        details: { days, oldEndDate: currentEnd.toISOString(), newEndDate: newEndDate.toISOString() },
+        details: {
+          days,
+          oldEndDate: currentEnd.toISOString(),
+          newEndDate: newEndDate.toISOString(),
+        },
         ipAddress,
         userAgent,
         riskLevel: "medium",
@@ -407,7 +412,7 @@ export class AdminSubscriptionService {
     adminId: string,
     adminUsername: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const [sub] = await this.db
@@ -419,10 +424,7 @@ export class AdminSubscriptionService {
         return { success: false, error: "订阅不存在" };
       }
 
-      const [newPlan] = await this.db
-        .select()
-        .from(plans)
-        .where(eq(plans.id, newPlanId));
+      const [newPlan] = await this.db.select().from(plans).where(eq(plans.id, newPlanId));
 
       if (!newPlan) {
         return { success: false, error: "套餐不存在" };
@@ -479,10 +481,7 @@ export class AdminSubscriptionService {
    * 获取套餐列表
    */
   async listPlans(): Promise<PlanListItem[]> {
-    const planList = await this.db
-      .select()
-      .from(plans)
-      .orderBy(plans.sortOrder);
+    const planList = await this.db.select().from(plans).orderBy(plans.sortOrder);
 
     // 获取每个套餐的订阅者数量
     const plansWithCount = await Promise.all(
@@ -490,18 +489,13 @@ export class AdminSubscriptionService {
         const [{ count }] = await this.db
           .select({ count: sql<number>`count(*)::int` })
           .from(subscriptions)
-          .where(
-            and(
-              eq(subscriptions.planId, plan.id),
-              eq(subscriptions.status, "active")
-            )
-          );
+          .where(and(eq(subscriptions.planId, plan.id), eq(subscriptions.status, "active")));
 
         return {
           ...plan,
           subscriberCount: count,
         };
-      })
+      }),
     );
 
     return plansWithCount;
@@ -511,10 +505,7 @@ export class AdminSubscriptionService {
    * 获取套餐详情
    */
   async getPlanDetail(planId: string): Promise<Plan | null> {
-    const [plan] = await this.db
-      .select()
-      .from(plans)
-      .where(eq(plans.id, planId));
+    const [plan] = await this.db.select().from(plans).where(eq(plans.id, planId));
     return plan || null;
   }
 
@@ -537,14 +528,11 @@ export class AdminSubscriptionService {
     adminId: string,
     adminUsername: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<{ success: boolean; error?: string; plan?: Plan }> {
     try {
       // 检查代码是否已存在
-      const [existing] = await this.db
-        .select()
-        .from(plans)
-        .where(eq(plans.code, data.code));
+      const [existing] = await this.db.select().from(plans).where(eq(plans.code, data.code));
 
       if (existing) {
         return { success: false, error: "套餐代码已存在" };
@@ -621,13 +609,10 @@ export class AdminSubscriptionService {
     adminId: string,
     adminUsername: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const [existing] = await this.db
-        .select()
-        .from(plans)
-        .where(eq(plans.id, planId));
+      const [existing] = await this.db.select().from(plans).where(eq(plans.id, planId));
 
       if (!existing) {
         return { success: false, error: "套餐不存在" };
@@ -688,10 +673,17 @@ export class AdminSubscriptionService {
     const conditions = [];
 
     if (status !== "all") {
-      conditions.push(eq(paymentOrders.paymentStatus, status as "pending" | "paid" | "failed" | "canceled" | "refunded"));
+      conditions.push(
+        eq(
+          paymentOrders.paymentStatus,
+          status as "pending" | "paid" | "failed" | "canceled" | "refunded",
+        ),
+      );
     }
     if (paymentMethod) {
-      conditions.push(eq(paymentOrders.paymentMethod, paymentMethod as "wechat" | "alipay" | "stripe" | "manual"));
+      conditions.push(
+        eq(paymentOrders.paymentMethod, paymentMethod as "wechat" | "alipay" | "stripe" | "manual"),
+      );
     }
     if (startDate) {
       conditions.push(gt(paymentOrders.createdAt, startDate));
@@ -753,7 +745,7 @@ export class AdminSubscriptionService {
           paidAt: order.paidAt,
           createdAt: order.createdAt,
         };
-      })
+      }),
     );
 
     return {
@@ -769,10 +761,7 @@ export class AdminSubscriptionService {
    * 获取订单详情
    */
   async getOrderDetail(orderId: string): Promise<PaymentOrder | null> {
-    const [order] = await this.db
-      .select()
-      .from(paymentOrders)
-      .where(eq(paymentOrders.id, orderId));
+    const [order] = await this.db.select().from(paymentOrders).where(eq(paymentOrders.id, orderId));
     return order || null;
   }
 
@@ -785,7 +774,7 @@ export class AdminSubscriptionService {
     adminUsername: string,
     reason?: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const [order] = await this.db
@@ -887,20 +876,15 @@ export class AdminSubscriptionService {
         and(
           inArray(subscriptions.status, ["active", "trialing"]),
           gt(subscriptions.currentPeriodEnd, now),
-          lt(subscriptions.currentPeriodEnd, weekLater)
-        )
+          lt(subscriptions.currentPeriodEnd, weekLater),
+        ),
       );
 
     // 计算本月收入
     const [{ revenue }] = await this.db
       .select({ revenue: sql<number>`coalesce(sum(paid_amount), 0)::int` })
       .from(paymentOrders)
-      .where(
-        and(
-          eq(paymentOrders.paymentStatus, "paid"),
-          gt(paymentOrders.paidAt, startOfMonth)
-        )
-      );
+      .where(and(eq(paymentOrders.paymentStatus, "paid"), gt(paymentOrders.paidAt, startOfMonth)));
 
     return {
       totalSubscriptions: total,

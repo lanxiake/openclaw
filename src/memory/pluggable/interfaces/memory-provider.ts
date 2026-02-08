@@ -10,20 +10,20 @@
 /**
  * 健康状态枚举
  */
-export type HealthStatusLevel = 'healthy' | 'degraded' | 'unhealthy'
+export type HealthStatusLevel = "healthy" | "degraded" | "unhealthy";
 
 /**
  * 健康检查结果
  */
 export interface HealthStatus {
   /** 健康状态 */
-  status: HealthStatusLevel
+  status: HealthStatusLevel;
   /** 响应延迟（毫秒） */
-  latency: number
+  latency: number;
   /** 可选的状态消息 */
-  message?: string
+  message?: string;
   /** 额外的详情信息 */
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>;
 }
 
 /**
@@ -31,9 +31,9 @@ export interface HealthStatus {
  */
 export interface ProviderConfig {
   /** 提供者名称（如 mem0, redis, postgres） */
-  provider: string
+  provider: string;
   /** 提供者特定的配置选项 */
-  options: Record<string, unknown>
+  options: Record<string, unknown>;
 }
 
 /**
@@ -68,14 +68,14 @@ export interface IMemoryProvider {
    *
    * 唯一标识符，用于工厂注册和日志输出
    */
-  readonly name: string
+  readonly name: string;
 
   /**
    * 提供者版本
    *
    * 语义化版本号，用于兼容性检查
    */
-  readonly version: string
+  readonly version: string;
 
   /**
    * 初始化提供者
@@ -85,7 +85,7 @@ export interface IMemoryProvider {
    *
    * @throws Error 初始化失败时抛出
    */
-  initialize(): Promise<void>
+  initialize(): Promise<void>;
 
   /**
    * 关闭提供者
@@ -93,7 +93,7 @@ export interface IMemoryProvider {
    * 释放所有资源、关闭连接、清理状态。
    * 应确保优雅关闭，不丢失数据。
    */
-  shutdown(): Promise<void>
+  shutdown(): Promise<void>;
 
   /**
    * 健康检查
@@ -105,7 +105,7 @@ export interface IMemoryProvider {
    *
    * @returns 健康状态信息
    */
-  healthCheck(): Promise<HealthStatus>
+  healthCheck(): Promise<HealthStatus>;
 }
 
 /**
@@ -114,5 +114,5 @@ export interface IMemoryProvider {
  * 用于工厂模式创建提供者实例
  */
 export type ProviderConstructor<T extends IMemoryProvider = IMemoryProvider> = new (
-  options: Record<string, unknown>
-) => T
+  options: Record<string, unknown>,
+) => T;

@@ -38,21 +38,14 @@ export class PlanRepository {
    * 获取所有激活的套餐
    */
   async findActive(): Promise<Plan[]> {
-    return this.db
-      .select()
-      .from(plans)
-      .where(eq(plans.isActive, true))
-      .orderBy(plans.sortOrder);
+    return this.db.select().from(plans).where(eq(plans.isActive, true)).orderBy(plans.sortOrder);
   }
 
   /**
    * 根据代码获取套餐
    */
   async findByCode(code: string): Promise<Plan | null> {
-    const [plan] = await this.db
-      .select()
-      .from(plans)
-      .where(eq(plans.code, code));
+    const [plan] = await this.db.select().from(plans).where(eq(plans.code, code));
     return plan ?? null;
   }
 
@@ -88,10 +81,7 @@ export class PlanRepository {
   /**
    * 更新套餐
    */
-  async update(
-    id: string,
-    data: Partial<Omit<NewPlan, "id" | "createdAt">>
-  ): Promise<Plan | null> {
+  async update(id: string, data: Partial<Omit<NewPlan, "id" | "createdAt">>): Promise<Plan | null> {
     const [plan] = await this.db
       .update(plans)
       .set({
@@ -115,10 +105,7 @@ export class SkillRepository {
    * 获取所有激活的技能
    */
   async findActive(): Promise<Skill[]> {
-    return this.db
-      .select()
-      .from(skills)
-      .where(eq(skills.isActive, true));
+    return this.db.select().from(skills).where(eq(skills.isActive, true));
   }
 
   /**
@@ -135,10 +122,7 @@ export class SkillRepository {
    * 根据代码获取技能
    */
   async findByCode(code: string): Promise<Skill | null> {
-    const [skill] = await this.db
-      .select()
-      .from(skills)
-      .where(eq(skills.code, code));
+    const [skill] = await this.db.select().from(skills).where(eq(skills.code, code));
     return skill ?? null;
   }
 
@@ -173,11 +157,7 @@ export class UserSkillRepository {
   /**
    * 为用户添加技能
    */
-  async addSkill(
-    userId: string,
-    skillId: string,
-    expiresAt?: Date
-  ): Promise<UserSkill> {
+  async addSkill(userId: string, skillId: string, expiresAt?: Date): Promise<UserSkill> {
     const id = generateId();
 
     const [userSkill] = await this.db
@@ -200,10 +180,7 @@ export class UserSkillRepository {
    * 获取用户的所有技能
    */
   async findByUserId(userId: string): Promise<UserSkill[]> {
-    return this.db
-      .select()
-      .from(userSkills)
-      .where(eq(userSkills.userId, userId));
+    return this.db.select().from(userSkills).where(eq(userSkills.userId, userId));
   }
 
   /**
@@ -217,8 +194,8 @@ export class UserSkillRepository {
         and(
           eq(userSkills.userId, userId),
           eq(userSkills.isActive, true),
-          sql`(${userSkills.expiresAt} IS NULL OR ${userSkills.expiresAt} > NOW())`
-        )
+          sql`(${userSkills.expiresAt} IS NULL OR ${userSkills.expiresAt} > NOW())`,
+        ),
       );
   }
 
@@ -234,8 +211,8 @@ export class UserSkillRepository {
           eq(userSkills.userId, userId),
           eq(userSkills.skillId, skillId),
           eq(userSkills.isActive, true),
-          sql`(${userSkills.expiresAt} IS NULL OR ${userSkills.expiresAt} > NOW())`
-        )
+          sql`(${userSkills.expiresAt} IS NULL OR ${userSkills.expiresAt} > NOW())`,
+        ),
       );
     return (result?.count ?? 0) > 0;
   }
@@ -247,9 +224,7 @@ export class UserSkillRepository {
     await this.db
       .update(userSkills)
       .set({ isActive: false })
-      .where(
-        and(eq(userSkills.userId, userId), eq(userSkills.skillId, skillId))
-      );
+      .where(and(eq(userSkills.userId, userId), eq(userSkills.skillId, skillId)));
     logger.info("[user-skill-repo] Skill deactivated", { userId, skillId });
   }
 
@@ -264,8 +239,8 @@ export class UserSkillRepository {
         and(
           eq(userSkills.userId, userId),
           eq(userSkills.isActive, true),
-          sql`(${userSkills.expiresAt} IS NULL OR ${userSkills.expiresAt} > NOW())`
-        )
+          sql`(${userSkills.expiresAt} IS NULL OR ${userSkills.expiresAt} > NOW())`,
+        ),
       );
     return result?.count ?? 0;
   }
@@ -281,7 +256,7 @@ export class SubscriptionRepository {
    * 创建订阅
    */
   async create(
-    data: Omit<NewSubscription, "id" | "createdAt" | "updatedAt">
+    data: Omit<NewSubscription, "id" | "createdAt" | "updatedAt">,
   ): Promise<Subscription> {
     const id = generateId();
     const now = new Date();
@@ -311,12 +286,7 @@ export class SubscriptionRepository {
     const [sub] = await this.db
       .select()
       .from(subscriptions)
-      .where(
-        and(
-          eq(subscriptions.userId, userId),
-          eq(subscriptions.status, "active")
-        )
-      )
+      .where(and(eq(subscriptions.userId, userId), eq(subscriptions.status, "active")))
       .orderBy(desc(subscriptions.createdAt))
       .limit(1);
     return sub ?? null;
@@ -338,7 +308,7 @@ export class SubscriptionRepository {
    */
   async updateStatus(
     id: string,
-    status: "active" | "canceled" | "expired" | "past_due" | "trialing"
+    status: "active" | "canceled" | "expired" | "past_due" | "trialing",
   ): Promise<void> {
     await this.db
       .update(subscriptions)
@@ -377,10 +347,7 @@ export class SubscriptionRepository {
   /**
    * 续期订阅
    */
-  async renew(
-    id: string,
-    newPeriodEnd: Date
-  ): Promise<Subscription | null> {
+  async renew(id: string, newPeriodEnd: Date): Promise<Subscription | null> {
     const [sub] = await this.db
       .update(subscriptions)
       .set({
@@ -415,8 +382,8 @@ export class SubscriptionRepository {
         and(
           inArray(subscriptions.status, ["active", "trialing"]),
           gte(subscriptions.currentPeriodEnd, now),
-          lte(subscriptions.currentPeriodEnd, future)
-        )
+          lte(subscriptions.currentPeriodEnd, future),
+        ),
       );
   }
 
@@ -432,8 +399,8 @@ export class SubscriptionRepository {
       .where(
         and(
           inArray(subscriptions.status, ["active", "trialing"]),
-          lt(subscriptions.currentPeriodEnd, now)
-        )
+          lt(subscriptions.currentPeriodEnd, now),
+        ),
       );
   }
 
@@ -441,10 +408,7 @@ export class SubscriptionRepository {
    * 根据 ID 获取订阅
    */
   async findById(id: string): Promise<Subscription | null> {
-    const [sub] = await this.db
-      .select()
-      .from(subscriptions)
-      .where(eq(subscriptions.id, id));
+    const [sub] = await this.db.select().from(subscriptions).where(eq(subscriptions.id, id));
     return sub ?? null;
   }
 
@@ -453,7 +417,7 @@ export class SubscriptionRepository {
    */
   async update(
     id: string,
-    data: Partial<Omit<NewSubscription, "id" | "createdAt">>
+    data: Partial<Omit<NewSubscription, "id" | "createdAt">>,
   ): Promise<Subscription | null> {
     const [sub] = await this.db
       .update(subscriptions)
@@ -481,7 +445,7 @@ export class PaymentOrderRepository {
    * 创建支付订单
    */
   async create(
-    data: Omit<NewPaymentOrder, "id" | "orderNo" | "createdAt" | "updatedAt">
+    data: Omit<NewPaymentOrder, "id" | "orderNo" | "createdAt" | "updatedAt">,
   ): Promise<PaymentOrder> {
     const id = generateId();
     const orderNo = generateOrderNo();
@@ -522,20 +486,14 @@ export class PaymentOrderRepository {
    * 根据 ID 获取订单
    */
   async findById(id: string): Promise<PaymentOrder | null> {
-    const [order] = await this.db
-      .select()
-      .from(paymentOrders)
-      .where(eq(paymentOrders.id, id));
+    const [order] = await this.db.select().from(paymentOrders).where(eq(paymentOrders.id, id));
     return order ?? null;
   }
 
   /**
    * 更新支付状态为已支付
    */
-  async markPaid(
-    id: string,
-    externalPaymentId: string
-  ): Promise<PaymentOrder | null> {
+  async markPaid(id: string, externalPaymentId: string): Promise<PaymentOrder | null> {
     const [order] = await this.db
       .update(paymentOrders)
       .set({
@@ -594,10 +552,7 @@ export class PaymentOrderRepository {
   /**
    * 获取用户订单历史
    */
-  async findByUserId(
-    userId: string,
-    limit: number = 50
-  ): Promise<PaymentOrder[]> {
+  async findByUserId(userId: string, limit: number = 50): Promise<PaymentOrder[]> {
     return this.db
       .select()
       .from(paymentOrders)
@@ -615,12 +570,7 @@ export class PaymentOrderRepository {
     return this.db
       .select()
       .from(paymentOrders)
-      .where(
-        and(
-          eq(paymentOrders.paymentStatus, "pending"),
-          lt(paymentOrders.createdAt, cutoff)
-        )
-      );
+      .where(and(eq(paymentOrders.paymentStatus, "pending"), lt(paymentOrders.createdAt, cutoff)));
   }
 
   /**
@@ -662,7 +612,7 @@ export class CouponRepository {
   async validate(
     code: string,
     userId: string,
-    amount: number
+    amount: number,
   ): Promise<{ valid: boolean; error?: string; coupon?: CouponCode }> {
     const coupon = await this.findByCode(code);
 
@@ -737,15 +687,11 @@ export function getUserSkillRepository(db?: Database): UserSkillRepository {
   return new UserSkillRepository(db);
 }
 
-export function getSubscriptionRepository(
-  db?: Database
-): SubscriptionRepository {
+export function getSubscriptionRepository(db?: Database): SubscriptionRepository {
   return new SubscriptionRepository(db);
 }
 
-export function getPaymentOrderRepository(
-  db?: Database
-): PaymentOrderRepository {
+export function getPaymentOrderRepository(db?: Database): PaymentOrderRepository {
   return new PaymentOrderRepository(db);
 }
 

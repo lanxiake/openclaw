@@ -28,7 +28,7 @@ const LOG_TAG = "device";
 function validateStringParam(
   params: Record<string, unknown>,
   key: string,
-  required = false
+  required = false,
 ): string | undefined {
   const value = params[key];
   if (value === undefined || value === null) {
@@ -46,10 +46,7 @@ function validateStringParam(
 /**
  * 验证布尔参数
  */
-function validateBooleanParam(
-  params: Record<string, unknown>,
-  key: string
-): boolean | undefined {
+function validateBooleanParam(params: Record<string, unknown>, key: string): boolean | undefined {
   const value = params[key];
   if (value === undefined || value === null) {
     return undefined;
@@ -90,8 +87,8 @@ export const deviceMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取设备列表失败"
-        )
+          error instanceof Error ? error.message : "获取设备列表失败",
+        ),
       );
     }
   },
@@ -134,7 +131,7 @@ export const deviceMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, result.error || "绑定设备失败", {
             details: { errorCode: result.errorCode },
-          })
+          }),
         );
       }
     } catch (error) {
@@ -146,8 +143,8 @@ export const deviceMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "绑定设备失败"
-        )
+          error instanceof Error ? error.message : "绑定设备失败",
+        ),
       );
     }
   },
@@ -184,7 +181,7 @@ export const deviceMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, result.error || "解绑设备失败", {
             details: { errorCode: result.errorCode },
-          })
+          }),
         );
       }
     } catch (error) {
@@ -196,8 +193,8 @@ export const deviceMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "解绑设备失败"
-        )
+          error instanceof Error ? error.message : "解绑设备失败",
+        ),
       );
     }
   },
@@ -227,8 +224,8 @@ export const deviceMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取设备配额失败"
-        )
+          error instanceof Error ? error.message : "获取设备配额失败",
+        ),
       );
     }
   },
@@ -256,11 +253,9 @@ export const deviceMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(
-            ErrorCodes.INVALID_REQUEST,
-            result.error || "设置主设备失败",
-            { details: { errorCode: result.errorCode } }
-          )
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "设置主设备失败", {
+            details: { errorCode: result.errorCode },
+          }),
         );
       }
     } catch (error) {
@@ -272,8 +267,8 @@ export const deviceMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "设置主设备失败"
-        )
+          error instanceof Error ? error.message : "设置主设备失败",
+        ),
       );
     }
   },
@@ -303,11 +298,9 @@ export const deviceMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(
-            ErrorCodes.INVALID_REQUEST,
-            result.error || "更新设备别名失败",
-            { details: { errorCode: result.errorCode } }
-          )
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "更新设备别名失败", {
+            details: { errorCode: result.errorCode },
+          }),
         );
       }
     } catch (error) {
@@ -319,8 +312,8 @@ export const deviceMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "更新设备别名失败"
-        )
+          error instanceof Error ? error.message : "更新设备别名失败",
+        ),
       );
     }
   },
@@ -350,8 +343,8 @@ export const deviceMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "检查设备配对状态失败"
-        )
+          error instanceof Error ? error.message : "检查设备配对状态失败",
+        ),
       );
     }
   },
@@ -379,7 +372,7 @@ export const deviceMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "设备不存在或未配对", {
             details: { errorCode: "DEVICE_NOT_FOUND" },
-          })
+          }),
         );
       }
     } catch (error) {
@@ -391,8 +384,8 @@ export const deviceMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取设备信息失败"
-        )
+          error instanceof Error ? error.message : "获取设备信息失败",
+        ),
       );
     }
   },
@@ -422,8 +415,8 @@ export const deviceMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取用户信息失败"
-        )
+          error instanceof Error ? error.message : "获取用户信息失败",
+        ),
       );
     }
   },

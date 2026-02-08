@@ -24,19 +24,19 @@ const logger = getLogger();
  * 优惠券类型
  */
 export type CouponType =
-  | "percentage"    // 百分比折扣
-  | "fixed"         // 固定金额减免
-  | "trial"         // 试用期
-  | "free_month";   // 免费月份
+  | "percentage" // 百分比折扣
+  | "fixed" // 固定金额减免
+  | "trial" // 试用期
+  | "free_month"; // 免费月份
 
 /**
  * 优惠券状态
  */
 export type CouponStatus =
-  | "active"        // 有效
-  | "expired"       // 已过期
-  | "depleted"      // 已用尽
-  | "disabled";     // 已禁用
+  | "active" // 有效
+  | "expired" // 已过期
+  | "depleted" // 已用尽
+  | "disabled"; // 已禁用
 
 /**
  * 优惠券适用范围
@@ -152,16 +152,16 @@ export interface ValidateCouponResponse {
  * 优惠券错误码
  */
 export type CouponErrorCode =
-  | "NOT_FOUND"           // 优惠券不存在
-  | "EXPIRED"             // 已过期
-  | "NOT_STARTED"         // 未开始
-  | "DEPLETED"            // 已用尽
-  | "DISABLED"            // 已禁用
-  | "LIMIT_EXCEEDED"      // 超出使用次数
-  | "MIN_AMOUNT_NOT_MET"  // 未达到最低金额
-  | "SCOPE_MISMATCH"      // 不适用于当前订单
-  | "FIRST_ORDER_ONLY"    // 仅限首单
-  | "NEW_USER_ONLY";      // 仅限新用户
+  | "NOT_FOUND" // 优惠券不存在
+  | "EXPIRED" // 已过期
+  | "NOT_STARTED" // 未开始
+  | "DEPLETED" // 已用尽
+  | "DISABLED" // 已禁用
+  | "LIMIT_EXCEEDED" // 超出使用次数
+  | "MIN_AMOUNT_NOT_MET" // 未达到最低金额
+  | "SCOPE_MISMATCH" // 不适用于当前订单
+  | "FIRST_ORDER_ONLY" // 仅限首单
+  | "NEW_USER_ONLY"; // 仅限新用户
 
 // ============================================================================
 // 内存存储 (生产环境应使用数据库)
@@ -252,7 +252,12 @@ export function getCouponByCode(code: string): Coupon | null {
  */
 export function updateCoupon(
   id: string,
-  updates: Partial<Pick<Coupon, "name" | "description" | "status" | "scope" | "totalCount" | "perUserLimit" | "endTime">>
+  updates: Partial<
+    Pick<
+      Coupon,
+      "name" | "description" | "status" | "scope" | "totalCount" | "perUserLimit" | "endTime"
+    >
+  >,
 ): Coupon | null {
   const coupon = coupons.get(id);
   if (!coupon) return null;
@@ -291,23 +296,18 @@ export function disableCoupon(id: string): boolean {
 /**
  * 获取所有优惠券
  */
-export function listCoupons(filters?: {
-  status?: CouponStatus;
-  type?: CouponType;
-}): Coupon[] {
+export function listCoupons(filters?: { status?: CouponStatus; type?: CouponType }): Coupon[] {
   let result = Array.from(coupons.values());
 
   if (filters?.status) {
-    result = result.filter(c => c.status === filters.status);
+    result = result.filter((c) => c.status === filters.status);
   }
 
   if (filters?.type) {
-    result = result.filter(c => c.type === filters.type);
+    result = result.filter((c) => c.type === filters.type);
   }
 
-  return result.sort((a, b) =>
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 // ============================================================================
@@ -322,7 +322,7 @@ export async function validateCoupon(
   context?: {
     isFirstOrder?: boolean;
     isNewUser?: boolean;
-  }
+  },
 ): Promise<ValidateCouponResponse> {
   const { code, userId, orderType, orderAmount, itemId } = request;
   const { isFirstOrder = false, isNewUser = false } = context || {};
@@ -393,7 +393,7 @@ export async function validateCoupon(
 
   // 5. 检查用户使用次数
   const userUsageCount = couponUsages.filter(
-    u => u.couponId === coupon.id && u.userId === userId
+    (u) => u.couponId === coupon.id && u.userId === userId,
   ).length;
 
   if (userUsageCount >= coupon.perUserLimit) {
@@ -578,14 +578,14 @@ export async function useCoupon(params: {
  * 获取用户优惠券使用记录
  */
 export function getUserCouponUsages(userId: string): CouponUsage[] {
-  return couponUsages.filter(u => u.userId === userId);
+  return couponUsages.filter((u) => u.userId === userId);
 }
 
 /**
  * 获取优惠券使用记录
  */
 export function getCouponUsages(couponId: string): CouponUsage[] {
-  return couponUsages.filter(u => u.couponId === couponId);
+  return couponUsages.filter((u) => u.couponId === couponId);
 }
 
 // ============================================================================
@@ -630,7 +630,7 @@ export async function calculateFinalPrice(params: {
         orderAmount: originalPrice,
         itemId,
       },
-      { isFirstOrder, isNewUser }
+      { isFirstOrder, isNewUser },
     );
 
     if (validation.valid && validation.discountAmount) {

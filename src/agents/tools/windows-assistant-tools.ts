@@ -15,16 +15,16 @@ import { callGatewayTool, type GatewayCallOptions } from "./gateway.js";
 // === 文件操作工具 ===
 
 const FILE_ACTIONS = [
-  "list",       // 列出目录内容
-  "read",       // 读取文件
-  "write",      // 写入文件
-  "move",       // 移动/重命名
-  "copy",       // 复制
-  "delete",     // 删除
-  "mkdir",      // 创建目录
-  "exists",     // 检查是否存在
-  "info",       // 获取文件信息
-  "search",     // 搜索文件
+  "list", // 列出目录内容
+  "read", // 读取文件
+  "write", // 写入文件
+  "move", // 移动/重命名
+  "copy", // 复制
+  "delete", // 删除
+  "mkdir", // 创建目录
+  "exists", // 检查是否存在
+  "info", // 获取文件信息
+  "search", // 搜索文件
 ] as const;
 
 /**
@@ -173,12 +173,12 @@ export function createWindowsFileTool(options?: {
 // === 系统监控工具 ===
 
 const SYSTEM_ACTIONS = [
-  "info",           // 系统信息
-  "disk",           // 磁盘信息
-  "processes",      // 进程列表
-  "kill_process",   // 结束进程
-  "launch",         // 启动程序
-  "user_paths",     // 用户目录
+  "info", // 系统信息
+  "disk", // 磁盘信息
+  "processes", // 进程列表
+  "kill_process", // 结束进程
+  "launch", // 启动程序
+  "user_paths", // 用户目录
 ] as const;
 
 /**

@@ -4,15 +4,7 @@
  * 用于存储系统级别的配置项，支持分组、类型验证、审计追踪
  */
 
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  jsonb,
-  index,
-  uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 
@@ -43,7 +35,9 @@ export const systemConfigs = pgTable(
     /** 值类型 */
     valueType: text("value_type", {
       enum: ["string", "number", "boolean", "json", "array"],
-    }).notNull().default("string"),
+    })
+      .notNull()
+      .default("string"),
 
     /** 配置分组 */
     group: text("group").notNull().default("general"),
@@ -73,18 +67,13 @@ export const systemConfigs = pgTable(
     }>(),
 
     /** 最后修改人 */
-    updatedBy: text("updated_by")
-      .references(() => admins.id, { onDelete: "set null" }),
+    updatedBy: text("updated_by").references(() => admins.id, { onDelete: "set null" }),
 
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 
     /** 更新时间 */
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 配置键唯一索引
@@ -93,7 +82,7 @@ export const systemConfigs = pgTable(
     index("system_configs_group_idx").on(table.group),
     // 敏感数据索引
     index("system_configs_is_sensitive_idx").on(table.isSensitive),
-  ]
+  ],
 );
 
 /**
@@ -130,16 +119,13 @@ export const configChangeHistory = pgTable(
     reason: text("reason"),
 
     /** 变更人 ID */
-    changedBy: text("changed_by")
-      .references(() => admins.id, { onDelete: "set null" }),
+    changedBy: text("changed_by").references(() => admins.id, { onDelete: "set null" }),
 
     /** 变更人名称 (冗余存储) */
     changedByName: text("changed_by_name"),
 
     /** 变更时间 */
-    changedAt: timestamp("changed_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    changedAt: timestamp("changed_at", { withTimezone: true }).defaultNow().notNull(),
 
     /** IP 地址 */
     ipAddress: text("ip_address"),
@@ -153,7 +139,7 @@ export const configChangeHistory = pgTable(
     index("config_change_history_changed_by_idx").on(table.changedBy),
     index("config_change_history_changed_at_idx").on(table.changedAt),
     index("config_change_history_change_type_idx").on(table.changeType),
-  ]
+  ],
 );
 
 /**

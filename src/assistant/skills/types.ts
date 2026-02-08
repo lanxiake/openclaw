@@ -21,14 +21,14 @@ export type SkillRunMode = "server" | "local" | "hybrid";
  * 技能类别
  */
 export type SkillCategory =
-  | "file-management"    // 文件管理
-  | "system-tools"       // 系统工具
-  | "productivity"       // 生产力
-  | "automation"         // 自动化
-  | "communication"      // 通讯
-  | "development"        // 开发工具
-  | "media"              // 媒体处理
-  | "custom";            // 自定义
+  | "file-management" // 文件管理
+  | "system-tools" // 系统工具
+  | "productivity" // 生产力
+  | "automation" // 自动化
+  | "communication" // 通讯
+  | "development" // 开发工具
+  | "media" // 媒体处理
+  | "custom"; // 自定义
 
 /**
  * 技能订阅模式
@@ -180,11 +180,11 @@ export interface AssistantSkillMetadata {
  * 技能触发器类型
  */
 export type SkillTriggerType =
-  | "command"      // 命令触发 (如 /organize)
-  | "keyword"      // 关键词触发
-  | "schedule"     // 定时触发
-  | "event"        // 事件触发
-  | "ai-invoke";   // AI 自动调用
+  | "command" // 命令触发 (如 /organize)
+  | "keyword" // 关键词触发
+  | "schedule" // 定时触发
+  | "event" // 事件触发
+  | "ai-invoke"; // AI 自动调用
 
 /**
  * 技能触发器配置
@@ -252,7 +252,11 @@ export interface SkillExecutionContext {
   /** 进度报告 */
   progress: (percent: number, message?: string) => void;
   /** 请求用户确认 */
-  confirm: (action: string, description: string, level?: "low" | "medium" | "high") => Promise<boolean>;
+  confirm: (
+    action: string,
+    description: string,
+    level?: "low" | "medium" | "high",
+  ) => Promise<boolean>;
 }
 
 /**
@@ -274,9 +278,7 @@ export interface SkillExecutionResult {
 /**
  * 技能执行函数
  */
-export type SkillExecutor = (
-  context: SkillExecutionContext
-) => Promise<SkillExecutionResult>;
+export type SkillExecutor = (context: SkillExecutionContext) => Promise<SkillExecutionResult>;
 
 /**
  * 完整的技能定义

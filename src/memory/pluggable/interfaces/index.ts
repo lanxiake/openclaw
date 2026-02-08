@@ -13,7 +13,7 @@ export type {
   ProviderConfig,
   IMemoryProvider,
   ProviderConstructor,
-} from './memory-provider.js'
+} from "./memory-provider.js";
 
 // 工作记忆
 export type {
@@ -27,7 +27,7 @@ export type {
   WorkingMemory,
   SessionInfo,
   IWorkingMemoryProvider,
-} from './working-memory.js'
+} from "./working-memory.js";
 
 // 情节记忆
 export type {
@@ -42,7 +42,7 @@ export type {
   EpisodeSearchResult,
   TimelineEntry,
   IEpisodicMemoryProvider,
-} from './episodic-memory.js'
+} from "./episodic-memory.js";
 
 // 画像记忆
 export type {
@@ -53,8 +53,8 @@ export type {
   BehaviorPattern,
   ExtractedProfile,
   IProfileMemoryProvider,
-} from './profile-memory.js'
-export { DEFAULT_USER_PREFERENCES } from './profile-memory.js'
+} from "./profile-memory.js";
+export { DEFAULT_USER_PREFERENCES } from "./profile-memory.js";
 
 // 知识记忆
 export type {
@@ -75,7 +75,7 @@ export type {
   GraphAnswer,
   DocumentListOptions,
   IKnowledgeMemoryProvider,
-} from './knowledge-memory.js'
+} from "./knowledge-memory.js";
 
 // 对象存储
 export type {
@@ -88,4 +88,4 @@ export type {
   BucketInfo,
   StorageUsage,
   IObjectStorageProvider,
-} from './object-storage.js'
+} from "./object-storage.js";

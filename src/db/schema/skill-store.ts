@@ -42,18 +42,14 @@ export const skillCategories = pgTable(
     /** 是否激活 */
     isActive: boolean("is_active").default(true).notNull(),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     /** 更新时间 */
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     index("skill_categories_sort_order_idx").on(table.sortOrder),
     index("skill_categories_is_active_idx").on(table.isActive),
-  ]
+  ],
 );
 
 /**
@@ -74,8 +70,7 @@ export const skillStoreItems = pgTable(
     readme: text("readme"),
 
     /** 作者用户 ID */
-    authorId: text("author_id")
-      .references(() => users.id, { onDelete: "set null" }),
+    authorId: text("author_id").references(() => users.id, { onDelete: "set null" }),
     /** 作者名称 (缓存) */
     authorName: text("author_name"),
 
@@ -83,8 +78,7 @@ export const skillStoreItems = pgTable(
     version: text("version").notNull().default("1.0.0"),
 
     /** 分类 ID */
-    categoryId: text("category_id")
-      .references(() => skillCategories.id, { onDelete: "set null" }),
+    categoryId: text("category_id").references(() => skillCategories.id, { onDelete: "set null" }),
 
     /** 标签列表 */
     tags: jsonb("tags").$type<string[]>(),
@@ -92,12 +86,16 @@ export const skillStoreItems = pgTable(
     /** 技能状态 */
     status: text("status", {
       enum: ["pending", "published", "unpublished", "rejected"],
-    }).notNull().default("pending"),
+    })
+      .notNull()
+      .default("pending"),
 
     /** 订阅级别要求 */
     subscriptionLevel: text("subscription_level", {
       enum: ["free", "pro", "team", "enterprise"],
-    }).notNull().default("free"),
+    })
+      .notNull()
+      .default("free"),
 
     /** 下载次数 */
     downloadCount: integer("download_count").default(0).notNull(),
@@ -124,8 +122,7 @@ export const skillStoreItems = pgTable(
     reviewNote: text("review_note"),
 
     /** 审核人 ID */
-    reviewedBy: text("reviewed_by")
-      .references(() => admins.id, { onDelete: "set null" }),
+    reviewedBy: text("reviewed_by").references(() => admins.id, { onDelete: "set null" }),
 
     /** 审核时间 */
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
@@ -137,14 +134,10 @@ export const skillStoreItems = pgTable(
     featuredOrder: integer("featured_order"),
 
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 
     /** 更新时间 */
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 
     /** 发布时间 */
     publishedAt: timestamp("published_at", { withTimezone: true }),
@@ -158,7 +151,7 @@ export const skillStoreItems = pgTable(
     index("skill_store_items_download_count_idx").on(table.downloadCount),
     index("skill_store_items_rating_avg_idx").on(table.ratingAvg),
     index("skill_store_items_created_at_idx").on(table.createdAt),
-  ]
+  ],
 );
 
 /**
@@ -182,13 +175,9 @@ export const skillReviews = pgTable(
     /** 评价内容 */
     comment: text("comment"),
     /** 创建时间 */
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     /** 更新时间 */
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     // 每个用户只能对一个技能评价一次
@@ -196,7 +185,7 @@ export const skillReviews = pgTable(
     index("skill_reviews_skill_id_idx").on(table.skillId),
     index("skill_reviews_user_id_idx").on(table.userId),
     index("skill_reviews_rating_idx").on(table.rating),
-  ]
+  ],
 );
 
 /**
@@ -220,9 +209,7 @@ export const userInstalledSkills = pgTable(
     /** 是否启用 */
     isEnabled: boolean("is_enabled").default(true).notNull(),
     /** 安装时间 */
-    installedAt: timestamp("installed_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    installedAt: timestamp("installed_at", { withTimezone: true }).defaultNow().notNull(),
     /** 最后使用时间 */
     lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
   },
@@ -231,7 +218,7 @@ export const userInstalledSkills = pgTable(
     uniqueIndex("user_installed_skills_user_skill_unique_idx").on(table.userId, table.skillItemId),
     index("user_installed_skills_user_id_idx").on(table.userId),
     index("user_installed_skills_skill_item_id_idx").on(table.skillItemId),
-  ]
+  ],
 );
 
 /**

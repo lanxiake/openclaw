@@ -15,19 +15,19 @@ import type {
   IObjectStorageProvider,
   ProviderConfig,
   ProviderConstructor,
-} from '../interfaces/index.js'
+} from "../interfaces/index.js";
 
 /**
  * 记忆类型
  */
-export type MemoryType = 'working' | 'episodic' | 'profile' | 'knowledge' | 'storage'
+export type MemoryType = "working" | "episodic" | "profile" | "knowledge" | "storage";
 
 /**
  * 提供者注册表
  *
  * 使用 Map 存储已注册的提供者构造函数
  */
-const providerRegistry = new Map<string, ProviderConstructor>()
+const providerRegistry = new Map<string, ProviderConstructor>();
 
 /**
  * 生成注册键
@@ -37,7 +37,7 @@ const providerRegistry = new Map<string, ProviderConstructor>()
  * @returns 注册键
  */
 function getRegistryKey(type: MemoryType, name: string): string {
-  return `${type}:${name}`
+  return `${type}:${name}`;
 }
 
 /**
@@ -58,16 +58,16 @@ function getRegistryKey(type: MemoryType, name: string): string {
 export function registerProvider<T extends IMemoryProvider>(
   type: MemoryType,
   name: string,
-  constructor: ProviderConstructor<T>
+  constructor: ProviderConstructor<T>,
 ): void {
-  const key = getRegistryKey(type, name)
+  const key = getRegistryKey(type, name);
 
   if (providerRegistry.has(key)) {
-    console.warn(`[MemoryProviderFactory] 覆盖已存在的提供者: ${key}`)
+    console.warn(`[MemoryProviderFactory] 覆盖已存在的提供者: ${key}`);
   }
 
-  providerRegistry.set(key, constructor as ProviderConstructor)
-  console.log(`[MemoryProviderFactory] 注册提供者: ${key}`)
+  providerRegistry.set(key, constructor as ProviderConstructor);
+  console.log(`[MemoryProviderFactory] 注册提供者: ${key}`);
 }
 
 /**
@@ -78,14 +78,14 @@ export function registerProvider<T extends IMemoryProvider>(
  * @returns 是否成功注销
  */
 export function unregisterProvider(type: MemoryType, name: string): boolean {
-  const key = getRegistryKey(type, name)
-  const result = providerRegistry.delete(key)
+  const key = getRegistryKey(type, name);
+  const result = providerRegistry.delete(key);
 
   if (result) {
-    console.log(`[MemoryProviderFactory] 注销提供者: ${key}`)
+    console.log(`[MemoryProviderFactory] 注销提供者: ${key}`);
   }
 
-  return result
+  return result;
 }
 
 /**
@@ -109,21 +109,21 @@ export function unregisterProvider(type: MemoryType, name: string): boolean {
  */
 export function createProvider<T extends IMemoryProvider>(
   type: MemoryType,
-  config: ProviderConfig
+  config: ProviderConfig,
 ): T {
-  const key = getRegistryKey(type, config.provider)
-  const Constructor = providerRegistry.get(key)
+  const key = getRegistryKey(type, config.provider);
+  const Constructor = providerRegistry.get(key);
 
   if (!Constructor) {
-    const available = getAvailableProviders(type)
+    const available = getAvailableProviders(type);
     throw new Error(
       `[MemoryProviderFactory] 未知的记忆提供者: ${key}。` +
-      `可用的 ${type} 提供者: ${available.length > 0 ? available.join(', ') : '(无)'}`
-    )
+        `可用的 ${type} 提供者: ${available.length > 0 ? available.join(", ") : "(无)"}`,
+    );
   }
 
-  console.log(`[MemoryProviderFactory] 创建提供者: ${key}`)
-  return new Constructor(config.options) as T
+  console.log(`[MemoryProviderFactory] 创建提供者: ${key}`);
+  return new Constructor(config.options) as T;
 }
 
 /**
@@ -139,16 +139,16 @@ export function createProvider<T extends IMemoryProvider>(
  * ```
  */
 export function getAvailableProviders(type: MemoryType): string[] {
-  const prefix = `${type}:`
-  const result: string[] = []
+  const prefix = `${type}:`;
+  const result: string[] = [];
 
   for (const key of providerRegistry.keys()) {
     if (key.startsWith(prefix)) {
-      result.push(key.slice(prefix.length))
+      result.push(key.slice(prefix.length));
     }
   }
 
-  return result.sort()
+  return result.sort();
 }
 
 /**
@@ -159,7 +159,7 @@ export function getAvailableProviders(type: MemoryType): string[] {
  * @returns 是否已注册
  */
 export function hasProvider(type: MemoryType, name: string): boolean {
-  return providerRegistry.has(getRegistryKey(type, name))
+  return providerRegistry.has(getRegistryKey(type, name));
 }
 
 /**
@@ -168,19 +168,19 @@ export function hasProvider(type: MemoryType, name: string): boolean {
  * @returns 提供者信息列表
  */
 export function getAllProviders(): Array<{ type: MemoryType; name: string }> {
-  const result: Array<{ type: MemoryType; name: string }> = []
+  const result: Array<{ type: MemoryType; name: string }> = [];
 
   for (const key of providerRegistry.keys()) {
-    const [type, name] = key.split(':') as [MemoryType, string]
-    result.push({ type, name })
+    const [type, name] = key.split(":") as [MemoryType, string];
+    result.push({ type, name });
   }
 
   return result.sort((a, b) => {
     if (a.type !== b.type) {
-      return a.type.localeCompare(b.type)
+      return a.type.localeCompare(b.type);
     }
-    return a.name.localeCompare(b.name)
-  })
+    return a.name.localeCompare(b.name);
+  });
 }
 
 /**
@@ -189,8 +189,8 @@ export function getAllProviders(): Array<{ type: MemoryType; name: string }> {
  * 主要用于测试
  */
 export function clearRegistry(): void {
-  providerRegistry.clear()
-  console.log('[MemoryProviderFactory] 清空注册表')
+  providerRegistry.clear();
+  console.log("[MemoryProviderFactory] 清空注册表");
 }
 
 // ==================== 类型安全的创建函数 ====================
@@ -202,7 +202,7 @@ export function clearRegistry(): void {
  * @returns 工作记忆提供者实例
  */
 export function createWorkingMemoryProvider(config: ProviderConfig): IWorkingMemoryProvider {
-  return createProvider<IWorkingMemoryProvider>('working', config)
+  return createProvider<IWorkingMemoryProvider>("working", config);
 }
 
 /**
@@ -212,7 +212,7 @@ export function createWorkingMemoryProvider(config: ProviderConfig): IWorkingMem
  * @returns 情节记忆提供者实例
  */
 export function createEpisodicMemoryProvider(config: ProviderConfig): IEpisodicMemoryProvider {
-  return createProvider<IEpisodicMemoryProvider>('episodic', config)
+  return createProvider<IEpisodicMemoryProvider>("episodic", config);
 }
 
 /**
@@ -222,7 +222,7 @@ export function createEpisodicMemoryProvider(config: ProviderConfig): IEpisodicM
  * @returns 画像记忆提供者实例
  */
 export function createProfileMemoryProvider(config: ProviderConfig): IProfileMemoryProvider {
-  return createProvider<IProfileMemoryProvider>('profile', config)
+  return createProvider<IProfileMemoryProvider>("profile", config);
 }
 
 /**
@@ -232,7 +232,7 @@ export function createProfileMemoryProvider(config: ProviderConfig): IProfileMem
  * @returns 知识记忆提供者实例
  */
 export function createKnowledgeMemoryProvider(config: ProviderConfig): IKnowledgeMemoryProvider {
-  return createProvider<IKnowledgeMemoryProvider>('knowledge', config)
+  return createProvider<IKnowledgeMemoryProvider>("knowledge", config);
 }
 
 /**
@@ -242,5 +242,5 @@ export function createKnowledgeMemoryProvider(config: ProviderConfig): IKnowledg
  * @returns 对象存储提供者实例
  */
 export function createObjectStorageProvider(config: ProviderConfig): IObjectStorageProvider {
-  return createProvider<IObjectStorageProvider>('storage', config)
+  return createProvider<IObjectStorageProvider>("storage", config);
 }

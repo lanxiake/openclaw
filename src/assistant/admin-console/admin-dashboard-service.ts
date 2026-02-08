@@ -158,9 +158,7 @@ class AdminDashboardService {
 
     try {
       // 查询总用户数
-      const totalUsersResult = await db
-        .select({ count: count() })
-        .from(users);
+      const totalUsersResult = await db.select({ count: count() }).from(users);
       const totalUsers = totalUsersResult[0]?.count ?? 0;
 
       // 查询今日新增用户
@@ -188,12 +186,7 @@ class AdminDashboardService {
       const revenueResult = await db
         .select({ total: sum(paymentOrders.paidAmount) })
         .from(paymentOrders)
-        .where(
-          and(
-            eq(paymentOrders.paymentStatus, "paid"),
-            gte(paymentOrders.paidAt, monthStart)
-          )
-        );
+        .where(and(eq(paymentOrders.paymentStatus, "paid"), gte(paymentOrders.paidAt, monthStart)));
       const revenueThisMonth = Number(revenueResult[0]?.total ?? 0);
 
       // 计算周对比变化
@@ -208,12 +201,7 @@ class AdminDashboardService {
       const lastWeekUsersResult = await db
         .select({ count: count() })
         .from(users)
-        .where(
-          and(
-            gte(users.createdAt, twoWeeksAgoStart),
-            lte(users.createdAt, lastWeekStart)
-          )
-        );
+        .where(and(gte(users.createdAt, twoWeeksAgoStart), lte(users.createdAt, lastWeekStart)));
       const lastWeekUsers = lastWeekUsersResult[0]?.count ?? 0;
 
       // 用户增长百分比
@@ -258,7 +246,7 @@ class AdminDashboardService {
    */
   async getTrends(
     type: "users" | "revenue" | "subscriptions",
-    period: "7d" | "30d" | "90d" = "30d"
+    period: "7d" | "30d" | "90d" = "30d",
   ): Promise<TrendData> {
     logger.info(`[${LOG_TAG}] Getting trends`, { type, period });
 
@@ -307,12 +295,7 @@ class AdminDashboardService {
             total: sum(paymentOrders.paidAmount),
           })
           .from(paymentOrders)
-          .where(
-            and(
-              eq(paymentOrders.paymentStatus, "paid"),
-              gte(paymentOrders.paidAt, startDate)
-            )
-          )
+          .where(and(eq(paymentOrders.paymentStatus, "paid"), gte(paymentOrders.paidAt, startDate)))
           .groupBy(sql`DATE(${paymentOrders.paidAt})`)
           .orderBy(sql`DATE(${paymentOrders.paidAt})`);
 
@@ -374,7 +357,7 @@ class AdminDashboardService {
 
       // 获取计划信息
       const plansList = await db.select().from(plans);
-      const plansMap = new Map<string, typeof plansList[0]>();
+      const plansMap = new Map<string, (typeof plansList)[0]>();
       for (const p of plansList) {
         plansMap.set(p.id, p);
       }
@@ -453,7 +436,7 @@ class AdminDashboardService {
 
       // 获取计划信息
       const plansList = await db.select().from(plans);
-      const plansMap = new Map<string, typeof plansList[0]>();
+      const plansMap = new Map<string, (typeof plansList)[0]>();
       for (const p of plansList) {
         plansMap.set(p.id, p);
       }
@@ -494,9 +477,7 @@ class AdminDashboardService {
       }
 
       // 按时间排序并限制数量
-      activities.sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
+      activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
       return activities.slice(0, limit);
     } catch (error) {

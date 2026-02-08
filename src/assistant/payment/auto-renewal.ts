@@ -18,7 +18,10 @@ import type {
   OrderStatus,
   InitiatePaymentResponse,
 } from "./types.js";
-import { handleSubscriptionRenewed, registerPaymentEventHandler } from "./providers/callback-handler.js";
+import {
+  handleSubscriptionRenewed,
+  registerPaymentEventHandler,
+} from "./providers/callback-handler.js";
 
 const logger = getLogger();
 
@@ -60,11 +63,11 @@ export interface SubscriptionInfo {
  * 续费任务状态
  */
 export type RenewalTaskStatus =
-  | "pending"       // 待处理
-  | "processing"    // 处理中
-  | "success"       // 成功
-  | "failed"        // 失败
-  | "retrying";     // 重试中
+  | "pending" // 待处理
+  | "processing" // 处理中
+  | "success" // 成功
+  | "failed" // 失败
+  | "retrying"; // 重试中
 
 /**
  * 续费任务
@@ -104,9 +107,9 @@ export interface RenewalTask {
  * 续费通知类型
  */
 export type RenewalNotificationType =
-  | "renewal_reminder"      // 续费提醒
-  | "renewal_success"       // 续费成功
-  | "renewal_failed"        // 续费失败
+  | "renewal_reminder" // 续费提醒
+  | "renewal_success" // 续费成功
+  | "renewal_failed" // 续费失败
   | "subscription_expired"; // 订阅过期
 
 /**
@@ -163,7 +166,7 @@ export const DEFAULT_RENEWAL_CONFIG: RenewalConfig = {
  * 获取即将到期订阅的回调
  */
 export type GetExpiringSubscriptionsCallback = (
-  daysBeforeExpiry: number
+  daysBeforeExpiry: number,
 ) => Promise<SubscriptionInfo[]>;
 
 /**
@@ -197,15 +200,13 @@ export type UpdateSubscriptionCallback = (
   updates: {
     currentPeriodEnd?: string;
     status?: "active" | "expired" | "past_due";
-  }
+  },
 ) => Promise<void>;
 
 /**
  * 发送通知的回调
  */
-export type SendNotificationCallback = (
-  notification: RenewalNotification
-) => Promise<void>;
+export type SendNotificationCallback = (notification: RenewalNotification) => Promise<void>;
 
 // ============================================================================
 // 自动续费调度器
@@ -297,9 +298,7 @@ export class AutoRenewalScheduler {
     // 注册支付成功事件处理
     registerPaymentEventHandler("payment.success", async (event) => {
       // 检查是否是续费订单
-      const task = Array.from(this.tasks.values()).find(
-        (t) => t.orderId === event.orderId
-      );
+      const task = Array.from(this.tasks.values()).find((t) => t.orderId === event.orderId);
 
       if (task) {
         await this.handleRenewalSuccess(task);
@@ -389,9 +388,7 @@ export class AutoRenewalScheduler {
       return;
     }
 
-    const subscriptions = await this.getExpiringSubscriptions(
-      this.config.renewalAdvanceDays
-    );
+    const subscriptions = await this.getExpiringSubscriptions(this.config.renewalAdvanceDays);
 
     logger.info("[renewal] 找到即将到期的订阅", {
       count: subscriptions.length,
@@ -408,7 +405,7 @@ export class AutoRenewalScheduler {
       const existingTask = Array.from(this.tasks.values()).find(
         (t) =>
           t.subscriptionId === subscription.id &&
-          (t.status === "pending" || t.status === "processing" || t.status === "retrying")
+          (t.status === "pending" || t.status === "processing" || t.status === "retrying"),
       );
 
       if (existingTask) {
@@ -457,7 +454,7 @@ export class AutoRenewalScheduler {
    */
   private async processRenewalTask(
     task: RenewalTask,
-    subscription: SubscriptionInfo
+    subscription: SubscriptionInfo,
   ): Promise<void> {
     if (!this.createOrder || !this.initiatePayment) {
       logger.error("[renewal] 未设置订单/支付回调");
@@ -557,7 +554,7 @@ export class AutoRenewalScheduler {
       task.orderId || "",
       task.subscriptionId,
       task.amount,
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     );
   }
 
@@ -572,9 +569,10 @@ export class AutoRenewalScheduler {
     if (task.retryCount < task.maxRetries) {
       // 设置重试
       task.status = "retrying";
-      const retryHours = this.config.retryIntervalHours[
-        Math.min(task.retryCount - 1, this.config.retryIntervalHours.length - 1)
-      ];
+      const retryHours =
+        this.config.retryIntervalHours[
+          Math.min(task.retryCount - 1, this.config.retryIntervalHours.length - 1)
+        ];
       const nextRetry = new Date();
       nextRetry.setHours(nextRetry.getHours() + retryHours);
       task.nextRetryAt = nextRetry.toISOString();
@@ -628,11 +626,7 @@ export class AutoRenewalScheduler {
     const now = new Date();
 
     for (const task of this.tasks.values()) {
-      if (
-        task.status === "retrying" &&
-        task.nextRetryAt &&
-        new Date(task.nextRetryAt) <= now
-      ) {
+      if (task.status === "retrying" && task.nextRetryAt && new Date(task.nextRetryAt) <= now) {
         logger.info("[renewal] 执行重试任务", {
           taskId: task.id,
           retryCount: task.retryCount,
@@ -642,9 +636,7 @@ export class AutoRenewalScheduler {
         // 这里简化处理
         if (this.getExpiringSubscriptions) {
           const subscriptions = await this.getExpiringSubscriptions(30);
-          const subscription = subscriptions.find(
-            (s) => s.id === task.subscriptionId
-          );
+          const subscription = subscriptions.find((s) => s.id === task.subscriptionId);
 
           if (subscription) {
             await this.processRenewalTask(task, subscription);
@@ -682,9 +674,7 @@ export class AutoRenewalScheduler {
       tasks = tasks.filter((t) => t.subscriptionId === filters.subscriptionId);
     }
 
-    return tasks.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    return tasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
   /**

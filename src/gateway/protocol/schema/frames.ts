@@ -61,6 +61,16 @@ export const ConnectParamsSchema = Type.Object(
         { additionalProperties: false },
       ),
     ),
+    // 用户认证参数 (多租户模式)
+    userAuth: Type.Optional(
+      Type.Object(
+        {
+          /** 用户 JWT Access Token */
+          accessToken: Type.String(),
+        },
+        { additionalProperties: false },
+      ),
+    ),
     locale: Type.Optional(Type.String()),
     userAgent: Type.Optional(Type.String()),
   },

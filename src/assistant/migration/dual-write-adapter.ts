@@ -27,9 +27,9 @@ export type StorageSource = "json" | "postgres" | "dual";
  * 读取策略
  */
 export type ReadStrategy =
-  | "json_primary"      // 以 JSON 为主
-  | "postgres_primary"  // 以 PostgreSQL 为主
-  | "merge";            // 合并两个来源
+  | "json_primary" // 以 JSON 为主
+  | "postgres_primary" // 以 PostgreSQL 为主
+  | "merge"; // 合并两个来源
 
 /**
  * 双写配置
@@ -163,10 +163,7 @@ export class DualWriteStorageAdapter {
    *
    * 在双写模式下同时写入两个存储
    */
-  async writeDevice(
-    device: PairedDevice,
-    userDeviceLink?: NewUserDevice
-  ): Promise<void> {
+  async writeDevice(device: PairedDevice, userDeviceLink?: NewUserDevice): Promise<void> {
     if (!this.config.enabled) {
       // 非双写模式，只写 JSON
       if (this.jsonCallbacks) {
@@ -198,9 +195,7 @@ export class DualWriteStorageAdapter {
       if (this.postgresCallbacks && userDeviceLink) {
         try {
           // 检查是否已存在
-          const existing = await this.postgresCallbacks.getUserDeviceByDeviceId(
-            device.deviceId
-          );
+          const existing = await this.postgresCallbacks.getUserDeviceByDeviceId(device.deviceId);
           if (existing) {
             // 更新
             await this.postgresCallbacks.updateUserDevice(existing.id, {
@@ -419,9 +414,7 @@ export function getDualWriteAdapter(): DualWriteStorageAdapter {
 /**
  * 初始化双写适配器
  */
-export function initDualWriteAdapter(
-  config?: Partial<DualWriteConfig>
-): DualWriteStorageAdapter {
+export function initDualWriteAdapter(config?: Partial<DualWriteConfig>): DualWriteStorageAdapter {
   dualWriteAdapterInstance = new DualWriteStorageAdapter(config);
   return dualWriteAdapterInstance;
 }

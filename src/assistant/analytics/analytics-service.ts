@@ -97,70 +97,40 @@ export async function getUserStats(): Promise<UserStats> {
     const newTodayResult = await db
       .select({ count: count() })
       .from(users)
-      .where(
-        and(
-          eq(users.isActive, true),
-          gte(users.createdAt, todayStart)
-        )
-      );
+      .where(and(eq(users.isActive, true), gte(users.createdAt, todayStart)));
     const newToday = Number(newTodayResult[0]?.count || 0);
 
     // 本周新增
     const newWeekResult = await db
       .select({ count: count() })
       .from(users)
-      .where(
-        and(
-          eq(users.isActive, true),
-          gte(users.createdAt, weekStart)
-        )
-      );
+      .where(and(eq(users.isActive, true), gte(users.createdAt, weekStart)));
     const newWeek = Number(newWeekResult[0]?.count || 0);
 
     // 本月新增
     const newMonthResult = await db
       .select({ count: count() })
       .from(users)
-      .where(
-        and(
-          eq(users.isActive, true),
-          gte(users.createdAt, monthStart)
-        )
-      );
+      .where(and(eq(users.isActive, true), gte(users.createdAt, monthStart)));
     const newMonth = Number(newMonthResult[0]?.count || 0);
 
     // 活跃用户（通过最后登录时间）
     const activeTodayResult = await db
       .select({ count: count() })
       .from(users)
-      .where(
-        and(
-          eq(users.isActive, true),
-          gte(users.lastLoginAt, todayStart)
-        )
-      );
+      .where(and(eq(users.isActive, true), gte(users.lastLoginAt, todayStart)));
     const activeToday = Number(activeTodayResult[0]?.count || 0);
 
     const activeWeekResult = await db
       .select({ count: count() })
       .from(users)
-      .where(
-        and(
-          eq(users.isActive, true),
-          gte(users.lastLoginAt, weekStart)
-        )
-      );
+      .where(and(eq(users.isActive, true), gte(users.lastLoginAt, weekStart)));
     const activeWeek = Number(activeWeekResult[0]?.count || 0);
 
     const activeMonthResult = await db
       .select({ count: count() })
       .from(users)
-      .where(
-        and(
-          eq(users.isActive, true),
-          gte(users.lastLoginAt, monthStart)
-        )
-      );
+      .where(and(eq(users.isActive, true), gte(users.lastLoginAt, monthStart)));
     const activeMonth = Number(activeMonthResult[0]?.count || 0);
 
     return {
@@ -208,12 +178,7 @@ export async function getRevenueStats(): Promise<RevenueStats> {
         count: count(),
       })
       .from(paymentOrders)
-      .where(
-        and(
-          eq(paymentOrders.paymentStatus, "paid"),
-          gte(paymentOrders.paidAt, todayStart)
-        )
-      );
+      .where(and(eq(paymentOrders.paymentStatus, "paid"), gte(paymentOrders.paidAt, todayStart)));
     const today = Number(todayResult[0]?.total || 0) / 100; // 分转元
     const ordersToday = Number(todayResult[0]?.count || 0);
 
@@ -224,12 +189,7 @@ export async function getRevenueStats(): Promise<RevenueStats> {
         count: count(),
       })
       .from(paymentOrders)
-      .where(
-        and(
-          eq(paymentOrders.paymentStatus, "paid"),
-          gte(paymentOrders.paidAt, monthStart)
-        )
-      );
+      .where(and(eq(paymentOrders.paymentStatus, "paid"), gte(paymentOrders.paidAt, monthStart)));
     const mtd = Number(mtdResult[0]?.total || 0) / 100;
     const ordersMtd = Number(mtdResult[0]?.count || 0);
 
@@ -239,12 +199,7 @@ export async function getRevenueStats(): Promise<RevenueStats> {
         total: sql<number>`COALESCE(SUM(${paymentOrders.amount}), 0)`,
       })
       .from(paymentOrders)
-      .where(
-        and(
-          eq(paymentOrders.paymentStatus, "paid"),
-          gte(paymentOrders.paidAt, yearStart)
-        )
-      );
+      .where(and(eq(paymentOrders.paymentStatus, "paid"), gte(paymentOrders.paidAt, yearStart)));
     const ytd = Number(ytdResult[0]?.total || 0) / 100;
 
     // 总收入
@@ -293,9 +248,7 @@ export async function getSkillStats(): Promise<{
     const db = await getDatabase();
 
     // 总技能数
-    const totalResult = await db
-      .select({ count: count() })
-      .from(skillStoreItems);
+    const totalResult = await db.select({ count: count() }).from(skillStoreItems);
     const total = Number(totalResult[0]?.count || 0);
 
     // 已发布技能数
@@ -322,9 +275,7 @@ export async function getSkillStats(): Promise<{
     const averageRating = Number(ratingResult[0]?.avgRating || 0);
 
     // 总安装数
-    const installsResult = await db
-      .select({ count: count() })
-      .from(userInstalledSkills);
+    const installsResult = await db.select({ count: count() }).from(userInstalledSkills);
     const totalInstalls = Number(installsResult[0]?.count || 0);
 
     return {
@@ -361,9 +312,7 @@ export async function getDeviceDistribution(): Promise<
     const db = await getDatabase();
 
     // 获取总设备数
-    const totalResult = await db
-      .select({ count: count() })
-      .from(userDevices);
+    const totalResult = await db.select({ count: count() }).from(userDevices);
     const total = Number(totalResult[0]?.count || 0);
 
     // 由于 userDevices 表没有 deviceType 字段，返回基于比例的估算
@@ -437,9 +386,10 @@ export async function getAnalyticsOverview(): Promise<AnalyticsOverview> {
       total: userStats.total,
       active: userStats.activeMonth,
       new: userStats.newMonth,
-      churnRate: userStats.total > 0
-        ? Math.round((1 - userStats.activeMonth / userStats.total) * 1000) / 10
-        : 0,
+      churnRate:
+        userStats.total > 0
+          ? Math.round((1 - userStats.activeMonth / userStats.total) * 1000) / 10
+          : 0,
     },
     revenue: {
       total: revenueStats.total,
@@ -467,7 +417,7 @@ export async function getAnalyticsOverview(): Promise<AnalyticsOverview> {
  */
 export function generateTimeSeriesData(
   days: number,
-  generator: (date: Date, index: number) => Record<string, unknown>
+  generator: (date: Date, index: number) => Record<string, unknown>,
 ): Array<Record<string, unknown>> {
   const data: Array<Record<string, unknown>> = [];
   const now = new Date();
@@ -487,9 +437,7 @@ export function generateTimeSeriesData(
 /**
  * 获取用户增长趋势（真实数据）
  */
-export async function getUserGrowthTrend(
-  period: "week" | "month" | "quarter" = "month"
-): Promise<{
+export async function getUserGrowthTrend(period: "week" | "month" | "quarter" = "month"): Promise<{
   data: Array<{ date: string; newUsers: number; activeUsers: number; totalUsers: number }>;
   summary: { totalNewUsers: number; averageDailyActive: number; growthRate: number };
 }> {
@@ -508,12 +456,7 @@ export async function getUserGrowthTrend(
         count: count(),
       })
       .from(users)
-      .where(
-        and(
-          eq(users.isActive, true),
-          gte(users.createdAt, startDate)
-        )
-      )
+      .where(and(eq(users.isActive, true), gte(users.createdAt, startDate)))
       .groupBy(sql`DATE(${users.createdAt})`)
       .orderBy(sql`DATE(${users.createdAt})`);
 
@@ -524,12 +467,7 @@ export async function getUserGrowthTrend(
         count: count(),
       })
       .from(users)
-      .where(
-        and(
-          eq(users.isActive, true),
-          gte(users.lastLoginAt, startDate)
-        )
-      )
+      .where(and(eq(users.isActive, true), gte(users.lastLoginAt, startDate)))
       .groupBy(sql`DATE(${users.lastLoginAt})`)
       .orderBy(sql`DATE(${users.lastLoginAt})`);
 
@@ -537,24 +475,16 @@ export async function getUserGrowthTrend(
     const totalUsersResult = await db
       .select({ count: count() })
       .from(users)
-      .where(
-        and(
-          eq(users.isActive, true),
-          lte(users.createdAt, startDate)
-        )
-      );
+      .where(and(eq(users.isActive, true), lte(users.createdAt, startDate)));
     let runningTotal = Number(totalUsersResult[0]?.count || 0);
 
     // 创建日期到数据的映射
-    const newUsersMap = new Map(
-      newUsersResult.map((r) => [r.date, Number(r.count)])
-    );
-    const activeUsersMap = new Map(
-      activeUsersResult.map((r) => [r.date, Number(r.count)])
-    );
+    const newUsersMap = new Map(newUsersResult.map((r) => [r.date, Number(r.count)]));
+    const activeUsersMap = new Map(activeUsersResult.map((r) => [r.date, Number(r.count)]));
 
     // 生成完整的时间序列
-    const data: Array<{ date: string; newUsers: number; activeUsers: number; totalUsers: number }> = [];
+    const data: Array<{ date: string; newUsers: number; activeUsers: number; totalUsers: number }> =
+      [];
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
@@ -574,7 +504,7 @@ export async function getUserGrowthTrend(
     // 计算汇总
     const totalNewUsers = data.reduce((sum, d) => sum + d.newUsers, 0);
     const averageDailyActive = Math.floor(
-      data.reduce((sum, d) => sum + d.activeUsers, 0) / data.length
+      data.reduce((sum, d) => sum + d.activeUsers, 0) / data.length,
     );
     const startTotal = data[0]?.totalUsers || 1;
     const growthRate = Math.round((totalNewUsers / startTotal) * 10000) / 100;
@@ -609,10 +539,14 @@ export async function getUserGrowthTrend(
 /**
  * 获取收入趋势（真实数据）
  */
-export async function getRevenueTrend(
-  period: "week" | "month" | "quarter" = "month"
-): Promise<{
-  data: Array<{ date: string; revenue: number; orders: number; refunds: number; netRevenue: number }>;
+export async function getRevenueTrend(period: "week" | "month" | "quarter" = "month"): Promise<{
+  data: Array<{
+    date: string;
+    revenue: number;
+    orders: number;
+    refunds: number;
+    netRevenue: number;
+  }>;
   summary: {
     totalRevenue: number;
     totalOrders: number;
@@ -638,12 +572,7 @@ export async function getRevenueTrend(
         count: count(),
       })
       .from(paymentOrders)
-      .where(
-        and(
-          eq(paymentOrders.paymentStatus, "paid"),
-          gte(paymentOrders.paidAt, startDate)
-        )
-      )
+      .where(and(eq(paymentOrders.paymentStatus, "paid"), gte(paymentOrders.paidAt, startDate)))
       .groupBy(sql`DATE(${paymentOrders.paidAt})`)
       .orderBy(sql`DATE(${paymentOrders.paidAt})`);
 
@@ -652,11 +581,17 @@ export async function getRevenueTrend(
       revenueResult.map((r) => [
         r.date,
         { revenue: Number(r.total) / 100, orders: Number(r.count) },
-      ])
+      ]),
     );
 
     // 生成完整的时间序列
-    const data: Array<{ date: string; revenue: number; orders: number; refunds: number; netRevenue: number }> = [];
+    const data: Array<{
+      date: string;
+      revenue: number;
+      orders: number;
+      refunds: number;
+      netRevenue: number;
+    }> = [];
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
@@ -700,7 +635,13 @@ export async function getRevenueTrend(
         orders: 0,
         refunds: 0,
         netRevenue: 0,
-      })) as Array<{ date: string; revenue: number; orders: number; refunds: number; netRevenue: number }>,
+      })) as Array<{
+        date: string;
+        revenue: number;
+        orders: number;
+        refunds: number;
+        netRevenue: number;
+      }>,
       summary: {
         totalRevenue: 0,
         totalOrders: 0,
@@ -717,7 +658,7 @@ export async function getRevenueTrend(
  * 获取技能使用分析（真实数据）
  */
 export async function getSkillUsageAnalytics(
-  period: "week" | "month" | "quarter" = "month"
+  period: "week" | "month" | "quarter" = "month",
 ): Promise<{
   topSkills: Array<{
     skillId: string;
@@ -756,35 +697,52 @@ export async function getSkillUsageAnalytics(
 
     // 获取技能详情 (包含分类)
     const skillItemIds = installedSkillsResult.map((r) => r.skillItemId);
-    const skillDetails = skillItemIds.length > 0
-      ? await db
-          .select({
-            id: skillStoreItems.id,
-            name: skillStoreItems.name,
-            categoryId: skillStoreItems.categoryId,
-            downloadCount: skillStoreItems.downloadCount,
-          })
-          .from(skillStoreItems)
-          .where(sql`${skillStoreItems.id} = ANY(ARRAY[${sql.join(skillItemIds.map(id => sql`${id}`), sql`, `)}]::text[])`)
-      : [];
+    const skillDetails =
+      skillItemIds.length > 0
+        ? await db
+            .select({
+              id: skillStoreItems.id,
+              name: skillStoreItems.name,
+              categoryId: skillStoreItems.categoryId,
+              downloadCount: skillStoreItems.downloadCount,
+            })
+            .from(skillStoreItems)
+            .where(
+              sql`${skillStoreItems.id} = ANY(ARRAY[${sql.join(
+                skillItemIds.map((id) => sql`${id}`),
+                sql`, `,
+              )}]::text[])`,
+            )
+        : [];
 
     // 获取分类名称
     const categoryIds = [...new Set(skillDetails.map((s) => s.categoryId).filter(Boolean))];
-    const categoryDetails = categoryIds.length > 0
-      ? await db
-          .select({
-            id: skillCategories.id,
-            name: skillCategories.name,
-          })
-          .from(skillCategories)
-          .where(sql`${skillCategories.id} = ANY(ARRAY[${sql.join(categoryIds.map(id => sql`${id}`), sql`, `)}]::text[])`)
-      : [];
+    const categoryDetails =
+      categoryIds.length > 0
+        ? await db
+            .select({
+              id: skillCategories.id,
+              name: skillCategories.name,
+            })
+            .from(skillCategories)
+            .where(
+              sql`${skillCategories.id} = ANY(ARRAY[${sql.join(
+                categoryIds.map((id) => sql`${id}`),
+                sql`, `,
+              )}]::text[])`,
+            )
+        : [];
 
     const categoryMap = new Map(categoryDetails.map((c) => [c.id, c.name]));
-    const skillMap = new Map(skillDetails.map((s) => [s.id, {
-      ...s,
-      categoryName: s.categoryId ? (categoryMap.get(s.categoryId) || "其他") : "其他",
-    }]));
+    const skillMap = new Map(
+      skillDetails.map((s) => [
+        s.id,
+        {
+          ...s,
+          categoryName: s.categoryId ? categoryMap.get(s.categoryId) || "其他" : "其他",
+        },
+      ]),
+    );
 
     // 构建 topSkills
     const topSkills = installedSkillsResult.map((r) => {
@@ -815,7 +773,7 @@ export async function getSkillUsageAnalytics(
 
     const totalSkills = categoryResult.reduce((sum, r) => sum + Number(r.count), 0);
     const categoryDistribution = categoryResult.map((r) => ({
-      category: r.categoryId ? (categoryMap.get(r.categoryId) || "其他") : "其他",
+      category: r.categoryId ? categoryMap.get(r.categoryId) || "其他" : "其他",
       executions: Number(r.count) * 100, // 估算执行次数
       percentage: totalSkills > 0 ? Math.round((Number(r.count) / totalSkills) * 1000) / 10 : 0,
     }));
@@ -830,7 +788,8 @@ export async function getSkillUsageAnalytics(
       summary: {
         totalExecutions,
         totalUniqueUsers,
-        averageExecutionsPerUser: totalUniqueUsers > 0 ? Math.round(totalExecutions / totalUniqueUsers * 10) / 10 : 0,
+        averageExecutionsPerUser:
+          totalUniqueUsers > 0 ? Math.round((totalExecutions / totalUniqueUsers) * 10) / 10 : 0,
         activeSkillsCount: skillDetails.length,
       },
     };

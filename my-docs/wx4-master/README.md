@@ -24,6 +24,7 @@
 1. 克隆或下载本项目到本地
 
 2. 安装所需依赖
+
 ```bash
 pip install uiautomation pyperclip pyautogui pillow loguru
 ```
@@ -31,6 +32,7 @@ pip install uiautomation pyperclip pyautogui pillow loguru
 3. 确保微信桌面客户端已安装并能正常登录
 
 4. 创建日志目录（可选）
+
 ```bash
 mkdir logs
 ```
@@ -66,7 +68,6 @@ for msg in messages:
 
 - `WeChat`: 微信控制的主类，提供各种微信操作的方法
 - `MSG`: 表示一条微信消息，包含发送者、内容和索引信息
-
 
 ### 注意事项
 

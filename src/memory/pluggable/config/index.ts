@@ -35,4 +35,4 @@ export {
   // 验证函数
   validateConfig,
   safeValidateConfig,
-} from './schema.js'
+} from "./schema.js";

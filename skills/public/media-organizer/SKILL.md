@@ -28,6 +28,7 @@ powershell -ExecutionPolicy Bypass -File "scripts/organize_media.ps1" -SourcePat
 ```
 
 Parameters:
+
 - `-SourcePath`: Drive or folder to scan (default: E:\)
 - `-TargetPath`: Output directory (default: E:\照片和视频)
 
@@ -80,10 +81,12 @@ E:\照片和视频\
 Scans source path for media files and organizes them by date.
 
 **Parameters:**
+
 - `-SourcePath`: Source drive/folder to scan
 - `-TargetPath`: Destination folder for organized files
 
 **Features:**
+
 - Copies files (originals remain untouched)
 - Skips duplicates based on file size
 - Adds timestamps to conflicting filenames
@@ -94,9 +97,11 @@ Scans source path for media files and organizes them by date.
 Generates media_list.json for the web gallery.
 
 **Parameters:**
+
 - `-BasePath`: Root path of organized media (default: E:\照片和视频)
 
 **Output:**
+
 - Creates media_list.json with file metadata (name, path, type, date, size)
 
 ### start_server.ps1
@@ -104,10 +109,12 @@ Generates media_list.json for the web gallery.
 Starts a local HTTP server for browsing the gallery.
 
 **Parameters:**
+
 - `-Port`: Server port (default: 8080)
 - `-Path`: Gallery root path (default: E:\照片和视频)
 
 **Requirements:**
+
 - Python 3.x or Node.js installed
 
 ## Web Gallery Features

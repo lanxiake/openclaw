@@ -23,10 +23,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(
-    "Connecting to:",
-    connectionString.replace(/:[^:@]+@/, ":***@")
-  );
+  console.log("Connecting to:", connectionString.replace(/:[^:@]+@/, ":***@"));
 
   const sql = postgres(connectionString, { max: 1 });
   const db = drizzle(sql, { schema });

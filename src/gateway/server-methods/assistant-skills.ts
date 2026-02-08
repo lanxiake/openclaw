@@ -67,7 +67,7 @@ async function getSkillRegistry(config?: SkillLoaderConfig): Promise<SkillRegist
 function validateStringParam(
   params: Record<string, unknown>,
   key: string,
-  required = false
+  required = false,
 ): string | undefined {
   const value = params[key];
 
@@ -130,11 +130,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       const skillId = validateStringParam(params, "skillId", true);
 
       if (!skillId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing skillId")
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing skillId"));
         return;
       }
 
@@ -147,7 +143,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, `Skill not found: ${skillId}`)
+          errorShape(ErrorCodes.INVALID_REQUEST, `Skill not found: ${skillId}`),
         );
         return;
       }
@@ -167,7 +163,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
           lastExecutedAt: record.lastExecutedAt?.toISOString(),
           loadedAt: record.loadedAt?.toISOString(),
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -185,11 +181,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       const skillParams = (params.params as Record<string, unknown>) || {};
 
       if (!skillId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing skillId")
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing skillId"));
         return;
       }
 
@@ -205,7 +197,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       const confirmHandler = async (
         action: string,
         description: string,
-        level: "low" | "medium" | "high"
+        level: "low" | "medium" | "high",
       ): Promise<boolean> => {
         // TODO: 实现通过 Gateway 广播确认请求到客户端
         // 目前默认批准 (生产环境需要实现完整的确认流程)
@@ -218,11 +210,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       };
 
       // 创建进度处理器
-      const progressHandler = (
-        _skillId: string,
-        percent: number,
-        message?: string
-      ): void => {
+      const progressHandler = (_skillId: string, percent: number, message?: string): void => {
         // TODO: 通过 Gateway 广播进度到客户端
         context.logGateway.debug(`[${LOG_TAG}] 技能进度`, {
           skillId,
@@ -242,7 +230,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
           confirmHandler,
           progressHandler,
           defaultTimeout: 120000,
-        }
+        },
       );
 
       respond(true, result, undefined);
@@ -263,11 +251,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       const args = validateStringParam(params, "args");
 
       if (!command) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing command")
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing command"));
         return;
       }
 
@@ -284,7 +268,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
         },
         {
           defaultTimeout: 120000,
-        }
+        },
       );
 
       respond(true, result, undefined);
@@ -329,7 +313,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       const registry = await getSkillRegistry();
 
       const loadedCount = Array.from(registry.skills.values()).filter(
-        (r) => r.status === "loaded"
+        (r) => r.status === "loaded",
       ).length;
 
       respond(
@@ -339,7 +323,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
           loaded: loadedCount,
           version: registry.version,
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -356,11 +340,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       const command = validateStringParam(params, "command", true);
 
       if (!command) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "Missing command")
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing command"));
         return;
       }
 
@@ -371,7 +351,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, `No skill found for command: ${command}`)
+          errorShape(ErrorCodes.INVALID_REQUEST, `No skill found for command: ${command}`),
         );
         return;
       }
@@ -383,7 +363,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
           name: record.metadata.name,
           description: record.metadata.description,
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -668,7 +648,11 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       const detail = await getStoreSkillDetail(skillId);
 
       if (!detail) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `Skill not found: ${skillId}`));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, `Skill not found: ${skillId}`),
+        );
         return;
       }
 
@@ -844,7 +828,11 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       const storeSkill = await getStoreSkillDetail(skillId);
 
       if (!storeSkill) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `Skill not found in store: ${skillId}`));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, `Skill not found in store: ${skillId}`),
+        );
         return;
       }
 
@@ -925,7 +913,11 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       const config = params.config as Record<string, unknown> | undefined;
 
       if (!name || !description) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameters"));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameters"),
+        );
         return;
       }
 
@@ -963,7 +955,7 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
           },
           message: "技能提交成功，等待审核",
         },
-        undefined
+        undefined,
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";

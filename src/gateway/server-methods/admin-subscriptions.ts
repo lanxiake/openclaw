@@ -25,7 +25,7 @@ const LOG_TAG = "admin-subscriptions";
  * 验证管理员身份并返回管理员信息
  */
 async function validateAdminAuth(
-  params: Record<string, unknown>
+  params: Record<string, unknown>,
 ): Promise<{ adminId: string; role: string; username: string } | null> {
   const authHeader = params["authorization"] as string | undefined;
   const token = extractAdminBearerToken(authHeader);
@@ -47,7 +47,7 @@ async function validateAdminAuth(
 function validateStringParam(
   params: Record<string, unknown>,
   key: string,
-  required = false
+  required = false,
 ): string | undefined {
   const value = params[key];
   if (value === undefined || value === null) {
@@ -68,7 +68,7 @@ function validateStringParam(
 function validateNumberParam(
   params: Record<string, unknown>,
   key: string,
-  defaultValue?: number
+  defaultValue?: number,
 ): number | undefined {
   const value = params[key];
   if (value === undefined || value === null) {
@@ -97,7 +97,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -125,8 +125,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取订阅列表失败"
-        )
+          error instanceof Error ? error.message : "获取订阅列表失败",
+        ),
       );
     }
   },
@@ -143,7 +143,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -159,7 +159,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "订阅不存在", {
             details: { errorCode: "SUBSCRIPTION_NOT_FOUND" },
-          })
+          }),
         );
         return;
       }
@@ -174,8 +174,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取订阅详情失败"
-        )
+          error instanceof Error ? error.message : "获取订阅详情失败",
+        ),
       );
     }
   },
@@ -192,7 +192,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -203,7 +203,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -225,7 +225,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         auth.username,
         reason,
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       if (result.success) {
@@ -234,7 +234,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "取消订阅失败")
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "取消订阅失败"),
         );
       }
     } catch (error) {
@@ -246,8 +246,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "取消订阅失败"
-        )
+          error instanceof Error ? error.message : "取消订阅失败",
+        ),
       );
     }
   },
@@ -264,7 +264,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -275,7 +275,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -289,7 +289,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "延长天数必须在 1-365 之间")
+          errorShape(ErrorCodes.INVALID_REQUEST, "延长天数必须在 1-365 之间"),
         );
         return;
       }
@@ -307,7 +307,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         auth.adminId,
         auth.username,
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       if (result.success) {
@@ -316,7 +316,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "延长订阅失败")
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "延长订阅失败"),
         );
       }
     } catch (error) {
@@ -328,8 +328,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "延长订阅失败"
-        )
+          error instanceof Error ? error.message : "延长订阅失败",
+        ),
       );
     }
   },
@@ -346,7 +346,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -357,7 +357,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足，仅超级管理员可变更套餐", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -380,7 +380,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         auth.adminId,
         auth.username,
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       if (result.success) {
@@ -389,7 +389,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "变更套餐失败")
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "变更套餐失败"),
         );
       }
     } catch (error) {
@@ -401,8 +401,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "变更套餐失败"
-        )
+          error instanceof Error ? error.message : "变更套餐失败",
+        ),
       );
     }
   },
@@ -419,7 +419,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -437,8 +437,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取套餐列表失败"
-        )
+          error instanceof Error ? error.message : "获取套餐列表失败",
+        ),
       );
     }
   },
@@ -455,7 +455,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -471,7 +471,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "套餐不存在", {
             details: { errorCode: "PLAN_NOT_FOUND" },
-          })
+          }),
         );
         return;
       }
@@ -486,8 +486,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取套餐详情失败"
-        )
+          error instanceof Error ? error.message : "获取套餐详情失败",
+        ),
       );
     }
   },
@@ -504,7 +504,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -515,7 +515,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -541,11 +541,22 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
 
       const service = getAdminSubscriptionService();
       const result = await service.createPlan(
-        { code, name, description, priceMonthly, priceYearly, tokensPerMonth, storageMb, maxDevices, features, sortOrder },
+        {
+          code,
+          name,
+          description,
+          priceMonthly,
+          priceYearly,
+          tokensPerMonth,
+          storageMb,
+          maxDevices,
+          features,
+          sortOrder,
+        },
         auth.adminId,
         auth.username,
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       if (result.success) {
@@ -554,7 +565,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "创建套餐失败")
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "创建套餐失败"),
         );
       }
     } catch (error) {
@@ -566,8 +577,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "创建套餐失败"
-        )
+          error instanceof Error ? error.message : "创建套餐失败",
+        ),
       );
     }
   },
@@ -584,7 +595,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -595,7 +606,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -638,7 +649,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         auth.adminId,
         auth.username,
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       if (result.success) {
@@ -647,7 +658,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "更新套餐失败")
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "更新套餐失败"),
         );
       }
     } catch (error) {
@@ -659,8 +670,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "更新套餐失败"
-        )
+          error instanceof Error ? error.message : "更新套餐失败",
+        ),
       );
     }
   },
@@ -677,7 +688,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -713,8 +724,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取订单列表失败"
-        )
+          error instanceof Error ? error.message : "获取订单列表失败",
+        ),
       );
     }
   },
@@ -731,7 +742,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -747,7 +758,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "订单不存在", {
             details: { errorCode: "ORDER_NOT_FOUND" },
-          })
+          }),
         );
         return;
       }
@@ -762,8 +773,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取订单详情失败"
-        )
+          error instanceof Error ? error.message : "获取订单详情失败",
+        ),
       );
     }
   },
@@ -780,7 +791,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -791,7 +802,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "权限不足，仅超级管理员可执行退款", {
             details: { errorCode: "FORBIDDEN" },
-          })
+          }),
         );
         return;
       }
@@ -813,7 +824,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         auth.username,
         reason,
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       if (result.success) {
@@ -822,7 +833,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "退款失败")
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "退款失败"),
         );
       }
     } catch (error) {
@@ -832,10 +843,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
       respond(
         false,
         undefined,
-        errorShape(
-          ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "退款失败"
-        )
+        errorShape(ErrorCodes.INVALID_REQUEST, error instanceof Error ? error.message : "退款失败"),
       );
     }
   },
@@ -852,7 +860,7 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
             details: { errorCode: "UNAUTHORIZED" },
-          })
+          }),
         );
         return;
       }
@@ -870,8 +878,8 @@ export const adminSubscriptionMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "获取统计失败"
-        )
+          error instanceof Error ? error.message : "获取统计失败",
+        ),
       );
     }
   },

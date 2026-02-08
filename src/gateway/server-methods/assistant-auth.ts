@@ -25,7 +25,7 @@ const LOG_TAG = "auth";
 function validateStringParam(
   params: Record<string, unknown>,
   key: string,
-  required = false
+  required = false,
 ): string | undefined {
   const value = params[key];
   if (value === undefined || value === null) {
@@ -55,9 +55,7 @@ export const authMethods: GatewayRequestHandlers = {
   "auth.sendCode": async ({ params, respond, context }) => {
     try {
       const target = validateStringParam(params, "target", true)!;
-      const targetType = validateStringParam(params, "targetType", true) as
-        | "phone"
-        | "email";
+      const targetType = validateStringParam(params, "targetType", true) as "phone" | "email";
       const purpose = validateStringParam(params, "purpose", true) as
         | "register"
         | "login"
@@ -88,7 +86,7 @@ export const authMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, result.error || "发送失败", {
             details: { errorCode: result.errorCode },
-          })
+          }),
         );
       }
     } catch (error) {
@@ -100,8 +98,8 @@ export const authMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "发送验证码失败"
-        )
+          error instanceof Error ? error.message : "发送验证码失败",
+        ),
       );
     }
   },
@@ -150,7 +148,7 @@ export const authMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, result.error || "注册失败", {
             details: { errorCode: result.errorCode },
-          })
+          }),
         );
       }
     } catch (error) {
@@ -160,10 +158,7 @@ export const authMethods: GatewayRequestHandlers = {
       respond(
         false,
         undefined,
-        errorShape(
-          ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "注册失败"
-        )
+        errorShape(ErrorCodes.INVALID_REQUEST, error instanceof Error ? error.message : "注册失败"),
       );
     }
   },
@@ -212,7 +207,7 @@ export const authMethods: GatewayRequestHandlers = {
           undefined,
           errorShape(ErrorCodes.INVALID_REQUEST, result.error || "登录失败", {
             details: { errorCode: result.errorCode },
-          })
+          }),
         );
       }
     } catch (error) {
@@ -222,10 +217,7 @@ export const authMethods: GatewayRequestHandlers = {
       respond(
         false,
         undefined,
-        errorShape(
-          ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "登录失败"
-        )
+        errorShape(ErrorCodes.INVALID_REQUEST, error instanceof Error ? error.message : "登录失败"),
       );
     }
   },
@@ -238,11 +230,7 @@ export const authMethods: GatewayRequestHandlers = {
    */
   "auth.refreshToken": async ({ params, respond, context }) => {
     try {
-      const refreshTokenValue = validateStringParam(
-        params,
-        "refreshToken",
-        true
-      )!;
+      const refreshTokenValue = validateStringParam(params, "refreshToken", true)!;
       const ipAddress = params["ipAddress"] as string | undefined;
       const userAgent = params["userAgent"] as string | undefined;
 
@@ -264,11 +252,9 @@ export const authMethods: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(
-            ErrorCodes.INVALID_REQUEST,
-            result.error || "刷新令牌失败",
-            { details: { errorCode: result.errorCode } }
-          )
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "刷新令牌失败", {
+            details: { errorCode: result.errorCode },
+          }),
         );
       }
     } catch (error) {
@@ -280,8 +266,8 @@ export const authMethods: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "刷新令牌失败"
-        )
+          error instanceof Error ? error.message : "刷新令牌失败",
+        ),
       );
     }
   },
@@ -294,11 +280,7 @@ export const authMethods: GatewayRequestHandlers = {
    */
   "auth.logout": async ({ params, respond, context }) => {
     try {
-      const refreshTokenValue = validateStringParam(
-        params,
-        "refreshToken",
-        true
-      )!;
+      const refreshTokenValue = validateStringParam(params, "refreshToken", true)!;
       const ipAddress = params["ipAddress"] as string | undefined;
       const userAgent = params["userAgent"] as string | undefined;
 
@@ -336,10 +318,7 @@ export const authMethods: GatewayRequestHandlers = {
       respond(
         false,
         undefined,
-        errorShape(
-          ErrorCodes.INVALID_REQUEST,
-          error instanceof Error ? error.message : "登出失败"
-        )
+        errorShape(ErrorCodes.INVALID_REQUEST, error instanceof Error ? error.message : "登出失败"),
       );
     }
   },

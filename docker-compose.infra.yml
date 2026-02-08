@@ -3,12 +3,23 @@
 # 包含系统所需的所有第三方组件和中间件
 #
 # 使用方式:
-#   docker-compose -f docker-compose.infra.yml up -d                    # 启动基础服务 (PostgreSQL + Redis + MinIO)
-#   docker-compose -f docker-compose.infra.yml --profile knowledge up -d # 启动基础服务 + 知识图谱组件
-#   docker-compose -f docker-compose.infra.yml --profile monitoring up -d # 启动基础服务 + 监控组件
-#   docker-compose -f docker-compose.infra.yml --profile all up -d       # 启动所有服务
-#   docker-compose -f docker-compose.infra.yml down                      # 停止所有服务
-#   docker-compose -f docker-compose.infra.yml logs -f                   # 查看日志
+#   docker-compose -f docker-compose.infra.yml --profile minimal up -d        # 最小化启动 (仅 PostgreSQL + Redis)
+#   docker-compose -f docker-compose.infra.yml up -d                          # 启动基础服务 (PostgreSQL + Redis + MinIO)
+#   docker-compose -f docker-compose.infra.yml --profile knowledge up -d      # 启动基础服务 + 知识图谱组件
+#   docker-compose -f docker-compose.infra.yml --profile monitoring up -d     # 启动基础服务 + 监控组件
+#   docker-compose -f docker-compose.infra.yml --profile all up -d            # 启动所有服务
+#   docker-compose -f docker-compose.infra.yml down                           # 停止所有服务
+#   docker-compose -f docker-compose.infra.yml logs -f                        # 查看日志
+#
+# Profile 说明:
+#   minimal    - 最小化测试环境 (PostgreSQL + Redis)
+#   default    - 默认开发环境 (PostgreSQL + Redis + MinIO)
+#   knowledge  - 知识图谱组件 (Milvus + Neo4j)
+#   queue      - 消息队列 (RabbitMQ)
+#   monitoring - 监控组件 (Prometheus + Grafana)
+#   logging    - 日志收集 (Loki)
+#   dev-tools  - 开发工具 (pgAdmin + Redis Commander + Attu)
+#   all        - 所有服务
 #
 # 数据持久化目录: ./docker-data/
 #
@@ -31,7 +42,7 @@
 #   Milvus Attu:    22016 (Milvus 管理)
 #
 
-version: '3.8'
+version: "3.8"
 
 services:
   # ==================== 核心数据库 ====================
@@ -42,6 +53,8 @@ services:
     image: postgres:17-alpine
     container_name: openclaw-postgres
     restart: unless-stopped
+    profiles:
+      - minimal
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-openclaw_admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Oc@2026!Pg#Secure}
@@ -55,7 +68,11 @@ services:
       # 初始化脚本 (可选)
       - ./docker-init/postgres:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-openclaw_admin} -d ${POSTGRES_DB:-openclaw_prod}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-openclaw_admin} -d ${POSTGRES_DB:-openclaw_prod}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -70,6 +87,8 @@ services:
     image: redis:7-alpine
     container_name: openclaw-redis
     restart: unless-stopped
+    profiles:
+      - minimal
     command: >
       redis-server
       --appendonly yes
@@ -296,10 +315,10 @@ services:
     container_name: openclaw-prometheus
     restart: unless-stopped
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.enable-lifecycle'
-      - '--storage.tsdb.retention.time=15d'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+      - "--storage.tsdb.retention.time=15d"
     ports:
       - "${PROMETHEUS_PORT:-22011}:9090"
     volumes:

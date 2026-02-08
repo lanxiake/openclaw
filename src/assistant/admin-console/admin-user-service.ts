@@ -149,8 +149,8 @@ export class AdminUserService {
         or(
           like(users.phone, `%${search}%`),
           like(users.email, `%${search}%`),
-          like(users.displayName, `%${search}%`)
-        )
+          like(users.displayName, `%${search}%`),
+        ),
       );
     }
 
@@ -236,7 +236,7 @@ export class AdminUserService {
               }
             : null,
         };
-      })
+      }),
     );
 
     return {
@@ -334,7 +334,7 @@ export class AdminUserService {
     adminUsername: string,
     reason?: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       // 获取用户信息
@@ -401,7 +401,7 @@ export class AdminUserService {
     adminId: string,
     adminUsername: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       // 获取用户信息
@@ -461,7 +461,7 @@ export class AdminUserService {
     adminId: string,
     adminUsername: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const { hashPassword } = await import("../../db/utils/password.js");
@@ -528,7 +528,7 @@ export class AdminUserService {
     adminId: string,
     adminUsername: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       // 获取设备信息
@@ -584,7 +584,7 @@ export class AdminUserService {
     adminId: string,
     adminUsername: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       // 获取用户信息
@@ -641,9 +641,7 @@ export class AdminUserService {
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const [{ total }] = await this.db
-      .select({ total: sql<number>`count(*)::int` })
-      .from(users);
+    const [{ total }] = await this.db.select({ total: sql<number>`count(*)::int` }).from(users);
 
     const [{ active }] = await this.db
       .select({ active: sql<number>`count(*)::int` })
