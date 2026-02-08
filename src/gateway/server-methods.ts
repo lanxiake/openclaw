@@ -2,6 +2,22 @@ import { ErrorCodes, errorShape } from "./protocol/index.js";
 import { agentHandlers } from "./server-methods/agent.js";
 import { agentsHandlers } from "./server-methods/agents.js";
 import { assistantHandlers } from "./server-methods/assistant.js";
+import { assistantAuditMethods } from "./server-methods/assistant-audit.js";
+import { authMethods } from "./server-methods/assistant-auth.js";
+import { deviceMethods } from "./server-methods/assistant-device.js";
+import { assistantSkillHandlers } from "./server-methods/assistant-skills.js";
+import { assistantSubscriptionMethods } from "./server-methods/assistant-subscription.js";
+import { migrationRpcMethods } from "./server-methods/assistant-migration.js";
+import { paymentMethods } from "./server-methods/assistant-payment.js";
+import { adminAuthMethods } from "./server-methods/admin-auth.js";
+import { adminUserMethods } from "./server-methods/admin-users.js";
+import { adminSubscriptionMethods } from "./server-methods/admin-subscriptions.js";
+import { adminAuditMethods } from "./server-methods/admin-audit.js";
+import { adminDashboardMethods } from "./server-methods/admin-dashboard.js";
+import { adminSkillHandlers } from "./server-methods/admin-skills.js";
+import { adminMonitorHandlers } from "./server-methods/admin-monitor.js";
+import { adminConfigHandlers } from "./server-methods/admin-config.js";
+import { adminAnalyticsHandlers } from "./server-methods/admin-analytics.js";
 import { browserHandlers } from "./server-methods/browser.js";
 import { channelsHandlers } from "./server-methods/channels.js";
 import { chatHandlers } from "./server-methods/chat.js";
@@ -76,6 +92,53 @@ const READ_METHODS = new Set([
   "assistant.info",
   "assistant.capabilities",
   "assistant.heartbeat",
+  // Assistant skill system methods
+  "assistant.skills.list",
+  "assistant.skills.get",
+  "assistant.skills.tools",
+  "assistant.skills.findByCommand",
+  // Assistant audit methods (read-only)
+  "assistant.audit.query",
+  "assistant.audit.recent",
+  "assistant.audit.stats",
+  "assistant.audit.config.get",
+  // Assistant subscription methods (read-only)
+  "assistant.subscription.plans",
+  "assistant.subscription.plan",
+  "assistant.subscription.get",
+  "assistant.subscription.quota.check",
+  "assistant.subscription.usage",
+  "assistant.subscription.overview",
+  // Device methods (read-only)
+  "device.list",
+  "device.quota",
+  "device.checkPaired",
+  "device.info",
+  "device.getUser",
+  // Migration methods (read-only)
+  "migration.status",
+  "migration.getConfig",
+  "migration.dualWrite.getStats",
+  "migration.dualWrite.getConfig",
+  "migration.rollback.status",
+  // Payment methods (read-only)
+  "payment.getOrder",
+  "payment.queryOrders",
+  "payment.getPaymentStatus",
+  "payment.getRefundStatus",
+  "payment.getUserPayments",
+  "payment.getRecentTransactions",
+  "payment.estimatePrice",
+  "payment.getSupportedProviders",
+  // Coupon methods (read-only)
+  "coupon.validate",
+  "coupon.get",
+  "coupon.list",
+  "coupon.getUserUsages",
+  // Renewal methods (read-only)
+  "renewal.getTasks",
+  "renewal.getTask",
+  "renewal.getConfig",
 ]);
 const WRITE_METHODS = new Set([
   "send",
@@ -95,9 +158,63 @@ const WRITE_METHODS = new Set([
   "assistant.chat",
   "assistant.confirm.request",
   "assistant.confirm.response",
+  // Assistant skill system methods
+  "assistant.skills.execute",
+  "assistant.skills.executeByCommand",
+  "assistant.skills.reload",
+  // Assistant audit methods (write)
+  "assistant.audit.init",
+  "assistant.audit.write",
+  "assistant.audit.export",
+  "assistant.audit.clear",
+  "assistant.audit.config.set",
+  // Assistant subscription methods (write)
+  "assistant.subscription.create",
+  "assistant.subscription.update",
+  "assistant.subscription.cancel",
+  "assistant.subscription.usage.record",
+  // Device methods (write)
+  "device.link",
+  "device.unlink",
+  "device.setPrimary",
+  "device.updateAlias",
+  // Migration methods (write)
+  "migration.start",
+  "migration.verify",
+  "migration.updateConfig",
+  "migration.dualWrite.init",
+  "migration.dualWrite.setMode",
+  "migration.dualWrite.setReadStrategy",
+  "migration.dualWrite.resetStats",
+  "migration.rollback.preview",
+  "migration.rollback.execute",
+  // Payment methods (write)
+  "payment.createOrder",
+  "payment.cancelOrder",
+  "payment.initiatePayment",
+  "payment.requestRefund",
+  // Coupon methods (write)
+  "coupon.apply",
+  "coupon.create",
+  "coupon.update",
+  "coupon.disable",
+  // Renewal methods (write)
+  "renewal.trigger",
+  "renewal.cancel",
+  "renewal.updateConfig",
+  "renewal.start",
+  "renewal.stop",
 ]);
 
 function authorizeGatewayMethod(method: string, client: GatewayRequestOptions["client"]) {
+  // Auth methods are public (no authentication required)
+  if (method.startsWith("auth.")) {
+    return null;
+  }
+  // Admin console authentication methods are public
+  if (method.startsWith("admin.")) {
+    return null;
+  }
   if (!client?.connect) {
     return null;
   }
@@ -193,6 +310,22 @@ export const coreGatewayHandlers: GatewayRequestHandlers = {
   ...agentsHandlers,
   ...browserHandlers,
   ...assistantHandlers,
+  ...assistantAuditMethods,
+  ...assistantSkillHandlers,
+  ...assistantSubscriptionMethods,
+  ...authMethods,
+  ...deviceMethods,
+  ...paymentMethods,
+  ...migrationRpcMethods,
+  ...adminAuthMethods,
+  ...adminUserMethods,
+  ...adminSubscriptionMethods,
+  ...adminAuditMethods,
+  ...adminDashboardMethods,
+  ...adminSkillHandlers,
+  ...adminMonitorHandlers,
+  ...adminConfigHandlers,
+  ...adminAnalyticsHandlers,
 };
 
 export async function handleGatewayRequest(

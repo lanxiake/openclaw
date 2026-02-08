@@ -94,6 +94,31 @@ function validateBooleanParam(
 }
 
 /**
+ * 远程命令执行请求缓存
+ * key: requestId, value: { command, resolve, reject, timeout }
+ */
+const pendingCommandExecutions = new Map<
+  string,
+  {
+    command: string;
+    resolve: (result: CommandExecutionResult) => void;
+    reject: (reason: Error) => void;
+    timeout: NodeJS.Timeout;
+  }
+>();
+
+/**
+ * 命令执行结果接口
+ */
+interface CommandExecutionResult {
+  success: boolean;
+  stdout?: string;
+  stderr?: string;
+  exitCode?: number;
+  errorMessage?: string;
+}
+
+/**
  * Assistant RPC 方法处理器
  */
 export const assistantHandlers: GatewayRequestHandlers = {
@@ -244,7 +269,7 @@ export const assistantHandlers: GatewayRequestHandlers = {
       respond(
         false,
         undefined,
-        errorShape(ErrorCodes.INTERNAL_ERROR, errorMessage),
+        errorShape(ErrorCodes.UNAVAILABLE, errorMessage),
       );
     }
   },
@@ -271,7 +296,7 @@ export const assistantHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.NOT_FOUND, "Confirmation request not found or expired"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "Confirmation request not found or expired"),
         );
         return;
       }
@@ -336,5 +361,147 @@ export const assistantHandlers: GatewayRequestHandlers = {
       },
       undefined,
     );
+  },
+
+  /**
+   * 远程命令执行
+   * 向客户端发送命令执行请求，等待执行结果
+   *
+   * @param command - 要执行的命令
+   * @param timeoutMs - 执行超时时间（毫秒），默认 60 秒
+   * @param requireConfirm - 是否需要用户确认，默认 true
+   */
+  "assistant.command.execute": async ({ params, respond, context }) => {
+    try {
+      const command = validateStringParam(params, "command", true);
+      const timeoutMs = validateNumberParam(params, "timeoutMs") ?? 60000;
+      const requireConfirm = validateBooleanParam(params, "requireConfirm") ?? true;
+
+      if (!command) {
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameter: command"),
+        );
+        return;
+      }
+
+      const requestId = randomUUID();
+
+      context.logGateway.info(`[${LOG_TAG}] command execute request`, {
+        requestId,
+        command,
+        timeoutMs,
+        requireConfirm,
+      });
+
+      // 创建命令执行的 Promise
+      const executePromise = new Promise<CommandExecutionResult>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          pendingCommandExecutions.delete(requestId);
+          reject(new Error("Command execution timeout"));
+        }, timeoutMs);
+
+        pendingCommandExecutions.set(requestId, {
+          command,
+          resolve,
+          reject,
+          timeout,
+        });
+      });
+
+      // 广播命令执行请求到客户端
+      context.broadcast("command.execute.request", {
+        requestId,
+        command,
+        timeoutMs,
+        requireConfirm,
+      });
+
+      // 等待执行结果
+      const result = await executePromise;
+
+      context.logGateway.info(`[${LOG_TAG}] command execute completed`, {
+        requestId,
+        success: result.success,
+      });
+
+      respond(true, result, undefined);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.UNAVAILABLE, errorMessage),
+      );
+    }
+  },
+
+  /**
+   * 接收客户端命令执行结果
+   *
+   * @param requestId - 请求 ID
+   * @param success - 是否执行成功
+   * @param stdout - 标准输出
+   * @param stderr - 标准错误输出
+   * @param exitCode - 退出码
+   * @param errorMessage - 错误信息
+   */
+  "assistant.command.result": ({ params, respond, context }) => {
+    try {
+      const requestId = validateStringParam(params, "requestId", true);
+      const success = validateBooleanParam(params, "success", true);
+      const stdout = validateStringParam(params, "stdout") ?? "";
+      const stderr = validateStringParam(params, "stderr") ?? "";
+      const exitCode = validateNumberParam(params, "exitCode");
+      const errorMessage = validateStringParam(params, "errorMessage");
+
+      if (!requestId || success === undefined) {
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "Missing required parameters"),
+        );
+        return;
+      }
+
+      const pending = pendingCommandExecutions.get(requestId);
+      if (!pending) {
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "Command execution request not found or expired"),
+        );
+        return;
+      }
+
+      context.logGateway.info(`[${LOG_TAG}] command result received`, {
+        requestId,
+        success,
+        exitCode,
+      });
+
+      // 清理超时定时器
+      clearTimeout(pending.timeout);
+      pendingCommandExecutions.delete(requestId);
+
+      // 解析执行结果 Promise
+      pending.resolve({
+        success,
+        stdout,
+        stderr,
+        exitCode,
+        errorMessage,
+      });
+
+      respond(true, { requestId, received: true }, undefined);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, errorMessage),
+      );
+    }
   },
 };

@@ -88,11 +88,9 @@ export function createWindowsFileTool(options?: {
 
       // 构建 Gateway 调用选项
       const gatewayOpts: GatewayCallOptions = {
-        url: readStringParam(params, "gatewayUrl"),
-        token: readStringParam(params, "gatewayToken"),
+        gatewayUrl: readStringParam(params, "gatewayUrl"),
+        gatewayToken: readStringParam(params, "gatewayToken"),
         timeoutMs: readNumberParam(params, "timeoutMs"),
-        config: options?.config,
-        agentSessionKey: sessionKey,
       };
 
       // 根据 action 调用相应的 assistant.file.* 方法
@@ -231,11 +229,9 @@ export function createWindowsSystemTool(options?: {
 
       // 构建 Gateway 调用选项
       const gatewayOpts: GatewayCallOptions = {
-        url: readStringParam(params, "gatewayUrl"),
-        token: readStringParam(params, "gatewayToken"),
+        gatewayUrl: readStringParam(params, "gatewayUrl"),
+        gatewayToken: readStringParam(params, "gatewayToken"),
         timeoutMs: readNumberParam(params, "timeoutMs"),
-        config: options?.config,
-        agentSessionKey: sessionKey,
       };
 
       // 根据 action 调用相应的方法
