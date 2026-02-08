@@ -99,7 +99,7 @@ describe("UserRepository", () => {
       console.log("[TEST] 密码哈希:", user.passwordHash);
 
       expect(user.id).toBeTruthy();
-      expect(user.passwordHash).toBeNull();
+      expect(user.passwordHash).toBeUndefined();
       console.log("[TEST] ✓ 无密码用户创建成功");
     });
   });

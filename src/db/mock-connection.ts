@@ -30,6 +30,126 @@ function generateMockId(): string {
 }
 
 /**
+ * 解析 Drizzle ORM 条件对象为过滤函数
+ *
+ * @param condition Drizzle 条件对象或函数
+ * @returns 过滤函数
+ */
+function parseCondition(condition: unknown): (row: unknown) => boolean {
+  // 如果已经是函数，直接返回
+  if (typeof condition === "function") {
+    return condition as (row: unknown) => boolean;
+  }
+
+  // 如果是 Drizzle 条件对象
+  if (condition && typeof condition === "object") {
+    const cond = condition as Record<string, unknown>;
+
+    // 调试：打印条件对象结构（禁用，因为Drizzle对象有循环引用）
+    // console.log("[mock-db] Parsing condition:", cond);
+
+    // 处理 SQL 对象（Drizzle ORM 的内部结构）
+    if (cond._) {
+      const sql = cond._ as Record<string, unknown>;
+
+      // 处理 eq 条件
+      if (sql.brand === "SQL" && Array.isArray(sql.queryChunks)) {
+        const chunks = sql.queryChunks as unknown[];
+
+        // 查找列名和值
+        let columnName: string | undefined;
+        let value: unknown;
+
+        for (const chunk of chunks) {
+          if (chunk && typeof chunk === "object") {
+            const chunkObj = chunk as Record<string, unknown>;
+
+            // 列对象
+            if (chunkObj._ && (chunkObj._ as Record<string, unknown>).name) {
+              columnName = (chunkObj._ as Record<string, unknown>).name as string;
+            }
+
+            // 参数值
+            if (chunkObj._ && (chunkObj._ as Record<string, unknown>).value !== undefined) {
+              value = (chunkObj._ as Record<string, unknown>).value;
+            }
+          }
+        }
+
+        // 如果找到列名和值，创建相等比较函数
+        if (columnName !== undefined) {
+          const col = columnName;
+          const val = value;
+
+          // 检查操作符类型
+          const sqlStr = chunks.join("");
+          if (sqlStr.includes(">")) {
+            return (row: unknown) => (row as Record<string, unknown>)[col] > val;
+          } else if (sqlStr.includes("<")) {
+            return (row: unknown) => (row as Record<string, unknown>)[col] < val;
+          } else {
+            // 默认是相等比较
+            return (row: unknown) => (row as Record<string, unknown>)[col] === val;
+          }
+        }
+      }
+
+      // 处理 and 条件
+      if (sql.brand === "And" && Array.isArray(sql.conditions)) {
+        const parsedConditions = sql.conditions.map((c: unknown) => parseCondition(c));
+        return (row: unknown) => parsedConditions.every((fn) => fn(row));
+      }
+
+      // 处理 or 条件
+      if (sql.brand === "Or" && Array.isArray(sql.conditions)) {
+        const parsedConditions = sql.conditions.map((c: unknown) => parseCondition(c));
+        return (row: unknown) => parsedConditions.some((fn) => fn(row));
+      }
+    }
+
+    // 旧的简单条件处理（向后兼容）
+    // 处理 eq 条件 (例如: eq(users.id, "123"))
+    if (cond.operator === "=" || cond.type === "eq") {
+      const field = (cond.left as { name: string })?.name || (cond.column as { name: string })?.name;
+      const value = cond.right || cond.value;
+      return (row: unknown) => (row as Record<string, unknown>)[field] === value;
+    }
+
+    // 处理 and 条件
+    if (cond.operator === "and" || cond.type === "and") {
+      const conditions = (cond.conditions || cond.children || []) as unknown[];
+      const parsedConditions = conditions.map(parseCondition);
+      return (row: unknown) => parsedConditions.every((fn) => fn(row));
+    }
+
+    // 处理 or 条件
+    if (cond.operator === "or" || cond.type === "or") {
+      const conditions = (cond.conditions || cond.children || []) as unknown[];
+      const parsedConditions = conditions.map(parseCondition);
+      return (row: unknown) => parsedConditions.some((fn) => fn(row));
+    }
+
+    // 处理 gt 条件 (大于)
+    if (cond.operator === ">" || cond.type === "gt") {
+      const field = (cond.left as { name: string })?.name || (cond.column as { name: string })?.name;
+      const value = cond.right || cond.value;
+      return (row: unknown) => (row as Record<string, unknown>)[field] > value;
+    }
+
+    // 处理 lt 条件 (小于)
+    if (cond.operator === "<" || cond.type === "lt") {
+      const field = (cond.left as { name: string })?.name || (cond.column as { name: string })?.name;
+      const value = cond.right || cond.value;
+      return (row: unknown) => (row as Record<string, unknown>)[field] < value;
+    }
+  }
+
+  // 默认返回总是为真的函数
+  console.warn("[mock-db] Unknown condition type, returning true:", condition);
+  return () => true;
+}
+
+/**
  * Mock 查询构建器
  *
  * 模拟 Drizzle ORM 的链式调用 API
@@ -44,8 +164,8 @@ class MockQueryBuilder {
     this.tableName = tableName;
   }
 
-  where(condition: (row: unknown) => boolean): this {
-    this.whereConditions.push(condition);
+  where(condition: unknown): this {
+    this.whereConditions.push(parseCondition(condition));
     return this;
   }
 
@@ -161,8 +281,8 @@ class MockUpdateBuilder {
     return this;
   }
 
-  where(condition: (row: unknown) => boolean): this {
-    this.whereConditions.push(condition);
+  where(condition: unknown): this {
+    this.whereConditions.push(parseCondition(condition));
     return this;
   }
 
@@ -221,8 +341,8 @@ class MockDeleteBuilder {
     this.tableName = tableName;
   }
 
-  where(condition: (row: unknown) => boolean): this {
-    this.whereConditions.push(condition);
+  where(condition: unknown): this {
+    this.whereConditions.push(parseCondition(condition));
     return this;
   }
 
