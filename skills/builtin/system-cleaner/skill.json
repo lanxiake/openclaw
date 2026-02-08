@@ -1,0 +1,93 @@
+{
+  "manifestVersion": "1.0",
+  "metadata": {
+    "id": "system-cleaner",
+    "name": "系统清理器",
+    "description": "清理系统临时文件、缓存和垃圾文件，释放磁盘空间",
+    "longDescription": "系统清理器可以帮助你清理 Windows 系统中的临时文件、浏览器缓存、回收站、Windows 更新缓存等垃圾文件，释放宝贵的磁盘空间。支持预览模式，在实际删除前查看清理计划。",
+    "version": "1.0.0",
+    "author": "OpenClaw",
+    "icon": "🧹",
+    "category": "system",
+    "tags": ["清理", "系统", "临时文件", "缓存", "磁盘空间"],
+    "runMode": "local",
+    "dependencies": {
+      "os": ["windows"]
+    },
+    "permissions": {
+      "fileSystem": {
+        "read": ["*"],
+        "write": ["*"]
+      },
+      "system": {
+        "execute": true
+      },
+      "requireConfirmation": true
+    },
+    "subscription": {
+      "type": "free",
+      "required": false
+    }
+  },
+  "triggers": [
+    {
+      "type": "command",
+      "command": "clean"
+    },
+    {
+      "type": "keyword",
+      "keywords": ["清理系统", "清理垃圾", "清理缓存", "释放空间", "磁盘清理"]
+    },
+    {
+      "type": "ai-invoke",
+      "aiInvocable": true
+    }
+  ],
+  "parameters": [
+    {
+      "name": "targets",
+      "description": "清理目标列表",
+      "type": "array",
+      "required": false,
+      "default": ["temp", "browser-cache", "recycle-bin"],
+      "enum": [
+        "temp",
+        "browser-cache",
+        "recycle-bin",
+        "windows-update",
+        "thumbnail-cache",
+        "log-files",
+        "recent-files",
+        "prefetch"
+      ]
+    },
+    {
+      "name": "preview",
+      "description": "是否仅预览（不实际删除文件）",
+      "type": "boolean",
+      "required": false,
+      "default": true
+    },
+    {
+      "name": "minAge",
+      "description": "仅清理超过指定天数的文件",
+      "type": "number",
+      "required": false,
+      "default": 7
+    },
+    {
+      "name": "maxSize",
+      "description": "最大删除文件大小（MB），超过此大小的文件需要额外确认",
+      "type": "number",
+      "required": false,
+      "default": 100
+    },
+    {
+      "name": "customPaths",
+      "description": "自定义清理路径列表",
+      "type": "array",
+      "required": false
+    }
+  ],
+  "main": "index.js"
+}

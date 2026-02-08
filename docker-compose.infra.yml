@@ -1,0 +1,444 @@
+# OpenClaw 基础设施 Docker Compose 配置
+#
+# 包含系统所需的所有第三方组件和中间件
+#
+# 使用方式:
+#   docker-compose -f docker-compose.infra.yml up -d                    # 启动基础服务 (PostgreSQL + Redis + MinIO)
+#   docker-compose -f docker-compose.infra.yml --profile knowledge up -d # 启动基础服务 + 知识图谱组件
+#   docker-compose -f docker-compose.infra.yml --profile monitoring up -d # 启动基础服务 + 监控组件
+#   docker-compose -f docker-compose.infra.yml --profile all up -d       # 启动所有服务
+#   docker-compose -f docker-compose.infra.yml down                      # 停止所有服务
+#   docker-compose -f docker-compose.infra.yml logs -f                   # 查看日志
+#
+# 数据持久化目录: ./docker-data/
+#
+# 服务端口汇总 (22000 系列):
+#   PostgreSQL:     22001 (数据库)
+#   Redis:          22002 (缓存)
+#   MinIO API:      22003 (对象存储)
+#   MinIO 控制台:    22004
+#   Milvus:         22005 (向量数据库)
+#   Milvus gRPC:    22006
+#   Neo4j HTTP:     22007 (图数据库)
+#   Neo4j Bolt:     22008
+#   RabbitMQ:       22009 (消息队列)
+#   RabbitMQ UI:    22010
+#   Prometheus:     22011 (监控)
+#   Grafana:        22012 (仪表盘)
+#   Loki:           22013 (日志)
+#   pgAdmin:        22014 (数据库管理)
+#   Redis Commander: 22015 (Redis 管理)
+#   Milvus Attu:    22016 (Milvus 管理)
+#
+
+version: '3.8'
+
+services:
+  # ==================== 核心数据库 ====================
+
+  # PostgreSQL - 主数据库
+  # 用于存储: 用户数据、订阅信息、管理员账户、审计日志等
+  postgres:
+    image: postgres:17-alpine
+    container_name: openclaw-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-openclaw_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Oc@2026!Pg#Secure}
+      POSTGRES_DB: ${POSTGRES_DB:-openclaw_prod}
+      # 设置时区
+      TZ: Asia/Shanghai
+    ports:
+      - "${POSTGRES_PORT:-22001}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # 初始化脚本 (可选)
+      - ./docker-init/postgres:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-openclaw_admin} -d ${POSTGRES_DB:-openclaw_prod}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - openclaw-network
+
+  # ==================== 缓存服务 ====================
+
+  # Redis - 缓存和会话存储
+  # 用于: 会话缓存、工作记忆、速率限制、消息队列
+  redis:
+    image: redis:7-alpine
+    container_name: openclaw-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD:-Oc@2026!Rd#Secure}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-22002}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-Oc@2026!Rd#Secure}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - openclaw-network
+
+  # ==================== 对象存储 ====================
+
+  # MinIO - S3 兼容的对象存储
+  # 用于: 文件上传、多媒体存储、导出文件、文档存储
+  minio:
+    image: minio/minio:latest
+    container_name: openclaw-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-openclaw_minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-Oc@2026!Mn#Secure}
+    ports:
+      - "${MINIO_API_PORT:-22003}:9000"
+      - "${MINIO_CONSOLE_PORT:-22004}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - openclaw-network
+
+  # MinIO 初始化 - 创建默认存储桶
+  minio-init:
+    image: minio/mc:latest
+    container_name: openclaw-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set myminio http://minio:9000 $${MINIO_ACCESS_KEY:-openclaw_minio} $${MINIO_SECRET_KEY:-Oc@2026!Mn#Secure};
+      mc mb --ignore-existing myminio/openclaw-documents;
+      mc mb --ignore-existing myminio/openclaw-media;
+      mc mb --ignore-existing myminio/openclaw-temp;
+      mc mb --ignore-existing myminio/openclaw-exports;
+      mc anonymous set download myminio/openclaw-media;
+      echo 'MinIO buckets created successfully';
+      exit 0;
+      "
+    networks:
+      - openclaw-network
+
+  # ==================== 向量数据库 (知识记忆) ====================
+
+  # Milvus 依赖 - etcd
+  milvus-etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: openclaw-milvus-etcd
+    restart: unless-stopped
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_SNAPSHOT_COUNT: "50000"
+    volumes:
+      - milvus-etcd-data:/etcd
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - openclaw-network
+    profiles:
+      - knowledge
+      - all
+
+  # Milvus 依赖 - MinIO (独立实例)
+  milvus-minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: openclaw-milvus-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    volumes:
+      - milvus-minio-data:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - openclaw-network
+    profiles:
+      - knowledge
+      - all
+
+  # Milvus - 向量数据库
+  # 用于: 知识记忆、语义搜索、相似度匹配
+  milvus:
+    image: milvusdb/milvus:v2.5.6
+    container_name: openclaw-milvus
+    restart: unless-stopped
+    depends_on:
+      - milvus-etcd
+      - milvus-minio
+    environment:
+      ETCD_ENDPOINTS: milvus-etcd:2379
+      MINIO_ADDRESS: milvus-minio:9000
+    volumes:
+      - milvus-data:/var/lib/milvus
+    ports:
+      - "${MILVUS_PORT:-22005}:19530"
+      - "${MILVUS_GRPC_PORT:-22006}:9091"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - openclaw-network
+    profiles:
+      - knowledge
+      - all
+
+  # Milvus 管理界面
+  milvus-attu:
+    image: zilliz/attu:v2.4
+    container_name: openclaw-milvus-attu
+    restart: unless-stopped
+    depends_on:
+      - milvus
+    environment:
+      MILVUS_URL: milvus:19530
+    ports:
+      - "${ATTU_PORT:-22016}:3000"
+    networks:
+      - openclaw-network
+    profiles:
+      - knowledge
+      - dev-tools
+      - all
+
+  # ==================== 图数据库 (知识图谱) ====================
+
+  # Neo4j - 图数据库
+  # 用于: 知识图谱、实体关系存储、图查询
+  neo4j:
+    image: neo4j:5.26-community
+    container_name: openclaw-neo4j
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j_admin}/${NEO4J_PASSWORD:-Oc@2026!N4j#Secure}
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+      NEO4J_dbms_memory_heap_initial__size: 512m
+      NEO4J_dbms_memory_heap_max__size: 1G
+    ports:
+      - "${NEO4J_HTTP_PORT:-22007}:7474"
+      - "${NEO4J_BOLT_PORT:-22008}:7687"
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+      - neo4j-plugins:/plugins
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - openclaw-network
+    profiles:
+      - knowledge
+      - all
+
+  # ==================== 消息队列 ====================
+
+  # RabbitMQ - 消息队列
+  # 用于: 异步任务处理、事件驱动架构
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: openclaw-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-openclaw_mq}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-Oc@2026!Mq#Secure}
+      RABBITMQ_DEFAULT_VHOST: openclaw
+    ports:
+      - "${RABBITMQ_PORT:-22009}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-22010}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - openclaw-network
+    profiles:
+      - queue
+      - all
+
+  # ==================== 监控组件 ====================
+
+  # Prometheus - 指标收集
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: openclaw-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=15d'
+    ports:
+      - "${PROMETHEUS_PORT:-22011}:9090"
+    volumes:
+      - ./docker-init/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - openclaw-network
+    profiles:
+      - monitoring
+      - all
+
+  # Grafana - 可视化仪表盘
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: openclaw-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-grafana_admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-Oc@2026!Gf#Secure}
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:22012}
+    ports:
+      - "${GRAFANA_PORT:-22012}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./docker-init/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - openclaw-network
+    profiles:
+      - monitoring
+      - all
+
+  # ==================== 日志收集 ====================
+
+  # Loki - 日志聚合
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: openclaw-loki
+    restart: unless-stopped
+    ports:
+      - "${LOKI_PORT:-22013}:3100"
+    volumes:
+      - loki-data:/loki
+      - ./docker-init/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - openclaw-network
+    profiles:
+      - logging
+      - all
+
+  # ==================== 数据库管理工具 (开发用) ====================
+
+  # pgAdmin - PostgreSQL 管理界面
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: openclaw-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@openclaw.ai}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-Oc@2026!Pga#Secure}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "${PGADMIN_PORT:-22014}:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - openclaw-network
+    profiles:
+      - dev-tools
+      - all
+
+  # Redis Commander - Redis 管理界面
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: openclaw-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:${REDIS_PASSWORD:-Oc@2026!Rd#Secure}
+    ports:
+      - "${REDIS_COMMANDER_PORT:-22015}:8081"
+    depends_on:
+      - redis
+    networks:
+      - openclaw-network
+    profiles:
+      - dev-tools
+      - all
+
+# ==================== 网络配置 ====================
+
+networks:
+  openclaw-network:
+    driver: bridge
+    name: openclaw-network
+
+# ==================== 数据卷 ====================
+
+volumes:
+  # 核心服务数据
+  postgres-data:
+    name: openclaw-postgres-data
+  redis-data:
+    name: openclaw-redis-data
+  minio-data:
+    name: openclaw-minio-data
+
+  # Milvus 数据
+  milvus-data:
+    name: openclaw-milvus-data
+  milvus-etcd-data:
+    name: openclaw-milvus-etcd-data
+  milvus-minio-data:
+    name: openclaw-milvus-minio-data
+
+  # Neo4j 数据
+  neo4j-data:
+    name: openclaw-neo4j-data
+  neo4j-logs:
+    name: openclaw-neo4j-logs
+  neo4j-plugins:
+    name: openclaw-neo4j-plugins
+
+  # 消息队列数据
+  rabbitmq-data:
+    name: openclaw-rabbitmq-data
+
+  # 监控数据
+  prometheus-data:
+    name: openclaw-prometheus-data
+  grafana-data:
+    name: openclaw-grafana-data
+  loki-data:
+    name: openclaw-loki-data
+
+  # 管理工具数据
+  pgadmin-data:
+    name: openclaw-pgadmin-data

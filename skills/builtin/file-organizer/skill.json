@@ -1,0 +1,86 @@
+{
+  "manifestVersion": "1.0",
+  "metadata": {
+    "id": "file-organizer",
+    "name": "文件整理器",
+    "description": "智能整理文件，按类型、日期或自定义规则组织文件夹",
+    "longDescription": "文件整理器可以帮助你自动整理杂乱的文件夹。支持按文件类型（图片、文档、视频等）、日期（年/月/日）或自定义规则进行分类整理。支持预览模式，在实际移动前查看整理计划。",
+    "version": "1.0.0",
+    "author": "OpenClaw",
+    "icon": "📁",
+    "category": "file-management",
+    "tags": ["文件", "整理", "分类", "自动化"],
+    "runMode": "local",
+    "dependencies": {
+      "os": ["windows", "macos", "linux"]
+    },
+    "permissions": {
+      "fileSystem": {
+        "read": ["*"],
+        "write": ["*"]
+      },
+      "requireConfirmation": true
+    },
+    "subscription": {
+      "type": "free",
+      "required": false
+    }
+  },
+  "triggers": [
+    {
+      "type": "command",
+      "command": "organize"
+    },
+    {
+      "type": "keyword",
+      "keywords": ["整理文件", "整理文件夹", "文件分类"]
+    },
+    {
+      "type": "ai-invoke",
+      "aiInvocable": true
+    }
+  ],
+  "parameters": [
+    {
+      "name": "sourcePath",
+      "description": "要整理的源文件夹路径",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "targetPath",
+      "description": "整理后的目标文件夹路径（默认在源路径下创建子目录）",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "mode",
+      "description": "整理模式",
+      "type": "string",
+      "required": false,
+      "default": "type",
+      "enum": ["type", "date", "extension", "custom"]
+    },
+    {
+      "name": "preview",
+      "description": "是否仅预览（不实际移动文件）",
+      "type": "boolean",
+      "required": false,
+      "default": true
+    },
+    {
+      "name": "recursive",
+      "description": "是否递归处理子目录",
+      "type": "boolean",
+      "required": false,
+      "default": false
+    },
+    {
+      "name": "customRules",
+      "description": "自定义规则（mode=custom 时使用）",
+      "type": "array",
+      "required": false
+    }
+  ],
+  "main": "index.js"
+}

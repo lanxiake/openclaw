@@ -1,0 +1,49 @@
+# Prometheus 配置文件
+#
+# 基础监控配置，可根据需要扩展
+#
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'openclaw-monitor'
+
+# 告警规则文件 (可选)
+# rule_files:
+#   - /etc/prometheus/rules/*.yml
+
+# 抓取配置
+scrape_configs:
+  # Prometheus 自身监控
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # PostgreSQL 监控 (需要 postgres_exporter)
+  # - job_name: 'postgres'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+
+  # Redis 监控 (需要 redis_exporter)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+
+  # MinIO 监控
+  # - job_name: 'minio'
+  #   metrics_path: /minio/v2/metrics/cluster
+  #   scheme: http
+  #   static_configs:
+  #     - targets: ['minio:9000']
+
+  # OpenClaw Gateway 监控 (应用指标)
+  # - job_name: 'openclaw-gateway'
+  #   static_configs:
+  #     - targets: ['openclaw-gateway:18789']
+  #   metrics_path: /metrics
+
+  # Node Exporter (系统指标)
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
