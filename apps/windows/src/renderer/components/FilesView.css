@@ -1,0 +1,430 @@
+/**
+ * FilesView Styles - 文件管理视图样式
+ */
+
+.files-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  background-color: var(--bg-primary);
+}
+
+.files-view.disconnected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disconnected-message {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.disconnected-message .icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: var(--spacing-md);
+}
+
+/* 工具栏 */
+.files-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.toolbar-navigation {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.nav-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-radius: var(--border-radius);
+  font-size: 14px;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+}
+
+.nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.path-bar {
+  flex: 1;
+}
+
+.path-bar input {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-radius: var(--border-radius);
+  font-size: 14px;
+}
+
+.action-btn:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+}
+
+/* 主体内容 */
+.files-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 侧边栏 */
+.files-sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  padding: var(--spacing-md);
+  border-right: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  overflow-y: auto;
+}
+
+.files-sidebar h4 {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.quick-locations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.quick-location-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  background-color: transparent;
+  border-radius: var(--border-radius);
+  text-align: left;
+}
+
+.quick-location-item:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.loc-icon {
+  font-size: 16px;
+}
+
+.selection-info {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.selection-info button {
+  display: block;
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  background-color: transparent;
+}
+
+.selection-info button:hover {
+  text-decoration: underline;
+}
+
+/* 文件列表容器 */
+.files-list-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 排序栏 */
+.files-header {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.sort-btn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  background-color: transparent;
+  border-radius: var(--border-radius);
+}
+
+.sort-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.sort-btn.active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* 错误提示 */
+.error-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.error-banner button {
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+  background-color: transparent;
+  border: 1px solid var(--color-error);
+  border-radius: var(--border-radius);
+}
+
+/* 文件列表 */
+.files-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+}
+
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-muted);
+}
+
+.loading-state .spinner,
+.empty-state .icon {
+  font-size: 32px;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* 文件项 */
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: 2px;
+}
+
+.file-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+.file-item.selected {
+  background-color: rgba(99, 102, 241, 0.2);
+  border: 1px solid var(--color-primary);
+}
+
+.file-item.directory .file-name {
+  font-weight: 500;
+}
+
+.file-icon {
+  font-size: 24px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-meta {
+  display: flex;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* 状态栏 */
+.files-statusbar {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+/* 右键菜单 */
+.context-menu {
+  position: fixed;
+  min-width: 150px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  padding: var(--spacing-xs) 0;
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background-color: transparent;
+  text-align: left;
+}
+
+.context-menu button:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.context-menu button.danger {
+  color: var(--color-error);
+}
+
+.context-menu hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: var(--spacing-xs) 0;
+}
+
+/* 对话框 */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.dialog {
+  width: 90%;
+  max-width: 400px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.dialog h3 {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.dialog input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+.btn-cancel,
+.btn-confirm {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  border-radius: var(--border-radius);
+}
+
+.btn-cancel {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.btn-cancel:hover {
+  background-color: var(--bg-hover);
+}
+
+.btn-confirm {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

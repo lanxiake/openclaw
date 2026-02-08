@@ -4,31 +4,45 @@
   "productName": "OpenClaw Assistant",
   "copyright": "Copyright © 2026 OpenClaw",
   "directories": {
-    "output": "dist",
+    "output": "release",
     "buildResources": "build"
   },
   "files": [
-    "out/**/*"
+    "out/**/*",
+    "!out/**/*.map"
   ],
   "extraResources": [
     {
       "from": "assets",
-      "to": "assets"
+      "to": "assets",
+      "filter": ["**/*"]
     }
+  ],
+  "asar": true,
+  "asarUnpack": [
+    "**/*.node"
   ],
   "win": {
     "target": [
       {
         "target": "nsis",
-        "arch": ["x64"]
+        "arch": ["x64", "ia32"]
       },
       {
         "target": "portable",
         "arch": ["x64"]
+      },
+      {
+        "target": "zip",
+        "arch": ["x64"]
       }
     ],
     "icon": "assets/icon.ico",
-    "artifactName": "${productName}-${version}-${arch}.${ext}"
+    "artifactName": "${productName}-${version}-${arch}.${ext}",
+    "requestedExecutionLevel": "asInvoker",
+    "signingHashAlgorithms": ["sha256"],
+    "verifyUpdateCodeSignature": true,
+    "publisherName": "OpenClaw"
   },
   "nsis": {
     "oneClick": false,
@@ -39,15 +53,30 @@
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
     "shortcutName": "OpenClaw Assistant",
-    "include": "build/installer.nsh"
+    "menuCategory": "OpenClaw",
+    "runAfterFinish": true,
+    "allowElevation": true,
+    "perMachine": false,
+    "language": "2052",
+    "license": "build/license.txt",
+    "installerLanguages": ["zh_CN", "en_US"],
+    "multiLanguageInstaller": true,
+    "deleteAppDataOnUninstall": false,
+    "displayLanguageSelector": true,
+    "include": "build/installer.nsh",
+    "warningsAsErrors": false,
+    "packElevateHelper": true,
+    "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
   },
   "portable": {
-    "artifactName": "${productName}-${version}-portable.${ext}"
+    "artifactName": "${productName}-${version}-portable.${ext}",
+    "requestExecutionLevel": "user"
   },
   "publish": {
     "provider": "github",
     "owner": "openclaw",
-    "repo": "openclaw"
+    "repo": "openclaw",
+    "releaseType": "release"
   },
   "electronDownload": {
     "mirror": "https://npmmirror.com/mirrors/electron/"

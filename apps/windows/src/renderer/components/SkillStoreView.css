@@ -1,0 +1,630 @@
+/**
+ * SkillStoreView Styles - 技能商店视图样式
+ */
+
+.skill-store-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  background-color: var(--bg-primary);
+}
+
+.skill-store-view.disconnected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disconnected-message {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.disconnected-message .icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: var(--spacing-md);
+}
+
+/* 顶部搜索栏 */
+.store-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  gap: var(--spacing-md);
+}
+
+.search-form {
+  display: flex;
+  flex: 1;
+  max-width: 400px;
+}
+
+.search-form .search-input {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+  border-right: none;
+}
+
+.search-form .search-button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+  font-size: var(--font-size-sm);
+}
+
+.search-form .search-button:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.filter-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.filter-select {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  min-width: 100px;
+}
+
+/* 结果提示条 */
+.result-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+
+.result-banner.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.result-banner.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.result-banner button {
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  background-color: transparent;
+  color: inherit;
+  border-radius: var(--border-radius);
+}
+
+.result-banner button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 主内容区 */
+.store-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 侧边栏 */
+.store-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  padding: var(--spacing-md);
+  border-right: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  overflow-y: auto;
+}
+
+.sidebar-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.sidebar-section h3 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.category-item:hover {
+  background-color: var(--bg-hover);
+}
+
+.category-item.selected {
+  background-color: rgba(99, 102, 241, 0.1);
+  color: var(--color-primary);
+}
+
+.category-icon {
+  font-size: 14px;
+}
+
+.category-name {
+  flex: 1;
+  font-size: var(--font-size-sm);
+}
+
+.category-count {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  background-color: var(--bg-tertiary);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.popular-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.tag-button {
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tag-button:hover {
+  background-color: var(--bg-hover);
+  color: var(--color-primary);
+}
+
+/* 主内容区 */
+.store-main {
+  flex: 1;
+  padding: var(--spacing-md);
+  overflow-y: auto;
+}
+
+.store-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.section-title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.section-title .count {
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* 技能网格 */
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.featured-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* 商店技能卡片 */
+.store-skill-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.store-skill-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.store-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--spacing-sm);
+  background-color: var(--bg-tertiary);
+}
+
+.store-card-icon {
+  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  border-radius: var(--border-radius);
+}
+
+.store-card-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.subscription-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.subscription-badge.subscription-free {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--color-success);
+}
+
+.subscription-badge.subscription-premium {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--color-warning);
+}
+
+.subscription-badge.subscription-enterprise {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: var(--color-primary);
+}
+
+.price-tag {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.store-card-content {
+  flex: 1;
+  padding: var(--spacing-sm);
+}
+
+.store-skill-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.store-skill-description {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-sm) 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.store-skill-stats {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.store-skill-stats .stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.store-skill-stats .stat-icon {
+  font-size: 12px;
+}
+
+.store-skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.store-skill-tags .tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  background-color: var(--bg-tertiary);
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+.store-card-footer {
+  padding: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+.store-card-footer .install-button {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+}
+
+.store-card-footer .install-button:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.store-card-footer .install-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.store-card-footer .installed-button {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+  border-radius: var(--border-radius);
+  cursor: default;
+}
+
+/* 加载和空状态 */
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  color: var(--text-muted);
+}
+
+.loading-state .spinner,
+.empty-state .icon {
+  font-size: 32px;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* 技能详情对话框 */
+.skill-detail-dialog {
+  max-width: 500px;
+}
+
+.skill-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.skill-dialog-icon {
+  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+}
+
+.skill-dialog-title h3 {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--text-primary);
+}
+
+.skill-dialog-author {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.skill-dialog-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-md);
+}
+
+.stat-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-block .stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.stat-block .stat-value {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.skill-dialog-section {
+  margin-bottom: var(--spacing-md);
+}
+
+.skill-dialog-section h4 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.skill-dialog-section p {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.skill-dialog-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.skill-dialog-tags .tag {
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+  color: var(--text-secondary);
+}
+
+.skill-dialog-screenshots {
+  display: flex;
+  gap: var(--spacing-sm);
+  overflow-x: auto;
+}
+
+.skill-dialog-screenshots img {
+  height: 120px;
+  border-radius: var(--border-radius);
+  object-fit: cover;
+}
+
+/* 对话框样式复用 */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.dialog-content {
+  width: 90%;
+  max-width: 400px;
+  background-color: var(--bg-primary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.dialog-header h3 {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.dialog-header .close-button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.dialog-header .close-button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.dialog-body {
+  padding: var(--spacing-md);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.dialog-footer .cancel-button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: var(--border-radius);
+}
+
+.dialog-footer .cancel-button:hover {
+  background-color: var(--bg-hover);
+}
+
+.dialog-footer .confirm-button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--border-radius);
+}
+
+.dialog-footer .confirm-button:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.dialog-footer .confirm-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dialog-footer .installed-button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+  border-radius: var(--border-radius);
+  cursor: default;
+}

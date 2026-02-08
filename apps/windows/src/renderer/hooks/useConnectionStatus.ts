@@ -6,11 +6,19 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
+/**
+ * 连接选项
+ */
+interface ConnectOptions {
+  /** 认证 Token */
+  token?: string
+}
+
 interface UseConnectionStatusReturn {
   isConnected: boolean
   isConnecting: boolean
   error: string | null
-  connect: (url: string) => Promise<void>
+  connect: (url: string, options?: ConnectOptions) => Promise<void>
   disconnect: () => Promise<void>
 }
 
@@ -53,14 +61,14 @@ export function useConnectionStatus(): UseConnectionStatusReturn {
   /**
    * 连接 Gateway
    */
-  const connect = useCallback(async (url: string) => {
-    console.log('[useConnectionStatus] 开始连接:', url)
+  const connect = useCallback(async (url: string, options?: ConnectOptions) => {
+    console.log('[useConnectionStatus] 开始连接:', url, options?.token ? '(带 Token)' : '(无 Token)')
 
     setIsConnecting(true)
     setError(null)
 
     try {
-      await window.electronAPI.gateway.connect(url)
+      await window.electronAPI.gateway.connect(url, options)
       console.log('[useConnectionStatus] 连接成功')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '连接失败'

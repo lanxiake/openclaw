@@ -2,7 +2,7 @@
  * GatewayClient - WebSocket 客户端
  *
  * 负责与 OpenClaw Gateway 服务器建立和管理 WebSocket 连接
- * 复用现有的 OpenClaw 通信协议
+ * 实现 OpenClaw 通信协议的握手流程
  */
 
 import WebSocket from 'ws'
@@ -16,25 +16,60 @@ const log = {
   debug: (...args: unknown[]) => console.log('[GatewayClient:Debug]', ...args),
 }
 
+// 协议版本
+const PROTOCOL_VERSION = 3
+
 /**
  * 消息类型 (复用 OpenClaw 协议)
  */
-export type MessageType = 'req' | 'resp' | 'event'
+export type MessageType = 'req' | 'res' | 'event'
 
 /**
  * 消息结构 (复用 OpenClaw 协议)
  */
 export interface Message {
   type: MessageType
-  id: string
+  id?: string
   method?: string
   params?: unknown
+  event?: string
   ok?: boolean
   payload?: unknown
   error?: {
     code: string
     message: string
   }
+}
+
+/**
+ * 连接挑战事件
+ */
+interface ConnectChallenge {
+  nonce: string
+  ts: number
+}
+
+/**
+ * 连接参数
+ */
+interface ConnectParams {
+  minProtocol: number
+  maxProtocol: number
+  client: {
+    id: string
+    displayName?: string
+    version: string
+    platform: string
+    mode: string
+    instanceId?: string
+  }
+  caps: string[]
+  auth?: {
+    token?: string
+    password?: string
+  }
+  role: string
+  scopes: string[]
 }
 
 /**
@@ -73,6 +108,7 @@ export interface GatewayClientEvents {
   error: (error: Error) => void
   message: (message: Message) => void
   'confirm:request': (request: ConfirmRequest) => void
+  'command:execute': (request: CommandExecuteRequest) => void
 }
 
 /**
@@ -87,7 +123,23 @@ export interface ConfirmRequest {
 }
 
 /**
+ * 命令执行请求
+ */
+export interface CommandExecuteRequest {
+  requestId: string
+  command: string
+  timeoutMs: number
+  requireConfirm: boolean
+}
+
+/**
  * Gateway 客户端类
+ *
+ * 实现 OpenClaw Gateway 握手协议：
+ * 1. 建立 WebSocket 连接
+ * 2. 等待 connect.challenge 事件
+ * 3. 发送 connect 请求
+ * 4. 等待 connect 响应完成握手
  */
 export class GatewayClient extends EventEmitter {
   private ws: WebSocket | null = null
@@ -97,6 +149,8 @@ export class GatewayClient extends EventEmitter {
   private reconnectTimer: NodeJS.Timeout | null = null
   private heartbeatTimer: NodeJS.Timeout | null = null
   private _isConnected = false
+  private handshakeComplete = false
+  private connectNonce: string | null = null
 
   constructor(config: GatewayClientConfig) {
     super()
@@ -115,11 +169,15 @@ export class GatewayClient extends EventEmitter {
    */
   async connect(): Promise<void> {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      log.warn('已经连接到 Gateway')
+      log.info('已经连接到 Gateway')
       return
     }
 
     log.info(`正在连接到 Gateway: ${this.config.url}`)
+
+    // 重置握手状态
+    this.handshakeComplete = false
+    this.connectNonce = null
 
     return new Promise((resolve, reject) => {
       try {
@@ -131,21 +189,20 @@ export class GatewayClient extends EventEmitter {
         this.ws = new WebSocket(this.config.url, { headers })
 
         this.ws.on('open', () => {
-          log.info('WebSocket 连接已建立')
+          log.info('WebSocket 连接已建立，等待握手...')
           this._isConnected = true
           this.reconnectAttempts = 0
-          this.startHeartbeat()
-          this.emit('connected')
-          resolve()
+          // 不要立即发送请求，等待 connect.challenge 事件
         })
 
         this.ws.on('message', (data) => {
-          this.handleMessage(data)
+          this.handleMessage(data, resolve, reject)
         })
 
         this.ws.on('close', (code, reason) => {
           log.info(`WebSocket 连接关闭: ${code} - ${reason}`)
           this._isConnected = false
+          this.handshakeComplete = false
           this.stopHeartbeat()
           this.emit('disconnected')
           this.scheduleReconnect()
@@ -192,6 +249,7 @@ export class GatewayClient extends EventEmitter {
     }
 
     this._isConnected = false
+    this.handshakeComplete = false
   }
 
   /**
@@ -200,6 +258,10 @@ export class GatewayClient extends EventEmitter {
   async call<T = unknown>(method: string, params?: unknown): Promise<T> {
     if (!this.isConnected()) {
       throw new Error('Not connected to Gateway')
+    }
+
+    if (!this.handshakeComplete) {
+      throw new Error('Handshake not complete')
     }
 
     const id = this.generateId()
@@ -224,6 +286,63 @@ export class GatewayClient extends EventEmitter {
   }
 
   /**
+   * 发送 connect 请求完成握手
+   */
+  private sendConnectRequest(): void {
+    const id = this.generateId()
+
+    // 使用 Gateway 接受的有效客户端 ID 和 mode
+    // 参考 src/gateway/protocol/client-info.ts
+    const connectParams: ConnectParams = {
+      minProtocol: PROTOCOL_VERSION,
+      maxProtocol: PROTOCOL_VERSION,
+      client: {
+        id: 'gateway-client', // 使用有效的客户端 ID
+        displayName: 'OpenClaw Windows Assistant',
+        version: '0.1.0',
+        platform: 'win32',
+        mode: 'ui', // 使用有效的客户端 mode
+      },
+      caps: [],
+      auth: this.config.token ? { token: this.config.token } : undefined,
+      role: 'operator',
+      scopes: ['operator.admin'],
+    }
+
+    const message: Message = {
+      type: 'req',
+      id,
+      method: 'connect',
+      params: connectParams,
+    }
+
+    log.info('发送 connect 握手请求')
+    log.debug('connect 参数:', connectParams)
+
+    // 注册待处理请求
+    const timeout = setTimeout(() => {
+      this.pendingRequests.delete(id)
+      log.error('connect 请求超时')
+    }, this.config.requestTimeout)
+
+    this.pendingRequests.set(id, {
+      resolve: (payload) => {
+        log.info('握手成功:', payload)
+        this.handshakeComplete = true
+        this.startHeartbeat()
+        this.emit('connected')
+      },
+      reject: (error) => {
+        log.error('握手失败:', error)
+        this.ws?.close()
+      },
+      timeout,
+    })
+
+    this.send(message)
+  }
+
+  /**
    * 发送消息
    */
   private send(message: Message): void {
@@ -238,13 +357,26 @@ export class GatewayClient extends EventEmitter {
   /**
    * 处理收到的消息
    */
-  private handleMessage(data: WebSocket.Data): void {
+  private handleMessage(
+    data: WebSocket.Data,
+    connectResolve?: (value: void) => void,
+    connectReject?: (reason: Error) => void
+  ): void {
     try {
       const message: Message = JSON.parse(data.toString())
       log.debug('收到消息:', message)
 
+      // 处理 connect.challenge 事件 - 开始握手
+      if (message.type === 'event' && message.event === 'connect.challenge') {
+        const challenge = message.payload as ConnectChallenge
+        log.info('收到 connect.challenge，nonce:', challenge.nonce)
+        this.connectNonce = challenge.nonce
+        this.sendConnectRequest()
+        return
+      }
+
       // 处理响应
-      if (message.type === 'resp' && message.id) {
+      if (message.type === 'res' && message.id) {
         const pending = this.pendingRequests.get(message.id)
         if (pending) {
           clearTimeout(pending.timeout)
@@ -252,18 +384,39 @@ export class GatewayClient extends EventEmitter {
 
           if (message.ok) {
             pending.resolve(message.payload)
+            // 如果这是 connect 请求的响应，触发 connectResolve
+            if (connectResolve && this.handshakeComplete) {
+              connectResolve()
+            }
           } else {
-            pending.reject(new Error(message.error?.message ?? 'Unknown error'))
+            const error = new Error(message.error?.message ?? 'Unknown error')
+            pending.reject(error)
+            // 如果这是 connect 请求的响应失败，触发 connectReject
+            if (connectReject && !this.handshakeComplete) {
+              connectReject(error)
+            }
           }
           return
         }
       }
 
+      // 只有握手完成后才处理其他事件
+      if (!this.handshakeComplete) {
+        return
+      }
+
       // 处理事件
       if (message.type === 'event') {
         // 操作确认请求
-        if (message.method === 'confirm.request') {
+        if (message.event === 'confirm.request') {
           this.emit('confirm:request', message.payload as ConfirmRequest)
+          return
+        }
+
+        // 命令执行请求
+        if (message.event === 'command.execute.request') {
+          log.info('收到命令执行请求:', message.payload)
+          this.emit('command:execute', message.payload as CommandExecuteRequest)
           return
         }
 
@@ -282,8 +435,9 @@ export class GatewayClient extends EventEmitter {
     this.stopHeartbeat()
 
     this.heartbeatTimer = setInterval(() => {
-      if (this.isConnected()) {
-        this.call('heartbeat', { timestamp: Date.now() }).catch((error) => {
+      if (this.isConnected() && this.handshakeComplete) {
+        // 使用 Gateway 支持的 heartbeat 方法
+        this.call('heartbeat', { ts: Date.now() }).catch((error) => {
           log.warn('心跳失败:', error)
         })
       }
@@ -327,10 +481,17 @@ export class GatewayClient extends EventEmitter {
   }
 
   /**
-   * 检查是否已连接
+   * 检查是否已连接并完成握手
    */
   isConnected(): boolean {
     return this._isConnected && this.ws?.readyState === WebSocket.OPEN
+  }
+
+  /**
+   * 检查握手是否完成
+   */
+  isHandshakeComplete(): boolean {
+    return this.handshakeComplete
   }
 
   /**
@@ -350,9 +511,10 @@ export class GatewayClient extends EventEmitter {
   /**
    * 获取连接状态
    */
-  getStatus(): { connected: boolean; reconnectAttempts: number } {
+  getStatus(): { connected: boolean; handshakeComplete: boolean; reconnectAttempts: number } {
     return {
       connected: this.isConnected(),
+      handshakeComplete: this.handshakeComplete,
       reconnectAttempts: this.reconnectAttempts,
     }
   }

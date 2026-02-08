@@ -4,10 +4,188 @@
 
 .chat-view {
   display: flex;
-  flex-direction: column;
   flex: 1;
   height: 100%;
   background-color: var(--bg-primary);
+}
+
+.chat-view.loading {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-message {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.loading-message .spinner {
+  font-size: 32px;
+  display: block;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* === 会话侧边栏 === */
+
+.session-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.session-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.session-sidebar-header h3 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.new-session-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.new-session-btn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.session-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-xs);
+}
+
+.no-sessions {
+  padding: var(--spacing-lg);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: var(--spacing-xs);
+}
+
+.session-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.session-item.active {
+  background-color: rgba(99, 102, 241, 0.2);
+  border: 1px solid var(--color-primary);
+}
+
+.session-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.session-title {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-time {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.session-actions {
+  display: none;
+  gap: var(--spacing-xs);
+}
+
+.session-item:hover .session-actions {
+  display: flex;
+}
+
+.session-action-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border-radius: var(--border-radius);
+  font-size: 12px;
+}
+
+.session-action-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.session-action-btn.danger:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+.session-edit {
+  display: flex;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.session-edit input {
+  flex: 1;
+  padding: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  min-width: 0;
+}
+
+.session-edit button {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+  font-size: 12px;
+}
+
+.session-edit button:hover {
+  background-color: var(--bg-hover);
+}
+
+/* === 主对话区域 === */
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 /* 消息列表容器 */
@@ -259,6 +437,11 @@
   opacity: 0.5;
 }
 
+.toolbar-button.toggle-sidebar {
+  font-weight: bold;
+  padding: var(--spacing-xs);
+}
+
 /* === 代码块样式 === */
 
 .code-block {
@@ -340,10 +523,86 @@
 
 .input-hint {
   margin-top: var(--spacing-xs);
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 var(--spacing-xs);
 }
 
 .input-hint span {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
+}
+
+/* === 附件按钮 === */
+
+.attachment-button {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius);
+  background-color: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.attachment-button:hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.attachment-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === 消息附件显示 === */
+
+.message-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.message-attachment {
+  max-width: 200px;
+}
+
+.message-attachment-image {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: var(--border-radius);
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.message-attachment-image:hover {
+  transform: scale(1.02);
+}
+
+.message-attachment-file {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.message-attachment-icon {
+  font-size: 16px;
+}
+
+.message-attachment-name {
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

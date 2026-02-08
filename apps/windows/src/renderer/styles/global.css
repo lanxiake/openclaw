@@ -102,6 +102,13 @@ body {
   overflow: hidden;
 }
 
+/* 认证内容区域 */
+.main-content.auth-content {
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
 /* 滚动条样式 */
 ::-webkit-scrollbar {
   width: 8px;

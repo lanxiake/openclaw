@@ -1,0 +1,289 @@
+/**
+ * UpdaterView Styles - 更新管理视图样式
+ */
+
+.updater-view {
+  padding: 16px;
+}
+
+.updater-view.standalone {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.updater-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 20px 0;
+}
+
+/* 状态卡片 */
+.status-card {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.status-card.available {
+  border-color: var(--accent-color);
+}
+
+.status-card.downloaded {
+  border-color: var(--success-color);
+}
+
+.status-card.error {
+  border-color: var(--error-color);
+}
+
+/* 状态头部 */
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.status-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--text-secondary);
+}
+
+.status-icon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+.status-icon.available {
+  color: var(--accent-color);
+}
+
+.status-icon.success {
+  color: var(--success-color);
+}
+
+.status-icon.error {
+  color: var(--error-color);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.status-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* 错误信息 */
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error-color);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* 下载进度 */
+.download-progress {
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.progress-percent {
+  font-weight: 500;
+  color: var(--accent-color);
+}
+
+/* 版本信息 */
+.version-info {
+  margin-bottom: 16px;
+}
+
+.version-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.version-row:last-child {
+  border-bottom: none;
+}
+
+.version-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.version-value {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: monospace;
+}
+
+.version-value.highlight {
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+/* 发布说明 */
+.release-notes {
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.release-notes h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.release-notes-content {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* 操作按钮 */
+.actions {
+  display: flex;
+  justify-content: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.updater-button {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.updater-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.updater-button.primary {
+  background: var(--accent-color);
+  color: white;
+}
+
+.updater-button.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.updater-button.secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.updater-button.secondary:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.updater-button.success {
+  background: var(--success-color);
+  color: white;
+}
+
+.updater-button.success:hover:not(:disabled) {
+  background: #059669;
+}
+
+/* 更新设置 */
+.updater-settings {
+  margin-top: 24px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.settings-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+.setting-item span {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+/* 响应式 */
+@media (max-width: 400px) {
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .progress-info {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}

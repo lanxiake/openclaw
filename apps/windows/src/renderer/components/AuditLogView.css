@@ -1,0 +1,613 @@
+/**
+ * AuditLogView Styles - 审计日志视图样式
+ */
+
+.audit-log-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  background-color: var(--bg-primary);
+}
+
+.audit-log-view.disconnected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disconnected-message {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.disconnected-message .icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: var(--spacing-md);
+}
+
+/* 工具栏 */
+.audit-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.toolbar-left h2 {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* 统计卡片 */
+.stats-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stat-value.stat-info {
+  color: var(--color-primary);
+}
+
+.stat-value.stat-warn {
+  color: var(--color-warning);
+}
+
+.stat-value.stat-critical {
+  color: var(--color-error);
+}
+
+.stat-label {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* 搜索和过滤 */
+.search-input {
+  width: 200px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+}
+
+.filter-select {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  min-width: 100px;
+}
+
+.date-input {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  width: 140px;
+}
+
+.toolbar-button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  transition: all var(--transition-fast);
+}
+
+.toolbar-button:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+}
+
+.toolbar-button:disabled {
+  opacity: 0.5;
+}
+
+.toolbar-button.primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.toolbar-button.primary:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.toolbar-button.danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.toolbar-button.danger:hover:not(:disabled) {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+/* 过滤器行 */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+/* 错误提示 */
+.error-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.error-banner button {
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  background-color: transparent;
+  color: inherit;
+  border-radius: var(--border-radius);
+}
+
+.error-banner button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 主内容区 */
+.audit-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 日志列表 */
+.audit-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+}
+
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-muted);
+}
+
+.loading-state .spinner,
+.empty-state .icon {
+  font-size: 32px;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* 日志条目 */
+.audit-entry {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.audit-entry:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.audit-entry.selected {
+  border-color: var(--color-primary);
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+.audit-entry.severity-critical {
+  border-left: 3px solid var(--color-error);
+}
+
+.audit-entry.severity-warn {
+  border-left: 3px solid var(--color-warning);
+}
+
+.audit-entry.severity-info {
+  border-left: 3px solid var(--color-primary);
+}
+
+.entry-icon {
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+  flex-shrink: 0;
+}
+
+.entry-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.entry-title {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entry-time {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-left: var(--spacing-sm);
+}
+
+.entry-detail {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.entry-footer {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.entry-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.entry-badge.badge-event-type {
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+.entry-badge.badge-severity-info {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: var(--color-primary);
+}
+
+.entry-badge.badge-severity-warn {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--color-warning);
+}
+
+.entry-badge.badge-severity-critical {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--color-error);
+}
+
+.entry-badge.badge-result-success {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--color-success);
+}
+
+.entry-badge.badge-result-failure {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--color-error);
+}
+
+.entry-badge.badge-result-pending {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--color-warning);
+}
+
+.entry-badge.badge-source {
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+/* 加载更多按钮 */
+.load-more {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-md);
+}
+
+.load-more button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+}
+
+.load-more button:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+}
+
+.load-more button:disabled {
+  opacity: 0.5;
+}
+
+/* 详情面板 */
+.audit-detail-panel {
+  width: 350px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  overflow-y: auto;
+}
+
+.audit-detail-panel.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.audit-detail-panel.empty .empty-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-md);
+}
+
+.detail-header {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-header h3 {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.detail-badges {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.detail-body {
+  padding: var(--spacing-md);
+}
+
+.detail-section {
+  margin-bottom: var(--spacing-md);
+}
+
+.detail-section h4 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.detail-section p {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  word-break: break-word;
+}
+
+.detail-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+.detail-info dt {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.detail-info dd {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.detail-metadata {
+  background-color: var(--bg-primary);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* 导出/清除对话框 */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.dialog-content {
+  width: 90%;
+  max-width: 400px;
+  background-color: var(--bg-primary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.dialog-header h3 {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.dialog-header .close-button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.dialog-header .close-button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.dialog-body {
+  padding: var(--spacing-md);
+}
+
+.dialog-body .form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.dialog-body .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.dialog-body label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.dialog-body select,
+.dialog-body input {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.dialog-footer .cancel-button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: var(--border-radius);
+}
+
+.dialog-footer .cancel-button:hover {
+  background-color: var(--bg-hover);
+}
+
+.dialog-footer .confirm-button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--border-radius);
+}
+
+.dialog-footer .confirm-button:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.dialog-footer .confirm-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dialog-footer .confirm-button.danger {
+  background-color: var(--color-error);
+}
+
+.dialog-footer .confirm-button.danger:hover:not(:disabled) {
+  background-color: #dc2626;
+}
