@@ -84,9 +84,15 @@ function parseCondition(condition: unknown): (row: unknown) => boolean {
           // 检查操作符类型
           const sqlStr = chunks.join("");
           if (sqlStr.includes(">")) {
-            return (row: unknown) => (row as Record<string, unknown>)[col] > val;
+            return (row: unknown) => {
+              const rowObj = row as Record<string, unknown>;
+              return (rowObj[col] as number) > (val as number);
+            };
           } else if (sqlStr.includes("<")) {
-            return (row: unknown) => (row as Record<string, unknown>)[col] < val;
+            return (row: unknown) => {
+              const rowObj = row as Record<string, unknown>;
+              return (rowObj[col] as number) < (val as number);
+            };
           } else {
             // 默认是相等比较
             return (row: unknown) => (row as Record<string, unknown>)[col] === val;
@@ -135,7 +141,10 @@ function parseCondition(condition: unknown): (row: unknown) => boolean {
       const field =
         (cond.left as { name: string })?.name || (cond.column as { name: string })?.name;
       const value = cond.right || cond.value;
-      return (row: unknown) => (row as Record<string, unknown>)[field] > value;
+      return (row: unknown) => {
+        const rowObj = row as Record<string, unknown>;
+        return (rowObj[field] as number) > (value as number);
+      };
     }
 
     // 处理 lt 条件 (小于)
@@ -143,7 +152,10 @@ function parseCondition(condition: unknown): (row: unknown) => boolean {
       const field =
         (cond.left as { name: string })?.name || (cond.column as { name: string })?.name;
       const value = cond.right || cond.value;
-      return (row: unknown) => (row as Record<string, unknown>)[field] < value;
+      return (row: unknown) => {
+        const rowObj = row as Record<string, unknown>;
+        return (rowObj[field] as number) < (value as number);
+      };
     }
   }
 

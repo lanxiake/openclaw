@@ -18,8 +18,8 @@ if (!connectionString) {
 }
 
 export default defineConfig({
-  // Schema 文件路径
-  schema: "./src/db/schema/index.ts",
+  // Schema 文件路径 (使用编译后的 JS 文件)
+  schema: "./dist/db/schema/index.js",
   // 迁移文件输出目录
   out: "./src/db/migrations",
   // 数据库类型
