@@ -24,151 +24,118 @@ wxauto-bridge 作为 WebSocket **客户端**，主动连接到 OpenClaw Gateway�
 ## 系统要求
 
 - Windows 10/11
-- Python 3.8+
+- Python 3.8+（仅开发/打包时需要）
 - 微信 PC 客户端 3.x 版本（已登录）
   - **注意**：微信 4.x 版本使用 Qt 框架，不支持 UIAutomation，请使用 3.x 版本
 
-## 安装
+## 快速开始
 
-1. 安装 Python 依赖：
+### 方式一：使用打包好的 exe（推荐）
+
+1. 下载 `wxauto-bridge.exe`（或运行 `package.bat` 自行打包）
+2. 启动微信 PC 客户端并登录
+3. 双击运行 `wxauto-bridge.exe`
+4. 在界面中配置 Gateway 地址和监听列表
+
+### 方式二：从源码运行
 
 ```bash
+# 1. 安装依赖
 cd wxauto-bridge
 pip install -r requirements.txt
-```
 
-2. 安装 wxauto（从本地源码或 GitHub）：
+# 2. 启动微信客户端并登录（手动）
 
-```bash
-# 从本地源码安装
-pip install ../my-docs/wxauto-main
-
-# 或从 GitHub 安装
-pip install git+https://github.com/cluic/wxauto.git
-```
-
-## 使用方法
-
-### 启动流程
-
-```bash
-# 1. 启动微信客户端并登录（手动）
-
-# 2. 启动 OpenClaw 网关
+# 3. 启动 OpenClaw 网关
 openclaw gateway run --port 18789
 
-# 3. 启动 wxauto-bridge（连接到网关）
-python bridge.py --gateway ws://localhost:18789
+# 4. 启动 wxauto-bridge
+python bridge_app.py
 ```
 
-### 命令行参数
+## 配置说明
+
+配置文件位置：`~/.openclaw/wechat-bridge.json`
+
+```json
+{
+  "gateway_url": "ws://localhost:18789",
+  "auth_token": "your-auth-token",
+  "listen_chats": [
+    {"name": "文件传输助手", "type": "friend", "enabled": true},
+    {"name": "工作群", "type": "group", "enabled": true}
+  ]
+}
+```
+
+### 配置项说明
+
+| 配置项 | 说明 | 默认值 |
+|--------|------|--------|
+| `gateway_url` | OpenClaw Gateway WebSocket 地址 | `ws://localhost:18789` |
+| `auth_token` | 认证 Token（与 Gateway 配置一致） | 自动生成 |
+| `listen_chats` | 监听的聊天列表 | `[]` |
+
+### 监听列表配置
+
+每个监听项包含：
+- `name`: 聊天名称（好友昵称或群名称）
+- `type`: 类型，`friend`（好友）或 `group`（群聊）
+- `enabled`: 是否启用监听
+
+## 打包为 exe
 
 ```bash
-# 默认连接 ws://localhost:18789
-python bridge.py
+# 运行打包脚本
+package.bat
 
-# 指定 Gateway 地址
-python bridge.py --gateway ws://192.168.1.100:18789
-
-# 启用详细日志
-python bridge.py -v
+# 输出文件位于 dist/wxauto-bridge.exe
 ```
 
-### 配置 OpenClaw
+打包后的 exe 文件约 350-400 MB，包含所有依赖，可独立运行。
 
-```bash
-# 启用 wechat 渠道
-openclaw config set channels.wechat.enabled true
+## 脚本说明
 
-# 配置允许的联系人
-openclaw config set channels.wechat.allowFrom '["张三", "文件传输助手"]'
+| 脚本 | 说明 |
+|------|------|
+| `package.bat` | 打包脚本，生成独立 exe 文件 |
+| `start.bat` | 启动脚本，运行打包后的 exe |
+| `dev.ps1` | 开发脚本（PowerShell），用于开发调试 |
+| `dev.bat` | 开发脚本（批处理），用于开发调试 |
 
-# 查看渠道状态
-openclaw channels list
-```
+## 界面功能
+
+启动后会打开一个配置界面，提供以下功能：
+
+1. **连接状态**：显示与 Gateway 的连接状态
+2. **Gateway 配置**：设置 Gateway 地址和认证 Token
+3. **监听管理**：添加/删除/启用/禁用监听的聊天
+4. **日志查看**：实时查看运行日志
 
 ## 通讯协议
 
 使用 JSON-RPC 2.0 协议进行通讯。
 
-### Bridge → OpenClaw（入站消息）
-
-```json
-{
-  "jsonrpc": "2.0",
-  "method": "wechat.message",
-  "params": {
-    "from": "张三",
-    "to": "我",
-    "text": "你好",
-    "type": "text",
-    "timestamp": 1706694000000,
-    "chatType": "friend"
-  }
-}
-```
-
-### OpenClaw → Bridge（发送命令）
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": "msg-001",
-  "method": "send",
-  "params": {
-    "to": "张三",
-    "text": "收到，谢谢！",
-    "files": []
-  }
-}
-```
-
-### Bridge → OpenClaw（命令响应）
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": "msg-001",
-  "result": {
-    "ok": true
-  }
-}
-```
-
 ### 支持的方法
 
 | 方向 | 方法 | 说明 |
 |------|------|------|
-| OC → Bridge | `send` | 发送消息 |
-| OC → Bridge | `sendFile` | 发送文件 |
-| OC → Bridge | `getStatus` | 获取微信状态 |
-| OC → Bridge | `getContacts` | 获取联系人列表 |
-| OC → Bridge | `addListen` | 添加聊天监听 |
-| OC → Bridge | `removeListen` | 移除聊天监听 |
-| Bridge → OC | `wechat.message` | 推送新消息 |
-| Bridge → OC | `wechat.status` | 状态变更通知 |
-| Bridge → OC | `wechat.connected` | 连接成功通知 |
-
-## 打包为 exe
-
-使用 PyInstaller 打包：
-
-```bash
-# Windows
-build.bat
-
-# 或手动执行
-pyinstaller --onefile --name wxauto-bridge bridge.py
-```
-
-打包后的 exe 文件位于 `dist/wxauto-bridge.exe`。
+| Gateway → Bridge | `send` | 发送消息 |
+| Gateway → Bridge | `sendFile` | 发送文件 |
+| Gateway → Bridge | `getStatus` | 获取微信状态 |
+| Gateway → Bridge | `getContacts` | 获取联系人列表 |
+| Gateway → Bridge | `addListen` | 添加聊天监听 |
+| Gateway → Bridge | `removeListen` | 移除聊天监听 |
+| Bridge → Gateway | `wechat.message` | 推送新消息 |
+| Bridge → Gateway | `wechat.status` | 状态变更通知 |
+| Bridge → Gateway | `wechat.connected` | 连接成功通知 |
 
 ## 注意事项
 
 1. **仅支持 Windows**：wxauto 依赖 Windows UIAutomation API
 2. **需要微信 PC 客户端**：必须先登录微信 PC 客户端
 3. **窗口可见性**：wxauto 需要微信窗口可见（不能最小化）
-4. **连接顺序**：先启动 OpenClaw Gateway，再启动 wxauto-bridge
+4. **微信版本**：仅支持微信 3.x 版本，不支持 4.x
 
 ## 故障排除
 
@@ -184,8 +151,28 @@ pyinstaller --onefile --name wxauto-bridge bridge.py
 - 确保 OpenClaw Gateway 已启动
 - 检查 Gateway 地址和端口是否正确
 - 检查防火墙设置
+- 确认 auth_token 与 Gateway 配置一致
 
 ### 消息发送失败
 
 - 确保目标联系人/群在最近聊天列表中
-- 检查联系人/群名称是否正确
+- 检查联系人/群名称是否正确（区分大小写）
+
+### 打包失败
+
+- 确保 Python 3.8+ 已安装
+- 确保所有依赖已正确安装
+- 尝试清理 build 目录后重新打包
+
+## 开发调试
+
+```bash
+# PowerShell 开发脚本
+.\dev.ps1 start    # 启动 Gateway 和 Bridge
+.\dev.ps1 stop     # 停止服务
+.\dev.ps1 restart  # 重启服务
+.\dev.ps1 status   # 查看状态
+
+# 或使用批处理
+dev.bat start
+```

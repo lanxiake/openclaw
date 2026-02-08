@@ -11,7 +11,7 @@ import time
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 # 添加 wxauto 路径
 WXAUTO_PATH = Path(__file__).parent.parent / "my-docs" / "wxauto-main"
@@ -314,13 +314,102 @@ class WeChatHandler:
             return {"success": False, "error": error_msg}
 
     def get_chat_list(self) -> List[str]:
-        """获取会话列表"""
+        """获取会话列表，返回会话名称"""
         if not self._wx:
             return []
 
         try:
             sessions = self._wx.GetSession()
-            return [str(s) for s in sessions]
+            names = []
+            for s in sessions:
+                # 尝试获取会话名称
+                if hasattr(s, 'name') and s.name:
+                    names.append(s.name)
+                elif hasattr(s, 'Name') and s.Name:
+                    names.append(s.Name)
+                elif hasattr(s, 'nickname') and s.nickname:
+                    names.append(s.nickname)
+                else:
+                    # 尝试从字符串表示中提取名称
+                    s_str = str(s)
+                    if 'Element(' in s_str and ' - ' in s_str:
+                        # 格式: <wxauto Session Element(名称 - 消息...)>
+                        try:
+                            name_part = s_str.split('Element(')[1].split(' - ')[0]
+                            names.append(name_part)
+                        except:
+                            names.append(s_str)
+                    else:
+                        names.append(s_str)
+            return names
+        except Exception as e:
+            logger.error(f"获取会话列表失败: {e}")
+            return []
+
+    def get_chat_list_with_type(self) -> List[Dict[str, Any]]:
+        """获取会话列表，包含类型信息"""
+        if not self._wx:
+            return []
+
+        try:
+            sessions = self._wx.GetSession()
+            result = []
+            for s in sessions:
+                name = None
+                chat_type = 'friend'  # 默认为好友
+
+                # 尝试获取会话名称
+                if hasattr(s, 'name') and s.name:
+                    name = s.name
+                elif hasattr(s, 'Name') and s.Name:
+                    name = s.Name
+                elif hasattr(s, 'nickname') and s.nickname:
+                    name = s.nickname
+                else:
+                    # 尝试从字符串表示中提取名称
+                    s_str = str(s)
+                    if 'Element(' in s_str and ' - ' in s_str:
+                        try:
+                            name = s_str.split('Element(')[1].split(' - ')[0]
+                        except:
+                            name = s_str
+                    else:
+                        name = s_str
+
+                # 尝试判断是否是群聊
+                # 方法1: 检查 wxauto 对象属性
+                if hasattr(s, 'chattype'):
+                    if s.chattype == 'group' or s.chattype == 2:
+                        chat_type = 'group'
+                elif hasattr(s, 'chat_type'):
+                    if s.chat_type == 'group' or s.chat_type == 2:
+                        chat_type = 'group'
+                # 方法2: 尝试获取聊天信息
+                elif hasattr(s, 'get_info'):
+                    try:
+                        info = s.get_info()
+                        if info.get('chat_type') == 'group':
+                            chat_type = 'group'
+                    except:
+                        pass
+
+                # 方法3: 根据名称特征判断（备用）
+                if chat_type == 'friend' and name:
+                    # 群聊通常有多个成员，名称可能包含特定模式
+                    # 这里使用一些常见的群聊名称特征
+                    group_keywords = ['群', '交流', '讨论','沟通','应用', '项目', '团队', '部门', '小组','公司', '工作', '家庭', '同学', '朋友']
+                    for keyword in group_keywords:
+                        if keyword in name:
+                            chat_type = 'group'
+                            break
+
+                if name:
+                    result.append({
+                        'name': name,
+                        'type': chat_type
+                    })
+
+            return result
         except Exception as e:
             logger.error(f"获取会话列表失败: {e}")
             return []

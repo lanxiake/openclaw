@@ -83,8 +83,12 @@ class WeChatBridge:
             logger.error(f"WebSocket 连接失败: {e}")
             return False
 
-    async def start(self) -> None:
-        """启动桥接器"""
+    async def start(self, listen_chats: list = None) -> None:
+        """启动桥接器
+
+        参数:
+            listen_chats: 要监听的聊天列表
+        """
         self._running = True
         self._loop = asyncio.get_running_loop()
         logger.info("启动微信桥接器")
@@ -93,6 +97,16 @@ class WeChatBridge:
         if not self.wechat.connect():
             logger.error("微信连接失败，退出")
             return
+
+        # 添加监听
+        if listen_chats:
+            logger.info(f"添加监听: {listen_chats}")
+            for chat_name in listen_chats:
+                result = self.wechat.add_listener(chat_name)
+                if result.get('success'):
+                    logger.info(f"监听 {chat_name} 成功")
+                else:
+                    logger.warning(f"监听 {chat_name} 失败: {result.get('error', '未知错误')}")
 
         # 连接到 Gateway 并保持运行
         while self._running:

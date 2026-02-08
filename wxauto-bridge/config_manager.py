@@ -21,7 +21,7 @@ class ConfigManager:
     # 默认配置
     DEFAULT_CONFIG = {
         "gateway_url": "ws://localhost:18789",
-        "auth_token": "",
+        "auth_token": "wechat-bridge-token-2026",
         "listen_chats": [],  # 监听的聊天列表 [{"name": "xxx", "type": "friend/group", "enabled": True}]
     }
 
