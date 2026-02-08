@@ -77,3 +77,7 @@ logs/**
 wxauto_logs/**
  .claude/settings.local.json
 nul
+
+# Windows app build artifacts
+apps/windows/out/
+apps/windows/release/
