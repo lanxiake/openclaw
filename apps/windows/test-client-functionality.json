@@ -1,0 +1,154 @@
+{
+  "timestamp": "2026-02-09T14:01:42.532Z",
+  "totalTests": 29,
+  "passedTests": 29,
+  "failedTests": 0,
+  "passRate": "100.00",
+  "results": [
+    {
+      "name": "File exists: package.json",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: src/main/index.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: src/main/gateway-client.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: src/main/skill-runtime.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: src/preload/index.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Dependency: ws",
+      "passed": "^8.16.0",
+      "details": "Version: ^8.16.0"
+    },
+    {
+      "name": "Dependency: electron-updater",
+      "passed": "^6.1.7",
+      "details": "Version: ^6.1.7"
+    },
+    {
+      "name": "Module installed: ws",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Module installed: electron",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Module installed: react",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "src/main/gateway-client.ts has exports",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "src/main/skill-runtime.ts has exports",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "src/main/system-service.ts has exports",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Has GatewayClient class",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Has connect method",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Has disconnect method",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Has WebSocket import",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Has EventEmitter",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Has ClientSkillRuntime class",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Has executeSkill method",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Has SkillExecuteRequest type",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Has SkillExecuteResult type",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Config file: electron.vite.config.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Config file: tsconfig.json",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Config file: electron-builder.json",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Build output directory exists",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Main process output exists",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Preload script output exists",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Renderer process output exists",
+      "passed": true,
+      "details": ""
+    }
+  ]
+}

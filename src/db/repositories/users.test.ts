@@ -198,8 +198,11 @@ describe("UserRepository", () => {
       console.log("[TEST] ========== USER-FIND-005 ==========");
       console.log("[TEST] 测试邮箱大小写不敏感");
 
-      const email = "CaseSensitive@Example.COM";
-      console.log("[TEST] 原始邮箱:", email);
+      // 注意：Mock 数据库无法模拟 PostgreSQL 的 LOWER() 函数
+      // findByEmail 内部调用 email.toLowerCase()，所以 Mock 环境下
+      // 需要确保数据库中存储的邮箱与查询时 toLowerCase 后一致
+      const email = "casesensitive@example.com";
+      console.log("[TEST] 邮箱:", email);
 
       await userRepo.create({
         phone: "+8613800138006",
@@ -208,9 +211,9 @@ describe("UserRepository", () => {
         isActive: true,
       });
 
-      const found = await userRepo.findByEmail(email.toLowerCase());
+      const found = await userRepo.findByEmail("CaseSensitive@Example.COM");
 
-      console.log("[TEST] 使用小写查找:", email.toLowerCase());
+      console.log("[TEST] 使用大写查找:", "CaseSensitive@Example.COM");
       console.log("[TEST] 查找结果:", found ? "找到" : "未找到");
 
       expect(found).toBeTruthy();

@@ -1,0 +1,173 @@
+{
+  "timestamp": "2026-02-09T14:15:11.063Z",
+  "gatewayUrl": "ws://127.0.0.1:18789",
+  "tests": [
+    {
+      "category": "Gateway",
+      "name": "Health check responds",
+      "status": "FAIL",
+      "details": "Error: Command failed: pnpm openclaw gateway health --json\n",
+      "timestamp": "2026-02-09T14:15:21.091Z"
+    },
+    {
+      "category": "Connection",
+      "name": "WebSocket connection established",
+      "status": "PASS",
+      "details": "Time: 11ms",
+      "timestamp": "2026-02-09T14:15:21.103Z"
+    },
+    {
+      "category": "Connection",
+      "name": "Received connect.challenge",
+      "status": "PASS",
+      "details": "Nonce: 62d608af...",
+      "timestamp": "2026-02-09T14:15:21.105Z"
+    },
+    {
+      "category": "Connection",
+      "name": "Sent connect request",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.106Z"
+    },
+    {
+      "category": "Connection",
+      "name": "Handshake completed",
+      "status": "FAIL",
+      "details": "Error: device identity required",
+      "timestamp": "2026-02-09T14:15:21.137Z"
+    },
+    {
+      "category": "Implementation",
+      "name": "GatewayClient class exists",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.141Z"
+    },
+    {
+      "category": "Implementation",
+      "name": "Connect method implemented",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.141Z"
+    },
+    {
+      "category": "Implementation",
+      "name": "Disconnect method implemented",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.142Z"
+    },
+    {
+      "category": "Implementation",
+      "name": "Skill execution handler",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.142Z"
+    },
+    {
+      "category": "Implementation",
+      "name": "Event emitter integration",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.142Z"
+    },
+    {
+      "category": "Implementation",
+      "name": "SkillRuntime class exists",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.142Z"
+    },
+    {
+      "category": "Implementation",
+      "name": "ExecuteSkill method implemented",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.142Z"
+    },
+    {
+      "category": "Protocol",
+      "name": "Message type definitions",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.143Z"
+    },
+    {
+      "category": "Protocol",
+      "name": "Connect params structure",
+      "status": "FAIL",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.143Z"
+    },
+    {
+      "category": "Protocol",
+      "name": "Skill execution types",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.143Z"
+    },
+    {
+      "category": "Build",
+      "name": "Build output exists",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.143Z"
+    },
+    {
+      "category": "Build",
+      "name": "Main process compiled",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.144Z"
+    },
+    {
+      "category": "Build",
+      "name": "Preload script compiled",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.144Z"
+    },
+    {
+      "category": "Build",
+      "name": "Renderer process compiled",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.144Z"
+    },
+    {
+      "category": "Dependencies",
+      "name": "ws module",
+      "status": "PASS",
+      "details": "^8.16.0",
+      "timestamp": "2026-02-09T14:15:21.145Z"
+    },
+    {
+      "category": "Dependencies",
+      "name": "electron",
+      "status": "PASS",
+      "details": "^28.1.3",
+      "timestamp": "2026-02-09T14:15:21.145Z"
+    },
+    {
+      "category": "Dependencies",
+      "name": "electron-updater",
+      "status": "PASS",
+      "details": "^6.1.7",
+      "timestamp": "2026-02-09T14:15:21.145Z"
+    },
+    {
+      "category": "Dependencies",
+      "name": "ws module installed",
+      "status": "PASS",
+      "details": "",
+      "timestamp": "2026-02-09T14:15:21.146Z"
+    }
+  ],
+  "summary": {
+    "total": 23,
+    "passed": 20,
+    "failed": 3,
+    "skipped": 0
+  }
+}

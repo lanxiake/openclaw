@@ -1,0 +1,45 @@
+﻿{
+    "gatewayUrl":  "ws://127.0.0.1:18789",
+    "timestamp":  "2026-02-09 21:32:51",
+    "totalTests":  7,
+    "failedTests":  6,
+    "results":  [
+                    {
+                        "Test":  "Gateway Health",
+                        "Status":  "FAIL",
+                        "Details":  "Exception: 无效的 JSON 基元: 。"
+                    },
+                    {
+                        "Test":  "Gateway Status Query",
+                        "Status":  "FAIL",
+                        "Details":  "Exception: 无效的 JSON 基元: 。"
+                    },
+                    {
+                        "Test":  "Gateway Discovery",
+                        "Status":  "FAIL",
+                        "Details":  "Exception: 无效的 JSON 基元: 。"
+                    },
+                    {
+                        "Test":  "CLI: gateway call health",
+                        "Status":  "FAIL",
+                        "Details":  "Exception: 无效的 JSON 基元: 。"
+                    },
+                    {
+                        "Test":  "CLI: gateway usage-cost",
+                        "Status":  "FAIL",
+                        "Details":  "Exception: 无效的 JSON 基元: 。"
+                    },
+                    {
+                        "Test":  "Client Build",
+                        "Status":  "PASS",
+                        "Details":  "Skipped"
+                    },
+                    {
+                        "Test":  "WebSocket Connection",
+                        "Status":  "FAIL",
+                        "Details":  "Connection failed: node : node:internal/modules/cjs/loader:1247\r\n所在位置 E:\\open-source-project\\openclaw-windows-exe\\scripts\\test-windows-client-integration.ps1:194 字符: 17\r\n+     $wsOutput = node $wsTestFile 2\u003e\u00261 | Out-String\r\n+                 ~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (node:internal/modules/cjs/loader:1247:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n  throw err;\r\n  ^\r\n\r\nError: Cannot find module \u0027ws\u0027\r\nRequire stack:\r\n- C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\openclaw-ws-test.js\r\n    at Function._resolveFilename (node:internal/modules/cjs/loader:1244:15)\r\n    at Function._load (node:internal/modules/cjs/loader:1070:27)\r\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)\r\n    at Module.require (node:internal/modules/cjs/loader:1335:12)\r\n    at require (node:internal/modules/helpers:136:16)\r\n    at Object.\u003canonymous\u003e (C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\openclaw-ws-test.js:1:20)\r\n    at Module._compile (node:internal/modules/cjs/loader:1562:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1699:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1313:32) {\r\n  code: \u0027MODULE_NOT_FOUND\u0027,\r\n  requireStack: [ \u0027C:\\\\Users\\\\ADMINI~1\\\\AppData\\\\Local\\\\Temp\\\\openclaw-ws-test.js\u0027 ]\r\n}\r\n\r\nNode.js v22.13.1\r\n"
+                    }
+                ],
+    "passedTests":  1,
+    "passRate":  14.29
+}

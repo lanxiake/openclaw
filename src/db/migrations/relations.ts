@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, userDevices, userSessions, subscriptions, plans, userSkills, skills, paymentOrders, auditLogs, admins, adminSessions, adminAuditLogs, skillStoreItems, skillCategories, skillReviews, userInstalledSkills, systemConfigs, configChangeHistory } from "./schema";
+import { users, userDevices, userSessions, subscriptions, plans, userSkills, skills, paymentOrders, auditLogs, admins, adminSessions, adminAuditLogs, skillStoreItems, skillCategories, skillReviews, userInstalledSkills, systemConfigs, configChangeHistory } from "./schema.js";
 
 export const userDevicesRelations = relations(userDevices, ({one, many}) => ({
 	user: one(users, {

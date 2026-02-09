@@ -209,7 +209,7 @@ export class AdminRepository {
       .where(eq(admins.id, id))
       .returning({ failedLoginAttempts: admins.failedLoginAttempts });
 
-    return result?.failedLoginAttempts || 0;
+    return Number(result?.failedLoginAttempts) || 0;
   }
 
   /**

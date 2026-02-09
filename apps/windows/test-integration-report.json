@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-02-09T14:03:12.112Z",
+  "gatewayUrl": "ws://127.0.0.1:18789",
+  "totalTests": 4,
+  "passedTests": 3,
+  "failedTests": 1,
+  "passRate": "75.00",
+  "results": [
+    {
+      "name": "WebSocket connection established",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Received connect.challenge event",
+      "passed": true,
+      "details": "Nonce: 98299ee1-c75b-4309-a2e2-6adf186c7256"
+    },
+    {
+      "name": "Sent connect request",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Received successful connect response",
+      "passed": false,
+      "details": "Error: device identity required"
+    }
+  ]
+}
