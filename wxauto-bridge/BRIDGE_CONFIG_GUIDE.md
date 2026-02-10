@@ -504,12 +504,104 @@ if __name__ == "__main__":
 
 ## 更新记录
 
+### v1.1.0 (2026-02-10)
+- ✅ 新增多媒体消息支持（图片、视频、文件、语音）
+- ✅ 添加 HTTP 文件服务器 (端口 18790)
+- ✅ 语音消息自动转文字
+- ✅ 新增 `--media-dir` 和 `--media-port` 命令行参数
+- ✅ 消息推送格式增加 `media` 和 `voiceText` 字段
+
 ### v1.0.0 (2026-02-10)
 - ✅ 修复消息检测死循环问题
 - ✅ 添加剪贴板竞争重试机制
 - ✅ 支持 Python 3.12 环境
 - ✅ 完善自动化配置脚本
 - ✅ 添加健康检查功能
+
+## 多媒体消息支持
+
+### 支持的消息类型
+
+| 类型 | 接收 | 下载 | 发送 |
+|------|------|------|------|
+| 图片 (image) | ✅ | ✅ 自动下载 | ✅ sendFile |
+| 视频 (video) | ✅ | ✅ 自动下载 | ✅ sendFile |
+| 文件 (file) | ✅ | ✅ 自动下载 | ✅ sendFile |
+| 语音 (voice) | ✅ | ⚠️ 转文字 | ❌ 不支持 |
+
+### 消息格式
+
+收到多媒体消息时，推送到 Gateway 的格式：
+
+```json
+{
+  "from": "发送者",
+  "to": "聊天名称",
+  "text": "[图片]",
+  "type": "image",
+  "chatType": "friend",
+  "timestamp": 1707580800000,
+  "isSelf": false,
+  "isAtMe": false,
+  "media": {
+    "url": "http://localhost:18790/media/wxauto_image_20240210120000.jpg",
+    "path": "D:/AI-workspace/openclaw/wxauto-bridge/media/wxauto_image_20240210120000.jpg",
+    "fileName": null,
+    "fileSize": null
+  },
+  "voiceText": null
+}
+```
+
+语音消息格式：
+
+```json
+{
+  "from": "发送者",
+  "to": "聊天名称",
+  "text": "[语音]",
+  "type": "voice",
+  "chatType": "friend",
+  "timestamp": 1707580800000,
+  "isSelf": false,
+  "isAtMe": false,
+  "media": null,
+  "voiceText": "这是语音转换后的文字内容"
+}
+```
+
+### HTTP 文件服务器
+
+Bridge 启动时会自动启动 HTTP 文件服务器：
+
+- **默认端口**: 18790
+- **媒体目录**: `./media`
+- **健康检查**: `http://localhost:18790/health`
+- **文件访问**: `http://localhost:18790/media/{filename}`
+
+### 命令行参数
+
+```bash
+python bridge.py \
+  --gateway ws://127.0.0.1:19001 \
+  --token <auth-token> \
+  --media-dir ./media \
+  --media-port 18790 \
+  -v
+```
+
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `--media-dir`, `-m` | 多媒体文件保存目录 | `./media` |
+| `--media-port`, `-p` | HTTP 文件服务端口 | `18790` |
+
+### Gateway 端处理
+
+Gateway 收到带 `media.url` 的消息时，可以：
+
+1. 通过 HTTP 下载文件
+2. 将文件 URL 传递给 AI Agent
+3. AI Agent 使用图片理解能力处理图片
 
 ---
 

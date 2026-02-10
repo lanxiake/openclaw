@@ -83,7 +83,10 @@ class WeChatStatus(Enum):
 
 @dataclass
 class WeChatMessage:
-    """微信消息数据类"""
+    """微信消息数据类
+
+    支持多媒体消息类型：text, image, video, voice, file, link, location, emotion, quote, merge, personal_card, note, other
+    """
     sender: str           # 发送者名称
     content: str          # 消息内容
     chat_name: str        # 聊天名称
@@ -92,17 +95,34 @@ class WeChatMessage:
     is_self: bool = False
     is_group: bool = False
     is_at_me: bool = False  # 是否@了当前账号
+    # 多媒体消息字段
+    media_path: Optional[str] = None      # 本地文件路径
+    media_url: Optional[str] = None       # HTTP URL (由 MediaServer 提供)
+    file_name: Optional[str] = None       # 文件名 (文件消息)
+    file_size: Optional[str] = None       # 文件大小 (文件消息)
+    voice_text: Optional[str] = None      # 语音转文字内容
 
 
 class WeChatHandler:
     """
     微信处理器
     基于 wxauto 库操作微信 3.x
+    支持多媒体消息接收和发送
     """
 
     VERSION = "3.x"
+    # 支持下载的多媒体消息类型
+    DOWNLOADABLE_TYPES = {'image', 'video', 'file'}
+    # 支持语音转文字的消息类型
+    VOICE_TYPES = {'voice'}
 
-    def __init__(self):
+    def __init__(self, media_dir: Optional[str] = None, media_port: int = 18790):
+        """初始化微信处理器
+
+        Args:
+            media_dir: 多媒体文件保存目录，默认为当前目录下的 media 文件夹
+            media_port: HTTP 文件服务端口，默认 18790
+        """
         self._status: WeChatStatus = WeChatStatus.DISCONNECTED
         self._message_callback: Optional[Callable[[WeChatMessage], None]] = None
         self._status_callback: Optional[Callable[[WeChatStatus], None]] = None
@@ -114,6 +134,12 @@ class WeChatHandler:
         self._wx: Optional[WeChat] = None
         self._nickname: Optional[str] = None
         self._wxid: Optional[str] = None
+
+        # 多媒体文件配置
+        self._media_dir = Path(media_dir) if media_dir else Path(__file__).parent / "media"
+        self._media_port = media_port
+        self._media_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"多媒体文件保存目录: {self._media_dir}")
 
     @property
     def status(self) -> WeChatStatus:
@@ -231,9 +257,13 @@ class WeChatHandler:
             return {"success": False, "error": error_msg}
 
     def _on_message(self, msg: Message, chat) -> None:
-        """wxauto 消息回调"""
+        """wxauto 消息回调
+
+        处理各种消息类型，包括多媒体消息的下载
+        """
         try:
-            logger.info(f"收到 wxauto 消息回调: chat={chat}, msg={msg}")
+            msg_type = msg.type if hasattr(msg, 'type') else "text"
+            logger.info(f"收到 wxauto 消息回调: chat={chat}, type={msg_type}, msg={msg}")
 
             # 获取消息内容
             content = msg.content if hasattr(msg, 'content') else str(msg)
@@ -255,18 +285,48 @@ class WeChatHandler:
                 # 移除 @昵称 部分，保留实际消息内容
                 content = content.replace(f"@{self._nickname}", "").strip()
 
+            # 处理多媒体消息
+            media_path = None
+            media_url = None
+            file_name = None
+            file_size = None
+            voice_text = None
+
+            # 下载图片/视频/文件
+            if msg_type in self.DOWNLOADABLE_TYPES:
+                media_path, media_url = self._download_media(msg, msg_type)
+                # 获取文件信息
+                if msg_type == 'file' and hasattr(msg, 'filename'):
+                    file_name = msg.filename
+                    file_size = msg.filesize if hasattr(msg, 'filesize') else None
+                    logger.info(f"文件消息: name={file_name}, size={file_size}")
+
+            # 语音转文字
+            elif msg_type in self.VOICE_TYPES:
+                voice_text = self._convert_voice_to_text(msg)
+                if voice_text:
+                    logger.info(f"语音转文字成功: {voice_text[:50]}...")
+
             # 转换为 WeChatMessage
             wechat_msg = WeChatMessage(
                 sender=msg.sender if hasattr(msg, 'sender') else str(chat),
                 content=content,
                 chat_name=str(chat),
-                msg_type=msg.type if hasattr(msg, 'type') else "text",
+                msg_type=msg_type,
                 is_self=msg.attr == "self" if hasattr(msg, 'attr') else False,
                 is_at_me=is_at_me,
                 is_group=is_group,
+                media_path=str(media_path) if media_path else None,
+                media_url=media_url,
+                file_name=file_name,
+                file_size=file_size,
+                voice_text=voice_text,
             )
 
-            logger.info(f"转换后的消息: sender={wechat_msg.sender}, content={wechat_msg.content[:50] if wechat_msg.content else ''}, is_self={wechat_msg.is_self}, is_at_me={wechat_msg.is_at_me}, is_group={wechat_msg.is_group}")
+            logger.info(f"转换后的消息: sender={wechat_msg.sender}, type={wechat_msg.msg_type}, "
+                       f"content={wechat_msg.content[:50] if wechat_msg.content else ''}, "
+                       f"is_self={wechat_msg.is_self}, is_at_me={wechat_msg.is_at_me}, "
+                       f"media_path={wechat_msg.media_path}")
 
             # 触发回调
             if self._message_callback and not wechat_msg.is_self:
@@ -279,6 +339,94 @@ class WeChatHandler:
 
         except Exception as e:
             logger.error(f"处理消息失败: {e}", exc_info=True)
+
+    def _download_media(self, msg: Message, msg_type: str) -> tuple[Optional[Path], Optional[str]]:
+        """下载多媒体文件
+
+        Args:
+            msg: wxauto 消息对象
+            msg_type: 消息类型 (image, video, file)
+
+        Returns:
+            (本地文件路径, HTTP URL)
+        """
+        try:
+            if not hasattr(msg, 'download'):
+                logger.warning(f"消息类型 {msg_type} 不支持下载")
+                return None, None
+
+            logger.info(f"开始下载 {msg_type} 消息...")
+
+            # 调用 wxauto 的下载方法
+            result = msg.download(dir_path=self._media_dir, timeout=30)
+
+            if isinstance(result, Path) and result.exists():
+                logger.info(f"下载成功: {result}")
+                # 生成 HTTP URL
+                media_url = self._get_media_url(result)
+                return result, media_url
+            else:
+                logger.warning(f"下载失败或文件不存在: {result}")
+                return None, None
+
+        except Exception as e:
+            logger.error(f"下载多媒体文件失败: {e}", exc_info=True)
+            return None, None
+
+    def _convert_voice_to_text(self, msg: Message) -> Optional[str]:
+        """语音消息转文字
+
+        Args:
+            msg: wxauto 语音消息对象
+
+        Returns:
+            转换后的文字内容
+        """
+        try:
+            if not hasattr(msg, 'to_text'):
+                logger.warning("语音消息不支持转文字")
+                return None
+
+            logger.info("开始语音转文字...")
+            result = msg.to_text()
+
+            if isinstance(result, str):
+                logger.info(f"语音转文字成功: {result[:50]}...")
+                return result
+            else:
+                logger.warning(f"语音转文字失败: {result}")
+                return None
+
+        except Exception as e:
+            logger.error(f"语音转文字失败: {e}", exc_info=True)
+            return None
+
+    def _get_media_url(self, file_path: Path) -> Optional[str]:
+        """获取文件的 HTTP URL
+
+        Args:
+            file_path: 本地文件路径
+
+        Returns:
+            HTTP URL
+        """
+        try:
+            # 获取相对于 media_dir 的路径
+            relative_path = file_path.relative_to(self._media_dir)
+            # 构建 URL (使用正斜杠)
+            url_path = str(relative_path).replace('\\', '/')
+            return f"http://localhost:{self._media_port}/media/{url_path}"
+        except Exception as e:
+            logger.error(f"生成媒体 URL 失败: {e}")
+            return None
+
+    def get_media_dir(self) -> Path:
+        """获取多媒体文件保存目录"""
+        return self._media_dir
+
+    def get_media_port(self) -> int:
+        """获取 HTTP 文件服务端口"""
+        return self._media_port
 
     def add_listener(self, chat_name: str) -> dict:
         """添加聊天监听"""

@@ -9,5 +9,5 @@ uiautomation>=2.0.18
 pillow>=10.0.0
 psutil>=5.9.0
 pywebview>=4.0
-websockets>=11.0
 websocket-client>=1.0
+aiohttp>=3.9.0  # HTTP 文件服务器

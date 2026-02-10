@@ -26,6 +26,7 @@ import websockets
 from websockets.client import WebSocketClientProtocol
 
 from wechat_handler import WeChatHandler, WeChatMessage, WeChatStatus
+from media_server import MediaServer
 
 # 配置日志格式
 logging.basicConfig(
@@ -40,15 +41,24 @@ class WeChatBridge:
     """
     微信桥接器
     作为 WebSocket 客户端，主动连接 OpenClaw Gateway，转发微信消息
+    支持多媒体消息（图片、视频、文件、语音）
     """
 
-    def __init__(self, gateway_url: str = "ws://localhost:18789", auth_token: str = ""):
+    def __init__(
+        self,
+        gateway_url: str = "ws://localhost:18789",
+        auth_token: str = "",
+        media_dir: str = None,
+        media_port: int = 18790
+    ):
         """
         初始化桥接器
 
         参数:
             gateway_url: OpenClaw Gateway WebSocket 地址
             auth_token: 认证令牌
+            media_dir: 多媒体文件保存目录
+            media_port: HTTP 文件服务端口
         """
         self.gateway_url = gateway_url.rstrip('/')
         self.auth_token = auth_token
@@ -57,7 +67,16 @@ class WeChatBridge:
         if auth_token:
             ws_path = f"{ws_path}?token={auth_token}"
         self.ws_url = f"{self.gateway_url}{ws_path}"
-        self.wechat = WeChatHandler()
+
+        # 初始化微信处理器（带多媒体支持）
+        self.wechat = WeChatHandler(media_dir=media_dir, media_port=media_port)
+
+        # 初始化 HTTP 文件服务器
+        self.media_server = MediaServer(
+            media_dir=self.wechat.get_media_dir(),
+            port=media_port
+        )
+
         self.ws: Optional[WebSocketClientProtocol] = None
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._running = False
@@ -94,9 +113,15 @@ class WeChatBridge:
         self._loop = asyncio.get_running_loop()
         logger.info("启动微信桥接器")
 
+        # 启动 HTTP 文件服务器
+        if not await self.media_server.start():
+            logger.error("HTTP 文件服务器启动失败")
+            return
+
         # 首先连接微信
         if not self.wechat.connect(debug=debug):
             logger.error("微信连接失败，退出")
+            await self.media_server.stop()
             return
 
         # 添加监听
@@ -140,6 +165,9 @@ class WeChatBridge:
 
         if self.ws:
             await self.ws.close()
+
+        # 停止 HTTP 文件服务器
+        await self.media_server.stop()
 
         self.wechat.disconnect()
         logger.info("桥接器已停止")
@@ -187,6 +215,8 @@ class WeChatBridge:
                 result = await self._handle_add_listen(params)
             elif method == "removeListen":
                 result = await self._handle_remove_listen(params)
+            elif method == "getMediaInfo":
+                result = await self._handle_get_media_info(params)
             elif method == "ping":
                 result = {"pong": True, "timestamp": int(time.time() * 1000)}
             else:
@@ -266,10 +296,25 @@ class WeChatBridge:
         result = self.wechat.remove_listener(chat)
         return {"ok": result.get("success", False), "error": result.get("error")}
 
+    async def _handle_get_media_info(self, params: dict) -> dict:
+        """处理获取媒体服务器信息命令
+
+        返回媒体服务器的 URL 和目录信息
+        """
+        return {
+            "ok": True,
+            "mediaServer": {
+                "url": f"http://localhost:{self.wechat.get_media_port()}",
+                "dir": str(self.wechat.get_media_dir()),
+                "healthCheck": f"http://localhost:{self.wechat.get_media_port()}/health"
+            }
+        }
+
     def _on_wechat_message(self, msg: WeChatMessage) -> None:
         """微信消息回调"""
         # Log metadata only, not message content
-        logger.info(f"收到微信消息: from={msg.sender}, chat={msg.chat_name}, type={msg.msg_type}, is_group={msg.is_group}")
+        logger.info(f"收到微信消息: from={msg.sender}, chat={msg.chat_name}, "
+                   f"type={msg.msg_type}, is_group={msg.is_group}, media={msg.media_path is not None}")
         if self._loop and self._loop.is_running():
             asyncio.run_coroutine_threadsafe(self._push_message(msg), self._loop)
         else:
@@ -295,14 +340,20 @@ class WeChatBridge:
                 return True
 
     async def _push_message(self, msg: WeChatMessage) -> None:
-        """推送消息到 Gateway"""
+        """推送消息到 Gateway
+
+        支持多媒体消息，包含 media 字段
+        """
         if not self._is_ws_connected():
             logger.warning("WebSocket 未连接，无法推送消息")
             return
 
         # Log metadata only, not message content
-        logger.info(f"推送消息到 Gateway: from={msg.sender}, to={msg.chat_name}, type={msg.msg_type}, is_at_me={msg.is_at_me}")
-        await self._send_notification("wechat.message", {
+        logger.info(f"推送消息到 Gateway: from={msg.sender}, to={msg.chat_name}, "
+                   f"type={msg.msg_type}, is_at_me={msg.is_at_me}, media={msg.media_url}")
+
+        # 构建消息数据
+        message_data = {
             "from": msg.sender,
             "to": msg.chat_name,
             "text": msg.content,
@@ -311,7 +362,22 @@ class WeChatBridge:
             "timestamp": int(msg.timestamp * 1000),
             "isSelf": msg.is_self,
             "isAtMe": msg.is_at_me
-        })
+        }
+
+        # 添加多媒体信息
+        if msg.media_url or msg.media_path or msg.voice_text:
+            message_data["media"] = {
+                "url": msg.media_url,
+                "path": msg.media_path,
+                "fileName": msg.file_name,
+                "fileSize": msg.file_size
+            }
+
+        # 添加语音转文字内容
+        if msg.voice_text:
+            message_data["voiceText"] = msg.voice_text
+
+        await self._send_notification("wechat.message", message_data)
 
     async def _push_status(self, status: WeChatStatus) -> None:
         """推送状态到 Gateway"""
@@ -329,7 +395,11 @@ class WeChatBridge:
             "nickname": self.wechat.get_nickname(),
             "wxid": self.wechat.get_wxid(),
             "online": self.wechat.status == WeChatStatus.CONNECTED,
-            "timestamp": int(time.time() * 1000)
+            "timestamp": int(time.time() * 1000),
+            "mediaServer": {
+                "url": f"http://localhost:{self.wechat.get_media_port()}",
+                "dir": str(self.wechat.get_media_dir())
+            }
         })
 
     async def _send_notification(self, method: str, params: dict) -> None:
@@ -400,6 +470,17 @@ async def main():
         help="认证令牌 (可通过 WECHAT_AUTH_TOKEN 环境变量设置)"
     )
     parser.add_argument(
+        "--media-dir", "-m",
+        default=None,
+        help="多媒体文件保存目录 (默认: ./media)"
+    )
+    parser.add_argument(
+        "--media-port", "-p",
+        type=int,
+        default=18790,
+        help="HTTP 文件服务端口 (默认: 18790)"
+    )
+    parser.add_argument(
         "--verbose", "-v",
         action="store_true",
         help="启用详细日志"
@@ -412,7 +493,12 @@ async def main():
     # 优先使用命令行参数，其次使用环境变量
     auth_token = args.token or os.environ.get("WECHAT_AUTH_TOKEN", "")
 
-    bridge = WeChatBridge(gateway_url=args.gateway, auth_token=auth_token)
+    bridge = WeChatBridge(
+        gateway_url=args.gateway,
+        auth_token=auth_token,
+        media_dir=args.media_dir,
+        media_port=args.media_port
+    )
 
     # 设置信号处理
     loop = asyncio.get_event_loop()
