@@ -4,7 +4,13 @@
  * 测试用户注册、登录、Token 刷新、登出等认证流程
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import {
+  clearMockDatabase,
+  disableMockDatabase,
+  enableMockDatabase,
+  getMockDatabase,
+} from "../../db/mock-connection.js";
 import {
   register,
   login,
@@ -25,15 +31,25 @@ import { generateId } from "../../db/utils/id.js";
 
 describe("AuthService - 用户注册", () => {
   beforeEach(async () => {
+    // 启用 Mock 数据库
+    enableMockDatabase();
+    const db = getMockDatabase();
+
     // 清空相关表
-    const userRepo = getUserRepository();
-    const codeRepo = getVerificationCodeRepository();
-    const sessionRepo = getUserSessionRepository();
+    const userRepo = getUserRepository(db);
+    const codeRepo = getVerificationCodeRepository(db);
+    const sessionRepo = getUserSessionRepository(db);
+
+    clearMockDatabase();
 
     // 清空测试数据
     await userRepo.deleteAll?.();
     await codeRepo.deleteAll?.();
     await sessionRepo.deleteAll?.();
+  });
+
+  afterEach(() => {
+    disableMockDatabase();
   });
 
   it("应该成功注册新用户（手机号 + 验证码）", async () => {

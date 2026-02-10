@@ -185,6 +185,14 @@ export class UserRepository {
     await this.db.delete(users).where(eq(users.id, id));
     logger.warn("[user-repo] User hard deleted", { userId: id });
   }
+
+  /**
+   * 删除所有用户 (仅用于测试)
+   */
+  async deleteAll(): Promise<void> {
+    await this.db.delete(users);
+    logger.warn("[user-repo] All users deleted");
+  }
 }
 
 /**
@@ -392,6 +400,14 @@ export class UserSessionRepository {
     }
     return count;
   }
+
+  /**
+   * 删除所有会话 (仅用于测试)
+   */
+  async deleteAll(): Promise<void> {
+    await this.db.delete(userSessions);
+    logger.warn("[user-session-repo] All sessions deleted");
+  }
 }
 
 /**
@@ -464,6 +480,14 @@ export class LoginAttemptRepository {
       .delete(loginAttempts)
       .where(sql`${loginAttempts.attemptedAt} < ${cutoff}`);
     return (result as unknown as { rowCount?: number }).rowCount ?? 0;
+  }
+
+  /**
+   * 删除所有登录尝试记录 (仅用于测试)
+   */
+  async deleteAll(): Promise<void> {
+    await this.db.delete(loginAttempts);
+    logger.warn("[login-attempt-repo] All login attempts deleted");
   }
 }
 
@@ -579,6 +603,14 @@ export class VerificationCodeRepository {
       .delete(verificationCodes)
       .where(or(sql`${verificationCodes.expiresAt} < NOW()`, eq(verificationCodes.used, true)));
     return (result as unknown as { rowCount?: number }).rowCount ?? 0;
+  }
+
+  /**
+   * 删除所有验证码 (仅用于测试)
+   */
+  async deleteAll(): Promise<void> {
+    await this.db.delete(verificationCodes);
+    logger.warn("[verification-code-repo] All verification codes deleted");
   }
 }
 
