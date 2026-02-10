@@ -333,19 +333,26 @@ class ChatBox:
     
     def get_new_msgs(self):
         if not self.msgbox.Exists(0):
+            wxlog.debug(f'[get_new_msgs] msgbox 不存在')
             return []
         msg_controls = self.msgbox.GetChildren()
         now_msg_ids = tuple((i.runtimeid for i in msg_controls))
         if not now_msg_ids:  # 当前没有消息id
+            wxlog.debug(f'[get_new_msgs] 没有消息控件')
             return []
+        wxlog.debug(f'[get_new_msgs] now_ids={len(now_msg_ids)}, used_ids={len(self.used_msg_ids)}, _empty={self._empty}, last_now={now_msg_ids[-1] if now_msg_ids else None}, last_used={self.used_msg_ids[-1] if self.used_msg_ids else None}')
         if self._empty and self.used_msg_ids:
             self._empty = False
+        # 修复：当 used_msg_ids 为空时，将当前消息 ID 设为基线，避免死循环
+        if not self.used_msg_ids and now_msg_ids:
+            wxlog.debug(f'[get_new_msgs] 初始化基线: {len(now_msg_ids)} 条已有消息')
+            USED_MSG_IDS[self.id] = now_msg_ids[-100:]
+            return []
         if not self._empty and (
-            (not self.used_msg_ids and now_msg_ids)  # 没有使用过的消息id，但当前有消息id
-            or now_msg_ids[-1] == self.used_msg_ids[-1] # 当前最后一条消息id和上次一样
+            now_msg_ids[-1] == self.used_msg_ids[-1] # 当前最后一条消息id和上次一样
             or not set(now_msg_ids)&set(self.used_msg_ids)  # 当前消息id和上次没有交集
         ):
-            # wxlog.debug('没有新消息')
+            wxlog.debug(f'[get_new_msgs] 没有新消息 (same_last={now_msg_ids[-1] == self.used_msg_ids[-1] if self.used_msg_ids else "N/A"}, no_intersect={not set(now_msg_ids)&set(self.used_msg_ids) if self.used_msg_ids else "N/A"})')
             return []
         
         used_msg_ids_set = set(self.used_msg_ids)

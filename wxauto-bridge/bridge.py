@@ -83,18 +83,19 @@ class WeChatBridge:
             logger.error(f"WebSocket 连接失败: {e}")
             return False
 
-    async def start(self, listen_chats: list = None) -> None:
+    async def start(self, listen_chats: list = None, debug: bool = False) -> None:
         """启动桥接器
 
         参数:
             listen_chats: 要监听的聊天列表
+            debug: 是否启用 wxauto debug 模式
         """
         self._running = True
         self._loop = asyncio.get_running_loop()
         logger.info("启动微信桥接器")
 
         # 首先连接微信
-        if not self.wechat.connect():
+        if not self.wechat.connect(debug=debug):
             logger.error("微信连接失败，退出")
             return
 
@@ -425,7 +426,7 @@ async def main():
         loop.add_signal_handler(signal.SIGTERM, signal_handler)
 
     try:
-        await bridge.start()
+        await bridge.start(debug=args.verbose)
     except KeyboardInterrupt:
         logger.info("收到键盘中断")
     finally:
