@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>麦图助手 - AI 驱动的个人电脑助手</title>
+  <meta name="description" content="用自然语言掌控你的电脑。麦图助手是一款 AI 驱动的个人电脑助手，支持文件管理、系统控制、任务自动化，让你的电脑更智能。">
+  <meta name="keywords" content="AI助手,电脑助手,自然语言控制,文件管理,任务自动化,麦图助手,mytoolbot">
+  <meta property="og:title" content="麦图助手 - AI 驱动的个人电脑助手">
+  <meta property="og:description" content="用自然语言掌控你的电脑。支持文件管理、系统控制、任务自动化。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mytoolbot.com">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ========== 导航栏 ========== -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <svg class="nav-logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="8" fill="url(#logo-grad)"/>
+          <path d="M10 12a2 2 0 114 0 2 2 0 01-4 0zm8 0a2 2 0 114 0 2 2 0 01-4 0zM11 18c0 0 2 4 5 4s5-4 5-4" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32">
+              <stop stop-color="#6366f1"/>
+              <stop offset="1" stop-color="#8b5cf6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>麦图助手</span>
+      </a>
+      <div class="nav-links" id="nav-links">
+        <a href="#features" class="nav-link">功能</a>
+        <a href="#how-it-works" class="nav-link">使用方式</a>
+        <a href="#pricing" class="nav-link">定价</a>
+        <a href="#faq" class="nav-link">常见问题</a>
+      </div>
+      <a href="#download" class="nav-cta">免费下载</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="切换菜单">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========== Hero ========== -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <div class="hero-grid"></div>
+      <div class="hero-glow"></div>
+    </div>
+    <div class="hero-content fade-in">
+      <div class="hero-badge">✨ AI 驱动 · 安全可控 · 技能扩展</div>
+      <h1 class="hero-title">用自然语言<br><span class="gradient-text">掌控你的电脑</span></h1>
+      <p class="hero-desc">麦图助手是你的 AI 个人电脑助理。对话即指令，无需学习复杂操作。<br>文件管理、系统监控、任务自动化，一句话全搞定。</p>
+      <div class="hero-actions">
+        <a href="#download" class="btn btn-primary">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v10m0 0l-3.5-3.5M10 13l3.5-3.5M4 17h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          免费下载
+        </a>
+        <a href="#features" class="btn btn-ghost">了解更多 →</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-value">30+</span>
+          <span class="hero-stat-label">通讯渠道</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">Win/Mac/iOS/Android</span>
+          <span class="hero-stat-label">多平台支持</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">安全</span>
+          <span class="hero-stat-label">沙箱执行 · 操作确认</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 核心功能 ========== -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-tag">核心功能</span>
+        <h2 class="section-title">让 AI 成为你的<span class="gradient-text">超级助手</span></h2>
+        <p class="section-desc">从文件管理到系统控制，从技能扩展到多端协同，麦图助手覆盖你的日常操作需求。</p>
+      </div>
+      <div class="features-grid">
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg viewBox="0 0 48 48" fill="none"><rect x="4" y="4" width="40" height="40" rx="12" stroke="url(#f1)" stroke-width="2"/><path d="M15 20h18M15 26h12M15 32h8" stroke="url(#f1)" stroke-width="2" stroke-linecap="round"/><circle cx="35" cy="32" r="5" fill="url(#f1)" opacity="0.2"/><path d="M33 32l1.5 1.5L37 31" stroke="url(#f1)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="f1" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs></svg>
+          </div>
+          <h3 class="feature-title">自然语言控制</h3>
+          <p class="feature-desc">告别复杂操作。直接说"帮我把桌面的文件按类型整理"，AI 自动理解意图、规划步骤、执行任务。支持中文多轮对话。</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg viewBox="0 0 48 48" fill="none"><rect x="6" y="8" width="36" height="32" rx="4" stroke="url(#f2)" stroke-width="2"/><path d="M6 16h36" stroke="url(#f2)" stroke-width="2"/><circle cx="12" cy="12" r="1.5" fill="#ef4444"/><circle cx="18" cy="12" r="1.5" fill="#eab308"/><circle cx="24" cy="12" r="1.5" fill="#22c55e"/><path d="M14 24l4 4 8-8" stroke="url(#f2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="f2" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#06b6d4"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs></svg>
+          </div>
+          <h3 class="feature-title">技能生态系统</h3>
+          <p class="feature-desc">丰富的技能商店，一键订阅专业技能：文件整理、系统清理、数据备份等。也支持自建本地技能，满足个性化需求。</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg viewBox="0 0 48 48" fill="none"><rect x="8" y="4" width="14" height="22" rx="3" stroke="url(#f3)" stroke-width="2"/><rect x="26" y="14" width="18" height="30" rx="3" stroke="url(#f3)" stroke-width="2"/><path d="M22 18h4M13 26v-2" stroke="url(#f3)" stroke-width="2" stroke-linecap="round"/><circle cx="35" cy="39" r="2" stroke="url(#f3)" stroke-width="1.5"/><defs><linearGradient id="f3" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#f59e0b"/><stop offset="1" stop-color="#ef4444"/></linearGradient></defs></svg>
+          </div>
+          <h3 class="feature-title">多设备管理</h3>
+          <p class="feature-desc">手机远程控制家里或办公室电脑。支持 Windows、macOS 桌面端和 iOS、Android 移动端，多台设备统一管理。</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg viewBox="0 0 48 48" fill="none"><path d="M24 4l2.47 7.6h7.99l-6.47 4.7 2.47 7.6L24 19.2l-6.47 4.7 2.47-7.6-6.47-4.7h7.99L24 4z" stroke="url(#f4)" stroke-width="2" stroke-linejoin="round"/><rect x="10" y="30" width="28" height="14" rx="3" stroke="url(#f4)" stroke-width="2"/><path d="M18 37h12" stroke="url(#f4)" stroke-width="2" stroke-linecap="round"/><defs><linearGradient id="f4" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#22c55e"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs></svg>
+          </div>
+          <h3 class="feature-title">安全可控</h3>
+          <p class="feature-desc">敏感操作需用户确认后才执行，技能在沙箱中隔离运行。完整审计日志留痕，TLS 加密传输，你的数据你做主。</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 使用流程 ========== -->
+  <section class="section section-alt" id="how-it-works">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-tag">使用方式</span>
+        <h2 class="section-title">三步开始，<span class="gradient-text">简单上手</span></h2>
+      </div>
+      <div class="steps fade-in">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3 class="step-title">下载安装</h3>
+          <p class="step-desc">下载 Windows 客户端，一键安装。启动后自动运行在系统托盘。</p>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3 class="step-title">对话交互</h3>
+          <p class="step-desc">打开对话窗口，用自然语言描述你的需求。AI 自动理解并规划执行方案。</p>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3 class="step-title">自动执行</h3>
+          <p class="step-desc">确认执行方案后，助手自动完成操作。敏感操作会弹窗二次确认，安全无忧。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 产品展示（终端模拟） ========== -->
+  <section class="section" id="showcase">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-tag">产品体验</span>
+        <h2 class="section-title">看看<span class="gradient-text">麦图助手</span>怎么工作</h2>
+      </div>
+      <div class="terminal fade-in">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">麦图助手 — 对话窗口</span>
+        </div>
+        <div class="terminal-body" id="terminal-body">
+          <div class="chat-msg chat-user">
+            <span class="chat-role">你</span>
+            <span class="chat-text" id="type-user"></span>
+          </div>
+          <div class="chat-msg chat-ai" id="ai-response" style="display:none;">
+            <span class="chat-role">麦图助手</span>
+            <span class="chat-text" id="type-ai"></span>
+          </div>
+          <div class="chat-msg chat-result" id="ai-result" style="display:none;">
+            <span class="chat-role">✅ 执行结果</span>
+            <span class="chat-text" id="type-result"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 定价方案 ========== -->
+  <section class="section section-alt" id="pricing">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-tag">定价方案</span>
+        <h2 class="section-title">选择适合你的<span class="gradient-text">方案</span></h2>
+        <p class="section-desc">免费版即可满足日常使用，专业版解锁全部技能。</p>
+      </div>
+      <div class="pricing-grid fade-in">
+
+        <div class="pricing-card">
+          <div class="pricing-name">免费版</div>
+          <div class="pricing-price">¥0</div>
+          <div class="pricing-period">永久免费</div>
+          <ul class="pricing-features">
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>1 台设备</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>自然语言交互</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>本地技能</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>基础服务端技能</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>文件管理 · 系统监控</li>
+          </ul>
+          <a href="#download" class="btn btn-outline">免费下载</a>
+        </div>
+
+        <div class="pricing-card pricing-card-popular">
+          <div class="pricing-badge">推荐</div>
+          <div class="pricing-name">专业版</div>
+          <div class="pricing-price">¥29.9<span class="pricing-unit">/月</span></div>
+          <div class="pricing-period">按年付 ¥299/年 省 20%</div>
+          <ul class="pricing-features">
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>5 台设备</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>全部服务端技能</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>AI 记忆系统</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>多端远程控制</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>优先客服支持</li>
+          </ul>
+          <a href="#download" class="btn btn-primary">开始使用</a>
+        </div>
+
+        <div class="pricing-card">
+          <div class="pricing-name">企业版</div>
+          <div class="pricing-price">按需报价</div>
+          <div class="pricing-period">私有部署 · 定制开发</div>
+          <ul class="pricing-features">
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>不限设备数量</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>全部技能 + 定制技能</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>私有化部署</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>企业级安全审计</li>
+            <li><svg class="check" viewBox="0 0 20 20"><path d="M5 10l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>专属技术支持</li>
+          </ul>
+          <a href="mailto:contact@mytoolbot.com" class="btn btn-outline">联系我们</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FAQ ========== -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-tag">常见问题</span>
+        <h2 class="section-title">你可能想了解的<span class="gradient-text">问题</span></h2>
+      </div>
+      <div class="faq-list fade-in">
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>麦图助手支持哪些操作系统？</span>
+            <svg class="faq-arrow" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>目前主要支持 Windows 10/11 桌面端。macOS 桌面端已完成开发，iOS 和 Android 移动端可作为远程控制入口使用。后续会持续扩展 Linux 等平台支持。</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>我的数据安全吗？</span>
+            <svg class="faq-arrow" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>非常安全。所有通信使用 TLS 加密，敏感操作（删除文件、结束进程等）需要你手动确认才会执行。技能在沙箱中隔离运行，无法越权访问系统。所有操作留有审计日志，你可以随时查看。</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>如何创建自定义技能？</span>
+            <svg class="faq-arrow" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>麦图助手提供技能开发 SDK 和模板。你可以使用 JavaScript 编写自定义技能，定义输入参数和执行逻辑，通过本地技能管理页面加载运行。高级用户还可以将技能上架到技能商店，获得收益分成。</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>免费版有什么限制？</span>
+            <svg class="faq-arrow" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>免费版支持 1 台设备、本地技能和基础服务端技能，完全覆盖个人日常使用。专业版增加多设备管理、全部服务端技能、AI 记忆系统等高级功能。</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>企业版支持私有化部署吗？</span>
+            <svg class="faq-arrow" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>支持。企业版可以完全私有化部署在企业内网，数据不离开企业环境。支持定制技能开发、企业级安全审计、对接企业微信/钉钉/飞书等内部通讯工具。</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>支持通过微信/钉钉控制电脑吗？</span>
+            <svg class="faq-arrow" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>支持。麦图助手内置 30+ 通讯渠道适配器，包括微信、钉钉、飞书、企业微信、Telegram、Slack 等。你可以直接在这些 App 中给助手发消息来控制电脑。</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 下载 CTA ========== -->
+  <section class="section section-alt" id="download">
+    <div class="container">
+      <div class="download-cta fade-in">
+        <h2 class="download-title">准备好让 AI 帮你<span class="gradient-text">掌控电脑</span>了吗？</h2>
+        <p class="download-desc">免费下载麦图助手，开启智能操作体验。</p>
+        <div class="download-buttons">
+          <a href="#" class="btn btn-primary btn-lg">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 3h8.5v8.5H3V3zm9.5 0H21v8.5h-8.5V3zM3 12.5h8.5V21H3v-8.5zm9.5 0H21V21h-8.5v-8.5z" stroke="currentColor" stroke-width="1.5"/></svg>
+            Windows 下载
+          </a>
+          <a href="#" class="btn btn-ghost btn-lg btn-disabled">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z" stroke="currentColor" stroke-width="1.5"/><path d="M15.5 8.5c-.828 0-1.5 1.007-1.5 2.25s.672 2.25 1.5 2.25S17 11.993 17 10.75 16.328 8.5 15.5 8.5z" stroke="currentColor" stroke-width="1"/></svg>
+            macOS · 即将推出
+          </a>
+        </div>
+        <div class="download-platforms">
+          <span>移动端:</span>
+          <span class="download-badge">iOS · 即将推出</span>
+          <span class="download-badge">Android · 即将推出</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Footer ========== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <span class="footer-logo">麦图助手</span>
+          <span class="footer-company">成都云鲲创想科技有限公司</span>
+        </div>
+        <div class="footer-links">
+          <a href="#">隐私政策</a>
+          <a href="#">用户协议</a>
+          <a href="mailto:contact@mytoolbot.com">联系我们</a>
+        </div>
+        <div class="footer-icp">
+          <!-- ICP 备案号占位 -->
+          <span>蜀ICP备XXXXXXXX号-1</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
