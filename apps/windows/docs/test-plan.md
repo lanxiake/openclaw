@@ -1,8 +1,11 @@
 # OpenClaw Windows AI 助手 - 测试计划
 
-> 版本: 1.0 | 创建日期: 2026-02-07 | 状态: 待测试
+> 版本: 1.1 | 创建日期: 2026-02-07 | 更新日期: 2026-02-10 | 状态: 待测试
+>
+> **全量测试计划**：后端 + admin-console + web-admin + windows 的整合策略与用例清单见  
+> `my-docs/新增功能/06-测试计划与用例清单（整合版）.md`，用于统一测试与跟踪。
 
-本文档为用户提供完整的功能测试指南，帮助验证 Windows AI 助手的所有功能是否正常工作。
+本文档为用户提供 Windows 端完整的功能测试指南，帮助验证 Windows AI 助手的所有功能是否正常工作。
 
 ---
 
@@ -16,6 +19,7 @@
 6. [性能测试](#6-性能测试)
 7. [安全测试](#7-安全测试)
 8. [问题报告模板](#8-问题报告模板)
+9. [代码模块与测试对应关系](#9-代码模块与测试对应关系)
 
 ---
 
@@ -350,6 +354,25 @@ pnpm dev
 ### 额外信息
 [其他相关信息]
 ```
+
+---
+
+## 9. 代码模块与测试对应关系
+
+以下为 Windows 端主要代码模块与本文档测试阶段的对应关系，便于单元/集成测试分工和跟踪（全量应用清单见整合版文档）。
+
+| 代码模块 | 路径 | 对应测试阶段 | 建议测试类型 |
+| -------- | ----- | ------------ | ------------ |
+| Gateway 客户端 | `src/main/gateway-client.ts` | Phase 1（连接）、Phase 2（对话/技能） | 单元 + 集成 |
+| 设备配对服务 | `src/main/device-pairing-service.ts` | Phase 1 设备配对 | 单元 + 集成 |
+| 技能运行时 | `src/main/skill-runtime.ts`, `skill-sandbox.ts` | Phase 3 技能系统 | 单元 + 集成 |
+| 系统服务 | `src/main/system-service.ts` | Phase 2 系统监控 | 单元 |
+| 安全工具 | `src/main/security-utils.ts` | Phase 2 文件管理、安全测试 | 单元 |
+| 更新服务 | `src/main/updater-service.ts` | Phase 4 自动更新 | 单元 + 集成 |
+| 托盘管理 | `src/main/tray-manager.ts` | Phase 1 托盘与窗口 | 集成 |
+| 主进程入口 | `src/main/index.ts` | Phase 1 启动与单实例 | 集成 |
+| 渲染器视图 | `src/renderer/components/*View*.tsx` | Phase 2～4 各功能页 | E2E / 手动 |
+| 渲染器 Hooks | `src/renderer/hooks/*.ts` | 各 Phase 业务逻辑 | 单元（可选） |
 
 ---
 
