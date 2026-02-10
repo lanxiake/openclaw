@@ -295,6 +295,14 @@ export class AdminRepository {
     await this.db.delete(admins).where(eq(admins.id, id));
     logger.warn("[admin-repo] Admin deleted", { adminId: id });
   }
+
+  /**
+   * 删除所有管理员 (仅用于测试)
+   */
+  async deleteAll(): Promise<void> {
+    await this.db.delete(admins);
+    logger.warn("[admin-repo] All admins deleted");
+  }
 }
 
 /**
@@ -441,6 +449,14 @@ export class AdminSessionRepository {
       logger.info("[admin-session-repo] Cleaned up expired sessions", { count });
     }
     return count;
+  }
+
+  /**
+   * 删除所有会话 (仅用于测试)
+   */
+  async deleteAll(): Promise<void> {
+    await this.db.delete(adminSessions);
+    logger.warn("[admin-session-repo] All sessions deleted");
   }
 }
 
@@ -626,6 +642,14 @@ export class AdminLoginAttemptRepository {
       .delete(adminLoginAttempts)
       .where(sql`${adminLoginAttempts.attemptedAt} < ${cutoff}`);
     return (result as unknown as { rowCount?: number }).rowCount ?? 0;
+  }
+
+  /**
+   * 删除所有登录尝试记录 (仅用于测试)
+   */
+  async deleteAll(): Promise<void> {
+    await this.db.delete(adminLoginAttempts);
+    logger.warn("[admin-login-attempt-repo] All login attempts deleted");
   }
 }
 

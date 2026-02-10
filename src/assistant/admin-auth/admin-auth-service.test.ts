@@ -4,7 +4,13 @@
  * 测试管理员登录、Token 刷新、登出等认证流程
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import {
+  clearMockDatabase,
+  disableMockDatabase,
+  enableMockDatabase,
+  getMockDatabase,
+} from "../../db/mock-connection.js";
 import {
   adminLogin,
   adminRefreshToken,
@@ -22,14 +28,24 @@ import {
 
 describe("AdminAuthService - 管理员登录", () => {
   beforeEach(async () => {
+    // 启用 Mock 数据库
+    enableMockDatabase();
+    const db = getMockDatabase();
+
     // 清空相关表
-    const adminRepo = getAdminRepository();
-    const sessionRepo = getAdminSessionRepository();
-    const attemptRepo = getAdminLoginAttemptRepository();
+    const adminRepo = getAdminRepository(db);
+    const sessionRepo = getAdminSessionRepository(db);
+    const attemptRepo = getAdminLoginAttemptRepository(db);
+
+    clearMockDatabase();
 
     await adminRepo.deleteAll?.();
     await sessionRepo.deleteAll?.();
     await attemptRepo.deleteAll?.();
+  });
+
+  afterEach(() => {
+    disableMockDatabase();
   });
 
   it("应该成功使用密码登录", async () => {
