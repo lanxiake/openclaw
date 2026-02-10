@@ -129,17 +129,21 @@ class WeChatHandler:
                 except Exception as e:
                     logger.error(f"状态回调执行失败: {e}")
 
-    def connect(self) -> bool:
-        """连接微信客户端"""
+    def connect(self, debug: bool = False) -> bool:
+        """连接微信客户端
+
+        Args:
+            debug: 是否启用 wxauto debug 模式
+        """
         try:
             self._set_status(WeChatStatus.CONNECTING)
 
-            # 初始化 wxauto
-            self._wx = WeChat()
+            # 初始化 wxauto（debug 模式启用 wxauto 内部日志）
+            self._wx = WeChat(debug=debug)
             self._nickname = self._wx.nickname
             self._wxid = f"wxid_{id(self._wx)}"
 
-            logger.info(f"微信客户端连接成功: {self._nickname}")
+            logger.info(f"微信客户端连接成功: {self._nickname}, debug={debug}")
             self._set_status(WeChatStatus.CONNECTED)
             return True
 
@@ -161,7 +165,7 @@ class WeChatHandler:
         logger.info("微信客户端已断开")
 
     def send_message(self, chat_name: str, message: str, at: Optional[List[str]] = None) -> dict:
-        """发送文本消息
+        """发送文本消息（带剪贴板重试）
 
         Args:
             chat_name: 聊天名称
@@ -171,21 +175,34 @@ class WeChatHandler:
         if not self._wx:
             return {"success": False, "error": "微信未连接"}
 
-        try:
-            with self._lock:
-                # 发送消息，支持 @功能
-                result = self._wx.SendMsg(msg=message, who=chat_name, at=at)
+        max_retries = 3
+        last_error = None
 
-                if result.success:
-                    logger.info(f"消息发送成功: {chat_name}, at={at}")
-                    return {"success": True}
-                else:
-                    return {"success": False, "error": result.message}
+        for attempt in range(1, max_retries + 1):
+            try:
+                with self._lock:
+                    # 发送消息，支持 @功能
+                    result = self._wx.SendMsg(msg=message, who=chat_name, at=at)
 
-        except Exception as e:
-            error_msg = f"发送消息失败: {e}"
-            logger.error(error_msg)
-            return {"success": False, "error": error_msg}
+                    if result.success:
+                        logger.info(f"消息发送成功: {chat_name}, at={at}")
+                        return {"success": True}
+                    else:
+                        last_error = result.message
+                        logger.warning(f"消息发送失败 (尝试 {attempt}/{max_retries}): {last_error}")
+
+            except Exception as e:
+                last_error = str(e)
+                logger.warning(f"消息发送异常 (尝试 {attempt}/{max_retries}): {last_error}")
+
+            # 剪贴板竞争时短暂等待后重试
+            if attempt < max_retries:
+                import time
+                time.sleep(0.5)
+
+        error_msg = f"发送消息失败 (已重试 {max_retries} 次): {last_error}"
+        logger.error(error_msg)
+        return {"success": False, "error": error_msg}
 
     def send_file(self, chat_name: str, file_path: str) -> dict:
         """发送文件"""

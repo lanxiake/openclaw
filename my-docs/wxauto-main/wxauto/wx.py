@@ -84,9 +84,14 @@ class Listener(ABC):
         self._excutor = ThreadPoolExecutor(max_workers=WxParam.LISTENER_EXCUTOR_WORKERS)
         if not hasattr(self, 'listen') or not self.listen:
             self.listen = {}
+        wxlog.debug(f"[listener] 监听线程启动, listen 数量: {len(self.listen)}")
+        _poll_count = 0
         while not self._listener_stop_event.is_set():
             try:
                 self._get_listen_messages()
+                _poll_count += 1
+                if _poll_count % 30 == 0:
+                    wxlog.debug(f"[listener] 已轮询 {_poll_count} 次, listen 数量: {len(self.listen)}, keys: {list(self.listen.keys())}")
             except KeyboardInterrupt:
                 wxlog.debug("监听消息终止")
                 self._listener_stop()
@@ -502,16 +507,22 @@ class WeChat(Chat, Listener):
         except:
             pass
         temp_listen = self.listen.copy()
+        if not temp_listen:
+            wxlog.debug("[listener] listen 字典为空，无监听对象")
         for who in temp_listen:
             chat, callback = temp_listen.get(who, (None, None))
             try:
                 if chat is None or not chat._api.exists():
+                    wxlog.debug(f"[listener] {who}: chat={chat is not None}, exists={False if chat is None else 'N/A'} → 移除监听")
                     self.RemoveListenChat(who)
                     continue
-            except:
+            except Exception as _e:
+                wxlog.debug(f"[listener] {who}: exists() 检查异常: {_e} → 跳过")
                 continue
             with self._lock:
                 msgs = chat.GetNewMessage()
+                if msgs:
+                    wxlog.debug(f"[listener] {who}: 获取到 {len(msgs)} 条新消息")
                 for msg in msgs:
                     wxlog.debug(f"[{msg.attr} {msg.type}]获取到新消息：{who} - {msg.content}")
                     self._excutor.submit(self._safe_callback, callback, msg, chat)
