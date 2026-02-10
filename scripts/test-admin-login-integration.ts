@@ -4,7 +4,11 @@
  * 直接测试管理员认证服务，不依赖 Gateway
  */
 
+import { config } from "dotenv";
 import { adminLogin } from "../src/assistant/admin-auth/index.js";
+
+// 加载环境变量
+config();
 
 async function testAdminLogin() {
   console.log("[TEST] ========== 管理员登录集成测试 ==========\n");
