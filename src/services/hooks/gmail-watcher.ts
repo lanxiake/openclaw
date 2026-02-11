@@ -6,7 +6,7 @@
  */
 
 import { type ChildProcess, spawn } from "node:child_process";
-import { hasBinary } from "../../agents/skills.js";
+import { hasBinary } from "../../agent/skills/skills.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import { runCommandWithTimeout } from "../../infra/process/exec.js";

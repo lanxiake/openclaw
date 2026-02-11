@@ -1,4 +1,4 @@
-import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
+import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agent/agent-scope.js";
 import { listChannelPluginCatalogEntries } from "../channels/core/plugins/catalog.js";
 import { listChannelPlugins, getChannelPlugin } from "../channels/core/plugins/index.js";
 import type { ChannelMeta } from "../channels/core/plugins/types.js";

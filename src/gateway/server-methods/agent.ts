@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { agentCommand } from "../../commands/agent.js";
-import { listAgentIds } from "../../agents/agent-scope.js";
+import { listAgentIds } from "../../agent/agent-scope.js";
 import { loadConfig } from "../../config/config.js";
 import {
   resolveAgentIdFromSessionKey,

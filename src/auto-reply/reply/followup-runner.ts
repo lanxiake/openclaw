@@ -1,9 +1,9 @@
 import crypto from "node:crypto";
-import { resolveAgentModelFallbacksOverride } from "../../agents/agent-scope.js";
-import { lookupContextTokens } from "../../agents/context.js";
-import { DEFAULT_CONTEXT_TOKENS } from "../../agents/defaults.js";
-import { runWithModelFallback } from "../../agents/model-fallback.js";
-import { runEmbeddedPiAgent } from "../../agents/pi-embedded.js";
+import { resolveAgentModelFallbacksOverride } from "../../agent/agent-scope.js";
+import { lookupContextTokens } from "../../agent/runtime/context.js";
+import { DEFAULT_CONTEXT_TOKENS } from "../../agent/runtime/defaults.js";
+import { runWithModelFallback } from "../../agent/models/model-fallback.js";
+import { runEmbeddedPiAgent } from "../../agent/runtime/pi-embedded.js";
 import { resolveAgentIdFromSessionKey, type SessionEntry } from "../../config/sessions.js";
 import type { TypingMode } from "../../config/types.js";
 import { logVerbose } from "../../globals.js";

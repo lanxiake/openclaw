@@ -5,13 +5,13 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { runEmbeddedPiAgent } from "../../agents/pi-embedded.js";
+import { runEmbeddedPiAgent } from "../../agent/runtime/pi-embedded.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import {
   resolveDefaultAgentId,
   resolveAgentWorkspaceDir,
   resolveAgentDir,
-} from "../../agents/agent-scope.js";
+} from "../../agent/agent-scope.js";
 
 /**
  * Generate a short 1-2 word filename slug from session content using LLM

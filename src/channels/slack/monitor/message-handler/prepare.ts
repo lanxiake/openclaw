@@ -1,4 +1,4 @@
-import { resolveAckReaction } from "../../../../agents/identity.js";
+import { resolveAckReaction } from "../../../../agent/runtime/identity.js";
 import { hasControlCommand } from "../../../../auto-reply/command-detection.js";
 import { shouldHandleTextCommands } from "../../../../auto-reply/commands-registry.js";
 import type { FinalizedMsgContext } from "../../../../auto-reply/templating.js";

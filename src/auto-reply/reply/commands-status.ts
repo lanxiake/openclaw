@@ -2,19 +2,19 @@ import {
   resolveAgentDir,
   resolveDefaultAgentId,
   resolveSessionAgentId,
-} from "../../agents/agent-scope.js";
-import { listSubagentRunsForRequester } from "../../agents/subagent-registry.js";
+} from "../../agent/agent-scope.js";
+import { listSubagentRunsForRequester } from "../../agent/runtime/subagent-registry.js";
 import {
   ensureAuthProfileStore,
   resolveAuthProfileDisplayLabel,
   resolveAuthProfileOrder,
-} from "../../agents/auth-profiles.js";
-import { getCustomProviderApiKey, resolveEnvApiKey } from "../../agents/model-auth.js";
+} from "../../agent/models/auth-profiles.js";
+import { getCustomProviderApiKey, resolveEnvApiKey } from "../../agent/models/model-auth.js";
 import {
   resolveInternalSessionKey,
   resolveMainSessionAlias,
-} from "../../agents/tools/sessions-helpers.js";
-import { normalizeProviderId } from "../../agents/model-selection.js";
+} from "../../agent/tools/sessions-helpers.js";
+import { normalizeProviderId } from "../../agent/models/model-selection.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry, SessionScope } from "../../config/sessions.js";
 import { logVerbose } from "../../globals.js";

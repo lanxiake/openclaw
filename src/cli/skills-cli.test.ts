@@ -7,7 +7,7 @@ import {
   buildWorkspaceSkillStatus,
   type SkillStatusEntry,
   type SkillStatusReport,
-} from "../agents/skills-status.js";
+} from "../agent/skills/skills-status.js";
 import { formatSkillInfo, formatSkillsCheck, formatSkillsList } from "./skills-cli.js";
 
 function createMockSkill(overrides: Partial<SkillStatusEntry> = {}): SkillStatusEntry {

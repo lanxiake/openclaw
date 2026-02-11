@@ -35,7 +35,7 @@ import {
   type Usage,
 } from "./open-responses.schema.js";
 import type { GatewayHttpResponsesConfig } from "../config/types.gateway.js";
-import type { ClientToolDefinition } from "../agents/pi-embedded-runner/run/params.js";
+import type { ClientToolDefinition } from "../agent/runtime/pi-embedded-runner/run/params.js";
 import type { ImageContent } from "../commands/agent/types.js";
 import {
   DEFAULT_INPUT_FILE_MAX_BYTES,

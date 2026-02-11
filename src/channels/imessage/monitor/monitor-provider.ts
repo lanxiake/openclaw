@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 
-import { resolveHumanDelayConfig } from "../../../agents/identity.js";
+import { resolveHumanDelayConfig } from "../../../agent/runtime/identity.js";
 import { resolveTextChunkLimit } from "../../../auto-reply/chunk.js";
 import { hasControlCommand } from "../../../auto-reply/command-detection.js";
 import {

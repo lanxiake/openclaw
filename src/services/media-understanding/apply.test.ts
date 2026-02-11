@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { OpenClawConfig } from "../../config/config.js";
 import type { MsgContext } from "../../auto-reply/templating.js";
-import { resolveApiKeyForProvider } from "../../agents/model-auth.js";
+import { resolveApiKeyForProvider } from "../../agent/models/model-auth.js";
 import { fetchRemoteMedia } from "../media/fetch.js";
 
 vi.mock("../agents/model-auth.js", () => ({

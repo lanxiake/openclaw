@@ -31,7 +31,7 @@ describe("embedding provider remote overrides", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const { createEmbeddingProvider } = await import("./embeddings.js");
-    const authModule = await import("../../agents/model-auth.js");
+    const authModule = await import("../../agent/models/model-auth.js");
     vi.mocked(authModule.resolveApiKeyForProvider).mockResolvedValue({
       apiKey: "provider-key",
       mode: "api-key",
@@ -85,7 +85,7 @@ describe("embedding provider remote overrides", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const { createEmbeddingProvider } = await import("./embeddings.js");
-    const authModule = await import("../../agents/model-auth.js");
+    const authModule = await import("../../agent/models/model-auth.js");
     vi.mocked(authModule.resolveApiKeyForProvider).mockResolvedValue({
       apiKey: "provider-key",
       mode: "api-key",
@@ -129,7 +129,7 @@ describe("embedding provider remote overrides", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const { createEmbeddingProvider } = await import("./embeddings.js");
-    const authModule = await import("../../agents/model-auth.js");
+    const authModule = await import("../../agent/models/model-auth.js");
     vi.mocked(authModule.resolveApiKeyForProvider).mockResolvedValue({
       apiKey: "provider-key",
       mode: "api-key",
@@ -177,7 +177,7 @@ describe("embedding provider auto selection", () => {
 
   it("prefers openai when a key resolves", async () => {
     const { createEmbeddingProvider } = await import("./embeddings.js");
-    const authModule = await import("../../agents/model-auth.js");
+    const authModule = await import("../../agent/models/model-auth.js");
     vi.mocked(authModule.resolveApiKeyForProvider).mockImplementation(async ({ provider }) => {
       if (provider === "openai") {
         return { apiKey: "openai-key", source: "env: OPENAI_API_KEY", mode: "api-key" };
@@ -205,7 +205,7 @@ describe("embedding provider auto selection", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const { createEmbeddingProvider } = await import("./embeddings.js");
-    const authModule = await import("../../agents/model-auth.js");
+    const authModule = await import("../../agent/models/model-auth.js");
     vi.mocked(authModule.resolveApiKeyForProvider).mockImplementation(async ({ provider }) => {
       if (provider === "openai") {
         throw new Error('No API key found for provider "openai".');
@@ -241,7 +241,7 @@ describe("embedding provider auto selection", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const { createEmbeddingProvider } = await import("./embeddings.js");
-    const authModule = await import("../../agents/model-auth.js");
+    const authModule = await import("../../agent/models/model-auth.js");
     vi.mocked(authModule.resolveApiKeyForProvider).mockImplementation(async ({ provider }) => {
       if (provider === "openai") {
         return { apiKey: "openai-key", source: "env: OPENAI_API_KEY", mode: "api-key" };
@@ -287,7 +287,7 @@ describe("embedding provider local fallback", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const { createEmbeddingProvider } = await import("./embeddings.js");
-    const authModule = await import("../../agents/model-auth.js");
+    const authModule = await import("../../agent/models/model-auth.js");
     vi.mocked(authModule.resolveApiKeyForProvider).mockResolvedValue({
       apiKey: "provider-key",
       mode: "api-key",

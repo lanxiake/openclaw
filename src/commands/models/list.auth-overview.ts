@@ -1,12 +1,12 @@
-import { formatRemainingShort } from "../../agents/auth-health.js";
+import { formatRemainingShort } from "../../agent/models/auth-health.js";
 import {
   type AuthProfileStore,
   listProfilesForProvider,
   resolveAuthProfileDisplayLabel,
   resolveAuthStorePathForDisplay,
   resolveProfileUnusableUntilForDisplay,
-} from "../../agents/auth-profiles.js";
-import { getCustomProviderApiKey, resolveEnvApiKey } from "../../agents/model-auth.js";
+} from "../../agent/models/auth-profiles.js";
+import { getCustomProviderApiKey, resolveEnvApiKey } from "../../agent/models/model-auth.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { shortenHomePath } from "../../utils.js";
 import { maskApiKey } from "./list.format.js";

@@ -1,5 +1,5 @@
 import { getChannelDock } from "../../channels/core/dock.js";
-import type { SkillCommandSpec } from "../../agents/skills.js";
+import type { SkillCommandSpec } from "../../agent/skills/skills.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import type { MsgContext, TemplateContext } from "../templating.js";
@@ -14,7 +14,7 @@ import { extractInlineSimpleCommand } from "./reply-inline.js";
 import type { TypingController } from "./typing.js";
 import { listSkillCommandsForWorkspace, resolveSkillCommandInvocation } from "../skill-commands.js";
 import { logVerbose } from "../../globals.js";
-import { createOpenClawTools } from "../../agents/openclaw-tools.js";
+import { createOpenClawTools } from "../../agent/tools/openclaw-tools.js";
 import { resolveGatewayMessageChannel } from "../../shared/utils/message-channel.js";
 
 export type InlineActionResult =

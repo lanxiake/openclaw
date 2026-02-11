@@ -5,7 +5,7 @@
  * 基于现有 src/agents/skills/ 和 src/plugins/ 架构扩展
  */
 
-import type { AnyAgentTool } from "../../agents/tools/common.js";
+import type { AnyAgentTool } from "../../agent/tools/common.js";
 
 // === 技能类型定义 ===
 

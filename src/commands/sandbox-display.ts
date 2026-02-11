@@ -2,7 +2,7 @@
  * Display utilities for sandbox CLI
  */
 
-import type { SandboxBrowserInfo, SandboxContainerInfo } from "../agents/sandbox.js";
+import type { SandboxBrowserInfo, SandboxContainerInfo } from "../agent/sandbox/sandbox.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { RuntimeEnv } from "../runtime.js";
 import {

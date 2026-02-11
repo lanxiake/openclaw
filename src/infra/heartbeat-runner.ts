@@ -5,10 +5,10 @@ import {
   resolveAgentConfig,
   resolveAgentWorkspaceDir,
   resolveDefaultAgentId,
-} from "../agents/agent-scope.js";
-import { resolveUserTimezone } from "../agents/date-time.js";
-import { resolveEffectiveMessagesConfig } from "../agents/identity.js";
-import { DEFAULT_HEARTBEAT_FILENAME } from "../agents/workspace.js";
+} from "../agent/agent-scope.js";
+import { resolveUserTimezone } from "../agent/runtime/date-time.js";
+import { resolveEffectiveMessagesConfig } from "../agent/runtime/identity.js";
+import { DEFAULT_HEARTBEAT_FILENAME } from "../agent/runtime/workspace.js";
 import {
   DEFAULT_HEARTBEAT_ACK_MAX_CHARS,
   DEFAULT_HEARTBEAT_EVERY,

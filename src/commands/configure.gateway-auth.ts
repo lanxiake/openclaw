@@ -1,4 +1,4 @@
-import { ensureAuthProfileStore } from "../agents/auth-profiles.js";
+import { ensureAuthProfileStore } from "../agent/models/auth-profiles.js";
 import type { OpenClawConfig, GatewayAuthConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { WizardPrompter } from "../platform/wizard/prompts.js";

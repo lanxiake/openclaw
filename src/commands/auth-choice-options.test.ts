@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { AuthProfileStore } from "../agents/auth-profiles.js";
+import type { AuthProfileStore } from "../agent/models/auth-profiles.js";
 import { buildAuthChoiceOptions } from "./auth-choice-options.js";
 
 describe("buildAuthChoiceOptions", () => {

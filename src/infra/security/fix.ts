@@ -6,7 +6,7 @@ import JSON5 from "json5";
 import type { OpenClawConfig } from "../../config/config.js";
 import { createConfigIO } from "../../config/config.js";
 import { resolveConfigPath, resolveOAuthDir, resolveStateDir } from "../../config/paths.js";
-import { resolveDefaultAgentId } from "../../agents/agent-scope.js";
+import { resolveDefaultAgentId } from "../../agent/agent-scope.js";
 import { INCLUDE_KEY, MAX_INCLUDE_DEPTH } from "../../config/includes.js";
 import { normalizeAgentId } from "../../routing/session-key.js";
 import { readChannelAllowFromStore } from "../device/pairing/pairing-store.js";

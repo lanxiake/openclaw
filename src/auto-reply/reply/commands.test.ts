@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   addSubagentRunForTests,
   resetSubagentRegistryForTests,
-} from "../../agents/subagent-registry.js";
+} from "../../agent/runtime/subagent-registry.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import * as internalHooks from "../../services/hooks/internal-hooks.js";
 import { clearPluginCommands, registerPluginCommand } from "../../plugins/commands.js";

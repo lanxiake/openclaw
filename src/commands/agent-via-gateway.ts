@@ -4,7 +4,7 @@ import { withProgress } from "../cli/progress.js";
 import { loadConfig } from "../config/config.js";
 import { resolveSessionKeyForRequest } from "./agent/session.js";
 import { callGateway, randomIdempotencyKey } from "../gateway/call.js";
-import { listAgentIds } from "../agents/agent-scope.js";
+import { listAgentIds } from "../agent/agent-scope.js";
 import { normalizeAgentId } from "../routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { formatCliCommand } from "../cli/command-format.js";

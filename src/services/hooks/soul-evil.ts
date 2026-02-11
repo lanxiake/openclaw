@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { resolveUserTimezone } from "../../agents/date-time.js";
-import type { WorkspaceBootstrapFile } from "../../agents/workspace.js";
+import { resolveUserTimezone } from "../../agent/runtime/date-time.js";
+import type { WorkspaceBootstrapFile } from "../../agent/runtime/workspace.js";
 import { parseDurationMs } from "../../cli/parse-duration.js";
 import { resolveUserPath } from "../../utils.js";
 

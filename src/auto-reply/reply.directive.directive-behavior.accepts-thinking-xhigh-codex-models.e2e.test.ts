@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { withTempHome as withTempHomeBase } from "../../test/helpers/temp-home.js";
-import { loadModelCatalog } from "../agents/model-catalog.js";
-import { runEmbeddedPiAgent } from "../agents/pi-embedded.js";
+import { loadModelCatalog } from "../agent/models/model-catalog.js";
+import { runEmbeddedPiAgent } from "../agent/runtime/pi-embedded.js";
 import { loadSessionStore } from "../config/sessions.js";
 import { getReplyFromConfig } from "./reply.js";
 

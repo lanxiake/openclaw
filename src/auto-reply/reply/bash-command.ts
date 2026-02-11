@@ -1,8 +1,12 @@
-import { resolveSessionAgentId } from "../../agents/agent-scope.js";
-import { getFinishedSession, getSession, markExited } from "../../agents/bash-process-registry.js";
-import { createExecTool } from "../../agents/bash-tools.js";
-import { resolveSandboxRuntimeStatus } from "../../agents/sandbox.js";
-import { killProcessTree } from "../../agents/shell-utils.js";
+import { resolveSessionAgentId } from "../../agent/agent-scope.js";
+import {
+  getFinishedSession,
+  getSession,
+  markExited,
+} from "../../agent/tools/bash-process-registry.js";
+import { createExecTool } from "../../agent/tools/bash-tools.js";
+import { resolveSandboxRuntimeStatus } from "../../agent/sandbox/sandbox.js";
+import { killProcessTree } from "../../agent/tools/shell-utils.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { formatCliCommand } from "../../cli/command-format.js";
 import { logVerbose } from "../../globals.js";

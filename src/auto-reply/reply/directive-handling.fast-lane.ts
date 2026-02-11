@@ -1,4 +1,4 @@
-import type { ModelAliasIndex } from "../../agents/model-selection.js";
+import type { ModelAliasIndex } from "../../agent/models/model-selection.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import type { MsgContext } from "../templating.js";
@@ -28,7 +28,7 @@ export async function applyInlineDirectivesFastLane(params: {
   aliasIndex: ModelAliasIndex;
   allowedModelKeys: Set<string>;
   allowedModelCatalog: Awaited<
-    ReturnType<typeof import("../../agents/model-catalog.js").loadModelCatalog>
+    ReturnType<typeof import("../../agent/models/model-catalog.js").loadModelCatalog>
   >;
   resetModelOverride: boolean;
   provider: string;
@@ -40,7 +40,7 @@ export async function applyInlineDirectivesFastLane(params: {
     resolveDefaultThinkingLevel: () => Promise<ThinkLevel | undefined>;
     allowedModelKeys: Set<string>;
     allowedModelCatalog: Awaited<
-      ReturnType<typeof import("../../agents/model-catalog.js").loadModelCatalog>
+      ReturnType<typeof import("../../agent/models/model-catalog.js").loadModelCatalog>
     >;
     resetModelOverride: boolean;
   };

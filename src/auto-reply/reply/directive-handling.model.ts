@@ -1,11 +1,11 @@
-import { resolveAuthStorePathForDisplay } from "../../agents/auth-profiles.js";
+import { resolveAuthStorePathForDisplay } from "../../agent/models/auth-profiles.js";
 import {
   type ModelAliasIndex,
   modelKey,
   normalizeProviderId,
   resolveConfiguredModelRef,
   resolveModelRefFromString,
-} from "../../agents/model-selection.js";
+} from "../../agent/models/model-selection.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { shortenHomePath } from "../../utils.js";
 import type { ReplyPayload } from "../types.js";

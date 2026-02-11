@@ -10,7 +10,7 @@ import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
 import type { OpenClawConfig } from "../../../../config/config.js";
-import { resolveAgentWorkspaceDir } from "../../../../agents/agent-scope.js";
+import { resolveAgentWorkspaceDir } from "../../../../agent/agent-scope.js";
 import { resolveAgentIdFromSessionKey } from "../../../../routing/session-key.js";
 import { resolveHookConfig } from "../../config.js";
 import type { HookHandler } from "../../hooks.js";

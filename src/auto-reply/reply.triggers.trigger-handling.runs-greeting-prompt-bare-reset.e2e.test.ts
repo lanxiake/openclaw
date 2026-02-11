@@ -48,7 +48,7 @@ const modelCatalogMocks = vi.hoisted(() => ({
 
 vi.mock("../agents/model-catalog.js", () => modelCatalogMocks);
 
-import { abortEmbeddedPiRun, runEmbeddedPiAgent } from "../agents/pi-embedded.js";
+import { abortEmbeddedPiRun, runEmbeddedPiAgent } from "../agent/runtime/pi-embedded.js";
 import { getReplyFromConfig } from "./reply.js";
 
 const _MAIN_SESSION_KEY = "agent:main:main";

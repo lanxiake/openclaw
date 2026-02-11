@@ -118,7 +118,7 @@ export { ToolPolicySchema } from "../config/zod-schema.agent-runtime.js";
 export type { RuntimeEnv } from "../runtime.js";
 export type { WizardPrompter } from "../platform/wizard/prompts.js";
 export { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
-export { resolveAckReaction } from "../agents/identity.js";
+export { resolveAckReaction } from "../agent/runtime/identity.js";
 export type { ReplyPayload } from "../auto-reply/types.js";
 export type { ChunkMode } from "../auto-reply/chunk.js";
 export { SILENT_REPLY_TOKEN, isSilentReplyText } from "../auto-reply/tokens.js";
@@ -190,7 +190,7 @@ export {
 } from "../channels/core/plugins/directory-config.js";
 export type { AllowlistMatch } from "../channels/core/plugins/allowlist-match.js";
 export { formatAllowlistMatchMeta } from "../channels/core/plugins/allowlist-match.js";
-export { optionalStringEnum, stringEnum } from "../agents/schema/typebox.js";
+export { optionalStringEnum, stringEnum } from "../agent/tools/schema/typebox.js";
 export type { PollInput } from "../polls.js";
 
 export { buildChannelConfigSchema } from "../channels/core/plugins/config-schema.js";
@@ -221,7 +221,7 @@ export {
   readNumberParam,
   readReactionParams,
   readStringParam,
-} from "../agents/tools/common.js";
+} from "../agent/tools/common.js";
 export { formatDocsLink } from "../shared/terminal/links.js";
 export type { HookEntry } from "../services/hooks/types.js";
 export { normalizeE164 } from "../utils.js";

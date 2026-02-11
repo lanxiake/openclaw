@@ -5,23 +5,23 @@ import os from "node:os";
 import path from "node:path";
 
 import type { Api, Model } from "@mariozechner/pi-ai";
-import { discoverAuthStorage, discoverModels } from "../agents/pi-model-discovery.js";
+import { discoverAuthStorage, discoverModels } from "../agent/runtime/pi-model-discovery.js";
 import { describe, it } from "vitest";
-import { resolveOpenClawAgentDir } from "../agents/agent-paths.js";
-import { resolveAgentWorkspaceDir } from "../agents/agent-scope.js";
+import { resolveOpenClawAgentDir } from "../agent/agent-paths.js";
+import { resolveAgentWorkspaceDir } from "../agent/agent-scope.js";
 import {
   type AuthProfileStore,
   ensureAuthProfileStore,
   saveAuthProfileStore,
-} from "../agents/auth-profiles.js";
+} from "../agent/models/auth-profiles.js";
 import {
   collectAnthropicApiKeys,
   isAnthropicBillingError,
   isAnthropicRateLimitError,
-} from "../agents/live-auth-keys.js";
-import { isModernModelRef } from "../agents/live-model-filter.js";
-import { getApiKeyForModel } from "../agents/model-auth.js";
-import { ensureOpenClawModelsJson } from "../agents/models-config.js";
+} from "../agent/models/live-auth-keys.js";
+import { isModernModelRef } from "../agent/models/live-model-filter.js";
+import { getApiKeyForModel } from "../agent/models/model-auth.js";
+import { ensureOpenClawModelsJson } from "../agent/models/models-config.js";
 import { loadConfig } from "../config/config.js";
 import type { OpenClawConfig, ModelProviderConfig } from "../config/types.js";
 import { isTruthyEnvValue } from "../infra/env.js";

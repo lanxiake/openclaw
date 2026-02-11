@@ -1,4 +1,4 @@
-import { ensureAuthProfileStore } from "../../agents/auth-profiles.js";
+import { ensureAuthProfileStore } from "../../agent/models/auth-profiles.js";
 import { listChannelPlugins } from "../../channels/core/plugins/index.js";
 import {
   applyAuthChoice,

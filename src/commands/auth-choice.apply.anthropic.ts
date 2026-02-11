@@ -1,4 +1,4 @@
-import { upsertAuthProfile } from "../agents/auth-profiles.js";
+import { upsertAuthProfile } from "../agent/models/auth-profiles.js";
 import {
   formatApiKeyPreview,
   normalizeApiKeyInput,

@@ -4,25 +4,25 @@ import {
   resolveAgentModelFallbacksOverride,
   resolveAgentModelPrimary,
   resolveAgentWorkspaceDir,
-} from "../agents/agent-scope.js";
-import { ensureAuthProfileStore } from "../agents/auth-profiles.js";
-import { runCliAgent } from "../agents/cli-runner.js";
-import { getCliSessionId } from "../agents/cli-session.js";
-import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../agents/defaults.js";
-import { loadModelCatalog } from "../agents/model-catalog.js";
-import { runWithModelFallback } from "../agents/model-fallback.js";
+} from "../agent/agent-scope.js";
+import { ensureAuthProfileStore } from "../agent/models/auth-profiles.js";
+import { runCliAgent } from "../agent/runtime/cli-runner.js";
+import { getCliSessionId } from "../agent/runtime/cli-session.js";
+import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../agent/runtime/defaults.js";
+import { loadModelCatalog } from "../agent/models/model-catalog.js";
+import { runWithModelFallback } from "../agent/models/model-fallback.js";
 import {
   buildAllowedModelSet,
   isCliProvider,
   modelKey,
   resolveConfiguredModelRef,
   resolveThinkingDefault,
-} from "../agents/model-selection.js";
-import { runEmbeddedPiAgent } from "../agents/pi-embedded.js";
-import { buildWorkspaceSkillSnapshot } from "../agents/skills.js";
-import { getSkillsSnapshotVersion } from "../agents/skills/refresh.js";
-import { resolveAgentTimeoutMs } from "../agents/timeout.js";
-import { ensureAgentWorkspace } from "../agents/workspace.js";
+} from "../agent/models/model-selection.js";
+import { runEmbeddedPiAgent } from "../agent/runtime/pi-embedded.js";
+import { buildWorkspaceSkillSnapshot } from "../agent/skills/skills.js";
+import { getSkillsSnapshotVersion } from "../agent/skills/refresh.js";
+import { resolveAgentTimeoutMs } from "../agent/runtime/timeout.js";
+import { ensureAgentWorkspace } from "../agent/runtime/workspace.js";
 import {
   formatThinkingLevels,
   formatXHighModelHint,
@@ -51,7 +51,7 @@ import { formatCliCommand } from "../cli/command-format.js";
 import { applyVerboseOverride } from "../sessions/level-overrides.js";
 import { resolveSendPolicy } from "../sessions/send-policy.js";
 import { applyModelOverrideToSessionEntry } from "../sessions/model-overrides.js";
-import { clearSessionAuthProfileOverride } from "../agents/auth-profiles/session-override.js";
+import { clearSessionAuthProfileOverride } from "../agent/models/auth-profiles/session-override.js";
 import { resolveMessageChannel } from "../shared/utils/message-channel.js";
 import { deliverAgentCommandResult } from "./agent/delivery.js";
 import { resolveAgentRunContext } from "./agent/run-context.js";

@@ -8,7 +8,7 @@ import { parseNodeList } from "./format.js";
 import { callGatewayCli, nodesCallOpts, resolveNodeId, unauthorizedHintForMessage } from "./rpc.js";
 import type { NodesRpcOpts } from "./types.js";
 import { loadConfig } from "../../config/config.js";
-import { resolveAgentConfig, resolveDefaultAgentId } from "../../agents/agent-scope.js";
+import { resolveAgentConfig, resolveDefaultAgentId } from "../../agent/agent-scope.js";
 import {
   type ExecApprovalsFile,
   type ExecAsk,

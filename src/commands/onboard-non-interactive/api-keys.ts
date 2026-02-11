@@ -2,8 +2,8 @@ import {
   ensureAuthProfileStore,
   resolveApiKeyForProfile,
   resolveAuthProfileOrder,
-} from "../../agents/auth-profiles.js";
-import { resolveEnvApiKey } from "../../agents/model-auth.js";
+} from "../../agent/models/auth-profiles.js";
+import { resolveEnvApiKey } from "../../agent/models/model-auth.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { RuntimeEnv } from "../../runtime.js";
 

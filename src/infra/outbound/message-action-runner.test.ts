@@ -8,7 +8,7 @@ import { telegramPlugin } from "../../../extensions/telegram/src/channel.js";
 import { whatsappPlugin } from "../../../extensions/whatsapp/src/channel.js";
 import { loadWebMedia } from "../../channels/whatsapp/media.js";
 import { runMessageAction } from "./message-action-runner.js";
-import { jsonResult } from "../../agents/tools/common.js";
+import { jsonResult } from "../../agent/tools/common.js";
 import type { ChannelPlugin } from "../../channels/core/plugins/types.js";
 
 vi.mock("../../web/media.js", async () => {

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { DEFAULT_AGENTS_FILENAME } from "../agents/workspace.js";
+import { DEFAULT_AGENTS_FILENAME } from "../agent/runtime/workspace.js";
 import { shortenHomePath } from "../utils.js";
 
 export const MEMORY_SYSTEM_PROMPT = [

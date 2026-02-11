@@ -1,13 +1,13 @@
 import { confirm as clackConfirm, select as clackSelect, text as clackText } from "@clack/prompts";
 
-import { upsertAuthProfile } from "../../agents/auth-profiles.js";
-import { normalizeProviderId } from "../../agents/model-selection.js";
+import { upsertAuthProfile } from "../../agent/models/auth-profiles.js";
+import { normalizeProviderId } from "../../agent/models/model-selection.js";
 import {
   resolveAgentDir,
   resolveAgentWorkspaceDir,
   resolveDefaultAgentId,
-} from "../../agents/agent-scope.js";
-import { resolveDefaultAgentWorkspaceDir } from "../../agents/workspace.js";
+} from "../../agent/agent-scope.js";
+import { resolveDefaultAgentWorkspaceDir } from "../../agent/runtime/workspace.js";
 import { parseDurationMs } from "../../cli/parse-duration.js";
 import { formatCliCommand } from "../../cli/command-format.js";
 import { readConfigFileSnapshot, type OpenClawConfig } from "../../config/config.js";
@@ -26,7 +26,7 @@ import type {
   ProviderAuthResult,
   ProviderPlugin,
 } from "../../plugins/types.js";
-import type { AuthProfileCredential } from "../../agents/auth-profiles/types.js";
+import type { AuthProfileCredential } from "../../agent/models/auth-profiles/types.js";
 import { validateAnthropicSetupToken } from "../auth-token.js";
 
 const confirm = (params: Parameters<typeof clackConfirm>[0]) =>

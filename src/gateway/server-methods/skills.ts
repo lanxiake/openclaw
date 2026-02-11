@@ -1,7 +1,7 @@
-import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/agent-scope.js";
-import { installSkill } from "../../agents/skills-install.js";
-import { buildWorkspaceSkillStatus } from "../../agents/skills-status.js";
-import { loadWorkspaceSkillEntries, type SkillEntry } from "../../agents/skills.js";
+import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agent/agent-scope.js";
+import { installSkill } from "../../agent/skills/skills-install.js";
+import { buildWorkspaceSkillStatus } from "../../agent/skills/skills-status.js";
+import { loadWorkspaceSkillEntries, type SkillEntry } from "../../agent/skills/skills.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { loadConfig, writeConfigFile } from "../../config/config.js";
 import { getRemoteSkillEligibility } from "../../infra/skills-remote.js";

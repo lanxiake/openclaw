@@ -1,10 +1,10 @@
 import type { Command } from "commander";
-import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
+import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agent/agent-scope.js";
 import {
   buildWorkspaceSkillStatus,
   type SkillStatusEntry,
   type SkillStatusReport,
-} from "../agents/skills-status.js";
+} from "../agent/skills/skills-status.js";
 import { loadConfig } from "../config/config.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../shared/terminal/links.js";

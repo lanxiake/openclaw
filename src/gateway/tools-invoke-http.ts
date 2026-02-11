@@ -1,12 +1,12 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { createOpenClawTools } from "../agents/openclaw-tools.js";
+import { createOpenClawTools } from "../agent/tools/openclaw-tools.js";
 import {
   filterToolsByPolicy,
   resolveEffectiveToolPolicy,
   resolveGroupToolPolicy,
   resolveSubagentToolPolicy,
-} from "../agents/pi-tools.policy.js";
+} from "../agent/tools/pi-tools.policy.js";
 import {
   buildPluginToolGroups,
   collectExplicitAllowlist,
@@ -14,7 +14,7 @@ import {
   normalizeToolName,
   resolveToolProfilePolicy,
   stripPluginOnlyAllowlist,
-} from "../agents/tool-policy.js";
+} from "../agent/tools/tool-policy.js";
 import { loadConfig } from "../config/config.js";
 import { resolveMainSessionKey } from "../config/sessions.js";
 import { logWarn } from "../logger.js";

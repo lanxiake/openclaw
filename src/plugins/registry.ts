@@ -1,4 +1,4 @@
-import type { AnyAgentTool } from "../agents/tools/common.js";
+import type { AnyAgentTool } from "../agent/tools/common.js";
 import type { ChannelDock } from "../channels/core/dock.js";
 import type { ChannelPlugin } from "../channels/core/plugins/types.js";
 import type {

@@ -1,6 +1,6 @@
-import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
-import { initSubagentRegistry } from "../agents/subagent-registry.js";
-import { registerSkillsChangeListener } from "../agents/skills/refresh.js";
+import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agent/agent-scope.js";
+import { initSubagentRegistry } from "../agent/runtime/subagent-registry.js";
+import { registerSkillsChangeListener } from "../agent/skills/refresh.js";
 import type { CanvasHostServer } from "../platform/canvas-host/server.js";
 import { type ChannelId, listChannelPlugins } from "../channels/core/plugins/index.js";
 import { createDefaultDeps } from "../cli/deps.js";

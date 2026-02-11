@@ -1,7 +1,7 @@
 import type { Api, Model } from "@mariozechner/pi-ai";
 
-import { ensureAuthProfileStore } from "../../agents/auth-profiles.js";
-import { parseModelRef } from "../../agents/model-selection.js";
+import { ensureAuthProfileStore } from "../../agent/models/auth-profiles.js";
+import { parseModelRef } from "../../agent/models/model-selection.js";
 import { loadConfig } from "../../config/config.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { resolveConfiguredEntries } from "./list.configured.js";

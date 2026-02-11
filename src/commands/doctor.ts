@@ -1,14 +1,14 @@
 import fs from "node:fs";
 
 import { intro as clackIntro, outro as clackOutro } from "@clack/prompts";
-import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
-import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../agents/defaults.js";
-import { loadModelCatalog } from "../agents/model-catalog.js";
+import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agent/agent-scope.js";
+import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../agent/runtime/defaults.js";
+import { loadModelCatalog } from "../agent/models/model-catalog.js";
 import {
   getModelRefStatus,
   resolveConfiguredModelRef,
   resolveHooksGmailModel,
-} from "../agents/model-selection.js";
+} from "../agent/models/model-selection.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { CONFIG_PATH, readConfigFileSnapshot, writeConfigFile } from "../config/config.js";

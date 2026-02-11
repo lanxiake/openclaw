@@ -2,7 +2,7 @@ import net from "node:net";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { CHUTES_TOKEN_ENDPOINT, CHUTES_USERINFO_ENDPOINT } from "../agents/chutes-oauth.js";
+import { CHUTES_TOKEN_ENDPOINT, CHUTES_USERINFO_ENDPOINT } from "../agent/models/chutes-oauth.js";
 import { loginChutes } from "./chutes-oauth.js";
 
 async function getFreePort(): Promise<number> {

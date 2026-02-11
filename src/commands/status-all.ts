@@ -1,4 +1,4 @@
-import { buildWorkspaceSkillStatus } from "../agents/skills-status.js";
+import { buildWorkspaceSkillStatus } from "../agent/skills/skills-status.js";
 import { withProgress } from "../cli/progress.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { loadConfig, readConfigFileSnapshot, resolveGatewayPort } from "../config/config.js";

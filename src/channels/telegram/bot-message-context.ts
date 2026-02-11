@@ -1,12 +1,12 @@
 import type { Bot } from "grammy";
 
-import { resolveAckReaction } from "../../agents/identity.js";
+import { resolveAckReaction } from "../../agent/runtime/identity.js";
 import {
   findModelInCatalog,
   loadModelCatalog,
   modelSupportsVision,
-} from "../../agents/model-catalog.js";
-import { resolveDefaultModelForAgent } from "../../agents/model-selection.js";
+} from "../../agent/models/model-catalog.js";
+import { resolveDefaultModelForAgent } from "../../agent/models/model-selection.js";
 import { hasControlCommand } from "../../auto-reply/command-detection.js";
 import { normalizeCommandBody } from "../../auto-reply/commands-registry.js";
 import { formatInboundEnvelope, resolveEnvelopeFormatOptions } from "../../auto-reply/envelope.js";

@@ -14,7 +14,7 @@ import {
   testState,
   writeSessionStore,
 } from "./test-helpers.js";
-import { DEFAULT_PROVIDER } from "../agents/defaults.js";
+import { DEFAULT_PROVIDER } from "../agent/runtime/defaults.js";
 
 const sessionCleanupMocks = vi.hoisted(() => ({
   clearSessionQueues: vi.fn(() => ({ followupCleared: 0, laneCleared: 0, keys: [] })),

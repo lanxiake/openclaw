@@ -28,14 +28,14 @@ import type {
 import { logVerbose } from "../../globals.js";
 import { isVoiceCompatibleAudio } from "../media/audio.js";
 import { CONFIG_DIR, resolveUserPath } from "../../utils.js";
-import { getApiKeyForModel, requireApiKey } from "../../agents/model-auth.js";
+import { getApiKeyForModel, requireApiKey } from "../../agent/models/model-auth.js";
 import {
   buildModelAliasIndex,
   resolveDefaultModelForAgent,
   resolveModelRefFromString,
   type ModelRef,
-} from "../../agents/model-selection.js";
-import { resolveModel } from "../../agents/pi-embedded-runner/model.js";
+} from "../../agent/models/model-selection.js";
+import { resolveModel } from "../../agent/runtime/pi-embedded-runner/model.js";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_TTS_MAX_LENGTH = 1500;

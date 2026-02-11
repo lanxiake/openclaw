@@ -1,5 +1,5 @@
 import type { VideoDescriptionRequest, VideoDescriptionResult } from "../../types.js";
-import { normalizeGoogleModelId } from "../../../../agents/models-config.providers.js";
+import { normalizeGoogleModelId } from "../../../../agent/models/models-config.providers.js";
 import { fetchWithTimeout, normalizeBaseUrl, readErrorResponse } from "../shared.js";
 
 export const DEFAULT_GOOGLE_VIDEO_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";

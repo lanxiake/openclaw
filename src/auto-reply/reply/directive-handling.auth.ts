@@ -2,14 +2,14 @@ import {
   isProfileInCooldown,
   resolveAuthProfileDisplayLabel,
   resolveAuthStorePathForDisplay,
-} from "../../agents/auth-profiles.js";
+} from "../../agent/models/auth-profiles.js";
 import {
   ensureAuthProfileStore,
   getCustomProviderApiKey,
   resolveAuthProfileOrder,
   resolveEnvApiKey,
-} from "../../agents/model-auth.js";
-import { normalizeProviderId } from "../../agents/model-selection.js";
+} from "../../agent/models/model-auth.js";
+import { normalizeProviderId } from "../../agent/models/model-selection.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { shortenHomePath } from "../../utils.js";
 

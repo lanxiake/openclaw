@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { ModelAliasIndex } from "../../agents/model-selection.js";
+import type { ModelAliasIndex } from "../../agent/models/model-selection.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { parseInlineDirectives } from "./directive-handling.js";

@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
+import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agent/agent-scope.js";
 import { CHANNEL_IDS, normalizeChatChannelId } from "../channels/core/registry.js";
 import {
   normalizePluginsConfig,

@@ -1,4 +1,4 @@
-import { resolveAnnounceTargetFromKey } from "../agents/tools/sessions-send-helpers.js";
+import { resolveAnnounceTargetFromKey } from "../agent/tools/sessions-send-helpers.js";
 import { normalizeChannelId } from "../channels/core/plugins/index.js";
 import type { CliDeps } from "../cli/deps.js";
 import { agentCommand } from "../commands/agent.js";

@@ -6,8 +6,8 @@ import {
   readNumberParam,
   readStringArrayParam,
   readStringParam,
-} from "../../agents/tools/common.js";
-import { resolveSessionAgentId } from "../../agents/agent-scope.js";
+} from "../../agent/tools/common.js";
+import { resolveSessionAgentId } from "../../agent/agent-scope.js";
 import { parseReplyDirectives } from "../../auto-reply/reply/reply-directives.js";
 import { dispatchChannelMessageAction } from "../../channels/core/plugins/message-actions.js";
 import type {

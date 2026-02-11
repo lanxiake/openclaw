@@ -1,4 +1,4 @@
-import type { ClientToolDefinition } from "../../agents/pi-embedded-runner/run/params.js";
+import type { ClientToolDefinition } from "../../agent/runtime/pi-embedded-runner/run/params.js";
 import type { ChannelOutboundTargetMode } from "../../channels/core/plugins/types.js";
 
 /** Image content block for Claude API multimodal messages. */

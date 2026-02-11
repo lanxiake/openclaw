@@ -1,4 +1,4 @@
-import type { AuthProfileStore } from "../agents/auth-profiles.js";
+import type { AuthProfileStore } from "../agent/models/auth-profiles.js";
 import type { AuthChoice } from "./onboard-types.js";
 
 export type AuthChoiceOption = {

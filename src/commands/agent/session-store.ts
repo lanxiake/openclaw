@@ -1,13 +1,13 @@
-import { setCliSessionId } from "../../agents/cli-session.js";
-import { lookupContextTokens } from "../../agents/context.js";
-import { DEFAULT_CONTEXT_TOKENS } from "../../agents/defaults.js";
-import { isCliProvider } from "../../agents/model-selection.js";
-import { hasNonzeroUsage } from "../../agents/usage.js";
+import { setCliSessionId } from "../../agent/runtime/cli-session.js";
+import { lookupContextTokens } from "../../agent/runtime/context.js";
+import { DEFAULT_CONTEXT_TOKENS } from "../../agent/runtime/defaults.js";
+import { isCliProvider } from "../../agent/models/model-selection.js";
+import { hasNonzeroUsage } from "../../agent/runtime/usage.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { type SessionEntry, updateSessionStore } from "../../config/sessions.js";
 
 type RunResult = Awaited<
-  ReturnType<(typeof import("../../agents/pi-embedded.js"))["runEmbeddedPiAgent"]>
+  ReturnType<(typeof import("../../agent/runtime/pi-embedded.js"))["runEmbeddedPiAgent"]>
 >;
 
 export async function updateSessionStoreAfterAgentRun(params: {

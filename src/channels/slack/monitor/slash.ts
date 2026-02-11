@@ -1,7 +1,7 @@
 import type { SlackActionMiddlewareArgs, SlackCommandMiddlewareArgs } from "@slack/bolt";
 import type { ChatCommandDefinition, CommandArgs } from "../../../auto-reply/commands-registry.js";
 import { resolveChunkMode } from "../../../auto-reply/chunk.js";
-import { resolveEffectiveMessagesConfig } from "../../../agents/identity.js";
+import { resolveEffectiveMessagesConfig } from "../../../agent/runtime/identity.js";
 import {
   buildCommandTextFromArgs,
   findCommandByNativeName,

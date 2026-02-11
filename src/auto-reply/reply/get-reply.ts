@@ -2,10 +2,13 @@ import {
   resolveAgentDir,
   resolveAgentWorkspaceDir,
   resolveSessionAgentId,
-} from "../../agents/agent-scope.js";
-import { resolveModelRefFromString } from "../../agents/model-selection.js";
-import { resolveAgentTimeoutMs } from "../../agents/timeout.js";
-import { DEFAULT_AGENT_WORKSPACE_DIR, ensureAgentWorkspace } from "../../agents/workspace.js";
+} from "../../agent/agent-scope.js";
+import { resolveModelRefFromString } from "../../agent/models/model-selection.js";
+import { resolveAgentTimeoutMs } from "../../agent/runtime/timeout.js";
+import {
+  DEFAULT_AGENT_WORKSPACE_DIR,
+  ensureAgentWorkspace,
+} from "../../agent/runtime/workspace.js";
 import { type OpenClawConfig, loadConfig } from "../../config/config.js";
 import { defaultRuntime } from "../../runtime.js";
 import { resolveCommandAuthorization } from "../command-auth.js";

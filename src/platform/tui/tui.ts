@@ -6,7 +6,7 @@ import {
   Text,
   TUI,
 } from "@mariozechner/pi-tui";
-import { resolveDefaultAgentId } from "../../agents/agent-scope.js";
+import { resolveDefaultAgentId } from "../../agent/agent-scope.js";
 import { loadConfig } from "../../config/config.js";
 import {
   buildAgentMainSessionKey,

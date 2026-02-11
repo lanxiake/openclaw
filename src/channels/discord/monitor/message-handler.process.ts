@@ -1,5 +1,5 @@
 import { ChannelType } from "@buape/carbon";
-import { resolveAckReaction, resolveHumanDelayConfig } from "../../../agents/identity.js";
+import { resolveAckReaction, resolveHumanDelayConfig } from "../../../agent/runtime/identity.js";
 import {
   removeAckReactionAfterReply,
   shouldAckReaction as shouldAckReactionGate,

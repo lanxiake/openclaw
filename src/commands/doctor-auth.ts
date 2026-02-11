@@ -2,7 +2,7 @@ import {
   buildAuthHealthSummary,
   DEFAULT_OAUTH_WARN_MS,
   formatRemainingShort,
-} from "../agents/auth-health.js";
+} from "../agent/models/auth-health.js";
 import {
   CLAUDE_CLI_PROFILE_ID,
   CODEX_CLI_PROFILE_ID,
@@ -10,8 +10,8 @@ import {
   repairOAuthProfileIdMismatch,
   resolveApiKeyForProfile,
   resolveProfileUnusableUntilForDisplay,
-} from "../agents/auth-profiles.js";
-import { updateAuthProfileStoreWithLock } from "../agents/auth-profiles/store.js";
+} from "../agent/models/auth-profiles.js";
+import { updateAuthProfileStoreWithLock } from "../agent/models/auth-profiles/store.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { note } from "../shared/terminal/note.js";
 import { formatCliCommand } from "../cli/command-format.js";

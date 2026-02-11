@@ -52,7 +52,7 @@ import {
   abortEmbeddedPiRun,
   compactEmbeddedPiSession,
   runEmbeddedPiAgent,
-} from "../agents/pi-embedded.js";
+} from "../agent/runtime/pi-embedded.js";
 import { loadSessionStore, resolveSessionKey } from "../config/sessions.js";
 import { getReplyFromConfig } from "./reply.js";
 

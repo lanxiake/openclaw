@@ -70,7 +70,7 @@ describe("onboard (non-interactive): Vercel AI Gateway", () => {
         "vercel-ai-gateway/anthropic/claude-opus-4.5",
       );
 
-      const { ensureAuthProfileStore } = await import("../agents/auth-profiles.js");
+      const { ensureAuthProfileStore } = await import("../agent/models/auth-profiles.js");
       const store = ensureAuthProfileStore();
       const profile = store.profiles["vercel-ai-gateway:default"];
       expect(profile?.type).toBe("api_key");

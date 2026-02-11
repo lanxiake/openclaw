@@ -1,4 +1,4 @@
-import { requireApiKey, resolveApiKeyForProvider } from "../../agents/model-auth.js";
+import { requireApiKey, resolveApiKeyForProvider } from "../../agent/models/model-auth.js";
 import type { EmbeddingProvider, EmbeddingProviderOptions } from "./embeddings.js";
 
 export type OpenAiEmbeddingClient = {

@@ -26,8 +26,8 @@ vi.mock("../agents/model-catalog.js", () => ({
   loadModelCatalog: vi.fn(),
 }));
 
-import { loadModelCatalog } from "../../agents/model-catalog.js";
-import { runEmbeddedPiAgent } from "../../agents/pi-embedded.js";
+import { loadModelCatalog } from "../../agent/models/model-catalog.js";
+import { runEmbeddedPiAgent } from "../../agent/runtime/pi-embedded.js";
 import { runCronIsolatedAgentTurn } from "./isolated-agent.js";
 
 async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {

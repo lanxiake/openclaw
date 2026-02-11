@@ -228,7 +228,7 @@ export const sessionStoreSaveDelayMs = hoisted.sessionStoreSaveDelayMs;
 export const embeddedRunMock = hoisted.embeddedRunMock;
 
 vi.mock("../agents/pi-model-discovery.js", async () => {
-  const actual = await vi.importActual<typeof import("../agents/pi-model-discovery.js")>(
+  const actual = await vi.importActual<typeof import("../agent/runtime/pi-model-discovery.js")>(
     "../agents/pi-model-discovery.js",
   );
 
@@ -521,7 +521,7 @@ vi.mock("../config/config.js", async () => {
 });
 
 vi.mock("../agents/pi-embedded.js", async () => {
-  const actual = await vi.importActual<typeof import("../agents/pi-embedded.js")>(
+  const actual = await vi.importActual<typeof import("../agent/runtime/pi-embedded.js")>(
     "../agents/pi-embedded.js",
   );
   return {

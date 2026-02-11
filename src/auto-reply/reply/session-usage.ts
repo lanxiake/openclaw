@@ -1,5 +1,5 @@
-import { setCliSessionId } from "../../agents/cli-session.js";
-import { hasNonzeroUsage, type NormalizedUsage } from "../../agents/usage.js";
+import { setCliSessionId } from "../../agent/runtime/cli-session.js";
+import { hasNonzeroUsage, type NormalizedUsage } from "../../agent/runtime/usage.js";
 import {
   type SessionSystemPromptReport,
   type SessionEntry,

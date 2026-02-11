@@ -1,28 +1,28 @@
 import path from "node:path";
-import { resolveOpenClawAgentDir } from "../../agents/agent-paths.js";
+import { resolveOpenClawAgentDir } from "../../agent/agent-paths.js";
 import {
   resolveAgentDir,
   resolveAgentModelFallbacksOverride,
   resolveAgentModelPrimary,
-} from "../../agents/agent-scope.js";
+} from "../../agent/agent-scope.js";
 import {
   buildAuthHealthSummary,
   DEFAULT_OAUTH_WARN_MS,
   formatRemainingShort,
-} from "../../agents/auth-health.js";
+} from "../../agent/models/auth-health.js";
 import {
   ensureAuthProfileStore,
   resolveAuthStorePathForDisplay,
   resolveProfileUnusableUntilForDisplay,
-} from "../../agents/auth-profiles.js";
-import { resolveEnvApiKey } from "../../agents/model-auth.js";
+} from "../../agent/models/auth-profiles.js";
+import { resolveEnvApiKey } from "../../agent/models/model-auth.js";
 import {
   buildModelAliasIndex,
   parseModelRef,
   resolveConfiguredModelRef,
   resolveDefaultModelForAgent,
   resolveModelRefFromString,
-} from "../../agents/model-selection.js";
+} from "../../agent/models/model-selection.js";
 import { CONFIG_PATH, loadConfig } from "../../config/config.js";
 import { getShellEnvAppliedKeys, shouldEnableShellEnvFallback } from "../../infra/shell-env.js";
 import { withProgressTotals } from "../../cli/progress.js";

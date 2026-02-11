@@ -3,10 +3,13 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { CURRENT_SESSION_VERSION } from "@mariozechner/pi-coding-agent";
-import { resolveSessionAgentId } from "../../agents/agent-scope.js";
-import { resolveEffectiveMessagesConfig, resolveIdentityName } from "../../agents/identity.js";
-import { resolveThinkingDefault } from "../../agents/model-selection.js";
-import { resolveAgentTimeoutMs } from "../../agents/timeout.js";
+import { resolveSessionAgentId } from "../../agent/agent-scope.js";
+import {
+  resolveEffectiveMessagesConfig,
+  resolveIdentityName,
+} from "../../agent/runtime/identity.js";
+import { resolveThinkingDefault } from "../../agent/models/model-selection.js";
+import { resolveAgentTimeoutMs } from "../../agent/runtime/timeout.js";
 import { dispatchInboundMessage } from "../../auto-reply/dispatch.js";
 import { createReplyDispatcher } from "../../auto-reply/reply/reply-dispatcher.js";
 import {

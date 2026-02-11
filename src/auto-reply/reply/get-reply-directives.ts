@@ -1,7 +1,7 @@
-import type { ExecToolDefaults } from "../../agents/bash-tools.js";
-import type { ModelAliasIndex } from "../../agents/model-selection.js";
-import type { SkillCommandSpec } from "../../agents/skills.js";
-import { resolveSandboxRuntimeStatus } from "../../agents/sandbox.js";
+import type { ExecToolDefaults } from "../../agent/tools/bash-tools.js";
+import type { ModelAliasIndex } from "../../agent/models/model-selection.js";
+import type { SkillCommandSpec } from "../../agent/skills/skills.js";
+import { resolveSandboxRuntimeStatus } from "../../agent/sandbox/sandbox.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { listChatCommands, shouldHandleTextCommands } from "../commands-registry.js";

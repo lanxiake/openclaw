@@ -1,4 +1,4 @@
-import { resolveEmbeddedSessionLane } from "../../../agents/pi-embedded.js";
+import { resolveEmbeddedSessionLane } from "../../../agent/runtime/pi-embedded.js";
 import { clearCommandLane } from "../../../infra/process/command-queue.js";
 import { clearFollowupQueue } from "./state.js";
 

@@ -3,8 +3,11 @@ import type { Command } from "commander";
 
 import type { AgentMessage } from "@mariozechner/pi-agent-core";
 
-import type { AuthProfileCredential, OAuthCredential } from "../agents/auth-profiles/types.js";
-import type { AnyAgentTool } from "../agents/tools/common.js";
+import type {
+  AuthProfileCredential,
+  OAuthCredential,
+} from "../agent/models/auth-profiles/types.js";
+import type { AnyAgentTool } from "../agent/tools/common.js";
 import type { ChannelDock } from "../channels/core/dock.js";
 import type { ChannelPlugin } from "../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../config/config.js";

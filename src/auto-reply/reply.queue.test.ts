@@ -8,7 +8,7 @@ import {
   isEmbeddedPiRunActive,
   isEmbeddedPiRunStreaming,
   runEmbeddedPiAgent,
-} from "../agents/pi-embedded.js";
+} from "../agent/runtime/pi-embedded.js";
 import { getReplyFromConfig } from "./reply.js";
 
 vi.mock("../agents/pi-embedded.js", () => ({

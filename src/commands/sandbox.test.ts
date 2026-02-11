@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { SandboxBrowserInfo, SandboxContainerInfo } from "../agents/sandbox.js";
+import type { SandboxBrowserInfo, SandboxContainerInfo } from "../agent/sandbox/sandbox.js";
 
 // --- Mocks ---
 

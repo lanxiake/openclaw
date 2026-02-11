@@ -23,7 +23,7 @@ import {
 import { buildTemplateMessageFromPayload } from "./template-messages.js";
 import type { LineChannelData, ResolvedLineAccount } from "./types.js";
 import { dispatchReplyWithBufferedBlockDispatcher } from "../../auto-reply/reply/provider-dispatcher.js";
-import { resolveEffectiveMessagesConfig } from "../../agents/identity.js";
+import { resolveEffectiveMessagesConfig } from "../../agent/runtime/identity.js";
 import { chunkMarkdownText } from "../../auto-reply/chunk.js";
 import { processLineMessage } from "./markdown-to-line.js";
 import { sendLineReplyChunks } from "./reply-chunks.js";

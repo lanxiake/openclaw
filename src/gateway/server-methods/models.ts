@@ -5,7 +5,7 @@ import {
   validateModelsListParams,
 } from "../protocol/index.js";
 import type { GatewayRequestHandlers } from "./types.js";
-import type { ModelCatalogEntry } from "../../agents/model-catalog.js";
+import type { ModelCatalogEntry } from "../../agent/models/model-catalog.js";
 
 /**
  * 套餐可用模型映射

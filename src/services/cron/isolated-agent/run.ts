@@ -4,17 +4,17 @@ import {
   resolveAgentModelFallbacksOverride,
   resolveAgentWorkspaceDir,
   resolveDefaultAgentId,
-} from "../../../agents/agent-scope.js";
-import { runCliAgent } from "../../../agents/cli-runner.js";
-import { getCliSessionId, setCliSessionId } from "../../../agents/cli-session.js";
-import { lookupContextTokens } from "../../../agents/context.js";
+} from "../../../agent/agent-scope.js";
+import { runCliAgent } from "../../../agent/runtime/cli-runner.js";
+import { getCliSessionId, setCliSessionId } from "../../../agent/runtime/cli-session.js";
+import { lookupContextTokens } from "../../../agent/runtime/context.js";
 import {
   DEFAULT_CONTEXT_TOKENS,
   DEFAULT_MODEL,
   DEFAULT_PROVIDER,
-} from "../../../agents/defaults.js";
-import { loadModelCatalog } from "../../../agents/model-catalog.js";
-import { runWithModelFallback } from "../../../agents/model-fallback.js";
+} from "../../../agent/runtime/defaults.js";
+import { loadModelCatalog } from "../../../agent/models/model-catalog.js";
+import { runWithModelFallback } from "../../../agent/models/model-fallback.js";
 import {
   getModelRefStatus,
   isCliProvider,
@@ -22,19 +22,19 @@ import {
   resolveConfiguredModelRef,
   resolveHooksGmailModel,
   resolveThinkingDefault,
-} from "../../../agents/model-selection.js";
-import { runEmbeddedPiAgent } from "../../../agents/pi-embedded.js";
-import type { MessagingToolSend } from "../../../agents/pi-embedded-messaging.js";
-import { buildWorkspaceSkillSnapshot } from "../../../agents/skills.js";
-import { getSkillsSnapshotVersion } from "../../../agents/skills/refresh.js";
-import { resolveAgentTimeoutMs } from "../../../agents/timeout.js";
-import { hasNonzeroUsage } from "../../../agents/usage.js";
-import { ensureAgentWorkspace } from "../../../agents/workspace.js";
+} from "../../../agent/models/model-selection.js";
+import { runEmbeddedPiAgent } from "../../../agent/runtime/pi-embedded.js";
+import type { MessagingToolSend } from "../../../agent/runtime/pi-embedded-messaging.js";
+import { buildWorkspaceSkillSnapshot } from "../../../agent/skills/skills.js";
+import { getSkillsSnapshotVersion } from "../../../agent/skills/refresh.js";
+import { resolveAgentTimeoutMs } from "../../../agent/runtime/timeout.js";
+import { hasNonzeroUsage } from "../../../agent/runtime/usage.js";
+import { ensureAgentWorkspace } from "../../../agent/runtime/workspace.js";
 import {
   formatUserTime,
   resolveUserTimeFormat,
   resolveUserTimezone,
-} from "../../../agents/date-time.js";
+} from "../../../agent/runtime/date-time.js";
 import {
   formatXHighModelHint,
   normalizeThinkLevel,

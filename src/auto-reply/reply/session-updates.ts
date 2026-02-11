@@ -1,8 +1,8 @@
 import crypto from "node:crypto";
 
-import { resolveUserTimezone } from "../../agents/date-time.js";
-import { buildWorkspaceSkillSnapshot } from "../../agents/skills.js";
-import { ensureSkillsWatcher, getSkillsSnapshotVersion } from "../../agents/skills/refresh.js";
+import { resolveUserTimezone } from "../../agent/runtime/date-time.js";
+import { buildWorkspaceSkillSnapshot } from "../../agent/skills/skills.js";
+import { ensureSkillsWatcher, getSkillsSnapshotVersion } from "../../agent/skills/refresh.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { type SessionEntry, updateSessionStore } from "../../config/sessions.js";
 import { buildChannelSummary } from "../../infra/channel-summary.js";

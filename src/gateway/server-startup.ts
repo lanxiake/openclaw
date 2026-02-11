@@ -1,10 +1,10 @@
-import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../agents/defaults.js";
-import { loadModelCatalog } from "../agents/model-catalog.js";
+import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../agent/runtime/defaults.js";
+import { loadModelCatalog } from "../agent/models/model-catalog.js";
 import {
   getModelRefStatus,
   resolveConfiguredModelRef,
   resolveHooksGmailModel,
-} from "../agents/model-selection.js";
+} from "../agent/models/model-selection.js";
 import type { CliDeps } from "../cli/deps.js";
 import type { loadConfig } from "../config/config.js";
 import { isTruthyEnvValue } from "../infra/env.js";

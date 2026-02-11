@@ -1,4 +1,4 @@
-import { hasBinary } from "../agents/skills.js";
+import { hasBinary } from "../agent/skills/skills.js";
 import { runCommandWithTimeout } from "../infra/process/exec.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { formatDocsLink } from "../shared/terminal/links.js";

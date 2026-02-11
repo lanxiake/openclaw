@@ -1,5 +1,5 @@
 import { formatTokenCount } from "../../shared/utils/usage-format.js";
-import { formatRawAssistantErrorForUi } from "../../agents/pi-embedded-helpers.js";
+import { formatRawAssistantErrorForUi } from "../../agent/runtime/pi-embedded-helpers.js";
 
 export function resolveFinalAssistantText(params: {
   finalText?: string | null;

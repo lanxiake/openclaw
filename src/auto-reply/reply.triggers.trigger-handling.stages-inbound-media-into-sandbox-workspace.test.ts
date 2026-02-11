@@ -10,7 +10,7 @@ const sandboxMocks = vi.hoisted(() => ({
 
 vi.mock("../agents/sandbox.js", () => sandboxMocks);
 
-import { ensureSandboxWorkspaceForSession } from "../agents/sandbox.js";
+import { ensureSandboxWorkspaceForSession } from "../agent/sandbox/sandbox.js";
 import { stageSandboxMedia } from "./reply/stage-sandbox-media.js";
 
 async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {

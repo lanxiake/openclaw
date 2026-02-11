@@ -1,4 +1,4 @@
-import { resolveIdentityNamePrefix } from "../../../../agents/identity.js";
+import { resolveIdentityNamePrefix } from "../../../../agent/runtime/identity.js";
 import { resolveChunkMode, resolveTextChunkLimit } from "../../../../auto-reply/chunk.js";
 import {
   formatInboundEnvelope,

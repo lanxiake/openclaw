@@ -1,11 +1,11 @@
-import { loadModelCatalog } from "../../agents/model-catalog.js";
+import { loadModelCatalog } from "../../agent/models/model-catalog.js";
 import {
   buildAllowedModelSet,
   modelKey,
   normalizeProviderId,
   resolveModelRefFromString,
   type ModelAliasIndex,
-} from "../../agents/model-selection.js";
+} from "../../agent/models/model-selection.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { updateSessionStore } from "../../config/sessions.js";

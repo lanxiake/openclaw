@@ -1,6 +1,6 @@
 import type { Bot, Context } from "grammy";
 
-import { resolveEffectiveMessagesConfig } from "../../agents/identity.js";
+import { resolveEffectiveMessagesConfig } from "../../agent/runtime/identity.js";
 import { resolveChunkMode } from "../../auto-reply/chunk.js";
 import {
   buildCommandTextFromArgs,

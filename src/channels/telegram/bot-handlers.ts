@@ -7,7 +7,7 @@ import {
 import { buildCommandsPaginationKeyboard } from "../../auto-reply/reply/commands-info.js";
 import { buildCommandsMessagePaginated } from "../../auto-reply/status.js";
 import { listSkillCommandsForAgents } from "../../auto-reply/skill-commands.js";
-import { resolveDefaultAgentId } from "../../agents/agent-scope.js";
+import { resolveDefaultAgentId } from "../../agent/agent-scope.js";
 import { loadConfig } from "../../config/config.js";
 import { writeConfigFile } from "../../config/io.js";
 import { danger, logVerbose, warn } from "../../globals.js";

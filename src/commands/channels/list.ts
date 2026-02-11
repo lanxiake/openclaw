@@ -1,4 +1,4 @@
-import { loadAuthProfileStore } from "../../agents/auth-profiles.js";
+import { loadAuthProfileStore } from "../../agent/models/auth-profiles.js";
 import { listChannelPlugins } from "../../channels/core/plugins/index.js";
 import { buildChannelAccountSnapshot } from "../../channels/core/plugins/status.js";
 import type { ChannelAccountSnapshot, ChannelPlugin } from "../../channels/core/plugins/types.js";

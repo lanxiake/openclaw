@@ -1,16 +1,16 @@
 import crypto from "node:crypto";
 
-import { abortEmbeddedPiRun } from "../../agents/pi-embedded.js";
-import { AGENT_LANE_SUBAGENT } from "../../agents/lanes.js";
-import { listSubagentRunsForRequester } from "../../agents/subagent-registry.js";
+import { abortEmbeddedPiRun } from "../../agent/runtime/pi-embedded.js";
+import { AGENT_LANE_SUBAGENT } from "../../agent/runtime/lanes.js";
+import { listSubagentRunsForRequester } from "../../agent/runtime/subagent-registry.js";
 import {
   extractAssistantText,
   resolveInternalSessionKey,
   resolveMainSessionAlias,
   sanitizeTextContent,
   stripToolMessages,
-} from "../../agents/tools/sessions-helpers.js";
-import type { SubagentRunRecord } from "../../agents/subagent-registry.js";
+} from "../../agent/tools/sessions-helpers.js";
+import type { SubagentRunRecord } from "../../agent/runtime/subagent-registry.js";
 import { loadSessionStore, resolveStorePath, updateSessionStore } from "../../config/sessions.js";
 import { callGateway } from "../../gateway/call.js";
 import { logVerbose } from "../../globals.js";

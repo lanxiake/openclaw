@@ -7,8 +7,8 @@
  * across multiple providers.
  */
 
-import { resolveSessionAgentId } from "../../agents/agent-scope.js";
-import { resolveEffectiveMessagesConfig } from "../../agents/identity.js";
+import { resolveSessionAgentId } from "../../agent/agent-scope.js";
+import { resolveEffectiveMessagesConfig } from "../../agent/runtime/identity.js";
 import { normalizeChannelId } from "../../channels/core/plugins/index.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { INTERNAL_MESSAGE_CHANNEL } from "../../shared/utils/message-channel.js";

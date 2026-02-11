@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { ensureSandboxWorkspaceForSession } from "../../agents/sandbox.js";
+import { ensureSandboxWorkspaceForSession } from "../../agent/sandbox/sandbox.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { logVerbose } from "../../globals.js";
 import { CONFIG_DIR } from "../../utils.js";

@@ -21,7 +21,7 @@ vi.mock("../../routing/resolve-route.js", () => ({
 }));
 
 vi.mock("../../agents/identity.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../../agents/identity.js")>();
+  const actual = await importOriginal<typeof import("../../../agent/runtime/identity.js")>();
   return {
     ...actual,
     resolveEffectiveMessagesConfig: () => ({ responsePrefix: "" }),

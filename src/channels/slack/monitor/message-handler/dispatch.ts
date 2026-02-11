@@ -1,4 +1,4 @@
-import { resolveHumanDelayConfig } from "../../../../agents/identity.js";
+import { resolveHumanDelayConfig } from "../../../../agent/runtime/identity.js";
 import { dispatchInboundMessage } from "../../../../auto-reply/dispatch.js";
 import { clearHistoryEntriesIfEnabled } from "../../../../auto-reply/reply/history.js";
 import { removeAckReactionAfterReply } from "../../../core/ack-reactions.js";

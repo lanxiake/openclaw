@@ -1,9 +1,12 @@
 import crypto from "node:crypto";
-import { resolveAgentModelFallbacksOverride } from "../../agents/agent-scope.js";
-import { runWithModelFallback } from "../../agents/model-fallback.js";
-import { isCliProvider } from "../../agents/model-selection.js";
-import { runEmbeddedPiAgent } from "../../agents/pi-embedded.js";
-import { resolveSandboxConfigForAgent, resolveSandboxRuntimeStatus } from "../../agents/sandbox.js";
+import { resolveAgentModelFallbacksOverride } from "../../agent/agent-scope.js";
+import { runWithModelFallback } from "../../agent/models/model-fallback.js";
+import { isCliProvider } from "../../agent/models/model-selection.js";
+import { runEmbeddedPiAgent } from "../../agent/runtime/pi-embedded.js";
+import {
+  resolveSandboxConfigForAgent,
+  resolveSandboxRuntimeStatus,
+} from "../../agent/sandbox/sandbox.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import {
   resolveAgentIdFromSessionKey,

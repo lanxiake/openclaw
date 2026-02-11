@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { buildModelAliasIndex } from "../../agents/model-selection.js";
+import { buildModelAliasIndex } from "../../agent/models/model-selection.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { enqueueSystemEvent, resetSystemEventsForTest } from "../../infra/system-events.js";
 import { initSessionState } from "./session.js";

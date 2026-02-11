@@ -8,10 +8,10 @@ import {
   findModelInCatalog,
   loadModelCatalog,
   modelSupportsVision,
-} from "../../agents/model-catalog.js";
+} from "../../agent/models/model-catalog.js";
 import type { MsgContext } from "../../auto-reply/templating.js";
 import { applyTemplate } from "../../auto-reply/templating.js";
-import { requireApiKey, resolveApiKeyForProvider } from "../../agents/model-auth.js";
+import { requireApiKey, resolveApiKeyForProvider } from "../../agent/models/model-auth.js";
 import { logVerbose, shouldLogVerbose } from "../../globals.js";
 import { runExec } from "../../infra/process/exec.js";
 import type {

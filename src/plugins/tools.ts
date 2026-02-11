@@ -1,5 +1,5 @@
-import type { AnyAgentTool } from "../agents/tools/common.js";
-import { normalizeToolName } from "../agents/tool-policy.js";
+import type { AnyAgentTool } from "../agent/tools/common.js";
+import { normalizeToolName } from "../agent/tools/tool-policy.js";
 import { createSubsystemLogger } from "../shared/logging/subsystem.js";
 import { loadOpenClawPlugins } from "./loader.js";
 import type { OpenClawPluginToolContext } from "./types.js";

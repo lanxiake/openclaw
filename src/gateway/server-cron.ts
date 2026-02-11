@@ -1,4 +1,4 @@
-import { resolveDefaultAgentId } from "../agents/agent-scope.js";
+import { resolveDefaultAgentId } from "../agent/agent-scope.js";
 import type { CliDeps } from "../cli/deps.js";
 import { loadConfig } from "../config/config.js";
 import { resolveAgentMainSessionKey } from "../config/sessions.js";

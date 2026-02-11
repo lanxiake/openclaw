@@ -1,6 +1,6 @@
-import { resolveSessionAgentId } from "../../agents/agent-scope.js";
-import { abortEmbeddedPiRun } from "../../agents/pi-embedded.js";
-import { listSubagentRunsForRequester } from "../../agents/subagent-registry.js";
+import { resolveSessionAgentId } from "../../agent/agent-scope.js";
+import { abortEmbeddedPiRun } from "../../agent/runtime/pi-embedded.js";
+import { listSubagentRunsForRequester } from "../../agent/runtime/subagent-registry.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import {
   loadSessionStore,
@@ -18,7 +18,7 @@ import { clearSessionQueues } from "./queue.js";
 import {
   resolveInternalSessionKey,
   resolveMainSessionAlias,
-} from "../../agents/tools/sessions-helpers.js";
+} from "../../agent/tools/sessions-helpers.js";
 
 const ABORT_TRIGGERS = new Set(["stop", "esc", "abort", "wait", "exit", "interrupt"]);
 const ABORT_MEMORY = new Map<string, boolean>();

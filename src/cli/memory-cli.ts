@@ -5,7 +5,7 @@ import path from "node:path";
 
 import type { Command } from "commander";
 
-import { resolveDefaultAgentId } from "../agents/agent-scope.js";
+import { resolveDefaultAgentId } from "../agent/agent-scope.js";
 import { loadConfig } from "../config/config.js";
 import { resolveSessionTranscriptsDirForAgent } from "../config/sessions/paths.js";
 import { setVerbose } from "../globals.js";

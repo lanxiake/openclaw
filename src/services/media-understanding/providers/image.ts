@@ -1,11 +1,11 @@
 import type { Api, Context, Model } from "@mariozechner/pi-ai";
 import { complete } from "@mariozechner/pi-ai";
-import { discoverAuthStorage, discoverModels } from "../../../agents/pi-model-discovery.js";
+import { discoverAuthStorage, discoverModels } from "../../../agent/runtime/pi-model-discovery.js";
 
-import { getApiKeyForModel, requireApiKey } from "../../../agents/model-auth.js";
-import { ensureOpenClawModelsJson } from "../../../agents/models-config.js";
-import { minimaxUnderstandImage } from "../../../agents/minimax-vlm.js";
-import { coerceImageAssistantText } from "../../../agents/tools/image-tool.helpers.js";
+import { getApiKeyForModel, requireApiKey } from "../../../agent/models/model-auth.js";
+import { ensureOpenClawModelsJson } from "../../../agent/models/models-config.js";
+import { minimaxUnderstandImage } from "../../../agent/runtime/minimax-vlm.js";
+import { coerceImageAssistantText } from "../../../agent/tools/image-tool.helpers.js";
 import type { ImageDescriptionRequest, ImageDescriptionResult } from "../types.js";
 
 export async function describeImageWithModel(

@@ -8,17 +8,17 @@ import { createConfigIO } from "../../config/config.js";
 import { resolveNativeSkillsEnabled } from "../../config/commands.js";
 import { resolveOAuthDir } from "../../config/paths.js";
 import { formatCliCommand } from "../../cli/command-format.js";
-import { resolveDefaultAgentId } from "../../agents/agent-scope.js";
+import { resolveDefaultAgentId } from "../../agent/agent-scope.js";
 import type { AgentToolsConfig } from "../../config/types.tools.js";
 import { resolveBrowserConfig } from "../../services/browser/config.js";
-import { isToolAllowedByPolicies } from "../../agents/pi-tools.policy.js";
-import { resolveToolProfilePolicy } from "../../agents/tool-policy.js";
+import { isToolAllowedByPolicies } from "../../agent/tools/pi-tools.policy.js";
+import { resolveToolProfilePolicy } from "../../agent/tools/tool-policy.js";
 import {
   resolveSandboxConfigForAgent,
   resolveSandboxToolPolicyForAgent,
-} from "../../agents/sandbox.js";
+} from "../../agent/sandbox/sandbox.js";
 import { resolveGatewayAuth } from "../../gateway/auth.js";
-import type { SandboxToolPolicy } from "../../agents/sandbox/types.js";
+import type { SandboxToolPolicy } from "../../agent/sandbox/types.js";
 import { INCLUDE_KEY, MAX_INCLUDE_DEPTH } from "../../config/includes.js";
 import { normalizeAgentId } from "../../routing/session-key.js";
 import {

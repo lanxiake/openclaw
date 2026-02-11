@@ -12,7 +12,7 @@ import type { CanvasHostHandler } from "../platform/canvas-host/server.js";
 import { loadConfig } from "../config/config.js";
 import type { createSubsystemLogger } from "../shared/logging/subsystem.js";
 import { handleSlackHttpRequest } from "../channels/slack/http/index.js";
-import { resolveAgentAvatar } from "../agents/identity-avatar.js";
+import { resolveAgentAvatar } from "../agent/runtime/identity-avatar.js";
 import { handleControlUiAvatarRequest, handleControlUiHttpRequest } from "./control-ui.js";
 import {
   extractHookToken,

@@ -1,15 +1,15 @@
 import type { Api, Model } from "@mariozechner/pi-ai";
-import { discoverAuthStorage, discoverModels } from "../../agents/pi-model-discovery.js";
+import { discoverAuthStorage, discoverModels } from "../../agent/runtime/pi-model-discovery.js";
 
-import { resolveOpenClawAgentDir } from "../../agents/agent-paths.js";
-import type { AuthProfileStore } from "../../agents/auth-profiles.js";
-import { listProfilesForProvider } from "../../agents/auth-profiles.js";
+import { resolveOpenClawAgentDir } from "../../agent/agent-paths.js";
+import type { AuthProfileStore } from "../../agent/models/auth-profiles.js";
+import { listProfilesForProvider } from "../../agent/models/auth-profiles.js";
 import {
   getCustomProviderApiKey,
   resolveAwsSdkEnvVarName,
   resolveEnvApiKey,
-} from "../../agents/model-auth.js";
-import { ensureOpenClawModelsJson } from "../../agents/models-config.js";
+} from "../../agent/models/model-auth.js";
+import { ensureOpenClawModelsJson } from "../../agent/models/models-config.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { ModelRow } from "./list.types.js";
 import { modelKey } from "./shared.js";

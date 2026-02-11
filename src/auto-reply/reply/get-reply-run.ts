@@ -4,9 +4,9 @@ import {
   isEmbeddedPiRunActive,
   isEmbeddedPiRunStreaming,
   resolveEmbeddedSessionLane,
-} from "../../agents/pi-embedded.js";
-import { resolveSessionAuthProfileOverride } from "../../agents/auth-profiles/session-override.js";
-import type { ExecToolDefaults } from "../../agents/bash-tools.js";
+} from "../../agent/runtime/pi-embedded.js";
+import { resolveSessionAuthProfileOverride } from "../../agent/models/auth-profiles/session-override.js";
+import type { ExecToolDefaults } from "../../agent/tools/bash-tools.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import {
   resolveGroupSessionKey,

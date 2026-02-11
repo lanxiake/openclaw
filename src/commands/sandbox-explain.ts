@@ -1,8 +1,8 @@
-import { resolveAgentConfig } from "../agents/agent-scope.js";
+import { resolveAgentConfig } from "../agent/agent-scope.js";
 import {
   resolveSandboxConfigForAgent,
   resolveSandboxToolPolicyForAgent,
-} from "../agents/sandbox.js";
+} from "../agent/sandbox/sandbox.js";
 import { normalizeAnyChannelId } from "../channels/core/registry.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";

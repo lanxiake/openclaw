@@ -2,13 +2,13 @@ import {
   resolveAgentDir,
   resolveAgentWorkspaceDir,
   resolveDefaultAgentId,
-} from "../agents/agent-scope.js";
-import type { AgentIdentityFile } from "../agents/identity-file.js";
+} from "../agent/agent-scope.js";
+import type { AgentIdentityFile } from "../agent/runtime/identity-file.js";
 import {
   identityHasValues,
   loadAgentIdentityFromWorkspace,
   parseIdentityMarkdown as parseIdentityMarkdownFile,
-} from "../agents/identity-file.js";
+} from "../agent/runtime/identity-file.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { normalizeAgentId } from "../routing/session-key.js";
 

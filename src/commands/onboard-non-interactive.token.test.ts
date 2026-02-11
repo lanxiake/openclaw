@@ -69,7 +69,7 @@ describe("onboard (non-interactive): token auth", () => {
       expect(cfg.auth?.profiles?.["anthropic:default"]?.provider).toBe("anthropic");
       expect(cfg.auth?.profiles?.["anthropic:default"]?.mode).toBe("token");
 
-      const { ensureAuthProfileStore } = await import("../agents/auth-profiles.js");
+      const { ensureAuthProfileStore } = await import("../agent/models/auth-profiles.js");
       const store = ensureAuthProfileStore();
       const profile = store.profiles["anthropic:default"];
       expect(profile?.type).toBe("token");

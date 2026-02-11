@@ -2,9 +2,9 @@ import {
   resolveAgentConfig,
   resolveAgentDir,
   resolveSessionAgentId,
-} from "../../agents/agent-scope.js";
-import type { ModelAliasIndex } from "../../agents/model-selection.js";
-import { resolveSandboxRuntimeStatus } from "../../agents/sandbox.js";
+} from "../../agent/agent-scope.js";
+import type { ModelAliasIndex } from "../../agent/models/model-selection.js";
+import { resolveSandboxRuntimeStatus } from "../../agent/sandbox/sandbox.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { type SessionEntry, updateSessionStore } from "../../config/sessions.js";
 import type { ExecAsk, ExecHost, ExecSecurity } from "../../infra/exec-approvals.js";
@@ -74,7 +74,7 @@ export async function handleDirectiveOnly(params: {
   aliasIndex: ModelAliasIndex;
   allowedModelKeys: Set<string>;
   allowedModelCatalog: Awaited<
-    ReturnType<typeof import("../../agents/model-catalog.js").loadModelCatalog>
+    ReturnType<typeof import("../../agent/models/model-catalog.js").loadModelCatalog>
   >;
   resetModelOverride: boolean;
   provider: string;

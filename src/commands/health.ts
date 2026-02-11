@@ -1,4 +1,4 @@
-import { resolveDefaultAgentId } from "../agents/agent-scope.js";
+import { resolveDefaultAgentId } from "../agent/agent-scope.js";
 import { resolveChannelDefaultAccountId } from "../channels/core/plugins/helpers.js";
 import { getChannelPlugin, listChannelPlugins } from "../channels/core/plugins/index.js";
 import type { ChannelAccountSnapshot } from "../channels/core/plugins/types.js";

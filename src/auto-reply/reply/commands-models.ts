@@ -1,12 +1,12 @@
-import { loadModelCatalog } from "../../agents/model-catalog.js";
+import { loadModelCatalog } from "../../agent/models/model-catalog.js";
 import {
   buildAllowedModelSet,
   buildModelAliasIndex,
   normalizeProviderId,
   resolveConfiguredModelRef,
   resolveModelRefFromString,
-} from "../../agents/model-selection.js";
-import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../../agents/defaults.js";
+} from "../../agent/models/model-selection.js";
+import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../../agent/runtime/defaults.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { ReplyPayload } from "../types.js";
 import type { CommandHandler } from "./commands-types.js";

@@ -1,16 +1,19 @@
-import { buildXiaomiProvider, XIAOMI_DEFAULT_MODEL_ID } from "../agents/models-config.providers.js";
+import {
+  buildXiaomiProvider,
+  XIAOMI_DEFAULT_MODEL_ID,
+} from "../agent/models/models-config.providers.js";
 import {
   buildSyntheticModelDefinition,
   SYNTHETIC_BASE_URL,
   SYNTHETIC_DEFAULT_MODEL_REF,
   SYNTHETIC_MODEL_CATALOG,
-} from "../agents/synthetic-models.js";
+} from "../agent/models/synthetic-models.js";
 import {
   buildVeniceModelDefinition,
   VENICE_BASE_URL,
   VENICE_DEFAULT_MODEL_REF,
   VENICE_MODEL_CATALOG,
-} from "../agents/venice-models.js";
+} from "../agent/models/venice-models.js";
 import type { OpenClawConfig } from "../config/config.js";
 import {
   OPENROUTER_DEFAULT_MODEL_REF,

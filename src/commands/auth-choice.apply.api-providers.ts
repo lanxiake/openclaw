@@ -1,5 +1,5 @@
-import { ensureAuthProfileStore, resolveAuthProfileOrder } from "../agents/auth-profiles.js";
-import { resolveEnvApiKey } from "../agents/model-auth.js";
+import { ensureAuthProfileStore, resolveAuthProfileOrder } from "../agent/models/auth-profiles.js";
+import { resolveEnvApiKey } from "../agent/models/model-auth.js";
 import {
   formatApiKeyPreview,
   normalizeApiKeyInput,

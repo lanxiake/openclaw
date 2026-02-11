@@ -1,4 +1,4 @@
-import { AGENT_LANE_NESTED } from "../../agents/lanes.js";
+import { AGENT_LANE_NESTED } from "../../agent/runtime/lanes.js";
 import { getChannelPlugin, normalizeChannelId } from "../../channels/core/plugins/index.js";
 import { createOutboundSendDeps, type CliDeps } from "../../cli/outbound-send-deps.js";
 import type { OpenClawConfig } from "../../config/config.js";
@@ -20,7 +20,7 @@ import { isInternalMessageChannel } from "../../shared/utils/message-channel.js"
 import type { AgentCommandOpts } from "./types.js";
 
 type RunResult = Awaited<
-  ReturnType<(typeof import("../../agents/pi-embedded.js"))["runEmbeddedPiAgent"]>
+  ReturnType<(typeof import("../../agent/runtime/pi-embedded.js"))["runEmbeddedPiAgent"]>
 >;
 
 const NESTED_LOG_PREFIX = "[agent:nested]";

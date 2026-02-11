@@ -1,12 +1,12 @@
-import { resolveOpenClawAgentDir } from "../agents/agent-paths.js";
+import { resolveOpenClawAgentDir } from "../agent/agent-paths.js";
 import {
   resolveDefaultAgentId,
   resolveAgentDir,
   resolveAgentWorkspaceDir,
-} from "../agents/agent-scope.js";
-import { upsertAuthProfile } from "../agents/auth-profiles.js";
-import { normalizeProviderId } from "../agents/model-selection.js";
-import { resolveDefaultAgentWorkspaceDir } from "../agents/workspace.js";
+} from "../agent/agent-scope.js";
+import { upsertAuthProfile } from "../agent/models/auth-profiles.js";
+import { normalizeProviderId } from "../agent/models/model-selection.js";
+import { resolveDefaultAgentWorkspaceDir } from "../agent/runtime/workspace.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { enablePluginInConfig } from "../plugins/enable.js";
 import { resolvePluginProviders } from "../plugins/providers.js";

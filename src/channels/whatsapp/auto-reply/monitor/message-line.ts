@@ -1,4 +1,4 @@
-import { resolveMessagePrefix } from "../../../../agents/identity.js";
+import { resolveMessagePrefix } from "../../../../agent/runtime/identity.js";
 import {
   formatInboundEnvelope,
   type EnvelopeFormatOptions,

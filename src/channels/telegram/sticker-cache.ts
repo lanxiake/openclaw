@@ -4,14 +4,14 @@ import type { OpenClawConfig } from "../../config/config.js";
 import { STATE_DIR } from "../../config/paths.js";
 import { loadJsonFile, saveJsonFile } from "../../infra/json-file.js";
 import { logVerbose } from "../../globals.js";
-import type { ModelCatalogEntry } from "../../agents/model-catalog.js";
+import type { ModelCatalogEntry } from "../../agent/models/model-catalog.js";
 import {
   findModelInCatalog,
   loadModelCatalog,
   modelSupportsVision,
-} from "../../agents/model-catalog.js";
-import { resolveApiKeyForProvider } from "../../agents/model-auth.js";
-import { resolveDefaultModelForAgent } from "../../agents/model-selection.js";
+} from "../../agent/models/model-catalog.js";
+import { resolveApiKeyForProvider } from "../../agent/models/model-auth.js";
+import { resolveDefaultModelForAgent } from "../../agent/models/model-selection.js";
 import { resolveAutoImageModel } from "../../services/media-understanding/runner.js";
 
 const CACHE_FILE = path.join(STATE_DIR, "telegram", "sticker-cache.json");

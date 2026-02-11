@@ -2,7 +2,7 @@ import type { OpenClawConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { WizardPrompter } from "../platform/wizard/prompts.js";
 import { buildWorkspaceHookStatus } from "../services/hooks/hooks-status.js";
-import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
+import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agent/agent-scope.js";
 import { formatCliCommand } from "../cli/command-format.js";
 
 export async function setupInternalHooks(

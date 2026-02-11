@@ -1,6 +1,6 @@
-import { lookupContextTokens } from "../../agents/context.js";
-import { DEFAULT_CONTEXT_TOKENS } from "../../agents/defaults.js";
-import { loadModelCatalog } from "../../agents/model-catalog.js";
+import { lookupContextTokens } from "../../agent/runtime/context.js";
+import { DEFAULT_CONTEXT_TOKENS } from "../../agent/runtime/defaults.js";
+import { loadModelCatalog } from "../../agent/models/model-catalog.js";
 import {
   buildAllowedModelSet,
   type ModelAliasIndex,
@@ -8,10 +8,10 @@ import {
   normalizeProviderId,
   resolveModelRefFromString,
   resolveThinkingDefault,
-} from "../../agents/model-selection.js";
+} from "../../agent/models/model-selection.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { type SessionEntry, updateSessionStore } from "../../config/sessions.js";
-import { clearSessionAuthProfileOverride } from "../../agents/auth-profiles/session-override.js";
+import { clearSessionAuthProfileOverride } from "../../agent/models/auth-profiles/session-override.js";
 import { applyModelOverrideToSessionEntry } from "../../sessions/model-overrides.js";
 import { resolveThreadParentSessionKey } from "../../sessions/session-key-utils.js";
 import type { ThinkLevel } from "./directives.js";
@@ -353,7 +353,7 @@ export async function createModelSelectionState(params: {
   }
 
   if (sessionEntry && sessionStore && sessionKey && sessionEntry.authProfileOverride) {
-    const { ensureAuthProfileStore } = await import("../../agents/auth-profiles.js");
+    const { ensureAuthProfileStore } = await import("../../agent/models/auth-profiles.js");
     const store = ensureAuthProfileStore(undefined, {
       allowKeychainPrompt: false,
     });

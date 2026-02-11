@@ -6,7 +6,7 @@ import {
   DEFAULT_SANDBOX_COMMON_IMAGE,
   DEFAULT_SANDBOX_IMAGE,
   resolveSandboxScope,
-} from "../agents/sandbox.js";
+} from "../agent/sandbox/sandbox.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { runCommandWithTimeout, runExec } from "../infra/process/exec.js";
 import type { RuntimeEnv } from "../runtime.js";

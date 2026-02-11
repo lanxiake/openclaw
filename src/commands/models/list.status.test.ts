@@ -87,7 +87,7 @@ vi.mock("../../agents/agent-scope.js", () => ({
 }));
 
 vi.mock("../../agents/auth-profiles.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../agents/auth-profiles.js")>();
+  const actual = await importOriginal<typeof import("../../agent/models/auth-profiles.js")>();
   return {
     ...actual,
     ensureAuthProfileStore: mocks.ensureAuthProfileStore,

@@ -1,20 +1,20 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 
-import { resolveOpenClawAgentDir } from "../../agents/agent-paths.js";
+import { resolveOpenClawAgentDir } from "../../agent/agent-paths.js";
 import {
   ensureAuthProfileStore,
   listProfilesForProvider,
   resolveAuthProfileDisplayLabel,
   resolveAuthProfileOrder,
-} from "../../agents/auth-profiles.js";
-import { runEmbeddedPiAgent } from "../../agents/pi-embedded.js";
-import { describeFailoverError } from "../../agents/failover-error.js";
-import { loadModelCatalog } from "../../agents/model-catalog.js";
-import { getCustomProviderApiKey, resolveEnvApiKey } from "../../agents/model-auth.js";
-import { normalizeProviderId, parseModelRef } from "../../agents/model-selection.js";
-import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/agent-scope.js";
-import { resolveDefaultAgentWorkspaceDir } from "../../agents/workspace.js";
+} from "../../agent/models/auth-profiles.js";
+import { runEmbeddedPiAgent } from "../../agent/runtime/pi-embedded.js";
+import { describeFailoverError } from "../../agent/runtime/failover-error.js";
+import { loadModelCatalog } from "../../agent/models/model-catalog.js";
+import { getCustomProviderApiKey, resolveEnvApiKey } from "../../agent/models/model-auth.js";
+import { normalizeProviderId, parseModelRef } from "../../agent/models/model-selection.js";
+import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agent/agent-scope.js";
+import { resolveDefaultAgentWorkspaceDir } from "../../agent/runtime/workspace.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import {
   resolveSessionTranscriptPath,

@@ -7,9 +7,9 @@ import {
   listProfilesForProvider,
   resolveApiKeyForProfile,
   resolveAuthProfileOrder,
-} from "../agents/auth-profiles.js";
-import { getCustomProviderApiKey, resolveEnvApiKey } from "../agents/model-auth.js";
-import { normalizeProviderId } from "../agents/model-selection.js";
+} from "../agent/models/auth-profiles.js";
+import { getCustomProviderApiKey, resolveEnvApiKey } from "../agent/models/model-auth.js";
+import { normalizeProviderId } from "../agent/models/model-selection.js";
 import { loadConfig } from "../config/config.js";
 import type { UsageProviderId } from "./provider-usage.types.js";
 

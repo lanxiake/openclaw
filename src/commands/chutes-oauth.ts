@@ -3,13 +3,13 @@ import { createServer } from "node:http";
 
 import type { OAuthCredentials } from "@mariozechner/pi-ai";
 
-import type { ChutesOAuthAppConfig } from "../agents/chutes-oauth.js";
+import type { ChutesOAuthAppConfig } from "../agent/models/chutes-oauth.js";
 import {
   CHUTES_AUTHORIZE_ENDPOINT,
   exchangeChutesCodeForTokens,
   generateChutesPkce,
   parseOAuthCallbackInput,
-} from "../agents/chutes-oauth.js";
+} from "../agent/models/chutes-oauth.js";
 
 type OAuthPrompt = {
   message: string;

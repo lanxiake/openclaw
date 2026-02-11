@@ -1,4 +1,4 @@
-import { requireApiKey, resolveApiKeyForProvider } from "../../agents/model-auth.js";
+import { requireApiKey, resolveApiKeyForProvider } from "../../agent/models/model-auth.js";
 import { isTruthyEnvValue } from "../../infra/env.js";
 import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import type { EmbeddingProvider, EmbeddingProviderOptions } from "./embeddings.js";

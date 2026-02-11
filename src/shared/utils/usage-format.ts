@@ -1,4 +1,4 @@
-import type { NormalizedUsage } from "../../agents/usage.js";
+import type { NormalizedUsage } from "../../agent/runtime/usage.js";
 import type { OpenClawConfig } from "../../config/config.js";
 
 export type ModelCostConfig = {

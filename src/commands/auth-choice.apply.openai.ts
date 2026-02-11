@@ -1,5 +1,5 @@
 import { loginOpenAICodex } from "@mariozechner/pi-ai";
-import { resolveEnvApiKey } from "../agents/model-auth.js";
+import { resolveEnvApiKey } from "../agent/models/model-auth.js";
 import { upsertSharedEnvVar } from "../infra/env-file.js";
 import { isRemoteEnvironment } from "./oauth-env.js";
 import {

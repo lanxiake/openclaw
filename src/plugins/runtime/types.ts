@@ -6,8 +6,9 @@ type DispatchReplyWithBufferedBlockDispatcher =
 type CreateReplyDispatcherWithTyping =
   typeof import("../../auto-reply/reply/reply-dispatcher.js").createReplyDispatcherWithTyping;
 type ResolveEffectiveMessagesConfig =
-  typeof import("../../agents/identity.js").resolveEffectiveMessagesConfig;
-type ResolveHumanDelayConfig = typeof import("../../agents/identity.js").resolveHumanDelayConfig;
+  typeof import("../../agent/runtime/identity.js").resolveEffectiveMessagesConfig;
+type ResolveHumanDelayConfig =
+  typeof import("../../agent/runtime/identity.js").resolveHumanDelayConfig;
 type ResolveAgentRoute = typeof import("../../routing/resolve-route.js").resolveAgentRoute;
 type BuildPairingReply =
   typeof import("../../infra/device/pairing/pairing-messages.js").buildPairingReply;
@@ -82,9 +83,9 @@ type MediaKindFromMime = typeof import("../../services/media/constants.js").medi
 type IsVoiceCompatibleAudio = typeof import("../../services/media/audio.js").isVoiceCompatibleAudio;
 type GetImageMetadata = typeof import("../../services/media/image-ops.js").getImageMetadata;
 type ResizeToJpeg = typeof import("../../services/media/image-ops.js").resizeToJpeg;
-type CreateMemoryGetTool = typeof import("../../agents/tools/memory-tool.js").createMemoryGetTool;
+type CreateMemoryGetTool = typeof import("../../agent/tools/memory-tool.js").createMemoryGetTool;
 type CreateMemorySearchTool =
-  typeof import("../../agents/tools/memory-tool.js").createMemorySearchTool;
+  typeof import("../../agent/tools/memory-tool.js").createMemorySearchTool;
 type RegisterMemoryCli = typeof import("../../cli/memory-cli.js").registerMemoryCli;
 type DiscordMessageActions =
   typeof import("../../channels/core/plugins/actions/discord.js").discordMessageActions;
@@ -114,7 +115,7 @@ type ResolveSlackUserAllowlist =
   typeof import("../../channels/slack/resolve-users.js").resolveSlackUserAllowlist;
 type SendMessageSlack = typeof import("../../channels/slack/send.js").sendMessageSlack;
 type MonitorSlackProvider = typeof import("../../channels/slack/index.js").monitorSlackProvider;
-type HandleSlackAction = typeof import("../../agents/tools/slack-actions.js").handleSlackAction;
+type HandleSlackAction = typeof import("../../agent/tools/slack-actions.js").handleSlackAction;
 type AuditTelegramGroupMembership =
   typeof import("../../channels/telegram/audit.js").auditTelegramGroupMembership;
 type CollectTelegramUnmentionedGroupIds =
@@ -149,7 +150,7 @@ type StartWebLoginWithQr = typeof import("../../channels/whatsapp/login-qr.js").
 type WaitForWebLogin = typeof import("../../channels/whatsapp/login-qr.js").waitForWebLogin;
 type MonitorWebChannel = typeof import("../../channels/core/web/index.js").monitorWebChannel;
 type HandleWhatsAppAction =
-  typeof import("../../agents/tools/whatsapp-actions.js").handleWhatsAppAction;
+  typeof import("../../agent/tools/whatsapp-actions.js").handleWhatsAppAction;
 type CreateWhatsAppLoginTool =
   typeof import("../../channels/core/plugins/agent-tools/whatsapp-login.js").createWhatsAppLoginTool;
 

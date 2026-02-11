@@ -40,7 +40,7 @@ import {
 } from "../services/browser/control-service.js";
 import { createBrowserRouteDispatcher } from "../services/browser/routes/dispatcher.js";
 import { detectMime } from "../services/media/mime.js";
-import { resolveAgentConfig } from "../agents/agent-scope.js";
+import { resolveAgentConfig } from "../agent/agent-scope.js";
 import { ensureOpenClawCliOnPath } from "../infra/path-env.js";
 import { VERSION } from "../version.js";
 import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../shared/utils/message-channel.js";

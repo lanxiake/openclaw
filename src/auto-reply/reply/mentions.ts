@@ -1,4 +1,4 @@
-import { resolveAgentConfig } from "../../agents/agent-scope.js";
+import { resolveAgentConfig } from "../../agent/agent-scope.js";
 import { getChannelDock } from "../../channels/core/dock.js";
 import { normalizeChannelId } from "../../channels/core/plugins/index.js";
 import type { OpenClawConfig } from "../../config/config.js";

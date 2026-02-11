@@ -14,7 +14,7 @@ import { ApplicationCommandOptionType, ButtonStyle } from "discord-api-types/v10
 import {
   resolveEffectiveMessagesConfig,
   resolveHumanDelayConfig,
-} from "../../../agents/identity.js";
+} from "../../../agent/runtime/identity.js";
 import { resolveChunkMode, resolveTextChunkLimit } from "../../../auto-reply/chunk.js";
 import {
   buildCommandTextFromArgs,

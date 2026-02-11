@@ -1,8 +1,8 @@
 import type { OpenClawConfig } from "../config/types.js";
-import type { SkillCommandSpec } from "../agents/skills.js";
+import type { SkillCommandSpec } from "../agent/skills/skills.js";
 import { getChatCommands, getNativeCommandSurfaces } from "./commands-registry.data.js";
-import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../agents/defaults.js";
-import { resolveConfiguredModelRef } from "../agents/model-selection.js";
+import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../agent/runtime/defaults.js";
+import { resolveConfiguredModelRef } from "../agent/models/model-selection.js";
 import type {
   ChatCommandDefinition,
   CommandArgChoiceContext,

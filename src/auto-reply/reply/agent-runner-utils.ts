@@ -1,4 +1,4 @@
-import type { NormalizedUsage } from "../../agents/usage.js";
+import type { NormalizedUsage } from "../../agent/runtime/usage.js";
 import { getChannelDock } from "../../channels/core/dock.js";
 import type { ChannelId, ChannelThreadingToolContext } from "../../channels/core/plugins/types.js";
 import { normalizeAnyChannelId, normalizeChannelId } from "../../channels/core/registry.js";

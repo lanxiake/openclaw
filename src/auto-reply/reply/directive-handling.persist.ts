@@ -2,16 +2,16 @@ import {
   resolveAgentDir,
   resolveDefaultAgentId,
   resolveSessionAgentId,
-} from "../../agents/agent-scope.js";
-import { lookupContextTokens } from "../../agents/context.js";
-import { DEFAULT_CONTEXT_TOKENS } from "../../agents/defaults.js";
+} from "../../agent/agent-scope.js";
+import { lookupContextTokens } from "../../agent/runtime/context.js";
+import { DEFAULT_CONTEXT_TOKENS } from "../../agent/runtime/defaults.js";
 import {
   buildModelAliasIndex,
   type ModelAliasIndex,
   modelKey,
   resolveDefaultModelForAgent,
   resolveModelRefFromString,
-} from "../../agents/model-selection.js";
+} from "../../agent/models/model-selection.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { type SessionEntry, updateSessionStore } from "../../config/sessions.js";
 import { enqueueSystemEvent } from "../../infra/system-events.js";

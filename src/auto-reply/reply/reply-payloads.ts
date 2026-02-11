@@ -1,6 +1,6 @@
-import { isMessagingToolDuplicate } from "../../agents/pi-embedded-helpers.js";
+import { isMessagingToolDuplicate } from "../../agent/runtime/pi-embedded-helpers.js";
 import { normalizeTargetForProvider } from "../../infra/outbound/target-normalization.js";
-import type { MessagingToolSend } from "../../agents/pi-embedded-runner.js";
+import type { MessagingToolSend } from "../../agent/runtime/pi-embedded-runner.js";
 import type { ReplyToMode } from "../../config/types.js";
 import type { OriginatingChannelType } from "../templating.js";
 import type { ReplyPayload } from "../types.js";

@@ -1,10 +1,10 @@
-import { resolveAgentDir, resolveDefaultAgentId } from "../../agents/agent-scope.js";
+import { resolveAgentDir, resolveDefaultAgentId } from "../../agent/agent-scope.js";
 import {
   type AuthProfileStore,
   ensureAuthProfileStore,
   setAuthProfileOrder,
-} from "../../agents/auth-profiles.js";
-import { normalizeProviderId } from "../../agents/model-selection.js";
+} from "../../agent/models/auth-profiles.js";
+import { normalizeProviderId } from "../../agent/models/model-selection.js";
 import { loadConfig } from "../../config/config.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { shortenHomePath } from "../../utils.js";

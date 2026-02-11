@@ -8,7 +8,7 @@ import {
   getChannelPluginCatalogEntry,
   listChannelPluginCatalogEntries,
 } from "../channels/core/plugins/catalog.js";
-import { normalizeProviderId } from "../agents/model-selection.js";
+import { normalizeProviderId } from "../agent/models/model-selection.js";
 import { hasAnyWhatsAppAuth } from "../channels/whatsapp/accounts.js";
 
 type PluginEnableChange = {
