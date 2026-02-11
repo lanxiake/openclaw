@@ -220,7 +220,7 @@ describe("channels command", () => {
     });
 
     const prompt = { confirm: vi.fn().mockResolvedValue(true) };
-    const prompterModule = await import("../wizard/clack-prompter.js");
+    const prompterModule = await import("../platform/wizard/clack-prompter.js");
     const promptSpy = vi
       .spyOn(prompterModule, "createClackPrompter")
       .mockReturnValue(prompt as never);

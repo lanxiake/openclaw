@@ -1,4 +1,4 @@
-import { redactToolDetail } from "../logging/redact.js";
+import { redactToolDetail } from "../shared/logging/redact.js";
 import { shortenHomeInString } from "../utils.js";
 import TOOL_DISPLAY_JSON from "./tool-display.json" with { type: "json" };
 

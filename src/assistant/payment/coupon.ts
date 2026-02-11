@@ -11,7 +11,7 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import type { OrderType, PriceInfo } from "./types.js";
 
 const logger = getLogger();

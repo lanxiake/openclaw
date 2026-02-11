@@ -1,10 +1,13 @@
-import { startBrowserBridgeServer, stopBrowserBridgeServer } from "../../browser/bridge-server.js";
-import { type ResolvedBrowserConfig, resolveProfile } from "../../browser/config.js";
+import {
+  startBrowserBridgeServer,
+  stopBrowserBridgeServer,
+} from "../../services/browser/bridge-server.js";
+import { type ResolvedBrowserConfig, resolveProfile } from "../../services/browser/config.js";
 import {
   DEFAULT_BROWSER_EVALUATE_ENABLED,
   DEFAULT_OPENCLAW_BROWSER_COLOR,
   DEFAULT_OPENCLAW_BROWSER_PROFILE_NAME,
-} from "../../browser/constants.js";
+} from "../../services/browser/constants.js";
 import { BROWSER_BRIDGES } from "./browser-bridges.js";
 import { DEFAULT_SANDBOX_BROWSER_IMAGE, SANDBOX_AGENT_WORKSPACE_MOUNT } from "./constants.js";
 import {

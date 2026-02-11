@@ -1,4 +1,4 @@
-import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
+import { getChannelPlugin, normalizeChannelId } from "../../channels/core/plugins/index.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { loadConfig } from "../../config/config.js";
 import { callGateway, randomIdempotencyKey } from "../../gateway/call.js";
@@ -9,7 +9,7 @@ import {
   GATEWAY_CLIENT_NAMES,
   type GatewayClientMode,
   type GatewayClientName,
-} from "../../utils/message-channel.js";
+} from "../../shared/utils/message-channel.js";
 import { resolveMessageChannelSelection } from "./channel-selection.js";
 import {
   deliverOutboundPayloads,

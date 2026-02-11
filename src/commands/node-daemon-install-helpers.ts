@@ -1,11 +1,11 @@
-import { formatNodeServiceDescription } from "../daemon/constants.js";
-import { resolveNodeProgramArguments } from "../daemon/program-args.js";
+import { formatNodeServiceDescription } from "../platform/daemon/constants.js";
+import { resolveNodeProgramArguments } from "../platform/daemon/program-args.js";
 import {
   renderSystemNodeWarning,
   resolvePreferredNodePath,
   resolveSystemNodeInfo,
-} from "../daemon/runtime-paths.js";
-import { buildNodeServiceEnvironment } from "../daemon/service-env.js";
+} from "../platform/daemon/runtime-paths.js";
+import { buildNodeServiceEnvironment } from "../platform/daemon/service-env.js";
 import { resolveGatewayDevMode } from "./daemon-install-helpers.js";
 import type { NodeDaemonRuntime } from "./node-daemon-runtime.js";
 

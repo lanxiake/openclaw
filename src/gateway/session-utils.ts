@@ -21,7 +21,7 @@ import {
   normalizeMainKey,
   parseAgentSessionKey,
 } from "../routing/session-key.js";
-import { normalizeSessionDeliveryFields } from "../utils/delivery-context.js";
+import { normalizeSessionDeliveryFields } from "../shared/utils/delivery-context.js";
 import {
   readFirstUserMessageFromTranscript,
   readLastMessagePreviewFromTranscript,

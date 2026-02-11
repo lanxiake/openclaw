@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { HookStatusReport } from "../hooks/hooks-status.js";
+import type { HookStatusReport } from "../services/hooks/hooks-status.js";
 import { formatHooksCheck, formatHooksList } from "./hooks-cli.js";
 
 const report: HookStatusReport = {

@@ -26,7 +26,7 @@ import {
 } from "../schema/index.js";
 import { generateId, generateVerificationCode } from "../utils/id.js";
 import { hashPassword, hashRefreshToken, generateRefreshToken } from "../utils/password.js";
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 
 const logger = getLogger();
 

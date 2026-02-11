@@ -9,17 +9,17 @@ export {
   runWebHeartbeatOnce,
   type WebChannelStatus,
   type WebMonitorTuning,
-} from "./web/auto-reply.js";
+} from "./channels/whatsapp/auto-reply.js";
 export {
   extractMediaPlaceholder,
   extractText,
   monitorWebInbox,
   type WebInboundMessage,
   type WebListenerCloseReason,
-} from "./web/inbound.js";
-export { loginWeb } from "./web/login.js";
-export { loadWebMedia, optimizeImageToJpeg } from "./web/media.js";
-export { sendMessageWhatsApp } from "./web/outbound.js";
+} from "./channels/whatsapp/inbound.js";
+export { loginWeb } from "./channels/whatsapp/login.js";
+export { loadWebMedia, optimizeImageToJpeg } from "./channels/whatsapp/media.js";
+export { sendMessageWhatsApp } from "./channels/whatsapp/outbound.js";
 export {
   createWaSocket,
   formatError,
@@ -30,4 +30,4 @@ export {
   WA_WEB_AUTH_DIR,
   waitForWaConnection,
   webAuthExists,
-} from "./web/session.js";
+} from "./channels/whatsapp/session.js";

@@ -5,7 +5,7 @@
  * 职责分离：用户管身份，设备管权限
  */
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import {
   getUserDeviceRepository,
   getUserRepository,

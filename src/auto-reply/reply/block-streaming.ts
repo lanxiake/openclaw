@@ -1,12 +1,12 @@
-import { getChannelDock } from "../../channels/dock.js";
-import { normalizeChannelId } from "../../channels/plugins/index.js";
+import { getChannelDock } from "../../channels/core/dock.js";
+import { normalizeChannelId } from "../../channels/core/plugins/index.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { BlockStreamingCoalesceConfig } from "../../config/types.js";
 import { normalizeAccountId } from "../../routing/session-key.js";
 import {
   INTERNAL_MESSAGE_CHANNEL,
   listDeliverableMessageChannels,
-} from "../../utils/message-channel.js";
+} from "../../shared/utils/message-channel.js";
 import { resolveTextChunkLimit, type TextChunkProvider } from "../chunk.js";
 
 const DEFAULT_BLOCK_STREAM_MIN = 800;

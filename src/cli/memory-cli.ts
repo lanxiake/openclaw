@@ -11,11 +11,14 @@ import { resolveSessionTranscriptsDirForAgent } from "../config/sessions/paths.j
 import { setVerbose } from "../globals.js";
 import { withProgress, withProgressTotals } from "./progress.js";
 import { formatErrorMessage, withManager } from "./cli-utils.js";
-import { getMemorySearchManager, type MemorySearchManagerResult } from "../memory/index.js";
-import { listMemoryFiles, normalizeExtraMemoryPaths } from "../memory/internal.js";
+import {
+  getMemorySearchManager,
+  type MemorySearchManagerResult,
+} from "../services/memory/index.js";
+import { listMemoryFiles, normalizeExtraMemoryPaths } from "../services/memory/internal.js";
 import { defaultRuntime } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { colorize, isRich, theme } from "../terminal/theme.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { colorize, isRich, theme } from "../shared/terminal/theme.js";
 import { resolveStateDir } from "../config/paths.js";
 import { shortenHomeInString, shortenHomePath } from "../utils.js";
 

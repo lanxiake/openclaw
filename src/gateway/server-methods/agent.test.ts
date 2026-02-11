@@ -49,7 +49,7 @@ vi.mock("../../sessions/send-policy.js", () => ({
 }));
 
 vi.mock("../../utils/delivery-context.js", async () => {
-  const actual = await vi.importActual<typeof import("../../utils/delivery-context.js")>(
+  const actual = await vi.importActual<typeof import("../../shared/utils/delivery-context.js")>(
     "../../utils/delivery-context.js",
   );
   return {

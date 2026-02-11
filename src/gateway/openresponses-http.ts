@@ -54,7 +54,7 @@ import {
   type InputFileLimits,
   type InputImageLimits,
   type InputImageSource,
-} from "../media/input-files.js";
+} from "../services/media/input-files.js";
 
 type OpenResponsesHttpOptions = {
   auth: ResolvedGatewayAuth;

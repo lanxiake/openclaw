@@ -12,9 +12,9 @@ import type { PluginRecord } from "../plugins/registry.js";
 import { buildPluginStatusReport } from "../plugins/status.js";
 import { updateNpmInstalledPlugins } from "../plugins/update.js";
 import { defaultRuntime } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { renderTable } from "../terminal/table.js";
-import { theme } from "../terminal/theme.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { renderTable } from "../shared/terminal/table.js";
+import { theme } from "../shared/terminal/theme.js";
 import { resolveUserPath, shortenHomeInString, shortenHomePath } from "../utils.js";
 
 export type PluginsListOptions = {

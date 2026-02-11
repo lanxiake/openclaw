@@ -5,7 +5,7 @@
  * 支持多种配额类型：AI 调用、Token、存储等
  */
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import type {
   GatewayRequestContext,
   QuotaCheckResult,

@@ -1,5 +1,5 @@
 import { defaultRuntime } from "../../runtime.js";
-import { isRich, theme } from "../../terminal/theme.js";
+import { isRich, theme } from "../../shared/terminal/theme.js";
 import { runCommandWithRuntime } from "../cli-utils.js";
 import { unauthorizedHintForMessage } from "./rpc.js";
 

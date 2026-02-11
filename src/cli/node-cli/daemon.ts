@@ -7,17 +7,17 @@ import {
   resolveNodeLaunchAgentLabel,
   resolveNodeSystemdServiceName,
   resolveNodeWindowsTaskName,
-} from "../../daemon/constants.js";
-import { resolveGatewayLogPaths } from "../../daemon/launchd.js";
-import { resolveNodeService } from "../../daemon/node-service.js";
-import type { GatewayServiceRuntime } from "../../daemon/service-runtime.js";
-import { isSystemdUserServiceAvailable } from "../../daemon/systemd.js";
-import { renderSystemdUnavailableHints } from "../../daemon/systemd-hints.js";
+} from "../../platform/daemon/constants.js";
+import { resolveGatewayLogPaths } from "../../platform/daemon/launchd.js";
+import { resolveNodeService } from "../../platform/daemon/node-service.js";
+import type { GatewayServiceRuntime } from "../../platform/daemon/service-runtime.js";
+import { isSystemdUserServiceAvailable } from "../../platform/daemon/systemd.js";
+import { renderSystemdUnavailableHints } from "../../platform/daemon/systemd-hints.js";
 import { resolveIsNixMode } from "../../config/paths.js";
 import { isWSL } from "../../infra/wsl.js";
 import { loadNodeHostConfig } from "../../node-host/config.js";
 import { defaultRuntime } from "../../runtime.js";
-import { colorize, isRich, theme } from "../../terminal/theme.js";
+import { colorize, isRich, theme } from "../../shared/terminal/theme.js";
 import { formatCliCommand } from "../command-format.js";
 import {
   buildDaemonServiceSnapshot,

@@ -24,7 +24,7 @@ import {
   type CouponCode,
 } from "../schema/index.js";
 import { generateId, generateOrderNo } from "../utils/id.js";
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 
 const logger = getLogger();
 

@@ -7,9 +7,9 @@ import {
 } from "../agents/skills-status.js";
 import { loadConfig } from "../config/config.js";
 import { defaultRuntime } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { renderTable } from "../terminal/table.js";
-import { theme } from "../terminal/theme.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { renderTable } from "../shared/terminal/table.js";
+import { theme } from "../shared/terminal/theme.js";
 import { shortenHomePath } from "../utils.js";
 import { formatCliCommand } from "./command-format.js";
 

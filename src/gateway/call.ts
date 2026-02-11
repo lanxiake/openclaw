@@ -13,7 +13,7 @@ import {
   GATEWAY_CLIENT_NAMES,
   type GatewayClientMode,
   type GatewayClientName,
-} from "../utils/message-channel.js";
+} from "../shared/utils/message-channel.js";
 import { loadGatewayTlsRuntime } from "../infra/tls/gateway.js";
 import { GatewayClient } from "./client.js";
 import { PROTOCOL_VERSION } from "./protocol/index.js";

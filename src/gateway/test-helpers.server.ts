@@ -18,7 +18,7 @@ import { rawDataToString } from "../infra/ws.js";
 import { resetLogger, setLoggerOverride } from "../logging.js";
 import { DEFAULT_AGENT_ID, toAgentStoreSessionKey } from "../routing/session-key.js";
 import { getDeterministicFreePortBlock } from "../test-utils/ports.js";
-import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../utils/message-channel.js";
+import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../shared/utils/message-channel.js";
 
 import { PROTOCOL_VERSION } from "./protocol/index.js";
 import { buildDeviceAuthPayload } from "./device-auth.js";

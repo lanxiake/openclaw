@@ -1,19 +1,19 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
 import type { OpenClawConfig } from "../../config/config.js";
-import { resolveTelegramReactionLevel } from "../../telegram/reaction-level.js";
+import { resolveTelegramReactionLevel } from "../../channels/telegram/reaction-level.js";
 import {
   deleteMessageTelegram,
   editMessageTelegram,
   reactMessageTelegram,
   sendMessageTelegram,
   sendStickerTelegram,
-} from "../../telegram/send.js";
-import { getCacheStats, searchStickers } from "../../telegram/sticker-cache.js";
-import { resolveTelegramToken } from "../../telegram/token.js";
+} from "../../channels/telegram/send.js";
+import { getCacheStats, searchStickers } from "../../channels/telegram/sticker-cache.js";
+import { resolveTelegramToken } from "../../channels/telegram/token.js";
 import {
   resolveTelegramInlineButtonsScope,
   resolveTelegramTargetChatType,
-} from "../../telegram/inline-buttons.js";
+} from "../../channels/telegram/inline-buttons.js";
 import {
   createActionGate,
   jsonResult,

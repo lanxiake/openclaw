@@ -5,7 +5,7 @@
  * 支持高风险操作告警
  */
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import type { AuditCategory, AuditRiskLevel } from "../../db/schema/audit.js";
 
 const logger = getLogger();

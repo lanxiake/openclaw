@@ -1,1 +1,1 @@
-export { parseAudioTag } from "../../media/audio-tags.js";
+export { parseAudioTag } from "../../services/media/audio-tags.js";

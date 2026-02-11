@@ -3,22 +3,22 @@ import { resolveGatewayPort } from "../config/config.js";
 import {
   resolveGatewayLaunchAgentLabel,
   resolveNodeLaunchAgentLabel,
-} from "../daemon/constants.js";
-import { readLastGatewayErrorLine } from "../daemon/diagnostics.js";
+} from "../platform/daemon/constants.js";
+import { readLastGatewayErrorLine } from "../platform/daemon/diagnostics.js";
 import {
   isLaunchAgentListed,
   isLaunchAgentLoaded,
   launchAgentPlistExists,
   repairLaunchAgentBootstrap,
-} from "../daemon/launchd.js";
-import { resolveGatewayService } from "../daemon/service.js";
-import { isSystemdUserServiceAvailable } from "../daemon/systemd.js";
-import { renderSystemdUnavailableHints } from "../daemon/systemd-hints.js";
+} from "../platform/daemon/launchd.js";
+import { resolveGatewayService } from "../platform/daemon/service.js";
+import { isSystemdUserServiceAvailable } from "../platform/daemon/systemd.js";
+import { renderSystemdUnavailableHints } from "../platform/daemon/systemd-hints.js";
 import { formatPortDiagnostics, inspectPortUsage } from "../infra/ports.js";
 import { isWSL } from "../infra/wsl.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { formatCliCommand } from "../cli/command-format.js";
-import { note } from "../terminal/note.js";
+import { note } from "../shared/terminal/note.js";
 import { sleep } from "../utils.js";
 import {
   DEFAULT_GATEWAY_DAEMON_RUNTIME,

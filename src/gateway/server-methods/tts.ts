@@ -13,7 +13,7 @@ import {
   setTtsEnabled,
   setTtsProvider,
   textToSpeech,
-} from "../../tts/tts.js";
+} from "../../services/tts/tts.js";
 import { ErrorCodes, errorShape } from "../protocol/index.js";
 import { formatForLog } from "../ws-log.js";
 import type { GatewayRequestHandlers } from "./types.js";

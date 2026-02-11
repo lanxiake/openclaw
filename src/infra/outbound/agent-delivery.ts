@@ -1,14 +1,14 @@
-import { DEFAULT_CHAT_CHANNEL } from "../../channels/registry.js";
-import type { ChannelOutboundTargetMode } from "../../channels/plugins/types.js";
+import { DEFAULT_CHAT_CHANNEL } from "../../channels/core/registry.js";
+import type { ChannelOutboundTargetMode } from "../../channels/core/plugins/types.js";
 import type { SessionEntry } from "../../config/sessions.js";
-import { normalizeAccountId } from "../../utils/account-id.js";
+import { normalizeAccountId } from "../../shared/utils/account-id.js";
 import {
   INTERNAL_MESSAGE_CHANNEL,
   isDeliverableMessageChannel,
   isGatewayMessageChannel,
   normalizeMessageChannel,
   type GatewayMessageChannel,
-} from "../../utils/message-channel.js";
+} from "../../shared/utils/message-channel.js";
 import {
   resolveOutboundTarget,
   resolveSessionDeliveryTarget,

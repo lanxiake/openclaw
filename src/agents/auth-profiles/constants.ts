@@ -1,4 +1,4 @@
-import { createSubsystemLogger } from "../../logging/subsystem.js";
+import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 
 export const AUTH_STORE_VERSION = 1;
 export const AUTH_PROFILE_FILENAME = "auth-profiles.json";

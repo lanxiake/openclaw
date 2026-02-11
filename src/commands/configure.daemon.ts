@@ -1,8 +1,8 @@
 import { buildGatewayInstallPlan, gatewayInstallErrorHint } from "./daemon-install-helpers.js";
-import { resolveGatewayService } from "../daemon/service.js";
+import { resolveGatewayService } from "../platform/daemon/service.js";
 import { withProgress } from "../cli/progress.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { note } from "../terminal/note.js";
+import { note } from "../shared/terminal/note.js";
 import { confirm, select } from "./configure.shared.js";
 import {
   DEFAULT_GATEWAY_DAEMON_RUNTIME,

@@ -7,11 +7,11 @@ import {
 import { createServer as createHttpsServer } from "node:https";
 import type { TlsOptions } from "node:tls";
 import type { WebSocketServer } from "ws";
-import { handleA2uiHttpRequest } from "../canvas-host/a2ui.js";
-import type { CanvasHostHandler } from "../canvas-host/server.js";
+import { handleA2uiHttpRequest } from "../platform/canvas-host/a2ui.js";
+import type { CanvasHostHandler } from "../platform/canvas-host/server.js";
 import { loadConfig } from "../config/config.js";
-import type { createSubsystemLogger } from "../logging/subsystem.js";
-import { handleSlackHttpRequest } from "../slack/http/index.js";
+import type { createSubsystemLogger } from "../shared/logging/subsystem.js";
+import { handleSlackHttpRequest } from "../channels/slack/http/index.js";
 import { resolveAgentAvatar } from "../agents/identity-avatar.js";
 import { handleControlUiAvatarRequest, handleControlUiHttpRequest } from "./control-ui.js";
 import {

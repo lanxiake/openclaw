@@ -15,13 +15,13 @@ import { listChannelSupportedActions, resolveChannelMessageToolHints } from "../
 import { resolveChannelCapabilities } from "../../config/channel-capabilities.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { getMachineDisplayName } from "../../infra/machine-name.js";
-import { resolveTelegramInlineButtonsScope } from "../../telegram/inline-buttons.js";
-import { resolveTelegramReactionLevel } from "../../telegram/reaction-level.js";
-import { resolveSignalReactionLevel } from "../../signal/reaction-level.js";
-import { type enqueueCommand, enqueueCommandInLane } from "../../process/command-queue.js";
-import { normalizeMessageChannel } from "../../utils/message-channel.js";
+import { resolveTelegramInlineButtonsScope } from "../../channels/telegram/inline-buttons.js";
+import { resolveTelegramReactionLevel } from "../../channels/telegram/reaction-level.js";
+import { resolveSignalReactionLevel } from "../../channels/signal/reaction-level.js";
+import { type enqueueCommand, enqueueCommandInLane } from "../../infra/process/command-queue.js";
+import { normalizeMessageChannel } from "../../shared/utils/message-channel.js";
 import { isSubagentSessionKey } from "../../routing/session-key.js";
-import { isReasoningTagProvider } from "../../utils/provider-utils.js";
+import { isReasoningTagProvider } from "../../shared/utils/provider-utils.js";
 import { resolveUserPath } from "../../utils.js";
 import { resolveOpenClawAgentDir } from "../agent-paths.js";
 import { resolveSessionAgentIds } from "../agent-scope.js";
@@ -69,7 +69,7 @@ import { splitSdkTools } from "./tool-split.js";
 import type { EmbeddedPiCompactResult } from "./types.js";
 import { formatUserTime, resolveUserTimeFormat, resolveUserTimezone } from "../date-time.js";
 import { describeUnknownError, mapThinkingLevel, resolveExecToolDefaults } from "./utils.js";
-import { buildTtsSystemPromptHint } from "../../tts/tts.js";
+import { buildTtsSystemPromptHint } from "../../services/tts/tts.js";
 
 export type CompactEmbeddedPiSessionParams = {
   sessionId: string;

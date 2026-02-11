@@ -3,7 +3,7 @@ import { loadWorkspaceSkillEntries } from "../agents/skills.js";
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { listNodePairing, updatePairedNodeMetadata } from "./node-pairing.js";
-import { createSubsystemLogger } from "../logging/subsystem.js";
+import { createSubsystemLogger } from "../shared/logging/subsystem.js";
 import { bumpSkillsSnapshotVersion } from "../agents/skills/refresh.js";
 import type { NodeRegistry } from "../gateway/node-registry.js";
 

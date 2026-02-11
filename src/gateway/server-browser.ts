@@ -11,7 +11,9 @@ export async function startBrowserControlServerIfEnabled(): Promise<BrowserContr
   // Lazy import: keeps startup fast, but still bundles for the embedded
   // gateway (bun --compile) via the static specifier path.
   const override = process.env.OPENCLAW_BROWSER_CONTROL_MODULE?.trim();
-  const mod = override ? await import(override) : await import("../browser/control-service.js");
+  const mod = override
+    ? await import(override)
+    : await import("../services/browser/control-service.js");
   const start =
     typeof (mod as { startBrowserControlServiceFromConfig?: unknown })
       .startBrowserControlServiceFromConfig === "function"

@@ -1,4 +1,4 @@
-import { DEFAULT_CHAT_CHANNEL } from "../channels/registry.js";
+import { DEFAULT_CHAT_CHANNEL } from "../channels/core/registry.js";
 import type { CliDeps } from "../cli/deps.js";
 import { withProgress } from "../cli/progress.js";
 import { loadConfig } from "../config/config.js";
@@ -12,7 +12,7 @@ import {
   GATEWAY_CLIENT_MODES,
   GATEWAY_CLIENT_NAMES,
   normalizeMessageChannel,
-} from "../utils/message-channel.js";
+} from "../shared/utils/message-channel.js";
 import { agentCommand } from "./agent.js";
 
 type AgentGatewayResult = {

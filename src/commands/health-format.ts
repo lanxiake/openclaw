@@ -1,4 +1,4 @@
-import { colorize, isRich, theme } from "../terminal/theme.js";
+import { colorize, isRich, theme } from "../shared/terminal/theme.js";
 
 const formatKv = (line: string, rich: boolean) => {
   const idx = line.indexOf(": ");

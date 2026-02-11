@@ -12,7 +12,7 @@ import {
   startServerWithClient,
   testState,
 } from "./test-helpers.js";
-import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../utils/message-channel.js";
+import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../shared/utils/message-channel.js";
 
 installGatewayTestHooks({ scope: "suite" });
 
@@ -461,7 +461,7 @@ describe("gateway server auth/connect", () => {
     const { approveDevicePairing, getPairedDevice, listDevicePairing } =
       await import("../infra/device-pairing.js");
     const { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } =
-      await import("../utils/message-channel.js");
+      await import("../shared/utils/message-channel.js");
     const { server, ws, port, prevToken } = await startServerWithClient("secret");
     const identityDir = await mkdtemp(join(tmpdir(), "openclaw-device-scope-"));
     const identity = loadOrCreateDeviceIdentity(join(identityDir, "device.json"));

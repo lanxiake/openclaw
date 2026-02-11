@@ -1,6 +1,6 @@
 import type { OpenClawConfig } from "../../../config/config.js";
-import { resolveGatewayService } from "../../../daemon/service.js";
-import { isSystemdUserServiceAvailable } from "../../../daemon/systemd.js";
+import { resolveGatewayService } from "../../../platform/daemon/service.js";
+import { isSystemdUserServiceAvailable } from "../../../platform/daemon/systemd.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import { DEFAULT_GATEWAY_DAEMON_RUNTIME, isGatewayDaemonRuntime } from "../../daemon-runtime.js";
 import { buildGatewayInstallPlan, gatewayInstallErrorHint } from "../../daemon-install-helpers.js";

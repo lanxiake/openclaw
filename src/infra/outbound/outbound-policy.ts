@@ -3,7 +3,7 @@ import type {
   ChannelId,
   ChannelMessageActionName,
   ChannelThreadingToolContext,
-} from "../../channels/plugins/types.js";
+} from "../../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { getChannelMessageAdapter } from "./channel-adapters.js";
 import { formatTargetDisplay, lookupDirectoryDisplay } from "./target-resolver.js";

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import type { OpenClawConfig } from "../../config/config.js";
-import { createSubsystemLogger } from "../../logging/subsystem.js";
+import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import {
   normalizePluginsConfig,
   resolveEnableState,

@@ -8,13 +8,13 @@ import {
 import type { CliDeps } from "../cli/deps.js";
 import type { loadConfig } from "../config/config.js";
 import { isTruthyEnvValue } from "../infra/env.js";
-import { startGmailWatcher } from "../hooks/gmail-watcher.js";
+import { startGmailWatcher } from "../services/hooks/gmail-watcher.js";
 import {
   clearInternalHooks,
   createInternalHookEvent,
   triggerInternalHook,
-} from "../hooks/internal-hooks.js";
-import { loadInternalHooks } from "../hooks/loader.js";
+} from "../services/hooks/internal-hooks.js";
+import { loadInternalHooks } from "../services/hooks/loader.js";
 import type { loadOpenClawPlugins } from "../plugins/loader.js";
 import { type PluginServicesHandle, startPluginServices } from "../plugins/services.js";
 import { startBrowserControlServerIfEnabled } from "./server-browser.js";

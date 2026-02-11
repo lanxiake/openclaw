@@ -1,11 +1,11 @@
 import { setTimeout as delay } from "node:timers/promises";
 import type { Command } from "commander";
 import { buildGatewayConnectionDetails } from "../gateway/call.js";
-import { parseLogLine } from "../logging/parse-log-line.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { clearActiveProgressLine } from "../terminal/progress-line.js";
-import { createSafeStreamWriter } from "../terminal/stream-writer.js";
-import { colorize, isRich, theme } from "../terminal/theme.js";
+import { parseLogLine } from "../shared/logging/parse-log-line.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { clearActiveProgressLine } from "../shared/terminal/progress-line.js";
+import { createSafeStreamWriter } from "../shared/terminal/stream-writer.js";
+import { colorize, isRich, theme } from "../shared/terminal/theme.js";
 import { formatCliCommand } from "./command-format.js";
 import { addGatewayClientOptions, callGatewayFromCli } from "./gateway-rpc.js";
 

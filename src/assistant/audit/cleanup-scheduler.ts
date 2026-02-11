@@ -8,7 +8,7 @@
  * - 清理统计报告
  */
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import { getEnhancedAuditService } from "./enhanced-service.js";
 
 const logger = getLogger();

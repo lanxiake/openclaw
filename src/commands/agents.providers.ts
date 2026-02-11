@@ -1,10 +1,10 @@
-import { resolveChannelDefaultAccountId } from "../channels/plugins/helpers.js";
+import { resolveChannelDefaultAccountId } from "../channels/core/plugins/helpers.js";
 import {
   getChannelPlugin,
   listChannelPlugins,
   normalizeChannelId,
-} from "../channels/plugins/index.js";
-import type { ChannelId } from "../channels/plugins/types.js";
+} from "../channels/core/plugins/index.js";
+import type { ChannelId } from "../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../config/config.js";
 import type { AgentBinding } from "../config/types.js";
 import { DEFAULT_ACCOUNT_ID } from "../routing/session-key.js";

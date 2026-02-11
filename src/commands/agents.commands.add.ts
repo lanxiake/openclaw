@@ -14,8 +14,8 @@ import { DEFAULT_AGENT_ID, normalizeAgentId } from "../routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { defaultRuntime } from "../runtime.js";
 import { resolveUserPath, shortenHomePath } from "../utils.js";
-import { createClackPrompter } from "../wizard/clack-prompter.js";
-import { WizardCancelledError } from "../wizard/prompts.js";
+import { createClackPrompter } from "../platform/wizard/clack-prompter.js";
+import { WizardCancelledError } from "../platform/wizard/prompts.js";
 import {
   applyAgentBindings,
   buildChannelBindings,

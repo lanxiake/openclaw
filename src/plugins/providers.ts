@@ -1,4 +1,4 @@
-import { createSubsystemLogger } from "../logging/subsystem.js";
+import { createSubsystemLogger } from "../shared/logging/subsystem.js";
 import { loadOpenClawPlugins, type PluginLoadOptions } from "./loader.js";
 import type { ProviderPlugin } from "./types.js";
 

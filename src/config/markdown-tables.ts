@@ -1,4 +1,4 @@
-import { normalizeChannelId } from "../channels/plugins/index.js";
+import { normalizeChannelId } from "../channels/core/plugins/index.js";
 import { normalizeAccountId } from "../routing/session-key.js";
 import type { OpenClawConfig } from "./config.js";
 import type { MarkdownTableMode } from "./types.base.js";

@@ -1,5 +1,5 @@
-import { normalizeAccountId } from "../../utils/account-id.js";
-import { resolveMessageChannel } from "../../utils/message-channel.js";
+import { normalizeAccountId } from "../../shared/utils/account-id.js";
+import { resolveMessageChannel } from "../../shared/utils/message-channel.js";
 import type { AgentCommandOpts, AgentRunContext } from "./types.js";
 
 export function resolveAgentRunContext(opts: AgentCommandOpts): AgentRunContext {

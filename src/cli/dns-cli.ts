@@ -8,9 +8,9 @@ import { loadConfig } from "../config/config.js";
 import { pickPrimaryTailnetIPv4, pickPrimaryTailnetIPv6 } from "../infra/tailnet.js";
 import { getWideAreaZonePath, resolveWideAreaDiscoveryDomain } from "../infra/widearea-dns.js";
 import { defaultRuntime } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { renderTable } from "../terminal/table.js";
-import { theme } from "../terminal/theme.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { renderTable } from "../shared/terminal/table.js";
+import { theme } from "../shared/terminal/theme.js";
 
 type RunOpts = { allowFailure?: boolean; inherit?: boolean };
 

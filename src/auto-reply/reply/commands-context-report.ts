@@ -12,7 +12,7 @@ import { buildToolSummaryMap } from "../../agents/tool-summaries.js";
 import { resolveBootstrapContextForRun } from "../../agents/bootstrap-files.js";
 import type { SessionSystemPromptReport } from "../../config/sessions/types.js";
 import { getRemoteSkillEligibility } from "../../infra/skills-remote.js";
-import { buildTtsSystemPromptHint } from "../../tts/tts.js";
+import { buildTtsSystemPromptHint } from "../../services/tts/tts.js";
 import type { ReplyPayload } from "../types.js";
 import type { HandleCommandsParams } from "./commands-types.js";
 

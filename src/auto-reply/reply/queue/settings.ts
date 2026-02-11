@@ -1,4 +1,4 @@
-import { getChannelPlugin } from "../../../channels/plugins/index.js";
+import { getChannelPlugin } from "../../../channels/core/plugins/index.js";
 import type { InboundDebounceByProvider } from "../../../config/types.messages.js";
 import { normalizeQueueDropPolicy, normalizeQueueMode } from "./normalize.js";
 import { DEFAULT_QUEUE_CAP, DEFAULT_QUEUE_DEBOUNCE_MS, DEFAULT_QUEUE_DROP } from "./state.js";

@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 
-import { runCommandWithTimeout } from "../process/exec.js";
+import { runCommandWithTimeout } from "../infra/process/exec.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { CONFIG_DIR } from "../utils.js";
 

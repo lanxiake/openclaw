@@ -19,7 +19,7 @@ import {
   sendPollDiscord,
   sendStickerDiscord,
   unpinMessageDiscord,
-} from "../../discord/send.js";
+} from "../../channels/discord/send.js";
 import {
   type ActionGate,
   jsonResult,
@@ -28,7 +28,7 @@ import {
   readStringParam,
 } from "./common.js";
 import { withNormalizedTimestamp } from "../date-time.js";
-import { resolveDiscordChannelId } from "../../discord/targets.js";
+import { resolveDiscordChannelId } from "../../channels/discord/targets.js";
 
 function parseDiscordMessageLink(link: string) {
   const normalized = link.trim();

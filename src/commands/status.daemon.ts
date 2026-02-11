@@ -1,6 +1,6 @@
-import type { GatewayService } from "../daemon/service.js";
-import { resolveGatewayService } from "../daemon/service.js";
-import { resolveNodeService } from "../daemon/node-service.js";
+import type { GatewayService } from "../platform/daemon/service.js";
+import { resolveGatewayService } from "../platform/daemon/service.js";
+import { resolveNodeService } from "../platform/daemon/node-service.js";
 import { formatDaemonRuntimeShort } from "./status.format.js";
 
 type DaemonStatusSummary = {

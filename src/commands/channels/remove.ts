@@ -1,13 +1,13 @@
-import { resolveChannelDefaultAccountId } from "../../channels/plugins/helpers.js";
+import { resolveChannelDefaultAccountId } from "../../channels/core/plugins/helpers.js";
 import {
   getChannelPlugin,
   listChannelPlugins,
   normalizeChannelId,
-} from "../../channels/plugins/index.js";
+} from "../../channels/core/plugins/index.js";
 import { type OpenClawConfig, writeConfigFile } from "../../config/config.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../routing/session-key.js";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
-import { createClackPrompter } from "../../wizard/clack-prompter.js";
+import { createClackPrompter } from "../../platform/wizard/clack-prompter.js";
 import { type ChatChannel, channelLabel, requireValidConfig, shouldUseWizard } from "./shared.js";
 
 export type ChannelsRemoveOptions = {

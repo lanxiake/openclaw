@@ -1,4 +1,4 @@
-import { type ChannelId, getChannelPlugin } from "../../channels/plugins/index.js";
+import { type ChannelId, getChannelPlugin } from "../../channels/core/plugins/index.js";
 import { formatCliCommand } from "../../cli/command-format.js";
 import { type OpenClawConfig, readConfigFileSnapshot } from "../../config/config.js";
 import { DEFAULT_ACCOUNT_ID } from "../../routing/session-key.js";

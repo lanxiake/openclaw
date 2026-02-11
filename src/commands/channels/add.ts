@@ -1,11 +1,11 @@
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/agent-scope.js";
-import { listChannelPluginCatalogEntries } from "../../channels/plugins/catalog.js";
-import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
-import type { ChannelId } from "../../channels/plugins/types.js";
+import { listChannelPluginCatalogEntries } from "../../channels/core/plugins/catalog.js";
+import { getChannelPlugin, normalizeChannelId } from "../../channels/core/plugins/index.js";
+import type { ChannelId } from "../../channels/core/plugins/types.js";
 import { writeConfigFile, type OpenClawConfig } from "../../config/config.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../routing/session-key.js";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
-import { createClackPrompter } from "../../wizard/clack-prompter.js";
+import { createClackPrompter } from "../../platform/wizard/clack-prompter.js";
 import { setupChannels } from "../onboard-channels.js";
 import type { ChannelChoice } from "../onboard-types.js";
 import {

@@ -1,4 +1,4 @@
-import { listChannelPlugins } from "../../channels/plugins/index.js";
+import { listChannelPlugins } from "../../channels/core/plugins/index.js";
 import type { ChannelChoice } from "../onboard-types.js";
 import type { ChannelOnboardingAdapter } from "./types.js";
 

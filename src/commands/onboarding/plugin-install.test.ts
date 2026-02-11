@@ -17,9 +17,9 @@ vi.mock("../../plugins/loader.js", () => ({
 }));
 
 import fs from "node:fs";
-import type { ChannelPluginCatalogEntry } from "../../channels/plugins/catalog.js";
+import type { ChannelPluginCatalogEntry } from "../../channels/core/plugins/catalog.js";
 import type { OpenClawConfig } from "../../config/config.js";
-import type { WizardPrompter } from "../../wizard/prompts.js";
+import type { WizardPrompter } from "../../platform/wizard/prompts.js";
 import { makePrompter, makeRuntime } from "./__tests__/test-utils.js";
 import { ensureOnboardingPluginInstalled } from "./plugin-install.js";
 

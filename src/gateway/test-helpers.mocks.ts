@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { Mock, vi } from "vitest";
 
-import type { ChannelPlugin, ChannelOutboundAdapter } from "../channels/plugins/types.js";
+import type { ChannelPlugin, ChannelOutboundAdapter } from "../channels/core/plugins/types.js";
 import { applyPluginAutoEnable } from "../config/plugin-auto-enable.js";
 import type { AgentBinding } from "../config/types.agents.js";
 import type { HooksConfig } from "../config/types.hooks.js";
@@ -551,7 +551,7 @@ vi.mock("../web/outbound.js", () => ({
     (hoisted.sendWhatsAppMock as (...args: unknown[]) => unknown)(...args),
 }));
 vi.mock("../channels/web/index.js", async () => {
-  const actual = await vi.importActual<typeof import("../channels/web/index.js")>(
+  const actual = await vi.importActual<typeof import("../channels/core/web/index.js")>(
     "../channels/web/index.js",
   );
   return {

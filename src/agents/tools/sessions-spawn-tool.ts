@@ -10,8 +10,8 @@ import {
   normalizeAgentId,
   parseAgentSessionKey,
 } from "../../routing/session-key.js";
-import { normalizeDeliveryContext } from "../../utils/delivery-context.js";
-import type { GatewayMessageChannel } from "../../utils/message-channel.js";
+import { normalizeDeliveryContext } from "../../shared/utils/delivery-context.js";
+import type { GatewayMessageChannel } from "../../shared/utils/message-channel.js";
 import { resolveAgentConfig } from "../agent-scope.js";
 import { AGENT_LANE_SUBAGENT } from "../lanes.js";
 import { optionalStringEnum } from "../schema/typebox.js";

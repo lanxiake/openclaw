@@ -4,7 +4,7 @@ import type {
   HumanDelayConfig,
   TypingMode,
 } from "./types.base.js";
-import type { ChannelId } from "../channels/plugins/types.js";
+import type { ChannelId } from "../channels/core/plugins/types.js";
 import type {
   SandboxBrowserSettings,
   SandboxDockerSettings,

@@ -6,8 +6,8 @@ import type { ImageContent } from "@mariozechner/pi-ai";
 
 import { assertSandboxPath } from "../../sandbox-paths.js";
 import { sanitizeImageBlocks } from "../../tool-images.js";
-import { extractTextFromMessage } from "../../../tui/tui-formatters.js";
-import { loadWebMedia } from "../../../web/media.js";
+import { extractTextFromMessage } from "../../../platform/tui/tui-formatters.js";
+import { loadWebMedia } from "../../../channels/whatsapp/media.js";
 import { resolveUserPath } from "../../../utils.js";
 import { log } from "../logger.js";
 

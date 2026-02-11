@@ -9,21 +9,21 @@ import {
   buildWorkspaceHookStatus,
   type HookStatusEntry,
   type HookStatusReport,
-} from "../hooks/hooks-status.js";
-import type { HookEntry } from "../hooks/types.js";
-import { loadWorkspaceHookEntries } from "../hooks/workspace.js";
+} from "../services/hooks/hooks-status.js";
+import type { HookEntry } from "../services/hooks/types.js";
+import { loadWorkspaceHookEntries } from "../services/hooks/workspace.js";
 import { loadConfig, writeConfigFile } from "../config/io.js";
 import {
   installHooksFromNpmSpec,
   installHooksFromPath,
   resolveHookInstallDir,
-} from "../hooks/install.js";
-import { recordHookInstall } from "../hooks/installs.js";
+} from "../services/hooks/install.js";
+import { recordHookInstall } from "../services/hooks/installs.js";
 import { buildPluginStatusReport } from "../plugins/status.js";
 import { defaultRuntime } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { renderTable } from "../terminal/table.js";
-import { theme } from "../terminal/theme.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { renderTable } from "../shared/terminal/table.js";
+import { theme } from "../shared/terminal/theme.js";
 import { formatCliCommand } from "./command-format.js";
 import { resolveUserPath, shortenHomePath } from "../utils.js";
 

@@ -8,7 +8,7 @@
 import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join, basename, dirname } from "node:path";
-import { createSubsystemLogger } from "../../logging/subsystem.js";
+import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import type {
   AssistantSkillDefinition,
   AssistantSkillMetadata,

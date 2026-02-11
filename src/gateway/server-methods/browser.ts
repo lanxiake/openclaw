@@ -2,10 +2,10 @@ import crypto from "node:crypto";
 import {
   createBrowserControlContext,
   startBrowserControlServiceFromConfig,
-} from "../../browser/control-service.js";
-import { createBrowserRouteDispatcher } from "../../browser/routes/dispatcher.js";
+} from "../../services/browser/control-service.js";
+import { createBrowserRouteDispatcher } from "../../services/browser/routes/dispatcher.js";
 import { loadConfig } from "../../config/config.js";
-import { saveMediaBuffer } from "../../media/store.js";
+import { saveMediaBuffer } from "../../services/media/store.js";
 import { isNodeCommandAllowed, resolveNodeCommandAllowlist } from "../node-command-policy.js";
 import type { NodeSession } from "../node-registry.js";
 import { ErrorCodes, errorShape } from "../protocol/index.js";

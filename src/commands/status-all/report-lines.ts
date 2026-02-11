@@ -1,6 +1,6 @@
 import type { ProgressReporter } from "../../cli/progress.js";
-import { renderTable } from "../../terminal/table.js";
-import { isRich, theme } from "../../terminal/theme.js";
+import { renderTable } from "../../shared/terminal/table.js";
+import { isRich, theme } from "../../shared/terminal/theme.js";
 import { appendStatusAllDiagnosis } from "./diagnosis.js";
 import { formatAge } from "./format.js";
 

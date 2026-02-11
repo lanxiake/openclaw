@@ -2,7 +2,7 @@ import type { OpenClawConfig } from "../config/config.js";
 import { resolveGatewayPort } from "../config/config.js";
 import { findTailscaleBinary } from "../infra/tailscale.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { note } from "../terminal/note.js";
+import { note } from "../shared/terminal/note.js";
 import { buildGatewayAuthConfig } from "./configure.gateway-auth.js";
 import { confirm, select, text } from "./configure.shared.js";
 import { guardCancel, normalizeGatewayTokenInput, randomToken } from "./onboard-helpers.js";

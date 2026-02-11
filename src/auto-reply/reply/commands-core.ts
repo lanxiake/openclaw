@@ -1,7 +1,10 @@
 import { logVerbose } from "../../globals.js";
 import { resolveSendPolicy } from "../../sessions/send-policy.js";
 import { shouldHandleTextCommands } from "../commands-registry.js";
-import { createInternalHookEvent, triggerInternalHook } from "../../hooks/internal-hooks.js";
+import {
+  createInternalHookEvent,
+  triggerInternalHook,
+} from "../../services/hooks/internal-hooks.js";
 import { routeReply } from "./route-reply.js";
 import { handleBashCommand } from "./commands-bash.js";
 import { handleCompactCommand } from "./commands-compact.js";

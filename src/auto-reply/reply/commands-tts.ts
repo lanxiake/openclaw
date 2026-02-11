@@ -17,7 +17,7 @@ import {
   setTtsMaxLength,
   setTtsProvider,
   textToSpeech,
-} from "../../tts/tts.js";
+} from "../../services/tts/tts.js";
 
 type ParsedTtsCommand = {
   action: string;

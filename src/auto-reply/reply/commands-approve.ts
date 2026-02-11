@@ -1,5 +1,5 @@
 import { callGateway } from "../../gateway/call.js";
-import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../../utils/message-channel.js";
+import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../../shared/utils/message-channel.js";
 import { logVerbose } from "../../globals.js";
 import type { CommandHandler } from "./commands-types.js";
 

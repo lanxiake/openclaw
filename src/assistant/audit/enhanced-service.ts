@@ -5,7 +5,7 @@
  * 提供完整的审计日志管理功能
  */
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import {
   getAuditLogRepository,
   getExportLogRepository,

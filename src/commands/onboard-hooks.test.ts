@@ -2,8 +2,8 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { setupInternalHooks } from "./onboard-hooks.js";
 import type { OpenClawConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
-import type { WizardPrompter } from "../wizard/prompts.js";
-import type { HookStatusReport } from "../hooks/hooks-status.js";
+import type { WizardPrompter } from "../platform/wizard/prompts.js";
+import type { HookStatusReport } from "../services/hooks/hooks-status.js";
 
 // Mock hook discovery modules
 vi.mock("../hooks/hooks-status.js", () => ({
@@ -115,7 +115,7 @@ describe("onboard-hooks", () => {
 
   describe("setupInternalHooks", () => {
     it("should enable hooks when user selects them", async () => {
-      const { buildWorkspaceHookStatus } = await import("../hooks/hooks-status.js");
+      const { buildWorkspaceHookStatus } = await import("../services/hooks/hooks-status.js");
       vi.mocked(buildWorkspaceHookStatus).mockReturnValue(createMockHookReport());
 
       const cfg: OpenClawConfig = {};
@@ -148,7 +148,7 @@ describe("onboard-hooks", () => {
     });
 
     it("should not enable hooks when user skips", async () => {
-      const { buildWorkspaceHookStatus } = await import("../hooks/hooks-status.js");
+      const { buildWorkspaceHookStatus } = await import("../services/hooks/hooks-status.js");
       vi.mocked(buildWorkspaceHookStatus).mockReturnValue(createMockHookReport());
 
       const cfg: OpenClawConfig = {};
@@ -162,7 +162,7 @@ describe("onboard-hooks", () => {
     });
 
     it("should handle no eligible hooks", async () => {
-      const { buildWorkspaceHookStatus } = await import("../hooks/hooks-status.js");
+      const { buildWorkspaceHookStatus } = await import("../services/hooks/hooks-status.js");
       vi.mocked(buildWorkspaceHookStatus).mockReturnValue(createMockHookReport(false));
 
       const cfg: OpenClawConfig = {};
@@ -180,7 +180,7 @@ describe("onboard-hooks", () => {
     });
 
     it("should preserve existing hooks config when enabled", async () => {
-      const { buildWorkspaceHookStatus } = await import("../hooks/hooks-status.js");
+      const { buildWorkspaceHookStatus } = await import("../services/hooks/hooks-status.js");
       vi.mocked(buildWorkspaceHookStatus).mockReturnValue(createMockHookReport());
 
       const cfg: OpenClawConfig = {
@@ -205,7 +205,7 @@ describe("onboard-hooks", () => {
     });
 
     it("should preserve existing config when user skips", async () => {
-      const { buildWorkspaceHookStatus } = await import("../hooks/hooks-status.js");
+      const { buildWorkspaceHookStatus } = await import("../services/hooks/hooks-status.js");
       vi.mocked(buildWorkspaceHookStatus).mockReturnValue(createMockHookReport());
 
       const cfg: OpenClawConfig = {
@@ -221,7 +221,7 @@ describe("onboard-hooks", () => {
     });
 
     it("should show informative notes to user", async () => {
-      const { buildWorkspaceHookStatus } = await import("../hooks/hooks-status.js");
+      const { buildWorkspaceHookStatus } = await import("../services/hooks/hooks-status.js");
       vi.mocked(buildWorkspaceHookStatus).mockReturnValue(createMockHookReport());
 
       const cfg: OpenClawConfig = {};

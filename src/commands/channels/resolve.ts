@@ -1,7 +1,10 @@
 import { loadConfig } from "../../config/config.js";
 import { danger } from "../../globals.js";
-import { getChannelPlugin } from "../../channels/plugins/index.js";
-import type { ChannelResolveKind, ChannelResolveResult } from "../../channels/plugins/types.js";
+import { getChannelPlugin } from "../../channels/core/plugins/index.js";
+import type {
+  ChannelResolveKind,
+  ChannelResolveResult,
+} from "../../channels/core/plugins/types.js";
 import { resolveMessageChannelSelection } from "../../infra/outbound/channel-selection.js";
 import type { RuntimeEnv } from "../../runtime.js";
 

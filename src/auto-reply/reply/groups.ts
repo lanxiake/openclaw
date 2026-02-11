@@ -1,8 +1,8 @@
-import { getChannelDock } from "../../channels/dock.js";
-import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
+import { getChannelDock } from "../../channels/core/dock.js";
+import { getChannelPlugin, normalizeChannelId } from "../../channels/core/plugins/index.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { GroupKeyResolution, SessionEntry } from "../../config/sessions.js";
-import { isInternalMessageChannel } from "../../utils/message-channel.js";
+import { isInternalMessageChannel } from "../../shared/utils/message-channel.js";
 import { normalizeGroupActivation } from "../group-activation.js";
 import type { TemplateContext } from "../templating.js";
 

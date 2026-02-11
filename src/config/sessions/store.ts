@@ -10,7 +10,7 @@ import {
   normalizeDeliveryContext,
   normalizeSessionDeliveryFields,
   type DeliveryContext,
-} from "../../utils/delivery-context.js";
+} from "../../shared/utils/delivery-context.js";
 import type { MsgContext } from "../../auto-reply/templating.js";
 import { deriveSessionMetaPatch } from "./metadata.js";
 import { mergeSessionEntry, type SessionEntry } from "./types.js";

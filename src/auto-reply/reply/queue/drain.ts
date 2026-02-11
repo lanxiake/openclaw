@@ -4,7 +4,7 @@ import {
   buildQueueSummaryPrompt,
   hasCrossChannelItems,
   waitForQueueDebounce,
-} from "../../../utils/queue-helpers.js";
+} from "../../../shared/utils/queue-helpers.js";
 import { isRoutableChannel } from "../route-reply.js";
 import { FOLLOWUP_QUEUES } from "./state.js";
 import type { FollowupRun } from "./types.js";

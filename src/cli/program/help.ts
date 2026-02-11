@@ -1,6 +1,6 @@
 import type { Command } from "commander";
-import { formatDocsLink } from "../../terminal/links.js";
-import { isRich, theme } from "../../terminal/theme.js";
+import { formatDocsLink } from "../../shared/terminal/links.js";
+import { isRich, theme } from "../../shared/terminal/theme.js";
 import { formatCliBannerLine, hasEmittedCliBanner } from "../banner.js";
 import { replaceCliName, resolveCliName } from "../cli-name.js";
 import type { ProgramContext } from "./context.js";

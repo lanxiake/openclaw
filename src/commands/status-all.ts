@@ -2,10 +2,10 @@ import { buildWorkspaceSkillStatus } from "../agents/skills-status.js";
 import { withProgress } from "../cli/progress.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { loadConfig, readConfigFileSnapshot, resolveGatewayPort } from "../config/config.js";
-import { readLastGatewayErrorLine } from "../daemon/diagnostics.js";
-import type { GatewayService } from "../daemon/service.js";
-import { resolveGatewayService } from "../daemon/service.js";
-import { resolveNodeService } from "../daemon/node-service.js";
+import { readLastGatewayErrorLine } from "../platform/daemon/diagnostics.js";
+import type { GatewayService } from "../platform/daemon/service.js";
+import { resolveGatewayService } from "../platform/daemon/service.js";
+import { resolveNodeService } from "../platform/daemon/node-service.js";
 import { buildGatewayConnectionDetails, callGateway } from "../gateway/call.js";
 import { normalizeControlUiBasePath } from "../gateway/control-ui-shared.js";
 import { probeGateway } from "../gateway/probe.js";
@@ -22,7 +22,7 @@ import {
   resolveEffectiveUpdateChannel,
 } from "../infra/update-channels.js";
 import { getRemoteSkillEligibility } from "../infra/skills-remote.js";
-import { runExec } from "../process/exec.js";
+import { runExec } from "../infra/process/exec.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { VERSION } from "../version.js";
 import { resolveControlUiLinks } from "./onboard-helpers.js";

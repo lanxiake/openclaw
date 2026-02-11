@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import type { IncomingMessage } from "node:http";
-import { listChannelPlugins } from "../channels/plugins/index.js";
-import type { ChannelId } from "../channels/plugins/types.js";
+import { listChannelPlugins } from "../channels/core/plugins/index.js";
+import type { ChannelId } from "../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../config/config.js";
-import { normalizeMessageChannel } from "../utils/message-channel.js";
+import { normalizeMessageChannel } from "../shared/utils/message-channel.js";
 import { type HookMappingResolved, resolveHookMappings } from "./hooks-mapping.js";
 
 const DEFAULT_HOOKS_PATH = "/hooks";

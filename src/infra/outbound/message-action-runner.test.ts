@@ -6,13 +6,14 @@ import { createIMessageTestPlugin, createTestRegistry } from "../../test-utils/c
 import { slackPlugin } from "../../../extensions/slack/src/channel.js";
 import { telegramPlugin } from "../../../extensions/telegram/src/channel.js";
 import { whatsappPlugin } from "../../../extensions/whatsapp/src/channel.js";
-import { loadWebMedia } from "../../web/media.js";
+import { loadWebMedia } from "../../channels/whatsapp/media.js";
 import { runMessageAction } from "./message-action-runner.js";
 import { jsonResult } from "../../agents/tools/common.js";
-import type { ChannelPlugin } from "../../channels/plugins/types.js";
+import type { ChannelPlugin } from "../../channels/core/plugins/types.js";
 
 vi.mock("../../web/media.js", async () => {
-  const actual = await vi.importActual<typeof import("../../web/media.js")>("../../web/media.js");
+  const actual =
+    await vi.importActual<typeof import("../../channels/whatsapp/media.js")>("../../web/media.js");
   return {
     ...actual,
     loadWebMedia: vi.fn(actual.loadWebMedia),

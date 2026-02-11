@@ -12,7 +12,7 @@ import {
   GATEWAY_CLIENT_NAMES,
   type GatewayClientMode,
   type GatewayClientName,
-} from "../utils/message-channel.js";
+} from "../shared/utils/message-channel.js";
 
 import { GatewayClient } from "./client.js";
 import { buildDeviceAuthPayload } from "./device-auth.js";

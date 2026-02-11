@@ -15,7 +15,7 @@ import {
 } from "../../auto-reply/reply/response-prefix-template.js";
 import type { MsgContext } from "../../auto-reply/templating.js";
 import { resolveSendPolicy } from "../../sessions/send-policy.js";
-import { INTERNAL_MESSAGE_CHANNEL } from "../../utils/message-channel.js";
+import { INTERNAL_MESSAGE_CHANNEL } from "../../shared/utils/message-channel.js";
 import {
   abortChatRunById,
   abortChatRunsForSessionKey,

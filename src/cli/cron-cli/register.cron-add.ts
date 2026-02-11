@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import type { CronJob } from "../../cron/types.js";
+import type { CronJob } from "../../services/cron/types.js";
 import { danger } from "../../globals.js";
 import { defaultRuntime } from "../../runtime.js";
 import { sanitizeAgentId } from "../../routing/session-key.js";

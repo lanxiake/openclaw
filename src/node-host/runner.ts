@@ -33,17 +33,17 @@ import {
 import { getMachineDisplayName } from "../infra/machine-name.js";
 import { loadOrCreateDeviceIdentity } from "../infra/device-identity.js";
 import { loadConfig } from "../config/config.js";
-import { resolveBrowserConfig } from "../browser/config.js";
+import { resolveBrowserConfig } from "../services/browser/config.js";
 import {
   createBrowserControlContext,
   startBrowserControlServiceFromConfig,
-} from "../browser/control-service.js";
-import { createBrowserRouteDispatcher } from "../browser/routes/dispatcher.js";
-import { detectMime } from "../media/mime.js";
+} from "../services/browser/control-service.js";
+import { createBrowserRouteDispatcher } from "../services/browser/routes/dispatcher.js";
+import { detectMime } from "../services/media/mime.js";
 import { resolveAgentConfig } from "../agents/agent-scope.js";
 import { ensureOpenClawCliOnPath } from "../infra/path-env.js";
 import { VERSION } from "../version.js";
-import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../utils/message-channel.js";
+import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../shared/utils/message-channel.js";
 
 import { ensureNodeHostConfig, saveNodeHostConfig, type NodeHostGatewayConfig } from "./config.js";
 import { GatewayClient } from "../gateway/client.js";

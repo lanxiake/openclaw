@@ -1,8 +1,8 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
 import type { ImageContent } from "@mariozechner/pi-ai";
 
-import { createSubsystemLogger } from "../logging/subsystem.js";
-import { getImageMetadata, resizeToJpeg } from "../media/image-ops.js";
+import { createSubsystemLogger } from "../shared/logging/subsystem.js";
+import { getImageMetadata, resizeToJpeg } from "../services/media/image-ops.js";
 
 type ToolContentBlock = AgentToolResult<unknown>["content"][number];
 type ImageContentBlock = Extract<ToolContentBlock, { type: "image" }>;

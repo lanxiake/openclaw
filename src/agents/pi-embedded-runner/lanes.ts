@@ -1,4 +1,4 @@
-import { CommandLane } from "../../process/lanes.js";
+import { CommandLane } from "../../infra/process/lanes.js";
 
 export function resolveSessionLane(key: string) {
   const cleaned = key.trim() || CommandLane.Main;

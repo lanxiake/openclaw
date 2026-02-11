@@ -12,7 +12,7 @@ import { parseDurationMs } from "../parse-duration.js";
 import { getNodesTheme, runNodesCommand } from "./cli-utils.js";
 import { callGatewayCli, nodesCallOpts, resolveNodeId } from "./rpc.js";
 import type { NodesRpcOpts } from "./types.js";
-import { renderTable } from "../../terminal/table.js";
+import { renderTable } from "../../shared/terminal/table.js";
 import { shortenHomePath } from "../../utils.js";
 
 const parseFacing = (value: string): CameraFacing => {

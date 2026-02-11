@@ -8,9 +8,9 @@ import {
   resolveSandboxScope,
 } from "../agents/sandbox.js";
 import type { OpenClawConfig } from "../config/config.js";
-import { runCommandWithTimeout, runExec } from "../process/exec.js";
+import { runCommandWithTimeout, runExec } from "../infra/process/exec.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { note } from "../terminal/note.js";
+import { note } from "../shared/terminal/note.js";
 import type { DoctorPrompter } from "./doctor-prompter.js";
 
 type SandboxScriptInfo = {

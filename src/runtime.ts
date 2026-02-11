@@ -1,4 +1,4 @@
-import { clearActiveProgressLine } from "./terminal/progress-line.js";
+import { clearActiveProgressLine } from "./shared/terminal/progress-line.js";
 
 export type RuntimeEnv = {
   log: typeof console.log;

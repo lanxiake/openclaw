@@ -1,7 +1,7 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
 
 import type { OpenClawConfig } from "../../config/config.js";
-import { sendReactionWhatsApp } from "../../web/outbound.js";
+import { sendReactionWhatsApp } from "../../channels/whatsapp/outbound.js";
 import { createActionGate, jsonResult, readReactionParams, readStringParam } from "./common.js";
 
 export async function handleWhatsAppAction(

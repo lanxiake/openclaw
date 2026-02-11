@@ -3,13 +3,13 @@ import {
   getChatChannelMeta,
   listChatChannels,
   normalizeChatChannelId,
-} from "../channels/registry.js";
+} from "../channels/core/registry.js";
 import {
   getChannelPluginCatalogEntry,
   listChannelPluginCatalogEntries,
-} from "../channels/plugins/catalog.js";
+} from "../channels/core/plugins/catalog.js";
 import { normalizeProviderId } from "../agents/model-selection.js";
-import { hasAnyWhatsAppAuth } from "../web/accounts.js";
+import { hasAnyWhatsAppAuth } from "../channels/whatsapp/accounts.js";
 
 type PluginEnableChange = {
   pluginId: string;

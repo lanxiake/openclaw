@@ -1,4 +1,4 @@
-import { colorize, isRich as isRichTerminal, theme } from "../../terminal/theme.js";
+import { colorize, isRich as isRichTerminal, theme } from "../../shared/terminal/theme.js";
 
 export const isRich = (opts?: { json?: boolean; plain?: boolean }) =>
   Boolean(isRichTerminal() && !opts?.json && !opts?.plain);

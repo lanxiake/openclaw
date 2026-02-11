@@ -25,9 +25,9 @@ const addChannelAllowFromStoreEntryMock = vi.hoisted(() => vi.fn());
 const removeChannelAllowFromStoreEntryMock = vi.hoisted(() => vi.fn());
 
 vi.mock("../../pairing/pairing-store.js", async () => {
-  const actual = await vi.importActual<typeof import("../../pairing/pairing-store.js")>(
-    "../../pairing/pairing-store.js",
-  );
+  const actual = await vi.importActual<
+    typeof import("../../infra/device/pairing/pairing-store.js")
+  >("../../pairing/pairing-store.js");
   return {
     ...actual,
     readChannelAllowFromStore: readChannelAllowFromStoreMock,
@@ -37,7 +37,7 @@ vi.mock("../../pairing/pairing-store.js", async () => {
 });
 
 vi.mock("../../channels/plugins/pairing.js", async () => {
-  const actual = await vi.importActual<typeof import("../../channels/plugins/pairing.js")>(
+  const actual = await vi.importActual<typeof import("../../channels/core/plugins/pairing.js")>(
     "../../channels/plugins/pairing.js",
   );
   return {

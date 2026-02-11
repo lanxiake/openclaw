@@ -10,7 +10,7 @@ import {
   resolveConfiguredModelRef,
 } from "../agents/model-selection.js";
 import type { OpenClawConfig } from "../config/config.js";
-import type { WizardPrompter, WizardSelectOption } from "../wizard/prompts.js";
+import type { WizardPrompter, WizardSelectOption } from "../platform/wizard/prompts.js";
 import { formatTokenK } from "./models/shared.js";
 
 const KEEP_VALUE = "__keep__";

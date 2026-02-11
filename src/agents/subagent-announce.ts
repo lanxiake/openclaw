@@ -17,7 +17,7 @@ import {
   deliveryContextFromSession,
   mergeDeliveryContext,
   normalizeDeliveryContext,
-} from "../utils/delivery-context.js";
+} from "../shared/utils/delivery-context.js";
 import { isEmbeddedPiRunActive, queueEmbeddedPiMessage } from "./pi-embedded.js";
 import { type AnnounceQueueItem, enqueueAnnounce } from "./subagent-announce-queue.js";
 import { readLatestAssistantReply } from "./tools/agent-step.js";

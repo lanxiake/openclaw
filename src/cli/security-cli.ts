@@ -2,10 +2,10 @@ import type { Command } from "commander";
 
 import { loadConfig } from "../config/config.js";
 import { defaultRuntime } from "../runtime.js";
-import { runSecurityAudit } from "../security/audit.js";
-import { fixSecurityFootguns } from "../security/fix.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { isRich, theme } from "../terminal/theme.js";
+import { runSecurityAudit } from "../infra/security/audit.js";
+import { fixSecurityFootguns } from "../infra/security/fix.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { isRich, theme } from "../shared/terminal/theme.js";
 import { shortenHomeInString, shortenHomePath } from "../utils.js";
 import { formatCliCommand } from "./command-format.js";
 

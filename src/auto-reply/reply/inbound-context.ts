@@ -1,5 +1,5 @@
-import { normalizeChatType } from "../../channels/chat-type.js";
-import { resolveConversationLabel } from "../../channels/conversation-label.js";
+import { normalizeChatType } from "../../channels/core/chat-type.js";
+import { resolveConversationLabel } from "../../channels/core/conversation-label.js";
 import type { FinalizedMsgContext, MsgContext } from "../templating.js";
 import { formatInboundBodyWithSenderMeta } from "./inbound-sender-meta.js";
 import { normalizeInboundTextNewlines } from "./inbound-text.js";

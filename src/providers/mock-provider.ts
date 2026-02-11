@@ -13,7 +13,7 @@
  *   设置环境变量 USE_MOCK_LLM=true 启用
  */
 
-import { getLogger } from "../logging/logger.js";
+import { getLogger } from "../shared/logging/logger.js";
 
 const logger = getLogger();
 

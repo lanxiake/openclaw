@@ -5,7 +5,7 @@ import { loadConfig } from "../config/config.js";
 import { loadSessionStore, resolveStorePath, type SessionEntry } from "../config/sessions.js";
 import { info } from "../globals.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { isRich, theme } from "../terminal/theme.js";
+import { isRich, theme } from "../shared/terminal/theme.js";
 
 type SessionRow = {
   key: string;

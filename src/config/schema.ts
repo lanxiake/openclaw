@@ -1,4 +1,4 @@
-import { CHANNEL_IDS } from "../channels/registry.js";
+import { CHANNEL_IDS } from "../channels/core/registry.js";
 import { VERSION } from "../version.js";
 import { OpenClawSchema } from "./zod-schema.js";
 

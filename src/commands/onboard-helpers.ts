@@ -14,10 +14,10 @@ import { normalizeControlUiBasePath } from "../gateway/control-ui-shared.js";
 import { isSafeExecutableValue } from "../infra/exec-safety.js";
 import { pickPrimaryTailnetIPv4 } from "../infra/tailnet.js";
 import { isWSL } from "../infra/wsl.js";
-import { runCommandWithTimeout } from "../process/exec.js";
+import { runCommandWithTimeout } from "../infra/process/exec.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { stylePromptTitle } from "../terminal/prompt-style.js";
-import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../utils/message-channel.js";
+import { stylePromptTitle } from "../shared/terminal/prompt-style.js";
+import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../shared/utils/message-channel.js";
 import {
   CONFIG_DIR,
   resolveUserPath,

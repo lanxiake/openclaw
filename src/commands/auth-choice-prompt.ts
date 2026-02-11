@@ -1,5 +1,5 @@
 import type { AuthProfileStore } from "../agents/auth-profiles.js";
-import type { WizardPrompter } from "../wizard/prompts.js";
+import type { WizardPrompter } from "../platform/wizard/prompts.js";
 import { buildAuthChoiceGroups } from "./auth-choice-options.js";
 import type { AuthChoice } from "./onboard-types.js";
 

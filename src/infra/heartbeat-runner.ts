@@ -19,8 +19,8 @@ import {
 import { HEARTBEAT_TOKEN } from "../auto-reply/tokens.js";
 import { getReplyFromConfig } from "../auto-reply/reply.js";
 import type { ReplyPayload } from "../auto-reply/types.js";
-import { getChannelPlugin } from "../channels/plugins/index.js";
-import type { ChannelHeartbeatDeps } from "../channels/plugins/types.js";
+import { getChannelPlugin } from "../channels/core/plugins/index.js";
+import type { ChannelHeartbeatDeps } from "../channels/core/plugins/types.js";
 import { parseDurationMs } from "../cli/parse-duration.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
@@ -36,9 +36,9 @@ import {
 import type { AgentDefaultsConfig } from "../config/types.agent-defaults.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { peekSystemEvents } from "../infra/system-events.js";
-import { createSubsystemLogger } from "../logging/subsystem.js";
-import { getQueueSize } from "../process/command-queue.js";
-import { CommandLane } from "../process/lanes.js";
+import { createSubsystemLogger } from "../shared/logging/subsystem.js";
+import { getQueueSize } from "./process/command-queue.js";
+import { CommandLane } from "./process/lanes.js";
 import { defaultRuntime, type RuntimeEnv } from "../runtime.js";
 import { normalizeAgentId, toAgentStoreSessionKey } from "../routing/session-key.js";
 import { emitHeartbeatEvent, resolveIndicatorType } from "./heartbeat-events.js";

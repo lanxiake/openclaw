@@ -33,8 +33,8 @@ import {
   type UsageProviderId,
 } from "../../infra/provider-usage.js";
 import type { RuntimeEnv } from "../../runtime.js";
-import { colorize, theme } from "../../terminal/theme.js";
-import { renderTable } from "../../terminal/table.js";
+import { colorize, theme } from "../../shared/terminal/theme.js";
+import { renderTable } from "../../shared/terminal/table.js";
 import { formatCliCommand } from "../../cli/command-format.js";
 import { shortenHomePath } from "../../utils.js";
 import { resolveProviderAuthOverview } from "./list.auth-overview.js";

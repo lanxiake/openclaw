@@ -1,12 +1,12 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
-import { resolveChannelDefaultAccountId } from "../../channels/plugins/helpers.js";
-import { listChannelPlugins } from "../../channels/plugins/index.js";
+import { resolveChannelDefaultAccountId } from "../../channels/core/plugins/helpers.js";
+import { listChannelPlugins } from "../../channels/core/plugins/index.js";
 import type {
   ChannelAccountSnapshot,
   ChannelId,
   ChannelPlugin,
-} from "../../channels/plugins/types.js";
+} from "../../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { formatAge } from "./format.js";
 

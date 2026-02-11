@@ -6,7 +6,7 @@ import type { AgentMessage, StreamFn } from "@mariozechner/pi-agent-core";
 
 import type { OpenClawConfig } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
-import { parseBooleanValue } from "../utils/boolean.js";
+import { parseBooleanValue } from "../shared/utils/boolean.js";
 import { resolveUserPath } from "../utils.js";
 
 export type CacheTraceStage =

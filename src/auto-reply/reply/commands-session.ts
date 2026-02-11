@@ -2,13 +2,16 @@ import { abortEmbeddedPiRun } from "../../agents/pi-embedded.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { updateSessionStore } from "../../config/sessions.js";
 import { logVerbose } from "../../globals.js";
-import { createInternalHookEvent, triggerInternalHook } from "../../hooks/internal-hooks.js";
+import {
+  createInternalHookEvent,
+  triggerInternalHook,
+} from "../../services/hooks/internal-hooks.js";
 import { scheduleGatewaySigusr1Restart, triggerOpenClawRestart } from "../../infra/restart.js";
 import { parseActivationCommand } from "../group-activation.js";
 import { parseSendPolicyCommand } from "../send-policy.js";
 import { normalizeUsageDisplay, resolveResponseUsageMode } from "../thinking.js";
 import { loadCostUsageSummary, loadSessionCostSummary } from "../../infra/session-cost-usage.js";
-import { formatTokenCount, formatUsd } from "../../utils/usage-format.js";
+import { formatTokenCount, formatUsd } from "../../shared/utils/usage-format.js";
 import {
   formatAbortReplyText,
   isAbortTrigger,

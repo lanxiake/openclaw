@@ -13,7 +13,7 @@ import {
 import type { SessionEntry } from "../config/sessions.js";
 import type { SessionScope } from "../config/sessions/types.js";
 import { saveSessionStore } from "../config/sessions.js";
-import { createSubsystemLogger } from "../logging/subsystem.js";
+import { createSubsystemLogger } from "../shared/logging/subsystem.js";
 import {
   buildAgentMainSessionKey,
   DEFAULT_ACCOUNT_ID,

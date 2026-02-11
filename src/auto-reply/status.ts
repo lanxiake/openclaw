@@ -20,14 +20,14 @@ import {
   resolveTtsAutoMode,
   resolveTtsConfig,
   resolveTtsPrefsPath,
-} from "../tts/tts.js";
+} from "../services/tts/tts.js";
 import { resolveCommitHash } from "../infra/git-commit.js";
 import {
   estimateUsageCost,
   formatTokenCount as formatTokenCountShared,
   formatUsd,
   resolveModelCostConfig,
-} from "../utils/usage-format.js";
+} from "../shared/utils/usage-format.js";
 import { VERSION } from "../version.js";
 import {
   listChatCommands,
@@ -38,7 +38,7 @@ import { listPluginCommands } from "../plugins/commands.js";
 import type { SkillCommandSpec } from "../agents/skills.js";
 import type { CommandCategory } from "./commands-registry.types.js";
 import type { ElevatedLevel, ReasoningLevel, ThinkLevel, VerboseLevel } from "./thinking.js";
-import type { MediaUnderstandingDecision } from "../media-understanding/types.js";
+import type { MediaUnderstandingDecision } from "../services/media-understanding/types.js";
 
 type AgentConfig = Partial<NonNullable<NonNullable<OpenClawConfig["agents"]>["defaults"]>>;
 

@@ -1,5 +1,5 @@
 import { loadSessionStore } from "../../config/sessions.js";
-import { isAudioFileName } from "../../media/mime.js";
+import { isAudioFileName } from "../../services/media/mime.js";
 import { normalizeVerboseLevel, type VerboseLevel } from "../thinking.js";
 import type { ReplyPayload } from "../types.js";
 import { scheduleFollowupDrain } from "./queue.js";

@@ -12,7 +12,7 @@ import {
 } from "../config/config.js";
 import { applyPluginAutoEnable } from "../config/plugin-auto-enable.js";
 import { formatCliCommand } from "../cli/command-format.js";
-import { note } from "../terminal/note.js";
+import { note } from "../shared/terminal/note.js";
 import { normalizeLegacyConfigValues } from "./doctor-legacy-config.js";
 import type { DoctorOptions } from "./doctor-prompter.js";
 import { autoMigrateLegacyStateDir } from "./doctor-state-migrations.js";

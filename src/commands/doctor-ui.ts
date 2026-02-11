@@ -1,9 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { resolveOpenClawPackageRoot } from "../infra/openclaw-root.js";
-import { runCommandWithTimeout } from "../process/exec.js";
+import { runCommandWithTimeout } from "../infra/process/exec.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { note } from "../terminal/note.js";
+import { note } from "../shared/terminal/note.js";
 import type { DoctorPrompter } from "./doctor-prompter.js";
 
 export async function maybeRepairUiProtocolFreshness(

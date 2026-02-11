@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import type { BrowserFormField } from "../../browser/client-actions-core.js";
+import type { BrowserFormField } from "../../services/browser/client-actions-core.js";
 import { danger } from "../../globals.js";
 import { defaultRuntime } from "../../runtime.js";
 import { callBrowserRequest, type BrowserParentOpts } from "../browser-cli-shared.js";

@@ -37,14 +37,17 @@ import { resolveEffectiveMessagesConfig, resolveHumanDelayConfig } from "../../a
 import { createMemoryGetTool, createMemorySearchTool } from "../../agents/tools/memory-tool.js";
 import { handleSlackAction } from "../../agents/tools/slack-actions.js";
 import { handleWhatsAppAction } from "../../agents/tools/whatsapp-actions.js";
-import { removeAckReactionAfterReply, shouldAckReaction } from "../../channels/ack-reactions.js";
-import { resolveCommandAuthorizedFromAuthorizers } from "../../channels/command-gating.js";
-import { recordInboundSession } from "../../channels/session.js";
-import { discordMessageActions } from "../../channels/plugins/actions/discord.js";
-import { signalMessageActions } from "../../channels/plugins/actions/signal.js";
-import { telegramMessageActions } from "../../channels/plugins/actions/telegram.js";
-import { createWhatsAppLoginTool } from "../../channels/plugins/agent-tools/whatsapp-login.js";
-import { monitorWebChannel } from "../../channels/web/index.js";
+import {
+  removeAckReactionAfterReply,
+  shouldAckReaction,
+} from "../../channels/core/ack-reactions.js";
+import { resolveCommandAuthorizedFromAuthorizers } from "../../channels/core/command-gating.js";
+import { recordInboundSession } from "../../channels/core/session.js";
+import { discordMessageActions } from "../../channels/core/plugins/actions/discord.js";
+import { signalMessageActions } from "../../channels/core/plugins/actions/signal.js";
+import { telegramMessageActions } from "../../channels/core/plugins/actions/telegram.js";
+import { createWhatsAppLoginTool } from "../../channels/core/plugins/agent-tools/whatsapp-login.js";
+import { monitorWebChannel } from "../../channels/core/web/index.js";
 import {
   resolveChannelGroupPolicy,
   resolveChannelGroupRequireMention,
@@ -58,80 +61,80 @@ import {
   resolveStorePath,
   updateLastRoute,
 } from "../../config/sessions.js";
-import { auditDiscordChannelPermissions } from "../../discord/audit.js";
+import { auditDiscordChannelPermissions } from "../../channels/discord/audit.js";
 import {
   listDiscordDirectoryGroupsLive,
   listDiscordDirectoryPeersLive,
-} from "../../discord/directory-live.js";
-import { monitorDiscordProvider } from "../../discord/monitor.js";
-import { probeDiscord } from "../../discord/probe.js";
-import { resolveDiscordChannelAllowlist } from "../../discord/resolve-channels.js";
-import { resolveDiscordUserAllowlist } from "../../discord/resolve-users.js";
-import { sendMessageDiscord, sendPollDiscord } from "../../discord/send.js";
+} from "../../channels/discord/directory-live.js";
+import { monitorDiscordProvider } from "../../channels/discord/monitor.js";
+import { probeDiscord } from "../../channels/discord/probe.js";
+import { resolveDiscordChannelAllowlist } from "../../channels/discord/resolve-channels.js";
+import { resolveDiscordUserAllowlist } from "../../channels/discord/resolve-users.js";
+import { sendMessageDiscord, sendPollDiscord } from "../../channels/discord/send.js";
 import { getChannelActivity, recordChannelActivity } from "../../infra/channel-activity.js";
 import { enqueueSystemEvent } from "../../infra/system-events.js";
-import { monitorIMessageProvider } from "../../imessage/monitor.js";
-import { probeIMessage } from "../../imessage/probe.js";
-import { sendMessageIMessage } from "../../imessage/send.js";
+import { monitorIMessageProvider } from "../../channels/imessage/monitor.js";
+import { probeIMessage } from "../../channels/imessage/probe.js";
+import { sendMessageIMessage } from "../../channels/imessage/send.js";
 import { shouldLogVerbose } from "../../globals.js";
-import { convertMarkdownTables } from "../../markdown/tables.js";
+import { convertMarkdownTables } from "../../shared/markdown/tables.js";
 import { getChildLogger } from "../../logging.js";
-import { normalizeLogLevel } from "../../logging/levels.js";
-import { isVoiceCompatibleAudio } from "../../media/audio.js";
-import { mediaKindFromMime } from "../../media/constants.js";
-import { fetchRemoteMedia } from "../../media/fetch.js";
-import { getImageMetadata, resizeToJpeg } from "../../media/image-ops.js";
-import { detectMime } from "../../media/mime.js";
-import { saveMediaBuffer } from "../../media/store.js";
-import { buildPairingReply } from "../../pairing/pairing-messages.js";
+import { normalizeLogLevel } from "../../shared/logging/levels.js";
+import { isVoiceCompatibleAudio } from "../../services/media/audio.js";
+import { mediaKindFromMime } from "../../services/media/constants.js";
+import { fetchRemoteMedia } from "../../services/media/fetch.js";
+import { getImageMetadata, resizeToJpeg } from "../../services/media/image-ops.js";
+import { detectMime } from "../../services/media/mime.js";
+import { saveMediaBuffer } from "../../services/media/store.js";
+import { buildPairingReply } from "../../infra/device/pairing/pairing-messages.js";
 import {
   readChannelAllowFromStore,
   upsertChannelPairingRequest,
-} from "../../pairing/pairing-store.js";
-import { runCommandWithTimeout } from "../../process/exec.js";
+} from "../../infra/device/pairing/pairing-store.js";
+import { runCommandWithTimeout } from "../../infra/process/exec.js";
 import { resolveAgentRoute } from "../../routing/resolve-route.js";
-import { monitorSignalProvider } from "../../signal/index.js";
-import { probeSignal } from "../../signal/probe.js";
-import { sendMessageSignal } from "../../signal/send.js";
-import { monitorSlackProvider } from "../../slack/index.js";
+import { monitorSignalProvider } from "../../channels/signal/index.js";
+import { probeSignal } from "../../channels/signal/probe.js";
+import { sendMessageSignal } from "../../channels/signal/send.js";
+import { monitorSlackProvider } from "../../channels/slack/index.js";
 import {
   listSlackDirectoryGroupsLive,
   listSlackDirectoryPeersLive,
-} from "../../slack/directory-live.js";
-import { probeSlack } from "../../slack/probe.js";
-import { resolveSlackChannelAllowlist } from "../../slack/resolve-channels.js";
-import { resolveSlackUserAllowlist } from "../../slack/resolve-users.js";
-import { sendMessageSlack } from "../../slack/send.js";
+} from "../../channels/slack/directory-live.js";
+import { probeSlack } from "../../channels/slack/probe.js";
+import { resolveSlackChannelAllowlist } from "../../channels/slack/resolve-channels.js";
+import { resolveSlackUserAllowlist } from "../../channels/slack/resolve-users.js";
+import { sendMessageSlack } from "../../channels/slack/send.js";
 import {
   auditTelegramGroupMembership,
   collectTelegramUnmentionedGroupIds,
-} from "../../telegram/audit.js";
-import { monitorTelegramProvider } from "../../telegram/monitor.js";
-import { probeTelegram } from "../../telegram/probe.js";
-import { sendMessageTelegram } from "../../telegram/send.js";
-import { resolveTelegramToken } from "../../telegram/token.js";
-import { loadWebMedia } from "../../web/media.js";
-import { getActiveWebListener } from "../../web/active-listener.js";
+} from "../../channels/telegram/audit.js";
+import { monitorTelegramProvider } from "../../channels/telegram/monitor.js";
+import { probeTelegram } from "../../channels/telegram/probe.js";
+import { sendMessageTelegram } from "../../channels/telegram/send.js";
+import { resolveTelegramToken } from "../../channels/telegram/token.js";
+import { loadWebMedia } from "../../channels/whatsapp/media.js";
+import { getActiveWebListener } from "../../channels/whatsapp/active-listener.js";
 import {
   getWebAuthAgeMs,
   logoutWeb,
   logWebSelfId,
   readWebSelfId,
   webAuthExists,
-} from "../../web/auth-store.js";
-import { loginWeb } from "../../web/login.js";
-import { startWebLoginWithQr, waitForWebLogin } from "../../web/login-qr.js";
-import { sendMessageWhatsApp, sendPollWhatsApp } from "../../web/outbound.js";
+} from "../../channels/whatsapp/auth-store.js";
+import { loginWeb } from "../../channels/whatsapp/login.js";
+import { startWebLoginWithQr, waitForWebLogin } from "../../channels/whatsapp/login-qr.js";
+import { sendMessageWhatsApp, sendPollWhatsApp } from "../../channels/whatsapp/outbound.js";
 import { registerMemoryCli } from "../../cli/memory-cli.js";
 import { formatNativeDependencyHint } from "./native-deps.js";
-import { textToSpeechTelephony } from "../../tts/tts.js";
+import { textToSpeechTelephony } from "../../services/tts/tts.js";
 import {
   listLineAccountIds,
   normalizeAccountId as normalizeLineAccountId,
   resolveDefaultLineAccountId,
   resolveLineAccount,
-} from "../../line/accounts.js";
-import { probeLineBot } from "../../line/probe.js";
+} from "../../channels/line/accounts.js";
+import { probeLineBot } from "../../channels/line/probe.js";
 import {
   createQuickReplyItems,
   pushMessageLine,
@@ -141,9 +144,9 @@ import {
   pushLocationMessage,
   pushTextMessageWithQuickReplies,
   sendMessageLine,
-} from "../../line/send.js";
-import { monitorLineProvider } from "../../line/monitor.js";
-import { buildTemplateMessageFromPayload } from "../../line/template-messages.js";
+} from "../../channels/line/send.js";
+import { monitorLineProvider } from "../../channels/line/monitor.js";
+import { buildTemplateMessageFromPayload } from "../../channels/line/template-messages.js";
 
 import type { PluginRuntime } from "./types.js";
 

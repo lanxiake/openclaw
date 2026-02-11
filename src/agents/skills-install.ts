@@ -6,7 +6,7 @@ import { pipeline } from "node:stream/promises";
 
 import type { OpenClawConfig } from "../config/config.js";
 import { resolveBrewExecutable } from "../infra/brew.js";
-import { runCommandWithTimeout } from "../process/exec.js";
+import { runCommandWithTimeout } from "../infra/process/exec.js";
 import { CONFIG_DIR, ensureDir, resolveUserPath } from "../utils.js";
 import {
   hasBinary,

@@ -14,7 +14,7 @@ import {
   subscriptions,
   type User,
 } from "../../db/schema/index.js";
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import { adminAudit } from "../../db/repositories/admins.js";
 import {
   getSubscriptionRepository,

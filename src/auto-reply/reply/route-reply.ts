@@ -9,9 +9,9 @@
 
 import { resolveSessionAgentId } from "../../agents/agent-scope.js";
 import { resolveEffectiveMessagesConfig } from "../../agents/identity.js";
-import { normalizeChannelId } from "../../channels/plugins/index.js";
+import { normalizeChannelId } from "../../channels/core/plugins/index.js";
 import type { OpenClawConfig } from "../../config/config.js";
-import { INTERNAL_MESSAGE_CHANNEL } from "../../utils/message-channel.js";
+import { INTERNAL_MESSAGE_CHANNEL } from "../../shared/utils/message-channel.js";
 import type { OriginatingChannelType } from "../templating.js";
 import type { ReplyPayload } from "../types.js";
 import { normalizeReplyPayload } from "./normalize-reply.js";

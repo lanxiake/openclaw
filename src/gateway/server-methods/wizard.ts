@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { defaultRuntime } from "../../runtime.js";
-import { WizardSession } from "../../wizard/session.js";
+import { WizardSession } from "../../platform/wizard/session.js";
 import {
   ErrorCodes,
   errorShape,

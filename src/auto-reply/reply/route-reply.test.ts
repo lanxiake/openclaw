@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ChannelOutboundAdapter, ChannelPlugin } from "../../channels/plugins/types.js";
+import type { ChannelOutboundAdapter, ChannelPlugin } from "../../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { PluginRegistry } from "../../plugins/registry.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
@@ -9,12 +9,12 @@ import {
   createOutboundTestPlugin,
   createTestRegistry,
 } from "../../test-utils/channel-plugins.js";
-import { discordOutbound } from "../../channels/plugins/outbound/discord.js";
-import { imessageOutbound } from "../../channels/plugins/outbound/imessage.js";
-import { signalOutbound } from "../../channels/plugins/outbound/signal.js";
-import { slackOutbound } from "../../channels/plugins/outbound/slack.js";
-import { telegramOutbound } from "../../channels/plugins/outbound/telegram.js";
-import { whatsappOutbound } from "../../channels/plugins/outbound/whatsapp.js";
+import { discordOutbound } from "../../channels/core/plugins/outbound/discord.js";
+import { imessageOutbound } from "../../channels/core/plugins/outbound/imessage.js";
+import { signalOutbound } from "../../channels/core/plugins/outbound/signal.js";
+import { slackOutbound } from "../../channels/core/plugins/outbound/slack.js";
+import { telegramOutbound } from "../../channels/core/plugins/outbound/telegram.js";
+import { whatsappOutbound } from "../../channels/core/plugins/outbound/whatsapp.js";
 import { SILENT_REPLY_TOKEN } from "../tokens.js";
 
 const mocks = vi.hoisted(() => ({

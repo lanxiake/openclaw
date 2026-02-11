@@ -4,16 +4,16 @@ import { buildGatewayConnectionDetails, callGateway } from "../gateway/call.js";
 import { info } from "../globals.js";
 import { formatUsageReportLines, loadProviderUsageSummary } from "../infra/provider-usage.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { runSecurityAudit } from "../security/audit.js";
-import { renderTable } from "../terminal/table.js";
-import { theme } from "../terminal/theme.js";
+import { runSecurityAudit } from "../infra/security/audit.js";
+import { renderTable } from "../shared/terminal/table.js";
+import { theme } from "../shared/terminal/theme.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import {
   resolveMemoryCacheSummary,
   resolveMemoryFtsState,
   resolveMemoryVectorState,
   type Tone,
-} from "../memory/status-format.js";
+} from "../services/memory/status-format.js";
 import { formatHealthChannelLines, type HealthSummary } from "./health.js";
 import { resolveControlUiLinks } from "./onboard-helpers.js";
 import { getDaemonStatusSummary, getNodeDaemonStatusSummary } from "./status.daemon.js";

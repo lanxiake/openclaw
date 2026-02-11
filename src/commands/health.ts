@@ -1,7 +1,7 @@
 import { resolveDefaultAgentId } from "../agents/agent-scope.js";
-import { resolveChannelDefaultAccountId } from "../channels/plugins/helpers.js";
-import { getChannelPlugin, listChannelPlugins } from "../channels/plugins/index.js";
-import type { ChannelAccountSnapshot } from "../channels/plugins/types.js";
+import { resolveChannelDefaultAccountId } from "../channels/core/plugins/helpers.js";
+import { getChannelPlugin, listChannelPlugins } from "../channels/core/plugins/index.js";
+import type { ChannelAccountSnapshot } from "../channels/core/plugins/types.js";
 import { withProgress } from "../cli/progress.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
@@ -17,7 +17,7 @@ import {
 import type { RuntimeEnv } from "../runtime.js";
 import { buildChannelAccountBindings, resolvePreferredAccountId } from "../routing/bindings.js";
 import { normalizeAgentId } from "../routing/session-key.js";
-import { theme } from "../terminal/theme.js";
+import { theme } from "../shared/terminal/theme.js";
 
 export type ChannelAccountHealthSummary = {
   accountId: string;

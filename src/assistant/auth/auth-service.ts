@@ -4,7 +4,7 @@
  * 处理用户注册、登录、Token 刷新等认证流程
  */
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import {
   getUserRepository,
   getUserSessionRepository,

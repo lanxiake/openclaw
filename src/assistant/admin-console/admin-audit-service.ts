@@ -8,7 +8,7 @@ import { eq, and, or, gt, lt, desc, asc, like, sql, inArray } from "drizzle-orm"
 
 import { getDatabase, type Database } from "../../db/connection.js";
 import { adminAuditLogs, admins, type AdminAuditLog } from "../../db/schema/index.js";
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 
 const logger = getLogger();
 

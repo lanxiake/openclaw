@@ -12,7 +12,7 @@ import {
   resolveSessionTranscriptsDirForAgent,
   resolveStorePath,
 } from "../config/sessions.js";
-import { note } from "../terminal/note.js";
+import { note } from "../shared/terminal/note.js";
 import { shortenHomePath } from "../utils.js";
 
 type DoctorPrompterLike = {

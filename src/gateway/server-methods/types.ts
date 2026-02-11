@@ -1,14 +1,14 @@
 import type { ModelCatalogEntry } from "../../agents/model-catalog.js";
 import type { createDefaultDeps } from "../../cli/deps.js";
 import type { HealthSummary } from "../../commands/health.js";
-import type { CronService } from "../../cron/service.js";
-import type { WizardSession } from "../../wizard/session.js";
+import type { CronService } from "../../services/cron/service.js";
+import type { WizardSession } from "../../platform/wizard/session.js";
 import type { ChatAbortControllerEntry } from "../chat-abort.js";
 import type { NodeRegistry } from "../node-registry.js";
 import type { ConnectParams, ErrorShape, RequestFrame } from "../protocol/index.js";
 import type { ChannelRuntimeSnapshot } from "../server-channels.js";
 import type { DedupeEntry } from "../server-shared.js";
-import type { createSubsystemLogger } from "../../logging/subsystem.js";
+import type { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import type { AuthenticatedUser } from "../user-context.js";
 
 type SubsystemLogger = ReturnType<typeof createSubsystemLogger>;
@@ -84,22 +84,22 @@ export type GatewayRequestContext = {
   purgeWizardSession: (id: string) => void;
   getRuntimeSnapshot: () => ChannelRuntimeSnapshot;
   startChannel: (
-    channel: import("../../channels/plugins/types.js").ChannelId,
+    channel: import("../../channels/core/plugins/types.js").ChannelId,
     accountId?: string,
   ) => Promise<void>;
   stopChannel: (
-    channel: import("../../channels/plugins/types.js").ChannelId,
+    channel: import("../../channels/core/plugins/types.js").ChannelId,
     accountId?: string,
   ) => Promise<void>;
   markChannelLoggedOut: (
-    channelId: import("../../channels/plugins/types.js").ChannelId,
+    channelId: import("../../channels/core/plugins/types.js").ChannelId,
     cleared: boolean,
     accountId?: string,
   ) => void;
   wizardRunner: (
     opts: import("../../commands/onboard-types.js").OnboardOptions,
     runtime: import("../../runtime.js").RuntimeEnv,
-    prompter: import("../../wizard/prompts.js").WizardPrompter,
+    prompter: import("../../platform/wizard/prompts.js").WizardPrompter,
   ) => Promise<void>;
   broadcastVoiceWakeChanged: (triggers: string[]) => void;
 };

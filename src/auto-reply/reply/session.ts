@@ -28,11 +28,11 @@ import {
 import { normalizeMainKey } from "../../routing/session-key.js";
 import { resolveCommandAuthorization } from "../command-auth.js";
 import type { MsgContext, TemplateContext } from "../templating.js";
-import { normalizeChatType } from "../../channels/chat-type.js";
+import { normalizeChatType } from "../../channels/core/chat-type.js";
 import { stripMentions, stripStructuralPrefixes } from "./mentions.js";
 import { formatInboundBodyWithSenderMeta } from "./inbound-sender-meta.js";
 import { normalizeInboundTextNewlines } from "./inbound-text.js";
-import { normalizeSessionDeliveryFields } from "../../utils/delivery-context.js";
+import { normalizeSessionDeliveryFields } from "../../shared/utils/delivery-context.js";
 
 export type SessionInitResult = {
   sessionCtx: TemplateContext;

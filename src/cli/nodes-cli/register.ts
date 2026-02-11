@@ -1,6 +1,6 @@
 import type { Command } from "commander";
-import { formatDocsLink } from "../../terminal/links.js";
-import { theme } from "../../terminal/theme.js";
+import { formatDocsLink } from "../../shared/terminal/links.js";
+import { theme } from "../../shared/terminal/theme.js";
 import { registerNodesCameraCommands } from "./register.camera.js";
 import { registerNodesCanvasCommands } from "./register.canvas.js";
 import { registerNodesInvokeCommands } from "./register.invoke.js";

@@ -3,7 +3,7 @@ import path from "node:path";
 import chokidar, { type FSWatcher } from "chokidar";
 
 import type { OpenClawConfig } from "../../config/config.js";
-import { createSubsystemLogger } from "../../logging/subsystem.js";
+import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import { CONFIG_DIR, resolveUserPath } from "../../utils.js";
 import { resolvePluginSkillDirs } from "./plugin-skills.js";
 

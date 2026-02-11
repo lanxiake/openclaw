@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import { Type } from "@sinclair/typebox";
 import { writeBase64ToFile } from "../../cli/nodes-camera.js";
 import { canvasSnapshotTempPath, parseCanvasSnapshotPayload } from "../../cli/nodes-canvas.js";
-import { imageMimeFromFormat } from "../../media/mime.js";
+import { imageMimeFromFormat } from "../../services/media/mime.js";
 import { optionalStringEnum, stringEnum } from "../schema/typebox.js";
 import { type AnyAgentTool, imageResult, jsonResult, readStringParam } from "./common.js";
 import { callGatewayTool, type GatewayCallOptions } from "./gateway.js";

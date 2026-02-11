@@ -29,7 +29,7 @@ import type { ElevatedLevel, ReasoningLevel, ThinkLevel, VerboseLevel } from "..
 import type { ReplyPayload } from "../types.js";
 import type { CommandContext } from "./commands-types.js";
 import { getFollowupQueueDepth, resolveQueueSettings } from "./queue.js";
-import type { MediaUnderstandingDecision } from "../../media-understanding/types.js";
+import type { MediaUnderstandingDecision } from "../../services/media-understanding/types.js";
 import { resolveSubagentLabel } from "./subagents-utils.js";
 
 function formatApiKeySnippet(apiKey: string): string {

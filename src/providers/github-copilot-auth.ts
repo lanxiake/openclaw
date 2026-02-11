@@ -5,7 +5,7 @@ import { updateConfig } from "../commands/models/shared.js";
 import { applyAuthProfileConfig } from "../commands/onboard-auth.js";
 import { logConfigUpdated } from "../config/logging.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { stylePromptTitle } from "../terminal/prompt-style.js";
+import { stylePromptTitle } from "../shared/terminal/prompt-style.js";
 
 const CLIENT_ID = "Iv1.b507a08c87ecfe98";
 const DEVICE_CODE_URL = "https://github.com/login/device/code";

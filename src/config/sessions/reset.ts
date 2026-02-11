@@ -1,6 +1,6 @@
 import type { SessionConfig, SessionResetConfig } from "../types.base.js";
 import { DEFAULT_IDLE_MINUTES } from "./types.js";
-import { normalizeMessageChannel } from "../../utils/message-channel.js";
+import { normalizeMessageChannel } from "../../shared/utils/message-channel.js";
 
 export type SessionResetMode = "daily" | "idle";
 export type SessionResetType = "dm" | "group" | "thread";

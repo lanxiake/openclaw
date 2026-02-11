@@ -1,10 +1,10 @@
 import type { Command } from "commander";
 
 import { callGateway } from "../gateway/call.js";
-import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../utils/message-channel.js";
+import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../shared/utils/message-channel.js";
 import { defaultRuntime } from "../runtime.js";
-import { renderTable } from "../terminal/table.js";
-import { theme } from "../terminal/theme.js";
+import { renderTable } from "../shared/terminal/table.js";
+import { theme } from "../shared/terminal/theme.js";
 import { withProgress } from "./progress.js";
 
 type DevicesRpcOpts = {

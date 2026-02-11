@@ -11,8 +11,8 @@ import {
 } from "../commands/channels.js";
 import { danger } from "../globals.js";
 import { defaultRuntime } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { theme } from "../terminal/theme.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { theme } from "../shared/terminal/theme.js";
 import { runChannelLogin, runChannelLogout } from "./channel-auth.js";
 import { runCommandWithRuntime } from "./cli-utils.js";
 import { hasExplicitOptions } from "./command-options.js";

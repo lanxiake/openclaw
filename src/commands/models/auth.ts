@@ -13,14 +13,14 @@ import { formatCliCommand } from "../../cli/command-format.js";
 import { readConfigFileSnapshot, type OpenClawConfig } from "../../config/config.js";
 import { logConfigUpdated } from "../../config/logging.js";
 import type { RuntimeEnv } from "../../runtime.js";
-import { stylePromptHint, stylePromptMessage } from "../../terminal/prompt-style.js";
+import { stylePromptHint, stylePromptMessage } from "../../shared/terminal/prompt-style.js";
 import { applyAuthProfileConfig } from "../onboard-auth.js";
 import { isRemoteEnvironment } from "../oauth-env.js";
 import { openUrl } from "../onboard-helpers.js";
 import { createVpsAwareOAuthHandlers } from "../oauth-flow.js";
 import { updateConfig } from "./shared.js";
 import { resolvePluginProviders } from "../../plugins/providers.js";
-import { createClackPrompter } from "../../wizard/clack-prompter.js";
+import { createClackPrompter } from "../../platform/wizard/clack-prompter.js";
 import type {
   ProviderAuthMethod,
   ProviderAuthResult,

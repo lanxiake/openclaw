@@ -1,4 +1,4 @@
-import { getChannelPlugin, normalizeChannelId } from "../channels/plugins/index.js";
+import { getChannelPlugin, normalizeChannelId } from "../channels/core/plugins/index.js";
 import { truncateUtf16Safe } from "../utils.js";
 import { type MessagingToolSend } from "./pi-embedded-messaging.js";
 import { normalizeTargetForProvider } from "../infra/outbound/target-normalization.js";

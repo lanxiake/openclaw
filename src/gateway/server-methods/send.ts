@@ -1,5 +1,5 @@
-import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
-import { DEFAULT_CHAT_CHANNEL } from "../../channels/registry.js";
+import { getChannelPlugin, normalizeChannelId } from "../../channels/core/plugins/index.js";
+import { DEFAULT_CHAT_CHANNEL } from "../../channels/core/registry.js";
 import { loadConfig } from "../../config/config.js";
 import { createOutboundSendDeps } from "../../cli/deps.js";
 import { deliverOutboundPayloads } from "../../infra/outbound/deliver.js";

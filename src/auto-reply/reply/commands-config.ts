@@ -15,8 +15,8 @@ import {
   setConfigOverride,
   unsetConfigOverride,
 } from "../../config/runtime-overrides.js";
-import { resolveChannelConfigWrites } from "../../channels/plugins/config-writes.js";
-import { normalizeChannelId } from "../../channels/registry.js";
+import { resolveChannelConfigWrites } from "../../channels/core/plugins/config-writes.js";
+import { normalizeChannelId } from "../../channels/core/registry.js";
 import { logVerbose } from "../../globals.js";
 import type { CommandHandler } from "./commands-types.js";
 import { parseConfigCommand } from "./config-commands.js";

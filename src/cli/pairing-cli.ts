@@ -1,17 +1,17 @@
 import type { Command } from "commander";
-import { listPairingChannels, notifyPairingApproved } from "../channels/plugins/pairing.js";
-import { normalizeChannelId } from "../channels/plugins/index.js";
+import { listPairingChannels, notifyPairingApproved } from "../channels/core/plugins/pairing.js";
+import { normalizeChannelId } from "../channels/core/plugins/index.js";
 import { loadConfig } from "../config/config.js";
-import { resolvePairingIdLabel } from "../pairing/pairing-labels.js";
+import { resolvePairingIdLabel } from "../infra/device/pairing/pairing-labels.js";
 import {
   approveChannelPairingCode,
   listChannelPairingRequests,
   type PairingChannel,
-} from "../pairing/pairing-store.js";
+} from "../infra/device/pairing/pairing-store.js";
 import { defaultRuntime } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { renderTable } from "../terminal/table.js";
-import { theme } from "../terminal/theme.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { renderTable } from "../shared/terminal/table.js";
+import { theme } from "../shared/terminal/theme.js";
 import { formatCliCommand } from "./command-format.js";
 
 /** Parse channel, allowing extension channels not in core registry. */

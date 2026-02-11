@@ -7,7 +7,7 @@ import {
 } from "@mariozechner/pi-coding-agent";
 import type { OpenClawConfig } from "../config/config.js";
 import { isSubagentSessionKey } from "../routing/session-key.js";
-import { resolveGatewayMessageChannel } from "../utils/message-channel.js";
+import { resolveGatewayMessageChannel } from "../shared/utils/message-channel.js";
 import { createApplyPatchTool } from "./apply-patch.js";
 import {
   createExecTool,

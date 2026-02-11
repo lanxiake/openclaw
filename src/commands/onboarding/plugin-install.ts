@@ -1,15 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/agent-scope.js";
-import type { ChannelPluginCatalogEntry } from "../../channels/plugins/catalog.js";
+import type { ChannelPluginCatalogEntry } from "../../channels/core/plugins/catalog.js";
 import type { OpenClawConfig } from "../../config/config.js";
-import { createSubsystemLogger } from "../../logging/subsystem.js";
+import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import { recordPluginInstall } from "../../plugins/installs.js";
 import { enablePluginInConfig } from "../../plugins/enable.js";
 import { loadOpenClawPlugins } from "../../plugins/loader.js";
 import { installPluginFromNpmSpec } from "../../plugins/install.js";
 import type { RuntimeEnv } from "../../runtime.js";
-import type { WizardPrompter } from "../../wizard/prompts.js";
+import type { WizardPrompter } from "../../platform/wizard/prompts.js";
 
 type InstallChoice = "npm" | "local" | "skip";
 

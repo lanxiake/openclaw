@@ -4,14 +4,14 @@ import {
   type DeliveryContext,
   deliveryContextKey,
   normalizeDeliveryContext,
-} from "../utils/delivery-context.js";
+} from "../shared/utils/delivery-context.js";
 import {
   applyQueueDropPolicy,
   buildCollectPrompt,
   buildQueueSummaryPrompt,
   hasCrossChannelItems,
   waitForQueueDebounce,
-} from "../utils/queue-helpers.js";
+} from "../shared/utils/queue-helpers.js";
 
 export type AnnounceQueueItem = {
   prompt: string;

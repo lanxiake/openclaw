@@ -1,8 +1,8 @@
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { initSubagentRegistry } from "../agents/subagent-registry.js";
 import { registerSkillsChangeListener } from "../agents/skills/refresh.js";
-import type { CanvasHostServer } from "../canvas-host/server.js";
-import { type ChannelId, listChannelPlugins } from "../channels/plugins/index.js";
+import type { CanvasHostServer } from "../platform/canvas-host/server.js";
+import { type ChannelId, listChannelPlugins } from "../channels/core/plugins/index.js";
 import { createDefaultDeps } from "../cli/deps.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import {
@@ -28,11 +28,11 @@ import {
 } from "../infra/skills-remote.js";
 import { scheduleGatewayUpdateCheck } from "../infra/update-startup.js";
 import { setGatewaySigusr1RestartPolicy } from "../infra/restart.js";
-import { startDiagnosticHeartbeat, stopDiagnosticHeartbeat } from "../logging/diagnostic.js";
-import { createSubsystemLogger, runtimeForLogger } from "../logging/subsystem.js";
+import { startDiagnosticHeartbeat, stopDiagnosticHeartbeat } from "../shared/logging/diagnostic.js";
+import { createSubsystemLogger, runtimeForLogger } from "../shared/logging/subsystem.js";
 import type { PluginServicesHandle } from "../plugins/services.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { runOnboardingWizard } from "../wizard/onboarding.js";
+import { runOnboardingWizard } from "../platform/wizard/onboarding.js";
 import { startGatewayConfigReloader } from "./config-reload.js";
 import {
   getHealthCache,
@@ -140,7 +140,7 @@ export type GatewayServerOptions = {
   wizardRunner?: (
     opts: import("../commands/onboard-types.js").OnboardOptions,
     runtime: import("../runtime.js").RuntimeEnv,
-    prompter: import("../wizard/prompts.js").WizardPrompter,
+    prompter: import("../platform/wizard/prompts.js").WizardPrompter,
   ) => Promise<void>;
 };
 

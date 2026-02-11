@@ -1,10 +1,10 @@
 import type { NormalizedUsage } from "../../agents/usage.js";
-import { getChannelDock } from "../../channels/dock.js";
-import type { ChannelId, ChannelThreadingToolContext } from "../../channels/plugins/types.js";
-import { normalizeAnyChannelId, normalizeChannelId } from "../../channels/registry.js";
+import { getChannelDock } from "../../channels/core/dock.js";
+import type { ChannelId, ChannelThreadingToolContext } from "../../channels/core/plugins/types.js";
+import { normalizeAnyChannelId, normalizeChannelId } from "../../channels/core/registry.js";
 import type { OpenClawConfig } from "../../config/config.js";
-import { isReasoningTagProvider } from "../../utils/provider-utils.js";
-import { estimateUsageCost, formatTokenCount, formatUsd } from "../../utils/usage-format.js";
+import { isReasoningTagProvider } from "../../shared/utils/provider-utils.js";
+import { estimateUsageCost, formatTokenCount, formatUsd } from "../../shared/utils/usage-format.js";
 import type { TemplateContext } from "../templating.js";
 import type { ReplyPayload } from "../types.js";
 import type { FollowupRun } from "./queue.js";

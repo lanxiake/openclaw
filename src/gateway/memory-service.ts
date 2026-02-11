@@ -18,9 +18,9 @@ import {
   type MemoryHealthReport,
   createMemoryManager,
   DEFAULT_DEV_CONFIG,
-} from "../memory/pluggable/index.js";
-import { SQLiteKnowledgeMemoryAdapter } from "../memory/pluggable/providers/knowledge/sqlite-adapter.js";
-import { getMemorySearchManager } from "../memory/search-manager.js";
+} from "../services/memory/pluggable/index.js";
+import { SQLiteKnowledgeMemoryAdapter } from "../services/memory/pluggable/providers/knowledge/sqlite-adapter.js";
+import { getMemorySearchManager } from "../services/memory/search-manager.js";
 
 /**
  * Gateway 记忆服务配置

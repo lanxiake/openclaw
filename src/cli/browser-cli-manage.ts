@@ -6,7 +6,7 @@ import type {
   BrowserStatus,
   BrowserTab,
   ProfileStatus,
-} from "../browser/client.js";
+} from "../services/browser/client.js";
 import { danger, info } from "../globals.js";
 import { defaultRuntime } from "../runtime.js";
 import { shortenHomePath } from "../utils.js";

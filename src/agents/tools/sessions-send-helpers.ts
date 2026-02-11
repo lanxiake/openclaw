@@ -1,8 +1,8 @@
 import {
   getChannelPlugin,
   normalizeChannelId as normalizeAnyChannelId,
-} from "../../channels/plugins/index.js";
-import { normalizeChannelId as normalizeChatChannelId } from "../../channels/registry.js";
+} from "../../channels/core/plugins/index.js";
+import { normalizeChannelId as normalizeChatChannelId } from "../../channels/core/registry.js";
 import type { OpenClawConfig } from "../../config/config.js";
 
 const ANNOUNCE_SKIP_TOKEN = "ANNOUNCE_SKIP";

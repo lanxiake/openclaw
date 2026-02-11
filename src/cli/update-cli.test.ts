@@ -92,7 +92,7 @@ describe("update-cli", () => {
     const { readConfigFileSnapshot } = await import("../config/config.js");
     const { checkUpdateStatus, fetchNpmTagVersion, resolveNpmChannelTag } =
       await import("../infra/update-check.js");
-    const { runCommandWithTimeout } = await import("../process/exec.js");
+    const { runCommandWithTimeout } = await import("../infra/process/exec.js");
     vi.mocked(resolveOpenClawPackageRoot).mockResolvedValue(process.cwd());
     vi.mocked(readConfigFileSnapshot).mockResolvedValue(baseSnapshot);
     vi.mocked(fetchNpmTagVersion).mockResolvedValue({

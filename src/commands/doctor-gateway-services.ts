@@ -6,16 +6,22 @@ import { promisify } from "node:util";
 
 import type { OpenClawConfig } from "../config/config.js";
 import { resolveGatewayPort, resolveIsNixMode } from "../config/paths.js";
-import { findExtraGatewayServices, renderGatewayServiceCleanupHints } from "../daemon/inspect.js";
-import { renderSystemNodeWarning, resolveSystemNodeInfo } from "../daemon/runtime-paths.js";
-import { resolveGatewayService } from "../daemon/service.js";
+import {
+  findExtraGatewayServices,
+  renderGatewayServiceCleanupHints,
+} from "../platform/daemon/inspect.js";
+import {
+  renderSystemNodeWarning,
+  resolveSystemNodeInfo,
+} from "../platform/daemon/runtime-paths.js";
+import { resolveGatewayService } from "../platform/daemon/service.js";
 import {
   auditGatewayServiceConfig,
   needsNodeRuntimeMigration,
   SERVICE_AUDIT_CODES,
-} from "../daemon/service-audit.js";
+} from "../platform/daemon/service-audit.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { note } from "../terminal/note.js";
+import { note } from "../shared/terminal/note.js";
 import { buildGatewayInstallPlan } from "./daemon-install-helpers.js";
 import { DEFAULT_GATEWAY_DAEMON_RUNTIME, type GatewayDaemonRuntime } from "./daemon-runtime.js";
 import type { DoctorOptions, DoctorPrompter } from "./doctor-prompter.js";

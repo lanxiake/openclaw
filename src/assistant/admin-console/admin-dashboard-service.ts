@@ -8,7 +8,7 @@ import { getDatabase } from "../../db/connection.js";
 import { users, subscriptions, paymentOrders } from "../../db/schema/index.js";
 import { plans } from "../../db/schema/subscriptions.js";
 import { sql, eq, gte, lte, and, count, sum, desc } from "drizzle-orm";
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 
 // 日志标签
 const LOG_TAG = "admin-dashboard-service";

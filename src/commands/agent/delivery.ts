@@ -1,5 +1,5 @@
 import { AGENT_LANE_NESTED } from "../../agents/lanes.js";
-import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
+import { getChannelPlugin, normalizeChannelId } from "../../channels/core/plugins/index.js";
 import { createOutboundSendDeps, type CliDeps } from "../../cli/outbound-send-deps.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
@@ -16,7 +16,7 @@ import {
   resolveAgentOutboundTarget,
 } from "../../infra/outbound/agent-delivery.js";
 import type { RuntimeEnv } from "../../runtime.js";
-import { isInternalMessageChannel } from "../../utils/message-channel.js";
+import { isInternalMessageChannel } from "../../shared/utils/message-channel.js";
 import type { AgentCommandOpts } from "./types.js";
 
 type RunResult = Awaited<

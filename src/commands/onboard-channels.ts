@@ -1,22 +1,22 @@
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
-import { listChannelPluginCatalogEntries } from "../channels/plugins/catalog.js";
-import { listChannelPlugins, getChannelPlugin } from "../channels/plugins/index.js";
-import type { ChannelMeta } from "../channels/plugins/types.js";
+import { listChannelPluginCatalogEntries } from "../channels/core/plugins/catalog.js";
+import { listChannelPlugins, getChannelPlugin } from "../channels/core/plugins/index.js";
+import type { ChannelMeta } from "../channels/core/plugins/types.js";
 import {
   formatChannelPrimerLine,
   formatChannelSelectionLine,
   listChatChannels,
-} from "../channels/registry.js";
+} from "../channels/core/registry.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { isChannelConfigured } from "../config/plugin-auto-enable.js";
 import type { DmPolicy } from "../config/types.js";
-import { resolveChannelDefaultAccountId } from "../channels/plugins/helpers.js";
+import { resolveChannelDefaultAccountId } from "../channels/core/plugins/helpers.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { enablePluginInConfig } from "../plugins/enable.js";
-import type { WizardPrompter, WizardSelectOption } from "../wizard/prompts.js";
+import type { WizardPrompter, WizardSelectOption } from "../platform/wizard/prompts.js";
 import type { ChannelChoice } from "./onboard-types.js";
 import {
   getChannelOnboardingAdapter,

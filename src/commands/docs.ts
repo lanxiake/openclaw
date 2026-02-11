@@ -1,8 +1,8 @@
 import { hasBinary } from "../agents/skills.js";
-import { runCommandWithTimeout } from "../process/exec.js";
+import { runCommandWithTimeout } from "../infra/process/exec.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { isRich, theme } from "../terminal/theme.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { isRich, theme } from "../shared/terminal/theme.js";
 import { formatCliCommand } from "../cli/command-format.js";
 
 const SEARCH_TOOL = "https://docs.openclaw.ai/mcp.SearchOpenClaw";

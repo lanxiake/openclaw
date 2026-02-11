@@ -6,7 +6,7 @@ import { resolveWideAreaDiscoveryDomain } from "../infra/widearea-dns.js";
 import { resolveSshConfig } from "../infra/ssh-config.js";
 import { parseSshTarget, startSshPortForward } from "../infra/ssh-tunnel.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { colorize, isRich, theme } from "../terminal/theme.js";
+import { colorize, isRich, theme } from "../shared/terminal/theme.js";
 
 import {
   buildNetworkHints,

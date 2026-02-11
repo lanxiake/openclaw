@@ -52,7 +52,7 @@ import { applyVerboseOverride } from "../sessions/level-overrides.js";
 import { resolveSendPolicy } from "../sessions/send-policy.js";
 import { applyModelOverrideToSessionEntry } from "../sessions/model-overrides.js";
 import { clearSessionAuthProfileOverride } from "../agents/auth-profiles/session-override.js";
-import { resolveMessageChannel } from "../utils/message-channel.js";
+import { resolveMessageChannel } from "../shared/utils/message-channel.js";
 import { deliverAgentCommandResult } from "./agent/delivery.js";
 import { resolveAgentRunContext } from "./agent/run-context.js";
 import { resolveSession } from "./agent/session.js";

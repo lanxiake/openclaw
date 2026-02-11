@@ -1,9 +1,9 @@
 import { resolveAgentConfig } from "../../agents/agent-scope.js";
-import { getChannelDock } from "../../channels/dock.js";
-import { normalizeChannelId } from "../../channels/plugins/index.js";
-import { CHAT_CHANNEL_ORDER } from "../../channels/registry.js";
+import { getChannelDock } from "../../channels/core/dock.js";
+import { normalizeChannelId } from "../../channels/core/plugins/index.js";
+import { CHAT_CHANNEL_ORDER } from "../../channels/core/registry.js";
 import type { AgentElevatedAllowFromConfig, OpenClawConfig } from "../../config/config.js";
-import { INTERNAL_MESSAGE_CHANNEL } from "../../utils/message-channel.js";
+import { INTERNAL_MESSAGE_CHANNEL } from "../../shared/utils/message-channel.js";
 import { formatCliCommand } from "../../cli/command-format.js";
 import type { MsgContext } from "../templating.js";
 

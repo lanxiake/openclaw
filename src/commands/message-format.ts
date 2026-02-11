@@ -1,11 +1,11 @@
-import { getChannelPlugin } from "../channels/plugins/index.js";
-import type { ChannelId, ChannelMessageActionName } from "../channels/plugins/types.js";
+import { getChannelPlugin } from "../channels/core/plugins/index.js";
+import type { ChannelId, ChannelMessageActionName } from "../channels/core/plugins/types.js";
 import type { OutboundDeliveryResult } from "../infra/outbound/deliver.js";
 import { formatGatewaySummary, formatOutboundDeliverySummary } from "../infra/outbound/format.js";
 import { formatTargetDisplay } from "../infra/outbound/target-resolver.js";
 import type { MessageActionRunResult } from "../infra/outbound/message-action-runner.js";
-import { renderTable } from "../terminal/table.js";
-import { isRich, theme } from "../terminal/theme.js";
+import { renderTable } from "../shared/terminal/table.js";
+import { isRich, theme } from "../shared/terminal/theme.js";
 
 const shortenText = (value: string, maxLen: number) => {
   const chars = Array.from(value);

@@ -1,8 +1,8 @@
-import { listChannelPlugins } from "../../channels/plugins/index.js";
-import { parseAbsoluteTimeMs } from "../../cron/parse.js";
-import type { CronJob, CronSchedule } from "../../cron/types.js";
+import { listChannelPlugins } from "../../channels/core/plugins/index.js";
+import { parseAbsoluteTimeMs } from "../../services/cron/parse.js";
+import type { CronJob, CronSchedule } from "../../services/cron/types.js";
 import { defaultRuntime } from "../../runtime.js";
-import { colorize, isRich, theme } from "../../terminal/theme.js";
+import { colorize, isRich, theme } from "../../shared/terminal/theme.js";
 import type { GatewayRpcOpts } from "../gateway-rpc.js";
 import { callGatewayFromCli } from "../gateway-rpc.js";
 

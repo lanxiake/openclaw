@@ -1,4 +1,4 @@
-import type { ChannelId } from "../channels/plugins/types.js";
+import type { ChannelId } from "../channels/core/plugins/types.js";
 import { normalizeAccountId } from "../routing/session-key.js";
 import type { OpenClawConfig } from "./config.js";
 import type { GroupToolPolicyBySenderConfig, GroupToolPolicyConfig } from "./types.tools.js";

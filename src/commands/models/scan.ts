@@ -9,7 +9,7 @@ import {
   stylePromptHint,
   stylePromptMessage,
   stylePromptTitle,
-} from "../../terminal/prompt-style.js";
+} from "../../shared/terminal/prompt-style.js";
 import { formatMs, formatTokenK, updateConfig } from "./shared.js";
 
 const MODEL_PAD = 42;

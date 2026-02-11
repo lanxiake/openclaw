@@ -9,9 +9,9 @@ import {
   type ExecApprovalsFile,
 } from "../infra/exec-approvals.js";
 import { defaultRuntime } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { isRich, theme } from "../terminal/theme.js";
-import { renderTable } from "../terminal/table.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { isRich, theme } from "../shared/terminal/theme.js";
+import { renderTable } from "../shared/terminal/table.js";
 import { callGatewayFromCli } from "./gateway-rpc.js";
 import { describeUnknownError } from "./gateway-cli/shared.js";
 import { nodesCallOpts, resolveNodeId } from "./nodes-cli/rpc.js";

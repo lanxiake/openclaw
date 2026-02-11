@@ -37,12 +37,12 @@ import {
 } from "../infra/update-channels.js";
 import { trimLogTail } from "../infra/restart-sentinel.js";
 import { defaultRuntime } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
 import { formatCliCommand } from "./command-format.js";
 import { replaceCliName, resolveCliName } from "./cli-name.js";
-import { stylePromptHint, stylePromptMessage } from "../terminal/prompt-style.js";
-import { theme } from "../terminal/theme.js";
-import { renderTable } from "../terminal/table.js";
+import { stylePromptHint, stylePromptMessage } from "../shared/terminal/prompt-style.js";
+import { theme } from "../shared/terminal/theme.js";
+import { renderTable } from "../shared/terminal/table.js";
 import { formatHelpExamples } from "./help-format.js";
 import {
   formatUpdateAvailableHint,
@@ -50,7 +50,7 @@ import {
   resolveUpdateAvailability,
 } from "../commands/status.update.js";
 import { syncPluginsForUpdateChannel, updateNpmInstalledPlugins } from "../plugins/update.js";
-import { runCommandWithTimeout } from "../process/exec.js";
+import { runCommandWithTimeout } from "../infra/process/exec.js";
 
 export type UpdateCommandOptions = {
   json?: boolean;

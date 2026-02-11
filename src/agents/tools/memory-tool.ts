@@ -1,7 +1,7 @@
 import { Type } from "@sinclair/typebox";
 
 import type { OpenClawConfig } from "../../config/config.js";
-import { getMemorySearchManager } from "../../memory/index.js";
+import { getMemorySearchManager } from "../../services/memory/index.js";
 import { resolveSessionAgentId } from "../agent-scope.js";
 import { resolveMemorySearchConfig } from "../memory-search.js";
 import type { AnyAgentTool } from "./common.js";

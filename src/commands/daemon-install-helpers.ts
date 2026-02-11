@@ -1,11 +1,11 @@
-import { resolveGatewayLaunchAgentLabel } from "../daemon/constants.js";
-import { resolveGatewayProgramArguments } from "../daemon/program-args.js";
+import { resolveGatewayLaunchAgentLabel } from "../platform/daemon/constants.js";
+import { resolveGatewayProgramArguments } from "../platform/daemon/program-args.js";
 import {
   renderSystemNodeWarning,
   resolvePreferredNodePath,
   resolveSystemNodeInfo,
-} from "../daemon/runtime-paths.js";
-import { buildServiceEnvironment } from "../daemon/service-env.js";
+} from "../platform/daemon/runtime-paths.js";
+import { buildServiceEnvironment } from "../platform/daemon/service-env.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { collectConfigEnvVars } from "../config/env-vars.js";
 import type { OpenClawConfig } from "../config/types.js";

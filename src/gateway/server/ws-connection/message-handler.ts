@@ -20,8 +20,8 @@ import { recordRemoteNodeInfo, refreshRemoteNodeBins } from "../../../infra/skil
 import { loadVoiceWakeConfig } from "../../../infra/voicewake.js";
 import { upsertPresence } from "../../../infra/system-presence.js";
 import { rawDataToString } from "../../../infra/ws.js";
-import type { createSubsystemLogger } from "../../../logging/subsystem.js";
-import { isGatewayCliClient, isWebchatClient } from "../../../utils/message-channel.js";
+import type { createSubsystemLogger } from "../../../shared/logging/subsystem.js";
+import { isGatewayCliClient, isWebchatClient } from "../../../shared/utils/message-channel.js";
 import type { ResolvedGatewayAuth } from "../../auth.js";
 import { authorizeGatewayConnect, isLocalDirectRequest } from "../../auth.js";
 import { loadConfig } from "../../../config/config.js";

@@ -6,7 +6,7 @@
 
 import type { Request, Response, NextFunction } from "express";
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import { getUserRepository } from "../../db/index.js";
 import { verifyAccessToken, extractBearerToken, type UserAccessTokenPayload } from "./jwt.js";
 

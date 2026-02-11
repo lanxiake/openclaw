@@ -2,8 +2,8 @@ import {
   resolveGatewayLaunchAgentLabel,
   resolveGatewaySystemdServiceName,
   resolveGatewayWindowsTaskName,
-} from "../../daemon/constants.js";
-import { resolveGatewayLogPaths } from "../../daemon/launchd.js";
+} from "../../platform/daemon/constants.js";
+import { resolveGatewayLogPaths } from "../../platform/daemon/launchd.js";
 import { getResolvedLoggerSettings } from "../../logging.js";
 import { formatCliCommand } from "../command-format.js";
 

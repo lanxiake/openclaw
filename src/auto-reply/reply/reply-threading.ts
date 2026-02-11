@@ -1,5 +1,5 @@
-import { getChannelDock } from "../../channels/dock.js";
-import { normalizeChannelId } from "../../channels/plugins/index.js";
+import { getChannelDock } from "../../channels/core/dock.js";
+import { normalizeChannelId } from "../../channels/core/plugins/index.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { ReplyToMode } from "../../config/types.js";
 import type { OriginatingChannelType } from "../templating.js";

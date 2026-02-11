@@ -27,7 +27,7 @@ import {
 } from "../infra/shell-env.js";
 import { enqueueSystemEvent } from "../infra/system-events.js";
 import { logInfo, logWarn } from "../logger.js";
-import { formatSpawnError, spawnWithFallback } from "../process/spawn-utils.js";
+import { formatSpawnError, spawnWithFallback } from "../infra/process/spawn-utils.js";
 import {
   type ProcessSession,
   type SessionStdin,

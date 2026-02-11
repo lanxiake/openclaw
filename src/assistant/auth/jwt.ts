@@ -6,7 +6,7 @@
 
 import jwt, { type JwtPayload, type SignOptions, type VerifyOptions } from "jsonwebtoken";
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 
 const logger = getLogger();
 

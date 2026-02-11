@@ -18,7 +18,7 @@ import {
 } from "../../cli/nodes-screen.js";
 import { parseDurationMs } from "../../cli/parse-duration.js";
 import type { OpenClawConfig } from "../../config/config.js";
-import { imageMimeFromFormat } from "../../media/mime.js";
+import { imageMimeFromFormat } from "../../services/media/mime.js";
 import { resolveSessionAgentId } from "../agent-scope.js";
 import { optionalStringEnum, stringEnum } from "../schema/typebox.js";
 import { sanitizeToolResultImages } from "../tool-images.js";

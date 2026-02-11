@@ -1,6 +1,6 @@
 import type { MsgContext } from "../templating.js";
-import { normalizeChatType } from "../../channels/chat-type.js";
-import { listSenderLabelCandidates, resolveSenderLabel } from "../../channels/sender-label.js";
+import { normalizeChatType } from "../../channels/core/chat-type.js";
+import { listSenderLabelCandidates, resolveSenderLabel } from "../../channels/core/sender-label.js";
 
 export function formatInboundBodyWithSenderMeta(params: { body: string; ctx: MsgContext }): string {
   const body = params.body;

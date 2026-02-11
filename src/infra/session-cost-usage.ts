@@ -10,7 +10,7 @@ import {
   resolveSessionFilePath,
   resolveSessionTranscriptsDirForAgent,
 } from "../config/sessions/paths.js";
-import { estimateUsageCost, resolveModelCostConfig } from "../utils/usage-format.js";
+import { estimateUsageCost, resolveModelCostConfig } from "../shared/utils/usage-format.js";
 
 type ParsedUsageEntry = {
   usage: NormalizedUsage;

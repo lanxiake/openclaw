@@ -1,5 +1,5 @@
 import type { RuntimeEnv } from "../../runtime.js";
-import { colorize, theme } from "../../terminal/theme.js";
+import { colorize, theme } from "../../shared/terminal/theme.js";
 import { formatTag, isRich, pad, truncate } from "./list.format.js";
 import type { ModelRow } from "./list.types.js";
 import { formatTokenK } from "./shared.js";

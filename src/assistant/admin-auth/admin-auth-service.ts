@@ -4,7 +4,7 @@
  * 处理管理员登录、Token 刷新等认证流程
  */
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import {
   getAdminRepository,
   getAdminSessionRepository,

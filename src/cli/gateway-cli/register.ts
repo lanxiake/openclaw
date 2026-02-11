@@ -6,9 +6,9 @@ import { discoverGatewayBeacons } from "../../infra/bonjour-discovery.js";
 import type { CostUsageSummary } from "../../infra/session-cost-usage.js";
 import { resolveWideAreaDiscoveryDomain } from "../../infra/widearea-dns.js";
 import { defaultRuntime } from "../../runtime.js";
-import { formatDocsLink } from "../../terminal/links.js";
-import { colorize, isRich, theme } from "../../terminal/theme.js";
-import { formatTokenCount, formatUsd } from "../../utils/usage-format.js";
+import { formatDocsLink } from "../../shared/terminal/links.js";
+import { colorize, isRich, theme } from "../../shared/terminal/theme.js";
+import { formatTokenCount, formatUsd } from "../../shared/utils/usage-format.js";
 import { withProgress } from "../progress.js";
 import { runCommandWithRuntime } from "../cli-utils.js";
 import {

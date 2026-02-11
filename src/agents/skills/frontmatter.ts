@@ -2,8 +2,8 @@ import JSON5 from "json5";
 import type { Skill } from "@mariozechner/pi-coding-agent";
 
 import { LEGACY_MANIFEST_KEYS, MANIFEST_KEY } from "../../compat/legacy-names.js";
-import { parseFrontmatterBlock } from "../../markdown/frontmatter.js";
-import { parseBooleanValue } from "../../utils/boolean.js";
+import { parseFrontmatterBlock } from "../../shared/markdown/frontmatter.js";
+import { parseBooleanValue } from "../../shared/utils/boolean.js";
 import type {
   OpenClawSkillMetadata,
   ParsedSkillFrontmatter,

@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { DEFAULT_CHAT_CHANNEL } from "../../channels/registry.js";
+import { DEFAULT_CHAT_CHANNEL } from "../../channels/core/registry.js";
 import { agentCliCommand } from "../../commands/agent-via-gateway.js";
 import {
   agentsAddCommand,
@@ -9,8 +9,8 @@ import {
 } from "../../commands/agents.js";
 import { setVerbose } from "../../globals.js";
 import { defaultRuntime } from "../../runtime.js";
-import { formatDocsLink } from "../../terminal/links.js";
-import { theme } from "../../terminal/theme.js";
+import { formatDocsLink } from "../../shared/terminal/links.js";
+import { theme } from "../../shared/terminal/theme.js";
 import { hasExplicitOptions } from "../command-options.js";
 import { formatHelpExamples } from "../help-format.js";
 import { createDefaultDeps } from "../deps.js";

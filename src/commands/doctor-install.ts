@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { note } from "../terminal/note.js";
+import { note } from "../shared/terminal/note.js";
 
 export function noteSourceInstallIssues(root: string | null) {
   if (!root) {

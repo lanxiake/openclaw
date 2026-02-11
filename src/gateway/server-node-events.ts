@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { normalizeChannelId } from "../channels/plugins/index.js";
+import { normalizeChannelId } from "../channels/core/plugins/index.js";
 import { agentCommand } from "../commands/agent.js";
 import { loadConfig } from "../config/config.js";
 import { updateSessionStore } from "../config/sessions.js";

@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import type { OpenClawConfig } from "../../config/config.js";
 import { defaultRuntime } from "../../runtime.js";
 import { resolveUserPath } from "../../utils.js";
-import { DEFAULT_BROWSER_EVALUATE_ENABLED } from "../../browser/constants.js";
+import { DEFAULT_BROWSER_EVALUATE_ENABLED } from "../../services/browser/constants.js";
 import { syncSkillsToWorkspace } from "../skills.js";
 import { DEFAULT_AGENT_WORKSPACE_DIR } from "../workspace.js";
 import { ensureSandboxBrowser } from "./browser.js";

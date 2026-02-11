@@ -68,7 +68,7 @@ vi.mock("./common.js", async () => {
   };
 });
 
-import { DEFAULT_AI_SNAPSHOT_MAX_CHARS } from "../../browser/constants.js";
+import { DEFAULT_AI_SNAPSHOT_MAX_CHARS } from "../../services/browser/constants.js";
 import { createBrowserTool } from "./browser-tool.js";
 
 describe("browser tool snapshot maxChars", () => {

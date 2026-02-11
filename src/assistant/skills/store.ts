@@ -10,7 +10,7 @@
  * @author OpenClaw
  */
 
-import { createSubsystemLogger } from "../../logging/subsystem.js";
+import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import type { SkillRegistry, SkillRecord } from "./types.js";
 
 // 日志

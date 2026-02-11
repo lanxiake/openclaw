@@ -6,9 +6,9 @@ import type { AgentMessage, StreamFn } from "@mariozechner/pi-agent-core";
 import type { Api, Model } from "@mariozechner/pi-ai";
 
 import { resolveStateDir } from "../config/paths.js";
-import { parseBooleanValue } from "../utils/boolean.js";
+import { parseBooleanValue } from "../shared/utils/boolean.js";
 import { resolveUserPath } from "../utils.js";
-import { createSubsystemLogger } from "../logging/subsystem.js";
+import { createSubsystemLogger } from "../shared/logging/subsystem.js";
 
 type PayloadLogStage = "request" | "usage";
 

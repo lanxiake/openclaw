@@ -7,9 +7,13 @@ import {
   resolveOAuthDir,
   resolveStateDir,
 } from "../config/config.js";
-import { resolveGatewayService } from "../daemon/service.js";
+import { resolveGatewayService } from "../platform/daemon/service.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { stylePromptHint, stylePromptMessage, stylePromptTitle } from "../terminal/prompt-style.js";
+import {
+  stylePromptHint,
+  stylePromptMessage,
+  stylePromptTitle,
+} from "../shared/terminal/prompt-style.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import {
   collectWorkspaceDirs,

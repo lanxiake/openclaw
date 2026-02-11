@@ -16,7 +16,7 @@ import {
   formatReasoningMessage,
   promoteThinkingTagsToBlocks,
 } from "./pi-embedded-utils.js";
-import { createInlineCodeState } from "../markdown/code-spans.js";
+import { createInlineCodeState } from "../shared/markdown/code-spans.js";
 
 export function handleMessageStart(
   ctx: EmbeddedPiSubscribeContext,

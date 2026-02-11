@@ -6,7 +6,11 @@ import {
   text as clackText,
 } from "@clack/prompts";
 
-import { stylePromptHint, stylePromptMessage, stylePromptTitle } from "../terminal/prompt-style.js";
+import {
+  stylePromptHint,
+  stylePromptMessage,
+  stylePromptTitle,
+} from "../shared/terminal/prompt-style.js";
 
 export const CONFIGURE_WIZARD_SECTIONS = [
   "workspace",

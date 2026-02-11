@@ -4,7 +4,7 @@
  * 处理验证码的发送和验证
  */
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import { getVerificationCodeRepository, audit } from "../../db/index.js";
 
 const logger = getLogger();

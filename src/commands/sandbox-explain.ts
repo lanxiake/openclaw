@@ -3,7 +3,7 @@ import {
   resolveSandboxConfigForAgent,
   resolveSandboxToolPolicyForAgent,
 } from "../agents/sandbox.js";
-import { normalizeAnyChannelId } from "../channels/registry.js";
+import { normalizeAnyChannelId } from "../channels/core/registry.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
 import {
@@ -20,9 +20,9 @@ import {
   resolveAgentIdFromSessionKey,
 } from "../routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { colorize, isRich, theme } from "../terminal/theme.js";
-import { INTERNAL_MESSAGE_CHANNEL } from "../utils/message-channel.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { colorize, isRich, theme } from "../shared/terminal/theme.js";
+import { INTERNAL_MESSAGE_CHANNEL } from "../shared/utils/message-channel.js";
 
 type SandboxExplainOptions = {
   session?: string;

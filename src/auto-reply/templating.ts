@@ -1,11 +1,11 @@
-import type { ChannelId } from "../channels/plugins/types.js";
-import type { StickerMetadata } from "../telegram/bot/types.js";
-import type { InternalMessageChannel } from "../utils/message-channel.js";
+import type { ChannelId } from "../channels/core/plugins/types.js";
+import type { StickerMetadata } from "../channels/telegram/bot/types.js";
+import type { InternalMessageChannel } from "../shared/utils/message-channel.js";
 import type { CommandArgs } from "./commands-registry.types.js";
 import type {
   MediaUnderstandingDecision,
   MediaUnderstandingOutput,
-} from "../media-understanding/types.js";
+} from "../services/media-understanding/types.js";
 
 /** Valid message channels for routing. */
 export type OriginatingChannelType = ChannelId | InternalMessageChannel;

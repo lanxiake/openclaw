@@ -11,7 +11,7 @@
  * @author OpenClaw
  */
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import {
   // 迁移服务
   getMigrationService,

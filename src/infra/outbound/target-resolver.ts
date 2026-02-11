@@ -1,9 +1,9 @@
-import { getChannelPlugin } from "../../channels/plugins/index.js";
+import { getChannelPlugin } from "../../channels/core/plugins/index.js";
 import type {
   ChannelDirectoryEntry,
   ChannelDirectoryEntryKind,
   ChannelId,
-} from "../../channels/plugins/types.js";
+} from "../../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
 import { buildDirectoryCacheKey, DirectoryCache } from "./directory-cache.js";

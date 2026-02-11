@@ -13,14 +13,14 @@ import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { CONFIG_PATH, readConfigFileSnapshot, writeConfigFile } from "../config/config.js";
 import { logConfigUpdated } from "../config/logging.js";
-import { resolveGatewayService } from "../daemon/service.js";
+import { resolveGatewayService } from "../platform/daemon/service.js";
 import { resolveGatewayAuth } from "../gateway/auth.js";
 import { buildGatewayConnectionDetails } from "../gateway/call.js";
 import { resolveOpenClawPackageRoot } from "../infra/openclaw-root.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { defaultRuntime } from "../runtime.js";
-import { note } from "../terminal/note.js";
-import { stylePromptTitle } from "../terminal/prompt-style.js";
+import { note } from "../shared/terminal/note.js";
+import { stylePromptTitle } from "../shared/terminal/prompt-style.js";
 import { shortenHomePath } from "../utils.js";
 import {
   maybeRemoveDeprecatedCliAuthProfiles,

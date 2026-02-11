@@ -1,11 +1,11 @@
 import { spinner } from "@clack/prompts";
 import { createOscProgressController, supportsOscProgress } from "osc-progress";
-import { theme } from "../terminal/theme.js";
+import { theme } from "../shared/terminal/theme.js";
 import {
   clearActiveProgressLine,
   registerActiveProgressLine,
   unregisterActiveProgressLine,
-} from "../terminal/progress-line.js";
+} from "../shared/terminal/progress-line.js";
 
 const DEFAULT_DELAY_MS = 0;
 let activeProgress = 0;

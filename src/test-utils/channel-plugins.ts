@@ -1,12 +1,12 @@
-import { imessageOutbound } from "../channels/plugins/outbound/imessage.js";
+import { imessageOutbound } from "../channels/core/plugins/outbound/imessage.js";
 import type {
   ChannelCapabilities,
   ChannelId,
   ChannelOutboundAdapter,
   ChannelPlugin,
-} from "../channels/plugins/types.js";
+} from "../channels/core/plugins/types.js";
 import type { PluginRegistry } from "../plugins/registry.js";
-import { normalizeIMessageHandle } from "../imessage/targets.js";
+import { normalizeIMessageHandle } from "../channels/imessage/targets.js";
 
 export const createTestRegistry = (channels: PluginRegistry["channels"] = []): PluginRegistry => ({
   plugins: [],

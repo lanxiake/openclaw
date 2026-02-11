@@ -1,7 +1,7 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
 
 import type { OpenClawConfig } from "../../config/config.js";
-import { resolveSlackAccount } from "../../slack/accounts.js";
+import { resolveSlackAccount } from "../../channels/slack/accounts.js";
 import {
   deleteSlackMessage,
   editSlackMessage,
@@ -16,8 +16,8 @@ import {
   removeSlackReaction,
   sendSlackMessage,
   unpinSlackMessage,
-} from "../../slack/actions.js";
-import { parseSlackTarget, resolveSlackChannelId } from "../../slack/targets.js";
+} from "../../channels/slack/actions.js";
+import { parseSlackTarget, resolveSlackChannelId } from "../../channels/slack/targets.js";
 import { withNormalizedTimestamp } from "../date-time.js";
 import { createActionGate, jsonResult, readReactionParams, readStringParam } from "./common.js";
 

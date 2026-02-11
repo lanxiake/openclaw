@@ -9,19 +9,19 @@ import {
 } from "../../agents/tools/common.js";
 import { resolveSessionAgentId } from "../../agents/agent-scope.js";
 import { parseReplyDirectives } from "../../auto-reply/reply/reply-directives.js";
-import { dispatchChannelMessageAction } from "../../channels/plugins/message-actions.js";
+import { dispatchChannelMessageAction } from "../../channels/core/plugins/message-actions.js";
 import type {
   ChannelId,
   ChannelMessageActionName,
   ChannelThreadingToolContext,
-} from "../../channels/plugins/types.js";
+} from "../../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import {
   isDeliverableMessageChannel,
   normalizeMessageChannel,
   type GatewayClientMode,
   type GatewayClientName,
-} from "../../utils/message-channel.js";
+} from "../../shared/utils/message-channel.js";
 import {
   listConfiguredMessageChannels,
   resolveMessageChannelSelection,
@@ -40,9 +40,9 @@ import {
 import { executePollAction, executeSendAction } from "./outbound-send-service.js";
 import { actionHasTarget, actionRequiresTarget } from "./message-action-spec.js";
 import { resolveChannelTarget, type ResolvedMessagingTarget } from "./target-resolver.js";
-import { loadWebMedia } from "../../web/media.js";
-import { extensionForMime } from "../../media/mime.js";
-import { parseSlackTarget } from "../../slack/targets.js";
+import { loadWebMedia } from "../../channels/whatsapp/media.js";
+import { extensionForMime } from "../../services/media/mime.js";
+import { parseSlackTarget } from "../../channels/slack/targets.js";
 
 export type MessageActionRunnerGateway = {
   url?: string;

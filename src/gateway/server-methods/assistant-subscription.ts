@@ -11,7 +11,7 @@
  * @author OpenClaw
  */
 
-import { createSubsystemLogger } from "../../logging/subsystem.js";
+import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import { ErrorCodes, errorShape } from "../protocol/index.js";
 import {
   getAllPlans,

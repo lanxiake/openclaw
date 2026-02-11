@@ -5,7 +5,7 @@ import {
   clearInternalHooks,
   registerInternalHook,
   type AgentBootstrapHookContext,
-} from "../hooks/internal-hooks.js";
+} from "../services/hooks/internal-hooks.js";
 import { DEFAULT_SOUL_FILENAME, type WorkspaceBootstrapFile } from "./workspace.js";
 
 function makeFile(name = DEFAULT_SOUL_FILENAME): WorkspaceBootstrapFile {

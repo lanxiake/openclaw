@@ -3,12 +3,12 @@ import {
   listChannelMessageActions,
   supportsChannelMessageButtons,
   supportsChannelMessageCards,
-} from "../../channels/plugins/message-actions.js";
+} from "../../channels/core/plugins/message-actions.js";
 import {
   CHANNEL_MESSAGE_ACTION_NAMES,
   type ChannelMessageActionName,
-} from "../../channels/plugins/types.js";
-import { BLUEBUBBLES_GROUP_ACTIONS } from "../../channels/plugins/bluebubbles-actions.js";
+} from "../../channels/core/plugins/types.js";
+import { BLUEBUBBLES_GROUP_ACTIONS } from "../../channels/core/plugins/bluebubbles-actions.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { loadConfig } from "../../config/config.js";
 import { GATEWAY_CLIENT_IDS, GATEWAY_CLIENT_MODES } from "../../gateway/protocol/client-info.js";
@@ -18,7 +18,7 @@ import { resolveSessionAgentId } from "../agent-scope.js";
 import { normalizeAccountId } from "../../routing/session-key.js";
 import { channelTargetSchema, channelTargetsSchema, stringEnum } from "../schema/typebox.js";
 import { listChannelSupportedActions } from "../channel-tools.js";
-import { normalizeMessageChannel } from "../../utils/message-channel.js";
+import { normalizeMessageChannel } from "../../shared/utils/message-channel.js";
 import type { AnyAgentTool } from "./common.js";
 import { jsonResult, readNumberParam, readStringParam } from "./common.js";
 

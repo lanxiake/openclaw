@@ -4,7 +4,7 @@ import type {
   ChannelMessageActionAdapter,
   ChannelOutboundAdapter,
   ChannelPlugin,
-} from "../channels/plugins/types.js";
+} from "../channels/core/plugins/types.js";
 import type { CliDeps } from "../cli/deps.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { createTestRegistry } from "../test-utils/channel-plugins.js";

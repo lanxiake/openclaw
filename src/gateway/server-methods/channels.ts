@@ -1,13 +1,13 @@
-import { resolveChannelDefaultAccountId } from "../../channels/plugins/helpers.js";
+import { resolveChannelDefaultAccountId } from "../../channels/core/plugins/helpers.js";
 import {
   type ChannelId,
   getChannelPlugin,
   listChannelPlugins,
   normalizeChannelId,
-} from "../../channels/plugins/index.js";
-import { buildChannelUiCatalog } from "../../channels/plugins/catalog.js";
-import { buildChannelAccountSnapshot } from "../../channels/plugins/status.js";
-import type { ChannelAccountSnapshot, ChannelPlugin } from "../../channels/plugins/types.js";
+} from "../../channels/core/plugins/index.js";
+import { buildChannelUiCatalog } from "../../channels/core/plugins/catalog.js";
+import { buildChannelAccountSnapshot } from "../../channels/core/plugins/status.js";
+import type { ChannelAccountSnapshot, ChannelPlugin } from "../../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { loadConfig, readConfigFileSnapshot } from "../../config/config.js";
 import { getChannelActivity } from "../../infra/channel-activity.js";

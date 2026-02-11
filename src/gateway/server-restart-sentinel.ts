@@ -1,5 +1,5 @@
 import { resolveAnnounceTargetFromKey } from "../agents/tools/sessions-send-helpers.js";
-import { normalizeChannelId } from "../channels/plugins/index.js";
+import { normalizeChannelId } from "../channels/core/plugins/index.js";
 import type { CliDeps } from "../cli/deps.js";
 import { agentCommand } from "../commands/agent.js";
 import { resolveMainSessionKeyFromConfig } from "../config/sessions.js";
@@ -11,7 +11,10 @@ import {
 } from "../infra/restart-sentinel.js";
 import { enqueueSystemEvent } from "../infra/system-events.js";
 import { defaultRuntime } from "../runtime.js";
-import { deliveryContextFromSession, mergeDeliveryContext } from "../utils/delivery-context.js";
+import {
+  deliveryContextFromSession,
+  mergeDeliveryContext,
+} from "../shared/utils/delivery-context.js";
 import { loadSessionEntry } from "./session-utils.js";
 
 export async function scheduleRestartSentinelWake(params: { deps: CliDeps }) {

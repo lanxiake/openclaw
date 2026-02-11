@@ -13,7 +13,7 @@
  */
 
 import * as crypto from "node:crypto";
-import { getLogger } from "../../../logging/logger.js";
+import { getLogger } from "../../../shared/logging/logger.js";
 import type {
   PaymentOrder,
   InitiatePaymentRequest,

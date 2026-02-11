@@ -3,8 +3,8 @@ import type { Command } from "commander";
 import { runAcpClientInteractive } from "../acp/client.js";
 import { serveAcpGateway } from "../acp/server.js";
 import { defaultRuntime } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { theme } from "../terminal/theme.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { theme } from "../shared/terminal/theme.js";
 
 export function registerAcpCli(program: Command) {
   const acp = program.command("acp").description("Run an ACP bridge backed by the Gateway");

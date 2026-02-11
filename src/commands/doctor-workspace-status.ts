@@ -2,7 +2,7 @@ import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent
 import { buildWorkspaceSkillStatus } from "../agents/skills-status.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { loadOpenClawPlugins } from "../plugins/loader.js";
-import { note } from "../terminal/note.js";
+import { note } from "../shared/terminal/note.js";
 import { detectLegacyWorkspaceDirs, formatLegacyWorkspaceWarning } from "./doctor-workspace.js";
 
 export function noteWorkspaceStatus(cfg: OpenClawConfig) {

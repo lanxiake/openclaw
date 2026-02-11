@@ -8,7 +8,7 @@
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres, { type Sql } from "postgres";
 
-import { getLogger } from "../logging/logger.js";
+import { getLogger } from "../shared/logging/logger.js";
 import * as schema from "./schema/index.js";
 
 // 获取 logger 实例

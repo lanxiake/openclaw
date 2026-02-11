@@ -8,7 +8,7 @@ import {
   clearInternalHooks,
   registerInternalHook,
   type AgentBootstrapHookContext,
-} from "../hooks/internal-hooks.js";
+} from "../services/hooks/internal-hooks.js";
 
 describe("resolveBootstrapFilesForRun", () => {
   beforeEach(() => clearInternalHooks());

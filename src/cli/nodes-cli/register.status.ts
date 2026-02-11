@@ -4,7 +4,7 @@ import { formatAge, formatPermissions, parseNodeList, parsePairingList } from ".
 import { getNodesTheme, runNodesCommand } from "./cli-utils.js";
 import { callGatewayCli, nodesCallOpts, resolveNodeId } from "./rpc.js";
 import type { NodesRpcOpts } from "./types.js";
-import { renderTable } from "../../terminal/table.js";
+import { renderTable } from "../../shared/terminal/table.js";
 import { parseDurationMs } from "../parse-duration.js";
 import { shortenHomeInString } from "../../utils.js";
 

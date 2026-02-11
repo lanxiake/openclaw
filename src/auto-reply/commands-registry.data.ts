@@ -1,4 +1,4 @@
-import { listChannelDocks } from "../channels/dock.js";
+import { listChannelDocks } from "../channels/core/dock.js";
 import { getActivePluginRegistry } from "../plugins/runtime.js";
 import { listThinkingLevels } from "./thinking.js";
 import { COMMAND_ARG_FORMATTERS } from "./commands-args.js";

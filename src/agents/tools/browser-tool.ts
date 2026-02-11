@@ -8,7 +8,7 @@ import {
   browserStatus,
   browserStop,
   browserTabs,
-} from "../../browser/client.js";
+} from "../../services/browser/client.js";
 import {
   browserAct,
   browserArmDialog,
@@ -17,13 +17,13 @@ import {
   browserNavigate,
   browserPdfSave,
   browserScreenshotAction,
-} from "../../browser/client-actions.js";
+} from "../../services/browser/client-actions.js";
 import crypto from "node:crypto";
 
-import { resolveBrowserConfig } from "../../browser/config.js";
-import { DEFAULT_AI_SNAPSHOT_MAX_CHARS } from "../../browser/constants.js";
+import { resolveBrowserConfig } from "../../services/browser/config.js";
+import { DEFAULT_AI_SNAPSHOT_MAX_CHARS } from "../../services/browser/constants.js";
 import { loadConfig } from "../../config/config.js";
-import { saveMediaBuffer } from "../../media/store.js";
+import { saveMediaBuffer } from "../../services/media/store.js";
 import { listNodes, resolveNodeIdFromList, type NodeListNode } from "./nodes-utils.js";
 import { BrowserToolSchema } from "./browser-tool.schema.js";
 import { type AnyAgentTool, imageResultFromFile, jsonResult, readStringParam } from "./common.js";

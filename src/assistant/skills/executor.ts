@@ -5,7 +5,7 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { createSubsystemLogger } from "../../logging/subsystem.js";
+import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import type {
   AssistantSkillDefinition,
   SkillExecutionContext,

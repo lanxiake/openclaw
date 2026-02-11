@@ -1,5 +1,5 @@
 import type { OpenClawConfig } from "../config/config.js";
-import type { WizardPrompter } from "../wizard/prompts.js";
+import type { WizardPrompter } from "../platform/wizard/prompts.js";
 
 export async function applyDefaultModelChoice(params: {
   config: OpenClawConfig;

@@ -3,27 +3,27 @@ import {
   validateConfigObjectWithPlugins,
   writeConfigFile,
 } from "../../config/config.js";
-import { resolveChannelConfigWrites } from "../../channels/plugins/config-writes.js";
-import { getChannelDock } from "../../channels/dock.js";
-import { normalizeChannelId } from "../../channels/registry.js";
-import { listPairingChannels } from "../../channels/plugins/pairing.js";
+import { resolveChannelConfigWrites } from "../../channels/core/plugins/config-writes.js";
+import { getChannelDock } from "../../channels/core/dock.js";
+import { normalizeChannelId } from "../../channels/core/registry.js";
+import { listPairingChannels } from "../../channels/core/plugins/pairing.js";
 import { logVerbose } from "../../globals.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../routing/session-key.js";
-import { resolveDiscordAccount } from "../../discord/accounts.js";
-import { resolveIMessageAccount } from "../../imessage/accounts.js";
-import { resolveSignalAccount } from "../../signal/accounts.js";
-import { resolveSlackAccount } from "../../slack/accounts.js";
-import { resolveTelegramAccount } from "../../telegram/accounts.js";
-import { resolveWhatsAppAccount } from "../../web/accounts.js";
-import { resolveSlackUserAllowlist } from "../../slack/resolve-users.js";
-import { resolveDiscordUserAllowlist } from "../../discord/resolve-users.js";
+import { resolveDiscordAccount } from "../../channels/discord/accounts.js";
+import { resolveIMessageAccount } from "../../channels/imessage/accounts.js";
+import { resolveSignalAccount } from "../../channels/signal/accounts.js";
+import { resolveSlackAccount } from "../../channels/slack/accounts.js";
+import { resolveTelegramAccount } from "../../channels/telegram/accounts.js";
+import { resolveWhatsAppAccount } from "../../channels/whatsapp/accounts.js";
+import { resolveSlackUserAllowlist } from "../../channels/slack/resolve-users.js";
+import { resolveDiscordUserAllowlist } from "../../channels/discord/resolve-users.js";
 import {
   addChannelAllowFromStoreEntry,
   readChannelAllowFromStore,
   removeChannelAllowFromStoreEntry,
-} from "../../pairing/pairing-store.js";
+} from "../../infra/device/pairing/pairing-store.js";
 import type { OpenClawConfig } from "../../config/config.js";
-import type { ChannelId } from "../../channels/plugins/types.js";
+import type { ChannelId } from "../../channels/core/plugins/types.js";
 import type { CommandHandler } from "./commands-types.js";
 
 type AllowlistScope = "dm" | "group" | "all";

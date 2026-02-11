@@ -7,7 +7,7 @@
  * @author OpenClaw
  */
 
-import { getLogger } from "../../logging/logger.js";
+import { getLogger } from "../../shared/logging/logger.js";
 import type { PairedDevice } from "../../infra/device-pairing.js";
 import type { NewUserDevice, UserDevice } from "../../db/schema/users.js";
 import { getMigrationService } from "./device-migration.js";

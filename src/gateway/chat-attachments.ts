@@ -1,4 +1,4 @@
-import { detectMime } from "../media/mime.js";
+import { detectMime } from "../services/media/mime.js";
 
 export type ChatAttachment = {
   type?: string;

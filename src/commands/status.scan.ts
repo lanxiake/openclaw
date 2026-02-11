@@ -6,8 +6,8 @@ import { probeGateway } from "../gateway/probe.js";
 import { collectChannelStatusIssues } from "../infra/channels-status-issues.js";
 import { resolveOsSummary } from "../infra/os-summary.js";
 import { getTailnetHostname } from "../infra/tailscale.js";
-import type { MemoryIndexManager } from "../memory/manager.js";
-import { runExec } from "../process/exec.js";
+import type { MemoryIndexManager } from "../services/memory/manager.js";
+import { runExec } from "../infra/process/exec.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { getAgentLocalStatuses } from "./status.agent-local.js";
 import { pickGatewaySelfPresence, resolveGatewayProbeAuth } from "./status.gateway-probe.js";
@@ -157,7 +157,7 @@ export async function scanStatus(
           return null;
         }
         const agentId = agentStatus.defaultId ?? "main";
-        const { MemoryIndexManager } = await import("../memory/manager.js");
+        const { MemoryIndexManager } = await import("../services/memory/manager.js");
         const manager = await MemoryIndexManager.get({ cfg, agentId }).catch(() => null);
         if (!manager) {
           return null;

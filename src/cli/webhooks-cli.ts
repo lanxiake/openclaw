@@ -10,16 +10,16 @@ import {
   DEFAULT_GMAIL_SERVE_PORT,
   DEFAULT_GMAIL_SUBSCRIPTION,
   DEFAULT_GMAIL_TOPIC,
-} from "../hooks/gmail.js";
+} from "../services/hooks/gmail.js";
 import {
   type GmailRunOptions,
   type GmailSetupOptions,
   runGmailService,
   runGmailSetup,
-} from "../hooks/gmail-ops.js";
+} from "../services/hooks/gmail-ops.js";
 import { defaultRuntime } from "../runtime.js";
-import { formatDocsLink } from "../terminal/links.js";
-import { theme } from "../terminal/theme.js";
+import { formatDocsLink } from "../shared/terminal/links.js";
+import { theme } from "../shared/terminal/theme.js";
 
 export function registerWebhooksCli(program: Command) {
   const webhooks = program

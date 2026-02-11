@@ -10,7 +10,7 @@ import {
   signDevicePayload,
 } from "../infra/device-identity.js";
 import { emitHeartbeatEvent } from "../infra/heartbeat-events.js";
-import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../utils/message-channel.js";
+import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../shared/utils/message-channel.js";
 import {
   connectOk,
   getFreePort,

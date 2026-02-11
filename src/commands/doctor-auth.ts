@@ -13,7 +13,7 @@ import {
 } from "../agents/auth-profiles.js";
 import { updateAuthProfileStoreWithLock } from "../agents/auth-profiles/store.js";
 import type { OpenClawConfig } from "../config/config.js";
-import { note } from "../terminal/note.js";
+import { note } from "../shared/terminal/note.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { DoctorPrompter } from "./doctor-prompter.js";
 
