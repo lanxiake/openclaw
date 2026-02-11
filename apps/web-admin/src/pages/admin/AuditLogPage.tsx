@@ -132,7 +132,7 @@ export default function AuditLogPage() {
       </div>
 
       {/* 统计卡片 */}
-      {stats && (
+      {stats && stats.totalLogs != null && (
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
@@ -151,7 +151,7 @@ export default function AuditLogPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.todayLogs.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{(stats.todayLogs ?? 0).toLocaleString()}</div>
             </CardContent>
           </Card>
           <Card>
@@ -162,7 +162,7 @@ export default function AuditLogPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {(stats.successRate * 100).toFixed(1)}%
+                {((stats.successRate ?? 0) * 100).toFixed(1)}%
               </div>
             </CardContent>
           </Card>
@@ -174,7 +174,7 @@ export default function AuditLogPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {Object.keys(stats.byAction).length}
+                {stats.byAction ? Object.keys(stats.byAction).length : 0}
               </div>
             </CardContent>
           </Card>

@@ -288,7 +288,7 @@ export default function SubscriptionPage() {
       )}
 
       {/* 使用量概览 */}
-      {overview?.usage && (
+      {overview?.usage?.devices && overview?.usage?.skills && overview?.usage?.dailyCalls && overview?.usage?.storage && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
