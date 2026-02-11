@@ -113,10 +113,17 @@ export function createConnection(config: DatabaseConfig): {
  * 获取单例数据库连接
  *
  * 首次调用时会从环境变量读取配置并创建连接
+ * 当 Mock 模式启用时（通过全局标志），返回 Mock 数据库实例
  *
  * @returns Drizzle 数据库实例
  */
 export function getDatabase(): Database {
+  // 检查是否处于 Mock 模式（用于单元测试）
+  const g = globalThis as Record<string, unknown>;
+  if (g.__OPENCLAW_MOCK_ENABLED__ && g.__OPENCLAW_MOCK_DB__) {
+    return g.__OPENCLAW_MOCK_DB__ as Database;
+  }
+
   if (!dbInstance) {
     const config = getDatabaseConfigFromEnv();
     const { db, sql } = createConnection(config);

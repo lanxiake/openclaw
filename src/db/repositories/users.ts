@@ -369,6 +369,24 @@ export class UserSessionRepository {
   }
 
   /**
+   * 根据 ID 查找会话
+   */
+  async findById(sessionId: string): Promise<UserSession | null> {
+    const [session] = await this.db
+      .select()
+      .from(userSessions)
+      .where(eq(userSessions.id, sessionId));
+    return session ?? null;
+  }
+
+  /**
+   * 获取用户的所有有效会话
+   */
+  async findByUserId(userId: string): Promise<UserSession[]> {
+    return this.db.select().from(userSessions).where(eq(userSessions.userId, userId));
+  }
+
+  /**
    * 撤销会话
    */
   async revoke(sessionId: string): Promise<void> {

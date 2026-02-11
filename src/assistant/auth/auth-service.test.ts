@@ -4,7 +4,7 @@
  * 测试用户注册、登录、Token 刷新、登出等认证流程
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from "vitest";
 import {
   clearMockDatabase,
   disableMockDatabase,
@@ -27,25 +27,27 @@ import {
   getLoginAttemptRepository,
   getVerificationCodeRepository,
 } from "../../db/index.js";
-import { generateId } from "../../db/utils/id.js";
+
+// 设置测试用 JWT_SECRET（auth-service 内部调用 generateAccessToken 需要）
+let originalJwtSecret: string | undefined;
+
+beforeAll(() => {
+  originalJwtSecret = process.env["JWT_SECRET"];
+  process.env["JWT_SECRET"] = "test-secret-key-for-auth-service-testing-minimum-32-chars";
+});
+
+afterAll(() => {
+  if (originalJwtSecret !== undefined) {
+    process.env["JWT_SECRET"] = originalJwtSecret;
+  } else {
+    delete process.env["JWT_SECRET"];
+  }
+});
 
 describe("AuthService - 用户注册", () => {
   beforeEach(async () => {
-    // 启用 Mock 数据库
     enableMockDatabase();
-    const db = getMockDatabase();
-
-    // 清空相关表
-    const userRepo = getUserRepository(db);
-    const codeRepo = getVerificationCodeRepository(db);
-    const sessionRepo = getUserSessionRepository(db);
-
     clearMockDatabase();
-
-    // 清空测试数据
-    await userRepo.deleteAll?.();
-    await codeRepo.deleteAll?.();
-    await sessionRepo.deleteAll?.();
   });
 
   afterEach(() => {
@@ -55,16 +57,9 @@ describe("AuthService - 用户注册", () => {
   it("应该成功注册新用户（手机号 + 验证码）", async () => {
     const codeRepo = getVerificationCodeRepository();
     const phone = "13800138000";
-    const code = "123456";
 
-    // 创建验证码
-    await codeRepo.create({
-      target: phone,
-      targetType: "phone",
-      code,
-      purpose: "register",
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10分钟后过期
-    });
+    // 创建验证码（使用仓库 API，获取自动生成的 code）
+    const { code } = await codeRepo.create(phone, "phone", "register");
 
     const request: RegisterRequest = {
       phone,
@@ -89,17 +84,10 @@ describe("AuthService - 用户注册", () => {
   it("应该成功注册新用户（邮箱 + 验证码 + 密码）", async () => {
     const codeRepo = getVerificationCodeRepository();
     const email = "test@example.com";
-    const code = "123456";
     const password = "StrongP@ssw0rd123";
 
     // 创建验证码
-    await codeRepo.create({
-      target: email,
-      targetType: "email",
-      code,
-      purpose: "register",
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-    });
+    const { code } = await codeRepo.create(email, "email", "register");
 
     const request: RegisterRequest = {
       email,
@@ -124,7 +112,6 @@ describe("AuthService - 用户注册", () => {
     const codeRepo = getVerificationCodeRepository();
     const userRepo = getUserRepository();
     const phone = "13800138001";
-    const code = "123456";
 
     // 先创建一个用户
     await userRepo.create({
@@ -133,13 +120,7 @@ describe("AuthService - 用户注册", () => {
     });
 
     // 创建验证码
-    await codeRepo.create({
-      target: phone,
-      targetType: "phone",
-      code,
-      purpose: "register",
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-    });
+    const { code } = await codeRepo.create(phone, "phone", "register");
 
     const request: RegisterRequest = {
       phone,
@@ -158,7 +139,7 @@ describe("AuthService - 用户注册", () => {
 
   it("应该拒绝无效的验证码", async () => {
     const phone = "13800138002";
-    const code = "999999"; // 错误的验证码
+    const code = "999999"; // 不存在的验证码
 
     const request: RegisterRequest = {
       phone,
@@ -178,17 +159,10 @@ describe("AuthService - 用户注册", () => {
   it("应该拒绝弱密码", async () => {
     const codeRepo = getVerificationCodeRepository();
     const email = "weak@example.com";
-    const code = "123456";
     const weakPassword = "123"; // 弱密码
 
     // 创建验证码
-    await codeRepo.create({
-      target: email,
-      targetType: "email",
-      code,
-      purpose: "register",
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-    });
+    const { code } = await codeRepo.create(email, "email", "register");
 
     const request: RegisterRequest = {
       email,
@@ -196,7 +170,7 @@ describe("AuthService - 用户注册", () => {
       password: weakPassword,
       ipAddress: "127.0.0.1",
       userAgent: "Test Agent",
-    });
+    };
 
     const result = await register(request);
 
@@ -222,16 +196,12 @@ describe("AuthService - 用户注册", () => {
 
 describe("AuthService - 用户登录", () => {
   beforeEach(async () => {
-    // 清空相关表
-    const userRepo = getUserRepository();
-    const codeRepo = getVerificationCodeRepository();
-    const sessionRepo = getUserSessionRepository();
-    const attemptRepo = getLoginAttemptRepository();
+    enableMockDatabase();
+    clearMockDatabase();
+  });
 
-    await userRepo.deleteAll?.();
-    await codeRepo.deleteAll?.();
-    await sessionRepo.deleteAll?.();
-    await attemptRepo.deleteAll?.();
+  afterEach(() => {
+    disableMockDatabase();
   });
 
   it("应该成功使用密码登录", async () => {
@@ -239,10 +209,10 @@ describe("AuthService - 用户登录", () => {
     const phone = "13800138010";
     const password = "StrongP@ssw0rd123";
 
-    // 创建用户
+    // 创建用户（passwordHash 字段在 mock 中直接存储）
     const user = await userRepo.create({
       phone,
-      passwordHash: password, // Repository 会自动哈希
+      passwordHash: password,
       displayName: "密码用户",
     });
 
@@ -267,7 +237,6 @@ describe("AuthService - 用户登录", () => {
     const userRepo = getUserRepository();
     const codeRepo = getVerificationCodeRepository();
     const email = "login@example.com";
-    const code = "123456";
 
     // 创建用户
     const user = await userRepo.create({
@@ -275,21 +244,15 @@ describe("AuthService - 用户登录", () => {
       displayName: "验证码用户",
     });
 
-    // 创建验证码
-    await codeRepo.create({
-      target: email,
-      targetType: "email",
-      code,
-      purpose: "login",
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-    });
+    // 创建验证码（使用仓库 API）
+    const { code } = await codeRepo.create(email, "email", "login");
 
     const request: LoginRequest = {
       identifier: email,
       code,
       ipAddress: "127.0.0.1",
       userAgent: "Test Agent",
-    });
+    };
 
     const result = await login(request);
 
@@ -348,7 +311,7 @@ describe("AuthService - 用户登录", () => {
     const password = "StrongP@ssw0rd123";
 
     // 创建已停用的用户
-    const user = await userRepo.create({
+    await userRepo.create({
       phone,
       passwordHash: password,
       displayName: "停用用户",
@@ -360,7 +323,7 @@ describe("AuthService - 用户登录", () => {
       password,
       ipAddress: "127.0.0.1",
       userAgent: "Test Agent",
-    });
+    };
 
     const result = await login(request);
 
@@ -451,11 +414,12 @@ describe("AuthService - 用户登录", () => {
 
 describe("AuthService - Token 刷新", () => {
   beforeEach(async () => {
-    const userRepo = getUserRepository();
-    const sessionRepo = getUserSessionRepository();
+    enableMockDatabase();
+    clearMockDatabase();
+  });
 
-    await userRepo.deleteAll?.();
-    await sessionRepo.deleteAll?.();
+  afterEach(() => {
+    disableMockDatabase();
   });
 
   it("应该成功刷新 Token", async () => {
@@ -540,11 +504,12 @@ describe("AuthService - Token 刷新", () => {
 
 describe("AuthService - 登出", () => {
   beforeEach(async () => {
-    const userRepo = getUserRepository();
-    const sessionRepo = getUserSessionRepository();
+    enableMockDatabase();
+    clearMockDatabase();
+  });
 
-    await userRepo.deleteAll?.();
-    await sessionRepo.deleteAll?.();
+  afterEach(() => {
+    disableMockDatabase();
   });
 
   it("应该成功登出", async () => {
@@ -590,11 +555,12 @@ describe("AuthService - 登出", () => {
 
 describe("AuthService - 登出所有设备", () => {
   beforeEach(async () => {
-    const userRepo = getUserRepository();
-    const sessionRepo = getUserSessionRepository();
+    enableMockDatabase();
+    clearMockDatabase();
+  });
 
-    await userRepo.deleteAll?.();
-    await sessionRepo.deleteAll?.();
+  afterEach(() => {
+    disableMockDatabase();
   });
 
   it("应该成功登出所有设备", async () => {
@@ -608,15 +574,15 @@ describe("AuthService - 登出所有设备", () => {
     });
 
     // 创建多个会话
-    const session1 = await sessionRepo.create(user.id, {
+    await sessionRepo.create(user.id, {
       ipAddress: "127.0.0.1",
       userAgent: "Device 1",
     });
-    const session2 = await sessionRepo.create(user.id, {
+    await sessionRepo.create(user.id, {
       ipAddress: "127.0.0.2",
       userAgent: "Device 2",
     });
-    const session3 = await sessionRepo.create(user.id, {
+    await sessionRepo.create(user.id, {
       ipAddress: "127.0.0.3",
       userAgent: "Device 3",
     });

@@ -364,6 +364,17 @@ export class AdminSessionRepository {
   }
 
   /**
+   * 根据 ID 查找会话
+   */
+  async findById(sessionId: string): Promise<AdminSession | null> {
+    const [session] = await this.db
+      .select()
+      .from(adminSessions)
+      .where(eq(adminSessions.id, sessionId));
+    return session ?? null;
+  }
+
+  /**
    * 获取管理员的所有会话
    */
   async findByAdminId(adminId: string): Promise<AdminSession[]> {

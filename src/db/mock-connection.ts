@@ -85,7 +85,14 @@ function extractOperator(chunks: unknown[]): string | null {
     if (isStringChunk(chunk)) {
       const text = chunk.value.join("");
       const trimmed = text.trim();
-      if (trimmed === "=" || trimmed === ">" || trimmed === "<" || trimmed === ">=" || trimmed === "<=" || trimmed === "!=") {
+      if (
+        trimmed === "=" ||
+        trimmed === ">" ||
+        trimmed === "<" ||
+        trimmed === ">=" ||
+        trimmed === "<=" ||
+        trimmed === "!="
+      ) {
         return trimmed;
       }
     }
@@ -309,6 +316,31 @@ class MockQueryBuilder {
     // 应用 where 条件
     for (const condition of this.whereConditions) {
       results = results.filter(condition);
+    }
+
+    // 检查是否为聚合查询（字段映射包含 count 等聚合字段）
+    const fieldsMapping = (this as unknown as Record<string, unknown>).__fieldsMapping;
+    if (fieldsMapping && typeof fieldsMapping === "object") {
+      const mapping = fieldsMapping as Record<string, unknown>;
+      const aggregated: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(mapping)) {
+        // 检测是否为 count(*) 类型的 SQL 聚合
+        if (isDrizzleSQL(value)) {
+          const chunks = (value as { queryChunks: unknown[] }).queryChunks;
+          const sqlText = chunks
+            .filter(isStringChunk)
+            .map((c) => (c as { value: string[] }).value.join(""))
+            .join("");
+          if (sqlText.toLowerCase().includes("count")) {
+            aggregated[key] = results.length;
+          } else {
+            aggregated[key] = null;
+          }
+        } else {
+          aggregated[key] = null;
+        }
+      }
+      return [aggregated];
     }
 
     // 应用 offset
@@ -580,11 +612,26 @@ function createTableProxy(tableName: string) {
  * 模拟 Drizzle ORM 的 API
  */
 export const mockDb = {
-  select: (table?: unknown) => {
-    const tableName = table ? getTableName(table) : "unknown";
+  select: (fields?: unknown) => {
+    // 检测是否传入了字段映射对象（如 { count: sql`count(*)::int` }）
+    // 注意: getTableName 对非表对象返回 "unknown"，不能用 !getTableName 判断
+    const isFieldsMapping =
+      fields !== null &&
+      fields !== undefined &&
+      typeof fields === "object" &&
+      !Array.isArray(fields) &&
+      getTableName(fields) === "unknown";
+    const tableName = !isFieldsMapping && fields ? getTableName(fields) : "unknown";
+
     return {
-      from: (_fromTable: unknown) =>
-        new MockQueryBuilder(getTableName(_fromTable) || tableName),
+      from: (_fromTable: unknown) => {
+        const builder = new MockQueryBuilder(getTableName(_fromTable) || tableName);
+        if (isFieldsMapping) {
+          // 标记为聚合查询，后续 execute 时返回 count
+          (builder as unknown as Record<string, unknown>).__fieldsMapping = fields;
+        }
+        return builder;
+      },
     };
   },
 
@@ -623,9 +670,13 @@ let realGetDatabase: (() => Database) | null = null;
  * 启用 Mock 模式
  *
  * 在测试开始时调用
+ * 同时设置全局标志，使 getDatabase() 自动返回 mock 数据库
  */
 export function enableMockDatabase(): void {
   useMock = true;
+  const g = globalThis as Record<string, unknown>;
+  g.__OPENCLAW_MOCK_ENABLED__ = true;
+  g.__OPENCLAW_MOCK_DB__ = mockDb;
   console.log("[mock-db] Mock database enabled");
 }
 
@@ -636,6 +687,9 @@ export function enableMockDatabase(): void {
  */
 export function disableMockDatabase(): void {
   useMock = false;
+  const g = globalThis as Record<string, unknown>;
+  g.__OPENCLAW_MOCK_ENABLED__ = false;
+  g.__OPENCLAW_MOCK_DB__ = undefined;
   console.log("[mock-db] Mock database disabled");
 }
 

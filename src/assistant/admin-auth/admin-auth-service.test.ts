@@ -4,7 +4,7 @@
  * 测试管理员登录、Token 刷新、登出等认证流程
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from "vitest";
 import {
   clearMockDatabase,
   disableMockDatabase,
@@ -25,6 +25,29 @@ import {
   getAdminSessionRepository,
   getAdminLoginAttemptRepository,
 } from "../../db/index.js";
+
+// 设置测试用 JWT_SECRET（admin-auth-service 内部调用 generateAdminAccessToken 需要）
+let originalJwtSecret: string | undefined;
+let originalAdminJwtSecret: string | undefined;
+
+beforeAll(() => {
+  originalJwtSecret = process.env["JWT_SECRET"];
+  originalAdminJwtSecret = process.env["ADMIN_JWT_SECRET"];
+  process.env["JWT_SECRET"] = "test-secret-key-for-admin-auth-service-testing-minimum-32-chars";
+});
+
+afterAll(() => {
+  if (originalJwtSecret !== undefined) {
+    process.env["JWT_SECRET"] = originalJwtSecret;
+  } else {
+    delete process.env["JWT_SECRET"];
+  }
+  if (originalAdminJwtSecret !== undefined) {
+    process.env["ADMIN_JWT_SECRET"] = originalAdminJwtSecret;
+  } else {
+    delete process.env["ADMIN_JWT_SECRET"];
+  }
+});
 
 describe("AdminAuthService - 管理员登录", () => {
   beforeEach(async () => {
@@ -339,11 +362,12 @@ describe("AdminAuthService - 管理员登录", () => {
 
 describe("AdminAuthService - Token 刷新", () => {
   beforeEach(async () => {
-    const adminRepo = getAdminRepository();
-    const sessionRepo = getAdminSessionRepository();
+    enableMockDatabase();
+    clearMockDatabase();
+  });
 
-    await adminRepo.deleteAll?.();
-    await sessionRepo.deleteAll?.();
+  afterEach(() => {
+    disableMockDatabase();
   });
 
   it("应该成功刷新 Token", async () => {
@@ -433,11 +457,12 @@ describe("AdminAuthService - Token 刷新", () => {
 
 describe("AdminAuthService - 登出", () => {
   beforeEach(async () => {
-    const adminRepo = getAdminRepository();
-    const sessionRepo = getAdminSessionRepository();
+    enableMockDatabase();
+    clearMockDatabase();
+  });
 
-    await adminRepo.deleteAll?.();
-    await sessionRepo.deleteAll?.();
+  afterEach(() => {
+    disableMockDatabase();
   });
 
   it("应该成功登出", async () => {
@@ -487,11 +512,12 @@ describe("AdminAuthService - 登出", () => {
 
 describe("AdminAuthService - 登出所有设备", () => {
   beforeEach(async () => {
-    const adminRepo = getAdminRepository();
-    const sessionRepo = getAdminSessionRepository();
+    enableMockDatabase();
+    clearMockDatabase();
+  });
 
-    await adminRepo.deleteAll?.();
-    await sessionRepo.deleteAll?.();
+  afterEach(() => {
+    disableMockDatabase();
   });
 
   it("应该成功登出所有设备", async () => {
@@ -550,8 +576,12 @@ describe("AdminAuthService - 登出所有设备", () => {
 
 describe("AdminAuthService - 获取管理员信息", () => {
   beforeEach(async () => {
-    const adminRepo = getAdminRepository();
-    await adminRepo.deleteAll?.();
+    enableMockDatabase();
+    clearMockDatabase();
+  });
+
+  afterEach(() => {
+    disableMockDatabase();
   });
 
   it("应该成功获取管理员信息", async () => {
