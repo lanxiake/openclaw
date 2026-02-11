@@ -16,7 +16,7 @@ import {
   maxAsk,
   minSecurity,
   resolveExecApprovalsFromFile,
-} from "../../infra/exec-approvals.js";
+} from "../../infra/exec/exec-approvals.js";
 import { buildNodeShellCommand } from "../../infra/node-shell.js";
 
 type NodesRunOpts = NodesRpcOpts & {

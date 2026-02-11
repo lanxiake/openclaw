@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import * as ssrf from "../../infra/net/ssrf.js";
+import * as ssrf from "../../infra/network/net/ssrf.js";
 
 const lookupMock = vi.fn();
 const resolvePinnedHostname = ssrf.resolvePinnedHostname;

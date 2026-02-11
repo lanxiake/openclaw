@@ -1,7 +1,7 @@
 import { resolveGatewayPort } from "../../../config/config.js";
 import type { OpenClawConfig, ConfigFileSnapshot } from "../../../config/types.js";
 import type { GatewayProbeResult } from "../../../gateway/probe.js";
-import { pickPrimaryTailnetIPv4 } from "../../../infra/tailnet.js";
+import { pickPrimaryTailnetIPv4 } from "../../../infra/network/tailnet.js";
 import { colorize, theme } from "../../../shared/terminal/theme.js";
 
 type TargetKind = "explicit" | "configRemote" | "localLoopback" | "sshTunnel";

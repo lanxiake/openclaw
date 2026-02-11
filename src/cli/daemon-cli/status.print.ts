@@ -9,7 +9,7 @@ import {
   isSystemdUnavailableDetail,
   renderSystemdUnavailableHints,
 } from "../../platform/daemon/systemd-hints.js";
-import { isWSLEnv } from "../../infra/wsl.js";
+import { isWSLEnv } from "../../infra/network/wsl.js";
 import { getResolvedLoggerSettings } from "../../logging.js";
 import { defaultRuntime } from "../../runtime.js";
 import { colorize, isRich, theme } from "../../shared/terminal/theme.js";

@@ -1,19 +1,19 @@
-import type { OpenClawConfig } from "../config/config.js";
-import { loadConfig } from "../config/config.js";
-import { loadSessionStore, resolveStorePath } from "../config/sessions.js";
+import type { OpenClawConfig } from "../../config/config.js";
+import { loadConfig } from "../../config/config.js";
+import { loadSessionStore, resolveStorePath } from "../../config/sessions.js";
 import type {
   ExecApprovalForwardingConfig,
   ExecApprovalForwardTarget,
-} from "../config/types.approvals.js";
-import { createSubsystemLogger } from "../shared/logging/subsystem.js";
-import { parseAgentSessionKey } from "../messaging/routing/session-key.js";
+} from "../../config/types.approvals.js";
+import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
+import { parseAgentSessionKey } from "../../messaging/routing/session-key.js";
 import {
   isDeliverableMessageChannel,
   normalizeMessageChannel,
-} from "../shared/utils/message-channel.js";
+} from "../../shared/utils/message-channel.js";
 import type { ExecApprovalDecision } from "./exec-approvals.js";
-import { deliverOutboundPayloads } from "../messaging/outbound/deliver.js";
-import { resolveSessionDeliveryTarget } from "../messaging/outbound/targets.js";
+import { deliverOutboundPayloads } from "../../messaging/outbound/deliver.js";
+import { resolveSessionDeliveryTarget } from "../../messaging/outbound/targets.js";
 
 const log = createSubsystemLogger("gateway/exec-approvals");
 

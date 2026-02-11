@@ -2,7 +2,7 @@ import { resolveIsNixMode } from "../../config/paths.js";
 import { resolveGatewayService } from "../../platform/daemon/service.js";
 import { isSystemdUserServiceAvailable } from "../../platform/daemon/systemd.js";
 import { renderSystemdUnavailableHints } from "../../platform/daemon/systemd-hints.js";
-import { isWSL } from "../../infra/wsl.js";
+import { isWSL } from "../../infra/network/wsl.js";
 import { defaultRuntime } from "../../runtime.js";
 import { buildDaemonServiceSnapshot, createNullWriter, emitDaemonActionJson } from "./response.js";
 import { renderGatewayServiceStartHints } from "./shared.js";

@@ -1,4 +1,4 @@
-import { logDebug } from "../logger.js";
+import { logDebug } from "../../logger.js";
 
 import { formatBonjourError } from "./bonjour-errors.js";
 

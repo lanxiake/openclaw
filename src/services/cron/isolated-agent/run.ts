@@ -47,7 +47,7 @@ import { resolveSessionTranscriptPath, updateSessionStore } from "../../../confi
 import type { AgentDefaultsConfig } from "../../../config/types.js";
 import { registerAgentRunContext } from "../../../infra/agent-events.js";
 import { deliverOutboundPayloads } from "../../../messaging/outbound/deliver.js";
-import { getRemoteSkillEligibility } from "../../../infra/skills-remote.js";
+import { getRemoteSkillEligibility } from "../../../services/skills-remote/skills-remote.js";
 import {
   buildAgentMainSessionKey,
   normalizeAgentId,

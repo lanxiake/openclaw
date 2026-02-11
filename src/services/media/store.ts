@@ -6,7 +6,7 @@ import { request as httpsRequest } from "node:https";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { resolveConfigDir } from "../../utils.js";
-import { resolvePinnedHostname } from "../../infra/net/ssrf.js";
+import { resolvePinnedHostname } from "../../infra/network/net/ssrf.js";
 import { detectMime, extensionForMime } from "./mime.js";
 
 const resolveMediaDir = () => path.join(resolveConfigDir(), "media");

@@ -2,25 +2,25 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { resolveDefaultAgentId } from "../agent/agent-scope.js";
-import type { OpenClawConfig } from "../config/config.js";
+import { resolveDefaultAgentId } from "../../agent/agent-scope.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import {
   resolveLegacyStateDirs,
   resolveNewStateDir,
   resolveOAuthDir,
   resolveStateDir,
-} from "../config/paths.js";
-import type { SessionEntry } from "../config/sessions.js";
-import type { SessionScope } from "../config/sessions/types.js";
-import { saveSessionStore } from "../config/sessions.js";
-import { createSubsystemLogger } from "../shared/logging/subsystem.js";
+} from "../../config/paths.js";
+import type { SessionEntry } from "../../config/sessions.js";
+import type { SessionScope } from "../../config/sessions/types.js";
+import { saveSessionStore } from "../../config/sessions.js";
+import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import {
   buildAgentMainSessionKey,
   DEFAULT_ACCOUNT_ID,
   DEFAULT_MAIN_KEY,
   normalizeAgentId,
-} from "../messaging/routing/session-key.js";
-import { canonicalizeMainSessionAlias } from "../config/sessions/main-session.js";
+} from "../../messaging/routing/session-key.js";
+import { canonicalizeMainSessionAlias } from "../../config/sessions/main-session.js";
 import {
   ensureDir,
   existsDir,

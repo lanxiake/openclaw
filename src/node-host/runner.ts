@@ -23,13 +23,13 @@ import {
   type ExecApprovalsFile,
   type ExecAllowlistEntry,
   type ExecCommandSegment,
-} from "../infra/exec-approvals.js";
+} from "../infra/exec/exec-approvals.js";
 import {
   requestExecHostViaSocket,
   type ExecHostRequest,
   type ExecHostResponse,
   type ExecHostRunResult,
-} from "../infra/exec-host.js";
+} from "../infra/exec/exec-host.js";
 import { getMachineDisplayName } from "../infra/machine-name.js";
 import { loadOrCreateDeviceIdentity } from "../infra/device-identity.js";
 import { loadConfig } from "../config/config.js";

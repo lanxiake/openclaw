@@ -6,7 +6,10 @@ import type {
   ChannelPlugin,
 } from "../../../channels/core/plugins/types.js";
 import { withProgress } from "../../progress.js";
-import { formatUsageReportLines, loadProviderUsageSummary } from "../../../infra/provider-usage.js";
+import {
+  formatUsageReportLines,
+  loadProviderUsageSummary,
+} from "../../../infra/provider-usage/provider-usage.js";
 import { defaultRuntime, type RuntimeEnv } from "../../../runtime.js";
 import { formatDocsLink } from "../../../shared/terminal/links.js";
 import { theme } from "../../../shared/terminal/theme.js";

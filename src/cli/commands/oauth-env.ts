@@ -1,4 +1,4 @@
-import { isWSLEnv } from "../../infra/wsl.js";
+import { isWSLEnv } from "../../infra/network/wsl.js";
 
 export function isRemoteEnvironment(): boolean {
   if (process.env.SSH_CLIENT || process.env.SSH_TTY || process.env.SSH_CONNECTION) {

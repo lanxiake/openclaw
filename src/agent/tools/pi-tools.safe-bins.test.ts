@@ -3,11 +3,11 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import type { OpenClawConfig } from "../../config/config.js";
-import type { ExecApprovalsResolved } from "../../infra/exec-approvals.js";
+import type { ExecApprovalsResolved } from "../../infra/exec/exec-approvals.js";
 import { createOpenClawCodingTools } from "./pi-tools.js";
 
 vi.mock("../infra/exec-approvals.js", async (importOriginal) => {
-  const mod = await importOriginal<typeof import("../../infra/exec-approvals.js")>();
+  const mod = await importOriginal<typeof import("../../infra/exec/exec-approvals.js")>();
   const approvals: ExecApprovalsResolved = {
     path: "/tmp/exec-approvals.json",
     socketPath: "/tmp/exec-approvals.sock",

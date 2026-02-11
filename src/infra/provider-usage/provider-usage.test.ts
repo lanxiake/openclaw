@@ -1,8 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { withTempHome } from "../../test/helpers/temp-home.js";
-import { ensureAuthProfileStore, listProfilesForProvider } from "../agent/models/auth-profiles.js";
+import { withTempHome } from "../../../test/helpers/temp-home.js";
+import {
+  ensureAuthProfileStore,
+  listProfilesForProvider,
+} from "../../agent/models/auth-profiles.js";
 import {
   formatUsageReportLines,
   formatUsageSummaryLine,

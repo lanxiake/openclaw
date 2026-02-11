@@ -93,7 +93,7 @@ vi.mock("../infra/tailnet.js", () => ({
 }));
 
 vi.mock("../infra/ssh-tunnel.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../infra/ssh-tunnel.js")>();
+  const actual = await importOriginal<typeof import("../../infra/network/ssh-tunnel.js")>();
   return {
     ...actual,
     startSshPortForward: (opts: unknown) => startSshPortForward(opts),

@@ -4,7 +4,7 @@ import type { Duplex } from "node:stream";
 
 import WebSocket, { WebSocketServer } from "ws";
 
-import { rawDataToString } from "../../infra/ws.js";
+import { rawDataToString } from "../../infra/network/ws.js";
 
 type CdpCommand = {
   id: number;

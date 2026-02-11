@@ -7,7 +7,7 @@ import {
   GATEWAY_CLIENT_NAMES,
 } from "../../../shared/utils/message-channel.js";
 import type { EventFrame } from "../../../gateway/protocol/index.js";
-import type { ExecApprovalDecision } from "../../../infra/exec-approvals.js";
+import type { ExecApprovalDecision } from "../../../infra/exec/exec-approvals.js";
 import { createDiscordClient } from "../send.shared.js";
 import { logDebug, logError } from "../../../logger.js";
 import type { DiscordExecApprovalConfig } from "../../../config/types.discord.js";

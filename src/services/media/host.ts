@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
-import { ensurePortAvailable, PortInUseError } from "../../infra/ports.js";
-import { getTailnetHostname } from "../../infra/tailscale.js";
+import { ensurePortAvailable, PortInUseError } from "../../infra/network/ports.js";
+import { getTailnetHostname } from "../../infra/network/tailscale.js";
 import { logInfo } from "../../logger.js";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
 import { formatCliCommand } from "../../cli/command-format.js";

@@ -4,7 +4,7 @@ import { buildWorkspaceSkillStatus } from "../../agent/skills/skills-status.js";
 import { loadWorkspaceSkillEntries, type SkillEntry } from "../../agent/skills/skills.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { loadConfig, writeConfigFile } from "../../config/config.js";
-import { getRemoteSkillEligibility } from "../../infra/skills-remote.js";
+import { getRemoteSkillEligibility } from "../../services/skills-remote/skills-remote.js";
 import {
   ErrorCodes,
   errorShape,

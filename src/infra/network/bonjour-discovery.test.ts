@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { runCommandWithTimeout } from "./process/exec.js";
+import type { runCommandWithTimeout } from "../process/exec.js";
 import { discoverGatewayBeacons } from "./bonjour-discovery.js";
 
 const WIDE_AREA_DOMAIN = "openclaw.internal.";

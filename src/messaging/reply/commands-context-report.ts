@@ -11,7 +11,7 @@ import { resolveDefaultModelForAgent } from "../../agent/models/model-selection.
 import { buildToolSummaryMap } from "../../agent/tools/tool-summaries.js";
 import { resolveBootstrapContextForRun } from "../../agent/runtime/bootstrap-files.js";
 import type { SessionSystemPromptReport } from "../../config/sessions/types.js";
-import { getRemoteSkillEligibility } from "../../infra/skills-remote.js";
+import { getRemoteSkillEligibility } from "../../services/skills-remote/skills-remote.js";
 import { buildTtsSystemPromptHint } from "../../services/tts/tts.js";
 import type { ReplyPayload } from "../types.js";
 import type { HandleCommandsParams } from "./commands-types.js";

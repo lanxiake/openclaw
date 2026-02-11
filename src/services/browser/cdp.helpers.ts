@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 
-import { rawDataToString } from "../../infra/ws.js";
+import { rawDataToString } from "../../infra/network/ws.js";
 
 type CdpResponse = {
   id: number;

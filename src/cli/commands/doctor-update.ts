@@ -1,4 +1,4 @@
-import { runGatewayUpdate } from "../../infra/update-runner.js";
+import { runGatewayUpdate } from "../../infra/update/update-runner.js";
 import { isTruthyEnvValue } from "../../infra/env.js";
 import { runCommandWithTimeout } from "../../infra/process/exec.js";
 import type { RuntimeEnv } from "../../runtime.js";

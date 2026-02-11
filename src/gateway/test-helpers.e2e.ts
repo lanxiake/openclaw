@@ -5,7 +5,7 @@ import {
   publicKeyRawBase64UrlFromPem,
   signDevicePayload,
 } from "../infra/device-identity.js";
-import { rawDataToString } from "../infra/ws.js";
+import { rawDataToString } from "../infra/network/ws.js";
 import { getDeterministicFreePortBlock } from "../test-utils/ports.js";
 import {
   GATEWAY_CLIENT_MODES,

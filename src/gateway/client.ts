@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { WebSocket, type ClientOptions, type CertMeta } from "ws";
 import { normalizeFingerprint } from "../infra/tls/fingerprint.js";
-import { rawDataToString } from "../infra/ws.js";
+import { rawDataToString } from "../infra/network/ws.js";
 import { logDebug, logError } from "../logger.js";
 import type { DeviceIdentity } from "../infra/device-identity.js";
 import {

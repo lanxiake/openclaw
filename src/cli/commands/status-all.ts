@@ -12,16 +12,16 @@ import { probeGateway } from "../../gateway/probe.js";
 import { collectChannelStatusIssues } from "../../infra/channels-status-issues.js";
 import { resolveOpenClawPackageRoot } from "../../infra/openclaw-root.js";
 import { resolveOsSummary } from "../../infra/os-summary.js";
-import { inspectPortUsage } from "../../infra/ports.js";
+import { inspectPortUsage } from "../../infra/network/ports.js";
 import { readRestartSentinel } from "../../infra/restart-sentinel.js";
-import { readTailscaleStatusJson } from "../../infra/tailscale.js";
-import { checkUpdateStatus, compareSemverStrings } from "../../infra/update-check.js";
+import { readTailscaleStatusJson } from "../../infra/network/tailscale.js";
+import { checkUpdateStatus, compareSemverStrings } from "../../infra/update/update-check.js";
 import {
   formatUpdateChannelLabel,
   normalizeUpdateChannel,
   resolveEffectiveUpdateChannel,
-} from "../../infra/update-channels.js";
-import { getRemoteSkillEligibility } from "../../infra/skills-remote.js";
+} from "../../infra/update/update-channels.js";
+import { getRemoteSkillEligibility } from "../../services/skills-remote/skills-remote.js";
 import { runExec } from "../../infra/process/exec.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { VERSION } from "../../version.js";

@@ -14,7 +14,7 @@ import type { GatewayWsLogStyle } from "../../gateway/ws-logging.js";
 import { setGatewayWsLogStyle } from "../../gateway/ws-logging.js";
 import { setVerbose } from "../../globals.js";
 import { GatewayLockError } from "../../infra/gateway-lock.js";
-import { formatPortDiagnostics, inspectPortUsage } from "../../infra/ports.js";
+import { formatPortDiagnostics, inspectPortUsage } from "../../infra/network/ports.js";
 import {
   setConsoleSubsystemFilter,
   setConsoleTimestampPrefix,

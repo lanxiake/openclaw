@@ -4,7 +4,7 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 
-import { DEFAULT_AGENT_ID } from "../messaging/routing/session-key.js";
+import { DEFAULT_AGENT_ID } from "../../messaging/routing/session-key.js";
 
 export type ExecHost = "sandbox" | "gateway" | "node";
 export type ExecSecurity = "deny" | "allowlist" | "full";

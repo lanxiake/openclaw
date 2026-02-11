@@ -14,7 +14,7 @@ import type { GatewayServiceRuntime } from "../../platform/daemon/service-runtim
 import { isSystemdUserServiceAvailable } from "../../platform/daemon/systemd.js";
 import { renderSystemdUnavailableHints } from "../../platform/daemon/systemd-hints.js";
 import { resolveIsNixMode } from "../../config/paths.js";
-import { isWSL } from "../../infra/wsl.js";
+import { isWSL } from "../../infra/network/wsl.js";
 import { loadNodeHostConfig } from "../../node-host/config.js";
 import { defaultRuntime } from "../../runtime.js";
 import { colorize, isRich, theme } from "../../shared/terminal/theme.js";

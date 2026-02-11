@@ -22,7 +22,7 @@ import {
   formatUsageWindowSummary,
   loadProviderUsageSummary,
   resolveUsageProviderId,
-} from "../../infra/provider-usage.js";
+} from "../../infra/provider-usage/provider-usage.js";
 import { normalizeGroupActivation } from "../group-activation.js";
 import { buildStatusMessage } from "../status.js";
 import type { ElevatedLevel, ReasoningLevel, ThinkLevel, VerboseLevel } from "../thinking.js";

@@ -5,7 +5,7 @@ import { normalizeControlUiBasePath } from "../../gateway/control-ui-shared.js";
 import { probeGateway } from "../../gateway/probe.js";
 import { collectChannelStatusIssues } from "../../infra/channels-status-issues.js";
 import { resolveOsSummary } from "../../infra/os-summary.js";
-import { getTailnetHostname } from "../../infra/tailscale.js";
+import { getTailnetHostname } from "../../infra/network/tailscale.js";
 import type { MemoryIndexManager } from "../../services/memory/manager.js";
 import { runExec } from "../../infra/process/exec.js";
 import type { RuntimeEnv } from "../../runtime.js";

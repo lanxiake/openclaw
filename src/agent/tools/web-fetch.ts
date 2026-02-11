@@ -6,7 +6,7 @@ import {
   createPinnedDispatcher,
   resolvePinnedHostname,
   SsrFBlockedError,
-} from "../../infra/net/ssrf.js";
+} from "../../infra/network/net/ssrf.js";
 import type { Dispatcher } from "undici";
 import { stringEnum } from "./schema/typebox.js";
 import type { AnyAgentTool } from "./common.js";

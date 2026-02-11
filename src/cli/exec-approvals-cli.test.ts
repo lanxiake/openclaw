@@ -49,7 +49,7 @@ vi.mock("../runtime.js", () => ({
 }));
 
 vi.mock("../infra/exec-approvals.js", async () => {
-  const actual = await vi.importActual<typeof import("../infra/exec-approvals.js")>(
+  const actual = await vi.importActual<typeof import("../infra/exec/exec-approvals.js")>(
     "../infra/exec-approvals.js",
   );
   return {
@@ -115,7 +115,7 @@ describe("exec approvals CLI", () => {
     runtimeErrors.length = 0;
     callGatewayFromCli.mockClear();
 
-    const execApprovals = await import("../infra/exec-approvals.js");
+    const execApprovals = await import("../infra/exec/exec-approvals.js");
     const saveExecApprovals = vi.mocked(execApprovals.saveExecApprovals);
     saveExecApprovals.mockClear();
 

@@ -1,10 +1,10 @@
 import { withProgress } from "../progress.js";
 import { loadConfig, resolveGatewayPort } from "../../config/config.js";
 import { probeGateway } from "../../gateway/probe.js";
-import { discoverGatewayBeacons } from "../../infra/bonjour-discovery.js";
-import { resolveWideAreaDiscoveryDomain } from "../../infra/widearea-dns.js";
-import { resolveSshConfig } from "../../infra/ssh-config.js";
-import { parseSshTarget, startSshPortForward } from "../../infra/ssh-tunnel.js";
+import { discoverGatewayBeacons } from "../../infra/network/bonjour-discovery.js";
+import { resolveWideAreaDiscoveryDomain } from "../../infra/network/widearea-dns.js";
+import { resolveSshConfig } from "../../infra/network/ssh-config.js";
+import { parseSshTarget, startSshPortForward } from "../../infra/network/ssh-tunnel.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { colorize, isRich, theme } from "../../shared/terminal/theme.js";
 

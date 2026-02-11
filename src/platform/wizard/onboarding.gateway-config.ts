@@ -1,7 +1,7 @@
 import { normalizeGatewayTokenInput, randomToken } from "../../cli/commands/onboard-helpers.js";
 import type { GatewayAuthChoice } from "../../cli/commands/onboard-types.js";
 import type { GatewayBindMode, GatewayTailscaleMode, OpenClawConfig } from "../../config/config.js";
-import { findTailscaleBinary } from "../../infra/tailscale.js";
+import { findTailscaleBinary } from "../../infra/network/tailscale.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import type {
   GatewayWizardSettings,

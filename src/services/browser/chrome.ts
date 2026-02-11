@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import WebSocket from "ws";
 
-import { ensurePortAvailable } from "../../infra/ports.js";
+import { ensurePortAvailable } from "../../infra/network/ports.js";
 import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import { CONFIG_DIR } from "../../utils.js";
 import { getHeadersWithAuth, normalizeCdpWsUrl } from "./cdp.js";

@@ -1,6 +1,6 @@
 import type { OpenClawConfig } from "../../config/config.js";
 import { resolveGatewayPort } from "../../config/config.js";
-import { findTailscaleBinary } from "../../infra/tailscale.js";
+import { findTailscaleBinary } from "../../infra/network/tailscale.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { note } from "../../shared/terminal/note.js";
 import { buildGatewayAuthConfig } from "./configure.gateway-auth.js";

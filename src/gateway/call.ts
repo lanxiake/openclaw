@@ -6,7 +6,7 @@ import {
   resolveGatewayPort,
   resolveStateDir,
 } from "../config/config.js";
-import { pickPrimaryTailnetIPv4 } from "../infra/tailnet.js";
+import { pickPrimaryTailnetIPv4 } from "../infra/network/tailnet.js";
 import { loadOrCreateDeviceIdentity } from "../infra/device-identity.js";
 import {
   GATEWAY_CLIENT_MODES,

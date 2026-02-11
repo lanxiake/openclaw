@@ -3,7 +3,7 @@ import {
   closeDispatcher,
   createPinnedDispatcher,
   resolvePinnedHostname,
-} from "../../infra/net/ssrf.js";
+} from "../../infra/network/net/ssrf.js";
 import type { Dispatcher } from "undici";
 
 type CanvasModule = typeof import("@napi-rs/canvas");

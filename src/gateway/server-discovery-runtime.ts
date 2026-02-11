@@ -1,6 +1,9 @@
-import { startGatewayBonjourAdvertiser } from "../infra/bonjour.js";
-import { pickPrimaryTailnetIPv4, pickPrimaryTailnetIPv6 } from "../infra/tailnet.js";
-import { resolveWideAreaDiscoveryDomain, writeWideAreaGatewayZone } from "../infra/widearea-dns.js";
+import { startGatewayBonjourAdvertiser } from "../infra/network/bonjour.js";
+import { pickPrimaryTailnetIPv4, pickPrimaryTailnetIPv6 } from "../infra/network/tailnet.js";
+import {
+  resolveWideAreaDiscoveryDomain,
+  writeWideAreaGatewayZone,
+} from "../infra/network/widearea-dns.js";
 import {
   formatBonjourInstanceName,
   resolveBonjourCliPath,

@@ -14,7 +14,7 @@ import {
   signDevicePayload,
 } from "../infra/device-identity.js";
 import { drainSystemEvents, peekSystemEvents } from "../infra/system-events.js";
-import { rawDataToString } from "../infra/ws.js";
+import { rawDataToString } from "../infra/network/ws.js";
 import { resetLogger, setLoggerOverride } from "../logging.js";
 import { DEFAULT_AGENT_ID, toAgentStoreSessionKey } from "../messaging/routing/session-key.js";
 import { getDeterministicFreePortBlock } from "../test-utils/ports.js";

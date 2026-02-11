@@ -1,4 +1,4 @@
-import type { GatewayBonjourBeacon } from "../../infra/bonjour-discovery.js";
+import type { GatewayBonjourBeacon } from "../../infra/network/bonjour-discovery.js";
 import { colorize, theme } from "../../shared/terminal/theme.js";
 
 export type GatewayDiscoverOpts = {

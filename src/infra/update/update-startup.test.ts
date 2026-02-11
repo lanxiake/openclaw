@@ -43,7 +43,7 @@ describe("update-startup", () => {
   });
 
   it("logs update hint for npm installs when newer tag exists", async () => {
-    const { resolveOpenClawPackageRoot } = await import("./openclaw-root.js");
+    const { resolveOpenClawPackageRoot } = await import("../openclaw-root.js");
     const { checkUpdateStatus, resolveNpmChannelTag } = await import("./update-check.js");
     const { runGatewayUpdateCheck } = await import("./update-startup.js");
 
@@ -77,7 +77,7 @@ describe("update-startup", () => {
   });
 
   it("uses latest when beta tag is older than release", async () => {
-    const { resolveOpenClawPackageRoot } = await import("./openclaw-root.js");
+    const { resolveOpenClawPackageRoot } = await import("../openclaw-root.js");
     const { checkUpdateStatus, resolveNpmChannelTag } = await import("./update-check.js");
     const { runGatewayUpdateCheck } = await import("./update-startup.js");
 

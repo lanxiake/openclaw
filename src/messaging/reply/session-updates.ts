@@ -6,7 +6,7 @@ import { ensureSkillsWatcher, getSkillsSnapshotVersion } from "../../agent/skill
 import type { OpenClawConfig } from "../../config/config.js";
 import { type SessionEntry, updateSessionStore } from "../../config/sessions.js";
 import { buildChannelSummary } from "../../infra/channel-summary.js";
-import { getRemoteSkillEligibility } from "../../infra/skills-remote.js";
+import { getRemoteSkillEligibility } from "../../services/skills-remote/skills-remote.js";
 import { drainSystemEventEntries } from "../../infra/system-events.js";
 
 export async function prependSystemEvents(params: {

@@ -5,7 +5,7 @@ import {
   type RestartSentinelPayload,
   writeRestartSentinel,
 } from "../../infra/restart-sentinel.js";
-import { runGatewayUpdate } from "../../infra/update-runner.js";
+import { runGatewayUpdate } from "../../infra/update/update-runner.js";
 import {
   ErrorCodes,
   errorShape,

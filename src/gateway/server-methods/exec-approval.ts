@@ -1,5 +1,5 @@
-import type { ExecApprovalDecision } from "../../infra/exec-approvals.js";
-import type { ExecApprovalForwarder } from "../../infra/exec-approval-forwarder.js";
+import type { ExecApprovalDecision } from "../../infra/exec/exec-approvals.js";
+import type { ExecApprovalForwarder } from "../../infra/exec/exec-approval-forwarder.js";
 import type { ExecApprovalManager } from "../exec-approval-manager.js";
 import {
   ErrorCodes,

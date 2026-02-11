@@ -3,7 +3,7 @@ import {
   checkUpdateStatus,
   compareSemverStrings,
   type UpdateCheckResult,
-} from "../../infra/update-check.js";
+} from "../../infra/update/update-check.js";
 import { formatCliCommand } from "../command-format.js";
 import { VERSION } from "../../version.js";
 

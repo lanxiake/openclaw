@@ -31,7 +31,7 @@ import {
   loadProviderUsageSummary,
   resolveUsageProviderId,
   type UsageProviderId,
-} from "../../../infra/provider-usage.js";
+} from "../../../infra/provider-usage/provider-usage.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import { colorize, theme } from "../../../shared/terminal/theme.js";
 import { renderTable } from "../../../shared/terminal/table.js";

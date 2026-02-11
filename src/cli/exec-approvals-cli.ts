@@ -7,7 +7,7 @@ import {
   saveExecApprovals,
   type ExecApprovalsAgent,
   type ExecApprovalsFile,
-} from "../infra/exec-approvals.js";
+} from "../infra/exec/exec-approvals.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../shared/terminal/links.js";
 import { isRich, theme } from "../shared/terminal/theme.js";

@@ -2,7 +2,7 @@ import { createServer } from "node:net";
 import { createServer as createHttpsServer } from "node:https";
 import { afterEach, describe, expect, test } from "vitest";
 import { WebSocketServer } from "ws";
-import { rawDataToString } from "../infra/ws.js";
+import { rawDataToString } from "../infra/network/ws.js";
 import { GatewayClient } from "./client.js";
 
 // Find a free localhost port for ad-hoc WS servers.

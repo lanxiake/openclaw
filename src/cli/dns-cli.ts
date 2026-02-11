@@ -5,8 +5,11 @@ import path from "node:path";
 import type { Command } from "commander";
 
 import { loadConfig } from "../config/config.js";
-import { pickPrimaryTailnetIPv4, pickPrimaryTailnetIPv6 } from "../infra/tailnet.js";
-import { getWideAreaZonePath, resolveWideAreaDiscoveryDomain } from "../infra/widearea-dns.js";
+import { pickPrimaryTailnetIPv4, pickPrimaryTailnetIPv6 } from "../infra/network/tailnet.js";
+import {
+  getWideAreaZonePath,
+  resolveWideAreaDiscoveryDomain,
+} from "../infra/network/widearea-dns.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../shared/terminal/links.js";
 import { renderTable } from "../shared/terminal/table.js";

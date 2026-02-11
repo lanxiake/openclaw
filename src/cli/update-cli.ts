@@ -11,7 +11,7 @@ import {
   compareSemverStrings,
   fetchNpmTagVersion,
   resolveNpmChannelTag,
-} from "../infra/update-check.js";
+} from "../infra/update/update-check.js";
 import { parseSemver } from "../infra/runtime-guard.js";
 import {
   runGatewayUpdate,
@@ -19,14 +19,14 @@ import {
   type UpdateStepInfo,
   type UpdateStepResult,
   type UpdateStepProgress,
-} from "../infra/update-runner.js";
+} from "../infra/update/update-runner.js";
 import {
   detectGlobalInstallManagerByPresence,
   detectGlobalInstallManagerForRoot,
   globalInstallArgs,
   resolveGlobalPackageRoot,
   type GlobalInstallManager,
-} from "../infra/update-global.js";
+} from "../infra/update/update-global.js";
 import {
   channelToNpmTag,
   DEFAULT_GIT_CHANNEL,
@@ -34,7 +34,7 @@ import {
   formatUpdateChannelLabel,
   normalizeUpdateChannel,
   resolveEffectiveUpdateChannel,
-} from "../infra/update-channels.js";
+} from "../infra/update/update-channels.js";
 import { trimLogTail } from "../infra/restart-sentinel.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../shared/terminal/links.js";

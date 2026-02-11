@@ -2,7 +2,10 @@ import { withProgress } from "../progress.js";
 import { resolveGatewayPort } from "../../config/config.js";
 import { buildGatewayConnectionDetails, callGateway } from "../../gateway/call.js";
 import { info } from "../../globals.js";
-import { formatUsageReportLines, loadProviderUsageSummary } from "../../infra/provider-usage.js";
+import {
+  formatUsageReportLines,
+  loadProviderUsageSummary,
+} from "../../infra/provider-usage/provider-usage.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { runSecurityAudit } from "../../infra/security/audit.js";
 import { renderTable } from "../../shared/terminal/table.js";
@@ -37,7 +40,7 @@ import {
   formatUpdateChannelLabel,
   normalizeUpdateChannel,
   resolveEffectiveUpdateChannel,
-} from "../../infra/update-channels.js";
+} from "../../infra/update/update-channels.js";
 
 export async function statusCommand(
   opts: {

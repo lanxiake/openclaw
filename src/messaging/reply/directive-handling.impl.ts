@@ -7,7 +7,7 @@ import type { ModelAliasIndex } from "../../agent/models/model-selection.js";
 import { resolveSandboxRuntimeStatus } from "../../agent/sandbox/sandbox.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { type SessionEntry, updateSessionStore } from "../../config/sessions.js";
-import type { ExecAsk, ExecHost, ExecSecurity } from "../../infra/exec-approvals.js";
+import type { ExecAsk, ExecHost, ExecSecurity } from "../../infra/exec/exec-approvals.js";
 import { enqueueSystemEvent } from "../../infra/system-events.js";
 import { applyVerboseOverride } from "../../sessions/level-overrides.js";
 import { applyModelOverrideToSessionEntry } from "../../sessions/model-overrides.js";

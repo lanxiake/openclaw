@@ -1,4 +1,4 @@
-import { runCommandWithTimeout } from "./process/exec.js";
+import { runCommandWithTimeout } from "../process/exec.js";
 import { resolveWideAreaDiscoveryDomain } from "./widearea-dns.js";
 
 export type GatewayBonjourBeacon = {

@@ -45,7 +45,7 @@ import {
   emitAgentEvent,
   registerAgentRunContext,
 } from "../../infra/agent-events.js";
-import { getRemoteSkillEligibility } from "../../infra/skills-remote.js";
+import { getRemoteSkillEligibility } from "../../services/skills-remote/skills-remote.js";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
 import { formatCliCommand } from "../command-format.js";
 import { applyVerboseOverride } from "../../sessions/level-overrides.js";

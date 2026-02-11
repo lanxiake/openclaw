@@ -35,7 +35,7 @@ import {
   formatUsageWindowSummary,
   loadProviderUsageSummary,
   resolveUsageProviderId,
-} from "../../infra/provider-usage.js";
+} from "../../infra/provider-usage/provider-usage.js";
 import {
   buildAgentMainSessionKey,
   DEFAULT_AGENT_ID,

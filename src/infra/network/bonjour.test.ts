@@ -2,7 +2,7 @@ import os from "node:os";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import * as logging from "../logging.js";
+import * as logging from "../../logging.js";
 
 const mocks = vi.hoisted(() => ({
   createService: vi.fn(),
@@ -17,7 +17,7 @@ const asString = (value: unknown, fallback: string) =>
   typeof value === "string" && value.trim() ? value : fallback;
 
 vi.mock("../logger.js", async () => {
-  const actual = await vi.importActual<typeof import("../logger.js")>("../logger.js");
+  const actual = await vi.importActual<typeof import("../../logger.js")>("../logger.js");
   return {
     ...actual,
     logWarn: (message: string) => logWarn(message),

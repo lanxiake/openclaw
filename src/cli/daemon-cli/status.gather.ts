@@ -17,8 +17,8 @@ import {
   inspectPortUsage,
   type PortListener,
   type PortUsageStatus,
-} from "../../infra/ports.js";
-import { pickPrimaryTailnetIPv4 } from "../../infra/tailnet.js";
+} from "../../infra/network/ports.js";
+import { pickPrimaryTailnetIPv4 } from "../../infra/network/tailnet.js";
 import { probeGatewayStatus } from "./probe.js";
 import { normalizeListenerAddress, parsePortFromArgs, pickProbeHostForBind } from "./shared.js";
 import type { GatewayRpcOpts } from "./types.js";

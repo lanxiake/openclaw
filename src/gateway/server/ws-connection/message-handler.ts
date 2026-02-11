@@ -16,10 +16,13 @@ import {
   verifyDeviceToken,
 } from "../../../infra/device-pairing.js";
 import { updatePairedNodeMetadata } from "../../../infra/node-pairing.js";
-import { recordRemoteNodeInfo, refreshRemoteNodeBins } from "../../../infra/skills-remote.js";
+import {
+  recordRemoteNodeInfo,
+  refreshRemoteNodeBins,
+} from "../../../services/skills-remote/skills-remote.js";
 import { loadVoiceWakeConfig } from "../../../infra/voicewake.js";
 import { upsertPresence } from "../../../infra/system-presence.js";
-import { rawDataToString } from "../../../infra/ws.js";
+import { rawDataToString } from "../../../infra/network/ws.js";
 import type { createSubsystemLogger } from "../../../shared/logging/subsystem.js";
 import { isGatewayCliClient, isWebchatClient } from "../../../shared/utils/message-channel.js";
 import type { ResolvedGatewayAuth } from "../../auth.js";

@@ -1,7 +1,7 @@
 import { loadConfig } from "../../config/config.js";
 import type { CostUsageSummary } from "../../infra/session-cost-usage.js";
 import { loadCostUsageSummary } from "../../infra/session-cost-usage.js";
-import { loadProviderUsageSummary } from "../../infra/provider-usage.js";
+import { loadProviderUsageSummary } from "../../infra/provider-usage/provider-usage.js";
 import type { GatewayRequestHandlers } from "./types.js";
 
 const COST_USAGE_CACHE_TTL_MS = 30_000;

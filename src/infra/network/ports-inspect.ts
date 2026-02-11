@@ -1,5 +1,5 @@
 import net from "node:net";
-import { runCommandWithTimeout } from "./process/exec.js";
+import { runCommandWithTimeout } from "../process/exec.js";
 import { resolveLsofCommand } from "./ports-lsof.js";
 import { buildPortHints } from "./ports-format.js";
 import type { PortListener, PortUsage, PortUsageStatus } from "./ports-types.js";

@@ -1,6 +1,6 @@
 import type { ProgressReporter } from "../../progress.js";
 import { resolveGatewayLogPaths } from "../../../platform/daemon/launchd.js";
-import { formatPortDiagnostics } from "../../../infra/ports.js";
+import { formatPortDiagnostics } from "../../../infra/network/ports.js";
 import {
   type RestartSentinelPayload,
   summarizeRestartSentinel,

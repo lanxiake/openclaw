@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 
 import { afterEach, describe, expect, it } from "vitest";
 import { WebSocketServer } from "ws";
-import { rawDataToString } from "../../infra/ws.js";
+import { rawDataToString } from "../../infra/network/ws.js";
 import { createTargetViaCdp, evaluateJavaScript, normalizeCdpWsUrl, snapshotAria } from "./cdp.js";
 
 describe("cdp", () => {

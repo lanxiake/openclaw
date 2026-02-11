@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { getTailnetHostname } from "../infra/tailscale.js";
+import { getTailnetHostname } from "../infra/network/tailscale.js";
 import { runExec } from "../infra/process/exec.js";
 
 export type ResolveBonjourCliPathOptions = {

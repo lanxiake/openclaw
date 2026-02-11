@@ -25,8 +25,8 @@ import {
   primeRemoteSkillsCache,
   refreshRemoteBinsForConnectedNodes,
   setSkillsRemoteRegistry,
-} from "../infra/skills-remote.js";
-import { scheduleGatewayUpdateCheck } from "../infra/update-startup.js";
+} from "../services/skills-remote/skills-remote.js";
+import { scheduleGatewayUpdateCheck } from "../infra/update/update-startup.js";
 import { setGatewaySigusr1RestartPolicy } from "../infra/restart.js";
 import { startDiagnosticHeartbeat, stopDiagnosticHeartbeat } from "../shared/logging/diagnostic.js";
 import { createSubsystemLogger, runtimeForLogger } from "../shared/logging/subsystem.js";
@@ -44,7 +44,7 @@ import {
 import { startGatewayDiscovery } from "./server-discovery-runtime.js";
 import { ExecApprovalManager } from "./exec-approval-manager.js";
 import { createExecApprovalHandlers } from "./server-methods/exec-approval.js";
-import { createExecApprovalForwarder } from "../infra/exec-approval-forwarder.js";
+import { createExecApprovalForwarder } from "../infra/exec/exec-approval-forwarder.js";
 import type { startBrowserControlServerIfEnabled } from "./server-browser.js";
 import { createChannelManager } from "./server-channels.js";
 import { createAgentEventHandler } from "./server-chat.js";

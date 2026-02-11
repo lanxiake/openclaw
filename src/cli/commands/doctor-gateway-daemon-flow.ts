@@ -14,8 +14,8 @@ import {
 import { resolveGatewayService } from "../../platform/daemon/service.js";
 import { isSystemdUserServiceAvailable } from "../../platform/daemon/systemd.js";
 import { renderSystemdUnavailableHints } from "../../platform/daemon/systemd-hints.js";
-import { formatPortDiagnostics, inspectPortUsage } from "../../infra/ports.js";
-import { isWSL } from "../../infra/wsl.js";
+import { formatPortDiagnostics, inspectPortUsage } from "../../infra/network/ports.js";
+import { isWSL } from "../../infra/network/wsl.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { formatCliCommand } from "../command-format.js";
 import { note } from "../../shared/terminal/note.js";

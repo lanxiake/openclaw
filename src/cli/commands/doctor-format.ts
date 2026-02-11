@@ -9,7 +9,7 @@ import {
   renderSystemdUnavailableHints,
 } from "../../platform/daemon/systemd-hints.js";
 import { formatCliCommand } from "../command-format.js";
-import { isWSLEnv } from "../../infra/wsl.js";
+import { isWSLEnv } from "../../infra/network/wsl.js";
 import type { GatewayServiceRuntime } from "../../platform/daemon/service-runtime.js";
 import { getResolvedLoggerSettings } from "../../logging.js";
 

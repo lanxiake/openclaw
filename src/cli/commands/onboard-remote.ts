@@ -1,7 +1,7 @@
 import type { OpenClawConfig } from "../../config/config.js";
-import type { GatewayBonjourBeacon } from "../../infra/bonjour-discovery.js";
-import { discoverGatewayBeacons } from "../../infra/bonjour-discovery.js";
-import { resolveWideAreaDiscoveryDomain } from "../../infra/widearea-dns.js";
+import type { GatewayBonjourBeacon } from "../../infra/network/bonjour-discovery.js";
+import { discoverGatewayBeacons } from "../../infra/network/bonjour-discovery.js";
+import { resolveWideAreaDiscoveryDomain } from "../../infra/network/widearea-dns.js";
 import type { WizardPrompter } from "../../platform/wizard/prompts.js";
 import { detectBinary } from "./onboard-helpers.js";
 

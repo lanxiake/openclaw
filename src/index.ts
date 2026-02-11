@@ -26,7 +26,7 @@ import {
   ensurePortAvailable,
   handlePortError,
   PortInUseError,
-} from "./infra/ports.js";
+} from "./infra/network/ports.js";
 import { assertSupportedRuntime } from "./infra/runtime-guard.js";
 import { formatUncaughtError } from "./infra/errors.js";
 import { installUnhandledRejectionHandler } from "./infra/unhandled-rejections.js";

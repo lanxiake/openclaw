@@ -6,7 +6,7 @@ import {
   saveExecApprovals,
   type ExecApprovalsFile,
   type ExecApprovalsSnapshot,
-} from "../../infra/exec-approvals.js";
+} from "../../infra/exec/exec-approvals.js";
 import {
   ErrorCodes,
   errorShape,

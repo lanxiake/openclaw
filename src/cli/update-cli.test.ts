@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { UpdateRunResult } from "../infra/update-runner.js";
+import type { UpdateRunResult } from "../infra/update/update-runner.js";
 
 const confirm = vi.fn();
 const select = vi.fn();
@@ -32,7 +32,7 @@ vi.mock("../config/config.js", () => ({
 }));
 
 vi.mock("../infra/update-check.js", async () => {
-  const actual = await vi.importActual<typeof import("../infra/update-check.js")>(
+  const actual = await vi.importActual<typeof import("../infra/update/update-check.js")>(
     "../infra/update-check.js",
   );
   return {
@@ -91,7 +91,7 @@ describe("update-cli", () => {
     const { resolveOpenClawPackageRoot } = await import("../infra/openclaw-root.js");
     const { readConfigFileSnapshot } = await import("../config/config.js");
     const { checkUpdateStatus, fetchNpmTagVersion, resolveNpmChannelTag } =
-      await import("../infra/update-check.js");
+      await import("../infra/update/update-check.js");
     const { runCommandWithTimeout } = await import("../infra/process/exec.js");
     vi.mocked(resolveOpenClawPackageRoot).mockResolvedValue(process.cwd());
     vi.mocked(readConfigFileSnapshot).mockResolvedValue(baseSnapshot);
@@ -148,7 +148,7 @@ describe("update-cli", () => {
   }, 20_000);
 
   it("updateCommand runs update and outputs result", async () => {
-    const { runGatewayUpdate } = await import("../infra/update-runner.js");
+    const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
     const { defaultRuntime } = await import("../runtime.js");
     const { updateCommand } = await import("./update-cli.js");
 
@@ -201,7 +201,7 @@ describe("update-cli", () => {
   });
 
   it("defaults to dev channel for git installs when unset", async () => {
-    const { runGatewayUpdate } = await import("../infra/update-runner.js");
+    const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
     const { updateCommand } = await import("./update-cli.js");
 
     vi.mocked(runGatewayUpdate).mockResolvedValue({
@@ -227,8 +227,8 @@ describe("update-cli", () => {
       );
 
       const { resolveOpenClawPackageRoot } = await import("../infra/openclaw-root.js");
-      const { runGatewayUpdate } = await import("../infra/update-runner.js");
-      const { checkUpdateStatus } = await import("../infra/update-check.js");
+      const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
+      const { checkUpdateStatus } = await import("../infra/update/update-check.js");
       const { updateCommand } = await import("./update-cli.js");
 
       vi.mocked(resolveOpenClawPackageRoot).mockResolvedValue(tempDir);
@@ -262,7 +262,7 @@ describe("update-cli", () => {
 
   it("uses stored beta channel when configured", async () => {
     const { readConfigFileSnapshot } = await import("../config/config.js");
-    const { runGatewayUpdate } = await import("../infra/update-runner.js");
+    const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
     const { updateCommand } = await import("./update-cli.js");
 
     vi.mocked(readConfigFileSnapshot).mockResolvedValue({
@@ -293,10 +293,10 @@ describe("update-cli", () => {
 
       const { resolveOpenClawPackageRoot } = await import("../infra/openclaw-root.js");
       const { readConfigFileSnapshot } = await import("../config/config.js");
-      const { resolveNpmChannelTag } = await import("../infra/update-check.js");
-      const { runGatewayUpdate } = await import("../infra/update-runner.js");
+      const { resolveNpmChannelTag } = await import("../infra/update/update-check.js");
+      const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
       const { updateCommand } = await import("./update-cli.js");
-      const { checkUpdateStatus } = await import("../infra/update-check.js");
+      const { checkUpdateStatus } = await import("../infra/update/update-check.js");
 
       vi.mocked(resolveOpenClawPackageRoot).mockResolvedValue(tempDir);
       vi.mocked(readConfigFileSnapshot).mockResolvedValue({
@@ -345,7 +345,7 @@ describe("update-cli", () => {
       );
 
       const { resolveOpenClawPackageRoot } = await import("../infra/openclaw-root.js");
-      const { runGatewayUpdate } = await import("../infra/update-runner.js");
+      const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
       const { updateCommand } = await import("./update-cli.js");
 
       vi.mocked(resolveOpenClawPackageRoot).mockResolvedValue(tempDir);
@@ -366,7 +366,7 @@ describe("update-cli", () => {
   });
 
   it("updateCommand outputs JSON when --json is set", async () => {
-    const { runGatewayUpdate } = await import("../infra/update-runner.js");
+    const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
     const { defaultRuntime } = await import("../runtime.js");
     const { updateCommand } = await import("./update-cli.js");
 
@@ -395,7 +395,7 @@ describe("update-cli", () => {
   });
 
   it("updateCommand exits with error on failure", async () => {
-    const { runGatewayUpdate } = await import("../infra/update-runner.js");
+    const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
     const { defaultRuntime } = await import("../runtime.js");
     const { updateCommand } = await import("./update-cli.js");
 
@@ -416,7 +416,7 @@ describe("update-cli", () => {
   });
 
   it("updateCommand restarts daemon by default", async () => {
-    const { runGatewayUpdate } = await import("../infra/update-runner.js");
+    const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
     const { runDaemonRestart } = await import("./daemon-cli.js");
     const { updateCommand } = await import("./update-cli.js");
 
@@ -436,7 +436,7 @@ describe("update-cli", () => {
   });
 
   it("updateCommand skips restart when --no-restart is set", async () => {
-    const { runGatewayUpdate } = await import("../infra/update-runner.js");
+    const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
     const { runDaemonRestart } = await import("./daemon-cli.js");
     const { updateCommand } = await import("./update-cli.js");
 
@@ -455,7 +455,7 @@ describe("update-cli", () => {
   });
 
   it("updateCommand skips success message when restart does not run", async () => {
-    const { runGatewayUpdate } = await import("../infra/update-runner.js");
+    const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
     const { runDaemonRestart } = await import("./daemon-cli.js");
     const { defaultRuntime } = await import("../runtime.js");
     const { updateCommand } = await import("./update-cli.js");
@@ -492,7 +492,7 @@ describe("update-cli", () => {
 
   it("persists update channel when --channel is set", async () => {
     const { writeConfigFile } = await import("../config/config.js");
-    const { runGatewayUpdate } = await import("../infra/update-runner.js");
+    const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
     const { updateCommand } = await import("./update-cli.js");
 
     const mockResult: UpdateRunResult = {
@@ -524,11 +524,11 @@ describe("update-cli", () => {
       );
 
       const { resolveOpenClawPackageRoot } = await import("../infra/openclaw-root.js");
-      const { resolveNpmChannelTag } = await import("../infra/update-check.js");
-      const { runGatewayUpdate } = await import("../infra/update-runner.js");
+      const { resolveNpmChannelTag } = await import("../infra/update/update-check.js");
+      const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
       const { defaultRuntime } = await import("../runtime.js");
       const { updateCommand } = await import("./update-cli.js");
-      const { checkUpdateStatus } = await import("../infra/update-check.js");
+      const { checkUpdateStatus } = await import("../infra/update/update-check.js");
 
       vi.mocked(resolveOpenClawPackageRoot).mockResolvedValue(tempDir);
       vi.mocked(checkUpdateStatus).mockResolvedValue({
@@ -577,11 +577,11 @@ describe("update-cli", () => {
       );
 
       const { resolveOpenClawPackageRoot } = await import("../infra/openclaw-root.js");
-      const { resolveNpmChannelTag } = await import("../infra/update-check.js");
-      const { runGatewayUpdate } = await import("../infra/update-runner.js");
+      const { resolveNpmChannelTag } = await import("../infra/update/update-check.js");
+      const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
       const { defaultRuntime } = await import("../runtime.js");
       const { updateCommand } = await import("./update-cli.js");
-      const { checkUpdateStatus } = await import("../infra/update-check.js");
+      const { checkUpdateStatus } = await import("../infra/update/update-check.js");
 
       vi.mocked(resolveOpenClawPackageRoot).mockResolvedValue(tempDir);
       vi.mocked(checkUpdateStatus).mockResolvedValue({
@@ -642,8 +642,8 @@ describe("update-cli", () => {
       setTty(true);
       process.env.OPENCLAW_GIT_DIR = tempDir;
 
-      const { checkUpdateStatus } = await import("../infra/update-check.js");
-      const { runGatewayUpdate } = await import("../infra/update-runner.js");
+      const { checkUpdateStatus } = await import("../infra/update/update-check.js");
+      const { runGatewayUpdate } = await import("../infra/update/update-runner.js");
       const { updateWizardCommand } = await import("./update-cli.js");
 
       vi.mocked(checkUpdateStatus).mockResolvedValue({
