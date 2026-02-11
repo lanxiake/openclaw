@@ -1,0 +1,47 @@
+{
+  "suite": "admin-console-auth",
+  "date": "2026-02-11T03:12:49.361Z",
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0
+  },
+  "results": [
+    {
+      "id": "AC-AUTH-001",
+      "name": "管理员登录成功",
+      "status": "PASS",
+      "detail": "跳转到 http://localhost:5176/, Token 已存储",
+      "timestamp": "2026-02-11T03:12:31.419Z"
+    },
+    {
+      "id": "AC-AUTH-003",
+      "name": "未登录跳转",
+      "status": "PASS",
+      "detail": "已跳转到登录页: http://localhost:5176/login",
+      "timestamp": "2026-02-11T03:12:34.814Z"
+    },
+    {
+      "id": "AC-AUTH-004",
+      "name": "登出",
+      "status": "PASS",
+      "detail": "已跳转登录页，Token 已清除",
+      "timestamp": "2026-02-11T03:12:38.833Z"
+    },
+    {
+      "id": "AC-AUTH-005",
+      "name": "Token 过期自动跳转",
+      "status": "PASS",
+      "detail": "Token 过期后已跳转登录页",
+      "timestamp": "2026-02-11T03:12:43.848Z"
+    },
+    {
+      "id": "AC-AUTH-002",
+      "name": "登录失败提示",
+      "status": "PASS",
+      "detail": "仍在登录页，错误提示已显示 (error elements: 0)",
+      "timestamp": "2026-02-11T03:12:48.514Z"
+    }
+  ]
+}

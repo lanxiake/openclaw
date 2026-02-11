@@ -1,0 +1,922 @@
+[
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "time": "2026-02-11T03:12:28.985Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "time": "2026-02-11T03:12:29.191Z"
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "time": "2026-02-11T03:12:29.556Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: disconnected -> connecting",
+    "time": "2026-02-11T03:12:29.592Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 正在连接... ws://localhost:19001",
+    "time": "2026-02-11T03:12:29.592Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] WebSocket 连接已建立，等待握手...",
+    "time": "2026-02-11T03:12:29.628Z"
+  },
+  {
+    "type": "warning",
+    "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+    "time": "2026-02-11T03:12:29.630Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event connect.challenge",
+    "time": "2026-02-11T03:12:29.633Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到 connect.challenge，nonce: ce3aa43d-7aef-41d0-8f0a-7b60b5bb08e5",
+    "time": "2026-02-11T03:12:29.633Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 发送 connect 握手请求",
+    "time": "2026-02-11T03:12:29.636Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_1_1770779549631",
+    "time": "2026-02-11T03:12:29.681Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 握手成功: {type: hello-ok, protocol: 3, server: Object, features: Object, snapshot: Object}",
+    "time": "2026-02-11T03:12:29.681Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: connecting -> connected",
+    "time": "2026-02-11T03:12:29.681Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event health",
+    "time": "2026-02-11T03:12:29.683Z"
+  },
+  {
+    "type": "log",
+    "text": "[LoginPage] 提交登录表单: admin",
+    "time": "2026-02-11T03:12:30.701Z"
+  },
+  {
+    "type": "log",
+    "text": "[authStore] 开始登录: admin",
+    "time": "2026-02-11T03:12:30.702Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.login {username: admin, password: Admin@123456, mfaCode: }",
+    "time": "2026-02-11T03:12:30.702Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_2_1770779550701",
+    "time": "2026-02-11T03:12:31.229Z"
+  },
+  {
+    "type": "log",
+    "text": "[authStore] 登录成功: 超级管理员",
+    "time": "2026-02-11T03:12:31.229Z"
+  },
+  {
+    "type": "log",
+    "text": "[LoginPage] 登录成功，重定向到: /",
+    "time": "2026-02-11T03:12:31.231Z"
+  },
+  {
+    "type": "log",
+    "text": "[useTokenRefresh] Token 剩余 1800 秒",
+    "time": "2026-02-11T03:12:31.255Z"
+  },
+  {
+    "type": "log",
+    "text": "[useTokenRefresh] Token 剩余 1800 秒",
+    "time": "2026-02-11T03:12:31.255Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.dashboard.subscriptionDistribution {}",
+    "time": "2026-02-11T03:12:31.400Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.dashboard.activities {limit: 10}",
+    "time": "2026-02-11T03:12:31.400Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.dashboard.stats {}",
+    "time": "2026-02-11T03:12:31.400Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.dashboard.trends {type: users, period: 30d}",
+    "time": "2026-02-11T03:12:31.400Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.dashboard.trends {type: revenue, period: 30d}",
+    "time": "2026-02-11T03:12:31.402Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_3_1770779551376",
+    "time": "2026-02-11T03:12:31.402Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_4_1770779551377",
+    "time": "2026-02-11T03:12:31.402Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_5_1770779551377",
+    "time": "2026-02-11T03:12:31.402Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_6_1770779551378",
+    "time": "2026-02-11T03:12:31.402Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_7_1770779551378",
+    "time": "2026-02-11T03:12:31.415Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "time": "2026-02-11T03:12:31.457Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "time": "2026-02-11T03:12:31.458Z"
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "time": "2026-02-11T03:12:31.471Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: disconnected -> connecting",
+    "time": "2026-02-11T03:12:31.490Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 正在连接... ws://localhost:19001",
+    "time": "2026-02-11T03:12:31.490Z"
+  },
+  {
+    "type": "warning",
+    "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+    "time": "2026-02-11T03:12:31.499Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] WebSocket 连接已建立，等待握手...",
+    "time": "2026-02-11T03:12:31.526Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event connect.challenge",
+    "time": "2026-02-11T03:12:31.530Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到 connect.challenge，nonce: bf31542b-5f36-415a-bf74-fd1372829065",
+    "time": "2026-02-11T03:12:31.530Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 发送 connect 握手请求",
+    "time": "2026-02-11T03:12:31.531Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_1_1770779551526",
+    "time": "2026-02-11T03:12:31.536Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 握手成功: {type: hello-ok, protocol: 3, server: Object, features: Object, snapshot: Object}",
+    "time": "2026-02-11T03:12:31.536Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: connecting -> connected",
+    "time": "2026-02-11T03:12:31.536Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event health",
+    "time": "2026-02-11T03:12:31.536Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "time": "2026-02-11T03:12:32.091Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "time": "2026-02-11T03:12:32.093Z"
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "time": "2026-02-11T03:12:32.106Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: disconnected -> connecting",
+    "time": "2026-02-11T03:12:32.118Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 正在连接... ws://localhost:19001",
+    "time": "2026-02-11T03:12:32.118Z"
+  },
+  {
+    "type": "log",
+    "text": "[PrivateRoute] 未认证，重定向到登录页",
+    "time": "2026-02-11T03:12:32.121Z"
+  },
+  {
+    "type": "log",
+    "text": "[PrivateRoute] 未认证，重定向到登录页",
+    "time": "2026-02-11T03:12:32.122Z"
+  },
+  {
+    "type": "warning",
+    "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+    "time": "2026-02-11T03:12:32.132Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] WebSocket 连接已建立，等待握手...",
+    "time": "2026-02-11T03:12:32.137Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event connect.challenge",
+    "time": "2026-02-11T03:12:32.144Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到 connect.challenge，nonce: 2bae5141-b838-4010-b49d-7c78a2f61ac1",
+    "time": "2026-02-11T03:12:32.144Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 发送 connect 握手请求",
+    "time": "2026-02-11T03:12:32.144Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_1_1770779552134",
+    "time": "2026-02-11T03:12:32.155Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 握手成功: {type: hello-ok, protocol: 3, server: Object, features: Object, snapshot: Object}",
+    "time": "2026-02-11T03:12:32.156Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: connecting -> connected",
+    "time": "2026-02-11T03:12:32.156Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event health",
+    "time": "2026-02-11T03:12:32.156Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "time": "2026-02-11T03:12:34.854Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "time": "2026-02-11T03:12:34.858Z"
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "time": "2026-02-11T03:12:34.870Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: disconnected -> connecting",
+    "time": "2026-02-11T03:12:34.884Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 正在连接... ws://localhost:19001",
+    "time": "2026-02-11T03:12:34.884Z"
+  },
+  {
+    "type": "warning",
+    "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+    "time": "2026-02-11T03:12:34.890Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] WebSocket 连接已建立，等待握手...",
+    "time": "2026-02-11T03:12:34.891Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event connect.challenge",
+    "time": "2026-02-11T03:12:34.892Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到 connect.challenge，nonce: c0c51b8d-4d0b-4fdc-8fec-9456975415c0",
+    "time": "2026-02-11T03:12:34.893Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 发送 connect 握手请求",
+    "time": "2026-02-11T03:12:34.893Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_1_1770779554891",
+    "time": "2026-02-11T03:12:34.917Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 握手成功: {type: hello-ok, protocol: 3, server: Object, features: Object, snapshot: Object}",
+    "time": "2026-02-11T03:12:34.917Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: connecting -> connected",
+    "time": "2026-02-11T03:12:34.917Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event health",
+    "time": "2026-02-11T03:12:34.917Z"
+  },
+  {
+    "type": "log",
+    "text": "[LoginPage] 提交登录表单: admin",
+    "time": "2026-02-11T03:12:35.496Z"
+  },
+  {
+    "type": "log",
+    "text": "[authStore] 开始登录: admin",
+    "time": "2026-02-11T03:12:35.496Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.login {username: admin, password: Admin@123456, mfaCode: }",
+    "time": "2026-02-11T03:12:35.496Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_2_1770779555495",
+    "time": "2026-02-11T03:12:35.901Z"
+  },
+  {
+    "type": "log",
+    "text": "[authStore] 登录成功: 超级管理员",
+    "time": "2026-02-11T03:12:35.901Z"
+  },
+  {
+    "type": "log",
+    "text": "[LoginPage] 登录成功，重定向到: /users",
+    "time": "2026-02-11T03:12:35.902Z"
+  },
+  {
+    "type": "log",
+    "text": "[useTokenRefresh] Token 剩余 1800 秒",
+    "time": "2026-02-11T03:12:35.917Z"
+  },
+  {
+    "type": "log",
+    "text": "[useTokenRefresh] Token 剩余 1800 秒",
+    "time": "2026-02-11T03:12:35.917Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.users.list {search: undefined, status: undefined, subscriptionStatus: undefined, page: 1, pageSize: 20}",
+    "time": "2026-02-11T03:12:36.031Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_3_1770779555965",
+    "time": "2026-02-11T03:12:36.031Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "time": "2026-02-11T03:12:36.109Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "time": "2026-02-11T03:12:36.116Z"
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "time": "2026-02-11T03:12:36.133Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: disconnected -> connecting",
+    "time": "2026-02-11T03:12:36.145Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 正在连接... ws://localhost:19001",
+    "time": "2026-02-11T03:12:36.145Z"
+  },
+  {
+    "type": "warning",
+    "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+    "time": "2026-02-11T03:12:36.155Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] WebSocket 连接已建立，等待握手...",
+    "time": "2026-02-11T03:12:36.156Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event connect.challenge",
+    "time": "2026-02-11T03:12:36.157Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到 connect.challenge，nonce: 45798171-a8ea-418a-bf58-ead92552c884",
+    "time": "2026-02-11T03:12:36.157Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 发送 connect 握手请求",
+    "time": "2026-02-11T03:12:36.157Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_1_1770779556156",
+    "time": "2026-02-11T03:12:36.175Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 握手成功: {type: hello-ok, protocol: 3, server: Object, features: Object, snapshot: Object}",
+    "time": "2026-02-11T03:12:36.176Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: connecting -> connected",
+    "time": "2026-02-11T03:12:36.176Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event health",
+    "time": "2026-02-11T03:12:36.176Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "time": "2026-02-11T03:12:38.871Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "time": "2026-02-11T03:12:38.875Z"
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "time": "2026-02-11T03:12:38.889Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: disconnected -> connecting",
+    "time": "2026-02-11T03:12:38.901Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 正在连接... ws://localhost:19001",
+    "time": "2026-02-11T03:12:38.901Z"
+  },
+  {
+    "type": "warning",
+    "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+    "time": "2026-02-11T03:12:38.908Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] WebSocket 连接已建立，等待握手...",
+    "time": "2026-02-11T03:12:38.910Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event connect.challenge",
+    "time": "2026-02-11T03:12:38.910Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到 connect.challenge，nonce: 7c2fcc6a-bb73-4ff6-8551-62b03b67752d",
+    "time": "2026-02-11T03:12:38.910Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 发送 connect 握手请求",
+    "time": "2026-02-11T03:12:38.910Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_1_1770779558907",
+    "time": "2026-02-11T03:12:38.936Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 握手成功: {type: hello-ok, protocol: 3, server: Object, features: Object, snapshot: Object}",
+    "time": "2026-02-11T03:12:38.936Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: connecting -> connected",
+    "time": "2026-02-11T03:12:38.936Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event health",
+    "time": "2026-02-11T03:12:38.936Z"
+  },
+  {
+    "type": "log",
+    "text": "[LoginPage] 提交登录表单: admin",
+    "time": "2026-02-11T03:12:39.521Z"
+  },
+  {
+    "type": "log",
+    "text": "[authStore] 开始登录: admin",
+    "time": "2026-02-11T03:12:39.521Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.login {username: admin, password: Admin@123456, mfaCode: }",
+    "time": "2026-02-11T03:12:39.521Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_2_1770779559519",
+    "time": "2026-02-11T03:12:39.857Z"
+  },
+  {
+    "type": "log",
+    "text": "[authStore] 登录成功: 超级管理员",
+    "time": "2026-02-11T03:12:39.857Z"
+  },
+  {
+    "type": "log",
+    "text": "[LoginPage] 登录成功，重定向到: /",
+    "time": "2026-02-11T03:12:39.859Z"
+  },
+  {
+    "type": "log",
+    "text": "[useTokenRefresh] Token 剩余 1800 秒",
+    "time": "2026-02-11T03:12:39.876Z"
+  },
+  {
+    "type": "log",
+    "text": "[useTokenRefresh] Token 剩余 1800 秒",
+    "time": "2026-02-11T03:12:39.876Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.dashboard.subscriptionDistribution {}",
+    "time": "2026-02-11T03:12:39.908Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.dashboard.activities {limit: 10}",
+    "time": "2026-02-11T03:12:39.908Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.dashboard.stats {}",
+    "time": "2026-02-11T03:12:39.908Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.dashboard.trends {type: users, period: 30d}",
+    "time": "2026-02-11T03:12:39.908Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.dashboard.trends {type: revenue, period: 30d}",
+    "time": "2026-02-11T03:12:39.908Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_3_1770779559906",
+    "time": "2026-02-11T03:12:39.915Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_4_1770779559906",
+    "time": "2026-02-11T03:12:39.915Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_5_1770779559907",
+    "time": "2026-02-11T03:12:39.917Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_6_1770779559907",
+    "time": "2026-02-11T03:12:39.922Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_7_1770779559907",
+    "time": "2026-02-11T03:12:39.926Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "time": "2026-02-11T03:12:40.111Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "time": "2026-02-11T03:12:40.115Z"
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "time": "2026-02-11T03:12:40.128Z"
+  },
+  {
+    "type": "warning",
+    "text": "[jwt] Token 格式无效: 不是三段式结构",
+    "time": "2026-02-11T03:12:40.138Z"
+  },
+  {
+    "type": "log",
+    "text": "[authStore] Hydration: Token 已过期或不存在，清除认证状态",
+    "time": "2026-02-11T03:12:40.138Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: disconnected -> connecting",
+    "time": "2026-02-11T03:12:40.145Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 正在连接... ws://localhost:19001",
+    "time": "2026-02-11T03:12:40.145Z"
+  },
+  {
+    "type": "log",
+    "text": "[PrivateRoute] 未认证，重定向到登录页",
+    "time": "2026-02-11T03:12:40.152Z"
+  },
+  {
+    "type": "log",
+    "text": "[PrivateRoute] 未认证，重定向到登录页",
+    "time": "2026-02-11T03:12:40.152Z"
+  },
+  {
+    "type": "warning",
+    "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+    "time": "2026-02-11T03:12:40.159Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] WebSocket 连接已建立，等待握手...",
+    "time": "2026-02-11T03:12:40.168Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event connect.challenge",
+    "time": "2026-02-11T03:12:40.169Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到 connect.challenge，nonce: af703d89-9655-43c6-9775-e6ee7848ccb1",
+    "time": "2026-02-11T03:12:40.169Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 发送 connect 握手请求",
+    "time": "2026-02-11T03:12:40.169Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_1_1770779560160",
+    "time": "2026-02-11T03:12:40.193Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 握手成功: {type: hello-ok, protocol: 3, server: Object, features: Object, snapshot: Object}",
+    "time": "2026-02-11T03:12:40.193Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: connecting -> connected",
+    "time": "2026-02-11T03:12:40.193Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event health",
+    "time": "2026-02-11T03:12:40.193Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "time": "2026-02-11T03:12:44.082Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "time": "2026-02-11T03:12:44.085Z"
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "time": "2026-02-11T03:12:44.104Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: disconnected -> connecting",
+    "time": "2026-02-11T03:12:44.123Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 正在连接... ws://localhost:19001",
+    "time": "2026-02-11T03:12:44.123Z"
+  },
+  {
+    "type": "warning",
+    "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+    "time": "2026-02-11T03:12:44.134Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] WebSocket 连接已建立，等待握手...",
+    "time": "2026-02-11T03:12:44.134Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event connect.challenge",
+    "time": "2026-02-11T03:12:44.136Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到 connect.challenge，nonce: 23c66c51-81ee-42c7-8b4f-6eb1ab91bcd5",
+    "time": "2026-02-11T03:12:44.136Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 发送 connect 握手请求",
+    "time": "2026-02-11T03:12:44.136Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_1_1770779564135",
+    "time": "2026-02-11T03:12:44.157Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 握手成功: {type: hello-ok, protocol: 3, server: Object, features: Object, snapshot: Object}",
+    "time": "2026-02-11T03:12:44.159Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: connecting -> connected",
+    "time": "2026-02-11T03:12:44.159Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event health",
+    "time": "2026-02-11T03:12:44.159Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "time": "2026-02-11T03:12:44.694Z"
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "time": "2026-02-11T03:12:44.699Z"
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "time": "2026-02-11T03:12:44.712Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: disconnected -> connecting",
+    "time": "2026-02-11T03:12:44.724Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 正在连接... ws://localhost:19001",
+    "time": "2026-02-11T03:12:44.724Z"
+  },
+  {
+    "type": "warning",
+    "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+    "time": "2026-02-11T03:12:44.728Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] WebSocket 连接已建立，等待握手...",
+    "time": "2026-02-11T03:12:44.731Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event connect.challenge",
+    "time": "2026-02-11T03:12:44.733Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到 connect.challenge，nonce: e6b98e9c-d4b5-42e3-91e5-31aaac242dbe",
+    "time": "2026-02-11T03:12:44.733Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 发送 connect 握手请求",
+    "time": "2026-02-11T03:12:44.733Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_1_1770779564732",
+    "time": "2026-02-11T03:12:44.752Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 握手成功: {type: hello-ok, protocol: 3, server: Object, features: Object, snapshot: Object}",
+    "time": "2026-02-11T03:12:44.752Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 连接状态变更: connecting -> connected",
+    "time": "2026-02-11T03:12:44.753Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event health",
+    "time": "2026-02-11T03:12:44.753Z"
+  },
+  {
+    "type": "log",
+    "text": "[LoginPage] 提交登录表单: admin",
+    "time": "2026-02-11T03:12:45.340Z"
+  },
+  {
+    "type": "log",
+    "text": "[authStore] 开始登录: admin",
+    "time": "2026-02-11T03:12:45.341Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 调用 admin.login {username: admin, password: WrongPassword123, mfaCode: }",
+    "time": "2026-02-11T03:12:45.341Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: res req_2_1770779565340",
+    "time": "2026-02-11T03:12:45.653Z"
+  },
+  {
+    "type": "error",
+    "text": "[LoginPage] 登录失败: Error: 用户名或密码错误\n    at handleMessage (http://localhost:5176/src/lib/gateway-client.ts:99:26)\n    at ws.onmessage (http://localhost:5176/src/lib/gateway-client.ts:174:7)",
+    "time": "2026-02-11T03:12:45.655Z"
+  },
+  {
+    "type": "log",
+    "text": "[gateway] 收到消息: event tick",
+    "time": "2026-02-11T03:12:46.696Z"
+  }
+]

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { adminAuthService } from '@/services'
 import { STORAGE_KEYS } from '@/lib/constants'
+import { isTokenExpired } from '@/lib/jwt'
 import type { Admin } from '@/services/admin-auth'
 
 /**
@@ -26,6 +27,8 @@ interface AuthState {
   refreshAccessToken: () => Promise<void>
   /** 检查权限 */
   hasPermission: (permission: string) => boolean
+  /** 检查权限范围 (hasPermission 的别名) */
+  hasScope: (scope: string) => boolean
   /** 设置管理员 */
   setAdmin: (admin: Admin | null) => void
   /** 设置加载状态 */
@@ -150,6 +153,16 @@ export const useAuthStore = create<AuthState>()(
       },
 
       /**
+       * 检查管理员是否具有指定权限范围 (hasPermission 的别名)
+       */
+      hasScope: (scope: string) => {
+        const { admin } = get()
+        if (!admin) return false
+        if (admin.role === 'super_admin') return true
+        return admin.permissions.includes(scope)
+      },
+
+      /**
        * 设置管理员
        */
       setAdmin: (admin: Admin | null) => {
@@ -170,8 +183,17 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
-        // Hydration 完成后设置 isLoading 为 false
         if (state) {
+          // 检查 localStorage 中的 Token 是否已过期
+          const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
+
+          if (state.isAuthenticated && (!token || isTokenExpired(token))) {
+            console.log('[authStore] Hydration: Token 已过期或不存在，清除认证状态')
+            state.setAdmin(null)
+            localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
+            localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+          }
+
           state.setLoading(false)
         }
       },

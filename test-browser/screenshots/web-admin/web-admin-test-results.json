@@ -1,0 +1,130 @@
+{
+  "suite": "web-admin-comprehensive",
+  "date": "2026-02-11T03:14:30.608Z",
+  "summary": {
+    "total": 17,
+    "passed": 17,
+    "failed": 0
+  },
+  "results": [
+    {
+      "id": "WA-AUTH-001",
+      "name": "管理员登录成功",
+      "status": "PASS",
+      "detail": "跳转到 http://localhost:5173/, 认证状态已存储",
+      "timestamp": "2026-02-11T03:13:19.521Z"
+    },
+    {
+      "id": "WA-AUTH-003",
+      "name": "未登录跳转",
+      "status": "PASS",
+      "detail": "已跳转到登录页: http://localhost:5173/login",
+      "timestamp": "2026-02-11T03:13:22.999Z"
+    },
+    {
+      "id": "WA-AUTH-004",
+      "name": "登出",
+      "status": "PASS",
+      "detail": "已跳转登录页，Token 已清除",
+      "timestamp": "2026-02-11T03:13:27.961Z"
+    },
+    {
+      "id": "WA-AUTH-005",
+      "name": "页面路由导航",
+      "status": "PASS",
+      "detail": "路由导航 5/5 通过 [仪表盘:✓ 设备管理:✓ 技能商店:✓ 订阅:✓ 个人设置:✓]",
+      "timestamp": "2026-02-11T03:13:41.086Z"
+    },
+    {
+      "id": "WA-DEV-001",
+      "name": "设备列表页渲染",
+      "status": "PASS",
+      "detail": "设备管理页面渲染正确",
+      "timestamp": "2026-02-11T03:13:43.878Z"
+    },
+    {
+      "id": "WA-DEV-002",
+      "name": "设备空状态或列表",
+      "status": "PASS",
+      "detail": "设备页面正常显示（数据或空状态）",
+      "timestamp": "2026-02-11T03:13:46.702Z"
+    },
+    {
+      "id": "WA-DEV-003",
+      "name": "设备页面交互",
+      "status": "PASS",
+      "detail": "设备页面有 10 个可交互按钮, 搜索框: 无",
+      "timestamp": "2026-02-11T03:13:49.589Z"
+    },
+    {
+      "id": "WA-SKILL-001",
+      "name": "技能商店页面渲染",
+      "status": "PASS",
+      "detail": "技能商店页面渲染正确，卡片: 12",
+      "timestamp": "2026-02-11T03:13:52.542Z"
+    },
+    {
+      "id": "WA-SKILL-002",
+      "name": "技能搜索功能",
+      "status": "PASS",
+      "detail": "技能搜索功能正常",
+      "timestamp": "2026-02-11T03:13:57.463Z"
+    },
+    {
+      "id": "WA-SKILL-003",
+      "name": "我的技能页面",
+      "status": "PASS",
+      "detail": "我的技能页面正常渲染",
+      "timestamp": "2026-02-11T03:14:00.321Z"
+    },
+    {
+      "id": "WA-SKILL-004",
+      "name": "技能分类筛选",
+      "status": "PASS",
+      "detail": "技能筛选器可交互，找到 2 个筛选元素",
+      "timestamp": "2026-02-11T03:14:04.443Z"
+    },
+    {
+      "id": "WA-SUB-001",
+      "name": "订阅页面渲染",
+      "status": "PASS",
+      "detail": "订阅页面渲染正确",
+      "timestamp": "2026-02-11T03:14:07.252Z"
+    },
+    {
+      "id": "WA-SUB-002",
+      "name": "订阅计划展示",
+      "status": "PASS",
+      "detail": "订阅页面加载正常（暂无计划数据）",
+      "timestamp": "2026-02-11T03:14:10.029Z"
+    },
+    {
+      "id": "WA-GW-001",
+      "name": "Gateway WebSocket 连接",
+      "status": "PASS",
+      "detail": "Gateway 连接正常, authStorage: exists",
+      "timestamp": "2026-02-11T03:14:13.814Z"
+    },
+    {
+      "id": "WA-GW-002",
+      "name": "Gateway RPC 数据加载",
+      "status": "PASS",
+      "detail": "RPC 数据加载正常",
+      "timestamp": "2026-02-11T03:14:17.654Z"
+    },
+    {
+      "id": "WA-GW-003",
+      "name": "Gateway 连接持久性",
+      "status": "PASS",
+      "detail": "刷新后连接正常恢复",
+      "timestamp": "2026-02-11T03:14:24.230Z"
+    },
+    {
+      "id": "WA-AUTH-002",
+      "name": "登录失败提示",
+      "status": "PASS",
+      "detail": "仍在登录页, 错误提示已显示",
+      "timestamp": "2026-02-11T03:14:28.939Z"
+    }
+  ]
+}

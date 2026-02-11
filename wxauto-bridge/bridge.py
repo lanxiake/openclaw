@@ -342,7 +342,8 @@ class WeChatBridge:
     async def _push_message(self, msg: WeChatMessage) -> None:
         """推送消息到 Gateway
 
-        支持多媒体消息，包含 media 字段
+        支持多媒体消息：将媒体信息注入 text 字段，
+        让 AI 直接获取完整上下文，避免 Gateway 侧需要额外处理。
         """
         if not self._is_ws_connected():
             logger.warning("WebSocket 未连接，无法推送消息")
@@ -352,11 +353,14 @@ class WeChatBridge:
         logger.info(f"推送消息到 Gateway: from={msg.sender}, to={msg.chat_name}, "
                    f"type={msg.msg_type}, is_at_me={msg.is_at_me}, media={msg.media_url}")
 
+        # 构建消息文本：将多媒体信息注入 text
+        text = self._build_message_text(msg)
+
         # 构建消息数据
         message_data = {
             "from": msg.sender,
             "to": msg.chat_name,
-            "text": msg.content,
+            "text": text,
             "type": msg.msg_type,
             "chatType": "group" if msg.is_group else "friend",
             "timestamp": int(msg.timestamp * 1000),
@@ -364,7 +368,7 @@ class WeChatBridge:
             "isAtMe": msg.is_at_me
         }
 
-        # 添加多媒体信息
+        # 添加多媒体元数据（供 Gateway 插件后续扩展使用）
         if msg.media_url or msg.media_path or msg.voice_text:
             message_data["media"] = {
                 "url": msg.media_url,
@@ -373,11 +377,66 @@ class WeChatBridge:
                 "fileSize": msg.file_size
             }
 
-        # 添加语音转文字内容
         if msg.voice_text:
             message_data["voiceText"] = msg.voice_text
 
         await self._send_notification("wechat.message", message_data)
+
+    def _build_message_text(self, msg: WeChatMessage) -> str:
+        """构建消息文本，将多媒体信息注入到文本中
+
+        对于多媒体消息，生成包含媒体路径和描述的富文本，
+        让 AI 能直接理解消息内容，无需额外查询。
+
+        Args:
+            msg: 微信消息对象
+
+        Returns:
+            str: 包含媒体信息的消息文本
+        """
+        # 纯文本消息直接返回
+        if msg.msg_type == "text":
+            return msg.content
+
+        # 语音消息：优先使用转文字内容
+        if msg.msg_type == "voice":
+            if msg.voice_text:
+                return f"[语音消息] {msg.voice_text}"
+            return "[语音消息]（无法转文字）"
+
+        # 图片消息
+        if msg.msg_type == "image":
+            parts = ["[图片消息]"]
+            if msg.media_url:
+                parts.append(f"图片地址: {msg.media_url}")
+            if msg.media_path:
+                parts.append(f"本地路径: {msg.media_path}")
+            return " ".join(parts)
+
+        # 视频消息
+        if msg.msg_type == "video":
+            parts = ["[视频消息]"]
+            if msg.media_url:
+                parts.append(f"视频地址: {msg.media_url}")
+            if msg.media_path:
+                parts.append(f"本地路径: {msg.media_path}")
+            return " ".join(parts)
+
+        # 文件消息
+        if msg.msg_type == "file":
+            parts = ["[文件消息]"]
+            if msg.file_name:
+                parts.append(f"文件名: {msg.file_name}")
+            if msg.file_size:
+                parts.append(f"大小: {msg.file_size}")
+            if msg.media_url:
+                parts.append(f"下载地址: {msg.media_url}")
+            if msg.media_path:
+                parts.append(f"本地路径: {msg.media_path}")
+            return " ".join(parts)
+
+        # 其他类型，保留原始内容
+        return msg.content
 
     async def _push_status(self, status: WeChatStatus) -> None:
         """推送状态到 Gateway"""

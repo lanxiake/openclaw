@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test 2: Text Only</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            page-break-inside: avoid;
+        }
+        p {
+            line-height: 1.6;
+            margin: 15px 0;
+            text-align: justify;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body><h1>Test 2: Text Only</h1>
+<p>This is the first paragraph.</p>
+<p>This is the second paragraph.</p>
+<p>This is the third paragraph.</p>
+</body>
+</html>

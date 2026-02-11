@@ -9,6 +9,7 @@ import {
   getFreePort,
   installGatewayTestHooks,
   startGatewayServer,
+  testState,
 } from "./test-helpers.js";
 
 installGatewayTestHooks({ scope: "suite" });
@@ -22,8 +23,15 @@ beforeAll(async () => {
   prevGatewayPort = process.env.OPENCLAW_GATEWAY_PORT;
   prevGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
   gatewayPort = await getFreePort();
+  // testState.gatewayAuth.token 由 resetGatewayTestState 设置，Gateway 使用该 token 验证
+  // process.env.OPENCLAW_GATEWAY_TOKEN 被 createOpenClawTools 内部使用来连接 Gateway
+  // 两者必须一致，否则会出现 token mismatch
+  const authToken =
+    typeof (testState.gatewayAuth as { token?: unknown } | undefined)?.token === "string"
+      ? (testState.gatewayAuth as { token?: string }).token!
+      : "test-token";
   process.env.OPENCLAW_GATEWAY_PORT = String(gatewayPort);
-  process.env.OPENCLAW_GATEWAY_TOKEN = "test-token";
+  process.env.OPENCLAW_GATEWAY_TOKEN = authToken;
   server = await startGatewayServer(gatewayPort);
 });
 

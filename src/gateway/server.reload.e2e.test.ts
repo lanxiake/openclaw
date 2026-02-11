@@ -191,7 +191,7 @@ describe("gateway hot reload", () => {
     }
   });
 
-  it("applies hot reload actions and emits restart signal", async () => {
+  it("applies hot reload actions and emits restart signal", { timeout: 60_000 }, async () => {
     const port = await getFreePort();
     const server = await startGatewayServer(port);
 

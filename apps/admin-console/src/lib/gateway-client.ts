@@ -1,18 +1,75 @@
 /**
- * Gateway WebSocket JSON-RPC 客户端
+ * Gateway WebSocket 客户端 (OpenClaw 协议 v3)
  *
  * 用于与 OpenClaw Gateway 进行 WebSocket 通信
- * 管理员后台专用版本
+ * 管理员后台专用版本 - 使用 OpenClaw Protocol v3 握手流程
  */
 
 import { GATEWAY_WS_URL, STORAGE_KEYS } from './constants'
 
+// Gateway 认证 Token (用于开发环境)
+const GATEWAY_AUTH_TOKEN = import.meta.env.VITE_GATEWAY_AUTH_TOKEN || ''
+
+// 协议版本
+const PROTOCOL_VERSION = 3
+
 // 请求 ID 计数器
 let requestIdCounter = 0
 
+/**
+ * 消息类型 (OpenClaw 协议)
+ */
+type MessageType = 'req' | 'res' | 'event'
+
+/**
+ * 消息结构 (OpenClaw 协议)
+ */
+interface Message {
+  type: MessageType
+  id?: string
+  method?: string
+  params?: unknown
+  event?: string
+  ok?: boolean
+  payload?: unknown
+  error?: {
+    code: string
+    message: string
+  }
+}
+
+/**
+ * 连接挑战事件
+ */
+interface ConnectChallenge {
+  nonce: string
+  ts: number
+}
+
+/**
+ * 连接参数
+ */
+interface ConnectParams {
+  minProtocol: number
+  maxProtocol: number
+  client: {
+    id: string
+    displayName?: string
+    version: string
+    platform: string
+    mode: string
+  }
+  caps: string[]
+  auth?: {
+    token?: string
+  }
+  role: string
+  scopes: string[]
+}
+
 // 等待中的请求
 const pendingRequests = new Map<
-  number,
+  string,
   {
     resolve: (result: unknown) => void
     reject: (error: Error) => void
@@ -26,42 +83,11 @@ const eventListeners = new Map<string, Set<(data: unknown) => void>>()
 // WebSocket 实例
 let ws: WebSocket | null = null
 let isConnecting = false
+let handshakeComplete = false
 let reconnectAttempts = 0
 const MAX_RECONNECT_ATTEMPTS = 5
 const RECONNECT_DELAY = 3000
-
-/**
- * JSON-RPC 请求结构
- */
-interface JsonRpcRequest {
-  jsonrpc: '2.0'
-  id: number
-  method: string
-  params: Record<string, unknown>
-}
-
-/**
- * JSON-RPC 响应结构
- */
-interface JsonRpcResponse {
-  jsonrpc: '2.0'
-  id: number
-  result?: unknown
-  error?: {
-    code: number
-    message: string
-    data?: unknown
-  }
-}
-
-/**
- * JSON-RPC 通知结构（无 id）
- */
-interface JsonRpcNotification {
-  jsonrpc: '2.0'
-  method: string
-  params: unknown
-}
+const REQUEST_TIMEOUT = 30000
 
 /**
  * 连接状态
@@ -77,7 +103,16 @@ const connectionStateListeners = new Set<ConnectionStateListener>()
 let currentState: ConnectionState = 'disconnected'
 
 /**
- * 更新连接状态
+ * 生成请求 ID
+ * @returns 唯一请求 ID
+ */
+function generateId(): string {
+  return `req_${++requestIdCounter}_${Date.now()}`
+}
+
+/**
+ * 更新连接状态并通知所有监听器
+ * @param state - 新的连接状态
  */
 function updateConnectionState(state: ConnectionState): void {
   console.log(`[gateway] 连接状态变更: ${currentState} -> ${state}`)
@@ -87,6 +122,7 @@ function updateConnectionState(state: ConnectionState): void {
 
 /**
  * 获取当前连接状态
+ * @returns 当前连接状态
  */
 export function getConnectionState(): ConnectionState {
   return currentState
@@ -94,6 +130,8 @@ export function getConnectionState(): ConnectionState {
 
 /**
  * 订阅连接状态变化
+ * @param listener - 状态变化回调函数
+ * @returns 取消订阅函数
  */
 export function onConnectionStateChange(listener: ConnectionStateListener): () => void {
   connectionStateListeners.add(listener)
@@ -103,11 +141,131 @@ export function onConnectionStateChange(listener: ConnectionStateListener): () =
 }
 
 /**
- * 连接到 Gateway
+ * 发送 connect 请求完成握手
+ * @param connectResolve - 连接成功回调
+ * @param connectReject - 连接失败回调
+ */
+function sendConnectRequest(connectResolve: () => void, connectReject: (error: Error) => void): void {
+  const id = generateId()
+
+  const connectParams: ConnectParams = {
+    minProtocol: PROTOCOL_VERSION,
+    maxProtocol: PROTOCOL_VERSION,
+    client: {
+      id: 'openclaw-control-ui',
+      displayName: 'OpenClaw Admin Console',
+      version: '1.0.0',
+      platform: 'web',
+      mode: 'ui',
+    },
+    caps: [],
+    role: 'operator',
+    scopes: ['operator.admin'],
+    // 添加认证信息 (用于绕过设备配对要求)
+    auth: GATEWAY_AUTH_TOKEN ? { token: GATEWAY_AUTH_TOKEN } : undefined,
+  }
+
+  const message: Message = {
+    type: 'req',
+    id,
+    method: 'connect',
+    params: connectParams,
+  }
+
+  console.log('[gateway] 发送 connect 握手请求')
+
+  // 注册待处理请求
+  const timeout = setTimeout(() => {
+    pendingRequests.delete(id)
+    console.error('[gateway] connect 请求超时')
+    connectReject(new Error('握手超时'))
+  }, REQUEST_TIMEOUT)
+
+  pendingRequests.set(id, {
+    resolve: (payload) => {
+      console.log('[gateway] 握手成功:', payload)
+      handshakeComplete = true
+      isConnecting = false
+      updateConnectionState('connected')
+      connectResolve()
+    },
+    reject: (error) => {
+      console.error('[gateway] 握手失败:', error)
+      isConnecting = false
+      connectReject(error)
+    },
+    timeout,
+  })
+
+  ws?.send(JSON.stringify(message))
+}
+
+/**
+ * 处理收到的消息
+ * @param data - 原始消息字符串
+ * @param connectResolve - 连接成功回调（仅握手阶段使用）
+ * @param connectReject - 连接失败回调（仅握手阶段使用）
+ */
+function handleMessage(
+  data: string,
+  connectResolve?: () => void,
+  connectReject?: (error: Error) => void
+): void {
+  try {
+    const message: Message = JSON.parse(data)
+    console.log('[gateway] 收到消息:', message.type, message.event || message.id)
+
+    // 处理 connect.challenge 事件 - 开始握手
+    if (message.type === 'event' && message.event === 'connect.challenge') {
+      const challenge = message.payload as ConnectChallenge
+      console.log('[gateway] 收到 connect.challenge，nonce:', challenge.nonce)
+      if (connectResolve && connectReject) {
+        sendConnectRequest(connectResolve, connectReject)
+      }
+      return
+    }
+
+    // 处理响应
+    if (message.type === 'res' && message.id) {
+      const pending = pendingRequests.get(message.id)
+      if (pending) {
+        clearTimeout(pending.timeout)
+        pendingRequests.delete(message.id)
+
+        if (message.ok) {
+          pending.resolve(message.payload)
+        } else {
+          pending.reject(new Error(message.error?.message || '请求失败'))
+        }
+      }
+      return
+    }
+
+    // 处理事件
+    if (message.type === 'event' && message.event) {
+      const listeners = eventListeners.get(message.event)
+      if (listeners) {
+        listeners.forEach((listener) => {
+          try {
+            listener(message.payload)
+          } catch (e) {
+            console.error(`[gateway] 事件处理错误: ${message.event}`, e)
+          }
+        })
+      }
+    }
+  } catch (e) {
+    console.error('[gateway] 解析消息失败', e, data)
+  }
+}
+
+/**
+ * 连接到 Gateway（含 OpenClaw Protocol v3 握手）
+ * @returns 连接成功 Promise
  */
 export function connect(): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (ws?.readyState === WebSocket.OPEN) {
+    if (ws?.readyState === WebSocket.OPEN && handshakeComplete) {
       resolve()
       return
     }
@@ -115,7 +273,7 @@ export function connect(): Promise<void> {
     if (isConnecting) {
       // 等待现有连接完成
       const checkConnection = setInterval(() => {
-        if (ws?.readyState === WebSocket.OPEN) {
+        if (ws?.readyState === WebSocket.OPEN && handshakeComplete) {
           clearInterval(checkConnection)
           resolve()
         } else if (!isConnecting) {
@@ -127,6 +285,7 @@ export function connect(): Promise<void> {
     }
 
     isConnecting = true
+    handshakeComplete = false
     updateConnectionState('connecting')
 
     console.log('[gateway] 正在连接...', GATEWAY_WS_URL)
@@ -134,16 +293,15 @@ export function connect(): Promise<void> {
     ws = new WebSocket(GATEWAY_WS_URL)
 
     ws.onopen = () => {
-      console.log('[gateway] 连接成功')
-      isConnecting = false
+      console.log('[gateway] WebSocket 连接已建立，等待握手...')
       reconnectAttempts = 0
-      updateConnectionState('connected')
-      resolve()
+      // 不要立即 resolve，等待 connect.challenge 后完成握手
     }
 
     ws.onclose = (event) => {
       console.log('[gateway] 连接关闭', event.code, event.reason)
       isConnecting = false
+      handshakeComplete = false
       updateConnectionState('disconnected')
 
       // 清理等待中的请求
@@ -173,7 +331,7 @@ export function connect(): Promise<void> {
     }
 
     ws.onmessage = (event) => {
-      handleMessage(event.data)
+      handleMessage(event.data, resolve, reject)
     }
   })
 }
@@ -187,54 +345,12 @@ export function disconnect(): void {
     ws.close()
     ws = null
   }
+  handshakeComplete = false
   updateConnectionState('disconnected')
 }
 
 /**
- * 处理收到的消息
- */
-function handleMessage(data: string): void {
-  try {
-    const message = JSON.parse(data)
-
-    // 检查是否是响应（有 id）
-    if ('id' in message && message.id !== undefined) {
-      const response = message as JsonRpcResponse
-      const pending = pendingRequests.get(response.id)
-
-      if (pending) {
-        clearTimeout(pending.timeout)
-        pendingRequests.delete(response.id)
-
-        if (response.error) {
-          console.error(`[gateway] RPC 错误:`, response.error)
-          pending.reject(new Error(response.error.message))
-        } else {
-          pending.resolve(response.result)
-        }
-      }
-    } else if ('method' in message) {
-      // 是通知/事件
-      const notification = message as JsonRpcNotification
-      const listeners = eventListeners.get(notification.method)
-
-      if (listeners) {
-        listeners.forEach((listener) => {
-          try {
-            listener(notification.params)
-          } catch (e) {
-            console.error(`[gateway] 事件处理错误: ${notification.method}`, e)
-          }
-        })
-      }
-    }
-  } catch (e) {
-    console.error('[gateway] 解析消息失败', e, data)
-  }
-}
-
-/**
- * 发送 RPC 请求
+ * 发送 RPC 请求（OpenClaw Protocol v3 格式）
  *
  * @param method - RPC 方法名
  * @param params - 请求参数
@@ -244,21 +360,21 @@ function handleMessage(data: string): void {
 export async function call<T = unknown>(
   method: string,
   params: Record<string, unknown> = {},
-  timeout = 30000
+  timeout = REQUEST_TIMEOUT
 ): Promise<T> {
-  // 确保已连接
-  if (ws?.readyState !== WebSocket.OPEN) {
+  // 确保已连接且握手完成
+  if (ws?.readyState !== WebSocket.OPEN || !handshakeComplete) {
     await connect()
   }
 
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
+  if (!ws || ws.readyState !== WebSocket.OPEN || !handshakeComplete) {
     throw new Error('未连接到 Gateway')
   }
 
-  const id = ++requestIdCounter
+  const id = generateId()
 
-  const request: JsonRpcRequest = {
-    jsonrpc: '2.0',
+  const message: Message = {
+    type: 'req',
     id,
     method,
     params: {
@@ -282,7 +398,7 @@ export async function call<T = unknown>(
       timeout: timeoutId,
     })
 
-    ws!.send(JSON.stringify(request))
+    ws!.send(JSON.stringify(message))
   })
 }
 

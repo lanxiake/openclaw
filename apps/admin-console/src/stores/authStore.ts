@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { STORAGE_KEYS } from '@/lib/constants'
+import { isTokenExpired } from '@/lib/jwt'
 import { gateway } from '@/lib/gateway-client'
 import type { Admin } from '@/types'
 
@@ -261,8 +262,17 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
-        // Hydration 完成后设置 isLoading 为 false
         if (state) {
+          // 检查 localStorage 中的 Token 是否已过期
+          const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
+
+          if (state.isAuthenticated && (!token || isTokenExpired(token))) {
+            console.log('[authStore] Hydration: Token 已过期或不存在，清除认证状态')
+            state.setAdmin(null)
+            localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
+            localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+          }
+
           state.setLoading(false)
         }
       },

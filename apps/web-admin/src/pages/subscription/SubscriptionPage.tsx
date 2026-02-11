@@ -58,10 +58,10 @@ function PlanCard({
 
       <CardContent>
         <ul className="space-y-2 mb-6">
-          {plan.features.map((feature) => (
-            <li key={feature} className="flex items-center gap-2 text-sm">
+          {plan.features.map((feature, index) => (
+            <li key={typeof feature === 'string' ? feature : (feature as { id?: string; name?: string }).id ?? index} className="flex items-center gap-2 text-sm">
               <Check className="w-4 h-4 text-green-500" />
-              {feature}
+              {typeof feature === 'string' ? feature : (feature as { name?: string }).name ?? String(feature)}
             </li>
           ))}
         </ul>

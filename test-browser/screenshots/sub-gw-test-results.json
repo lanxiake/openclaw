@@ -1,0 +1,67 @@
+{
+  "suite": "admin-console-sub-gw",
+  "date": "2026-02-11T03:16:40.251Z",
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  },
+  "results": [
+    {
+      "id": "AC-SUB-001",
+      "name": "订阅列表页渲染",
+      "status": "PASS",
+      "detail": "订阅管理页渲染正确：标题✓ 卡片7个 搜索框✓ 统计✓",
+      "timestamp": "2026-02-11T03:16:11.784Z"
+    },
+    {
+      "id": "AC-SUB-002",
+      "name": "订阅计划页面",
+      "status": "PASS",
+      "detail": "计划页面渲染正确：标题✓ 卡片5个 计划信息✓",
+      "timestamp": "2026-02-11T03:16:14.612Z"
+    },
+    {
+      "id": "AC-SUB-003",
+      "name": "订阅订单页面",
+      "status": "PASS",
+      "detail": "订单页面渲染正确",
+      "timestamp": "2026-02-11T03:16:17.473Z"
+    },
+    {
+      "id": "AC-GW-001",
+      "name": "Gateway WebSocket 连接状态",
+      "status": "PASS",
+      "detail": "Gateway 连接正常, 仪表盘数据已加载, localStorage keys: 3",
+      "timestamp": "2026-02-11T03:16:21.365Z"
+    },
+    {
+      "id": "AC-GW-002",
+      "name": "Gateway RPC 调用（用户列表）",
+      "status": "PASS",
+      "detail": "RPC 调用成功，页面正常显示（空数据）",
+      "timestamp": "2026-02-11T03:16:25.179Z"
+    },
+    {
+      "id": "AC-GW-003",
+      "name": "Gateway RPC 调用（订阅统计）",
+      "status": "PASS",
+      "detail": "订阅统计 RPC 调用成功，数据已渲染",
+      "timestamp": "2026-02-11T03:16:28.972Z"
+    },
+    {
+      "id": "AC-GW-004",
+      "name": "Gateway RPC 调用（仪表盘）",
+      "status": "PASS",
+      "detail": "仪表盘数据加载正常",
+      "timestamp": "2026-02-11T03:16:32.824Z"
+    },
+    {
+      "id": "AC-GW-005",
+      "name": "Gateway 连接断开恢复",
+      "status": "PASS",
+      "detail": "刷新后页面正常恢复，未丢失登录状态",
+      "timestamp": "2026-02-11T03:16:39.371Z"
+    }
+  ]
+}

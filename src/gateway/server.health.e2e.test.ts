@@ -18,6 +18,7 @@ import {
   onceMessage,
   startGatewayServer,
   startServerWithClient,
+  testState,
 } from "./test-helpers.js";
 import { buildDeviceAuthPayload } from "./device-auth.js";
 
@@ -224,6 +225,12 @@ describe("gateway server health/presence", () => {
     const role = "operator";
     const scopes: string[] = [];
     const signedAtMs = Date.now();
+    // testState.gatewayAuth.token 由 resetGatewayTestState 设置，connectReq 会自动附加该 token
+    // 设备签名 payload 中也需要包含该 token，否则服务器验证签名时会因 token 不匹配而拒绝
+    const gatewayToken =
+      typeof (testState.gatewayAuth as { token?: unknown } | undefined)?.token === "string"
+        ? ((testState.gatewayAuth as { token?: string }).token ?? null)
+        : null;
     const payload = buildDeviceAuthPayload({
       deviceId: identity.deviceId,
       clientId: GATEWAY_CLIENT_NAMES.FINGERPRINT,
@@ -231,7 +238,7 @@ describe("gateway server health/presence", () => {
       role,
       scopes,
       signedAtMs,
-      token: null,
+      token: gatewayToken,
     });
     const ws = await openClient({
       role,

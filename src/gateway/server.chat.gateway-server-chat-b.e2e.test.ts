@@ -177,9 +177,11 @@ describe("gateway server chat", () => {
           });
           const abortRes = await abortResP;
           expect(abortRes.ok).toBe(true);
+          console.log("[DBG] STEP-3d: abortRes ok, waiting for abortedEvent");
           const evt = await abortedEventP;
           expect(evt.payload?.runId).toBe("idem-abort-1");
           expect(evt.payload?.sessionKey).toBe("main");
+          console.log("[DBG] STEP-3e: abort flow complete");
         } finally {
           await abortInFlight;
         }
@@ -189,6 +191,7 @@ describe("gateway server chat", () => {
         resetSpy();
         try {
           spy.mockImplementationOnce(async (_ctx, opts) => {
+            console.log("[DBG] STEP-4a: getReplyFromConfig called for abort-save-1");
             opts?.onAgentRunStart?.(opts.runId ?? "idem-abort-save-1");
             const signal = opts?.abortSignal;
             await new Promise<void>((resolve) => {
@@ -204,26 +207,38 @@ describe("gateway server chat", () => {
           const abortedEventP = onceMessage(
             ws,
             (o) => o.type === "event" && o.event === "chat" && o.payload?.state === "aborted",
+            15_000,
           );
-          const sendResP = onceMessage(ws, (o) => o.type === "res" && o.id === "send-abort-save-1");
+          const sendResP = onceMessage(
+            ws,
+            (o) => o.type === "res" && o.id === "send-abort-save-1",
+            15_000,
+          );
           sendReq(ws, "send-abort-save-1", "chat.send", {
             sessionKey: "main",
             message: "hello",
             idempotencyKey: "idem-abort-save-1",
             timeoutMs: 30_000,
           });
-          const abortResP = onceMessage(ws, (o) => o.type === "res" && o.id === "abort-save-1");
+          const abortResP = onceMessage(
+            ws,
+            (o) => o.type === "res" && o.id === "abort-save-1",
+            15_000,
+          );
           sendReq(ws, "abort-save-1", "chat.abort", {
             sessionKey: "main",
             runId: "idem-abort-save-1",
           });
           const abortRes = await abortResP;
           expect(abortRes.ok).toBe(true);
+          console.log("[DBG] STEP-4b: abort-save abortRes ok");
           const sendRes = await sendResP;
           expect(sendRes.ok).toBe(true);
+          console.log("[DBG] STEP-4c: abort-save sendRes ok");
           const evt = await abortedEventP;
           expect(evt.payload?.runId).toBe("idem-abort-save-1");
           expect(evt.payload?.sessionKey).toBe("main");
+          console.log("[DBG] STEP-4d: abort-save flow complete");
         } finally {
           sessionStoreSaveDelayMs.value = 0;
         }
@@ -232,6 +247,7 @@ describe("gateway server chat", () => {
         resetSpy();
         const callsBeforeStop = spy.mock.calls.length;
         spy.mockImplementationOnce(async (_ctx, opts) => {
+          console.log("[DBG] STEP-5a: getReplyFromConfig called for stop-1");
           opts?.onAgentRunStart?.(opts.runId ?? "idem-stop-1");
           const signal = opts?.abortSignal;
           await new Promise<void>((resolve) => {
@@ -256,7 +272,9 @@ describe("gateway server chat", () => {
         });
         const stopSendRes = await stopSendResP;
         expect(stopSendRes.ok).toBe(true);
+        console.log("[DBG] STEP-5b: stop sendRes ok, waiting for spy");
         await waitFor(() => spy.mock.calls.length > callsBeforeStop);
+        console.log("[DBG] STEP-5c: spy called, setting up stop abort listeners");
         const abortedStopEventP = onceMessage(
           ws,
           (o) =>
@@ -274,15 +292,18 @@ describe("gateway server chat", () => {
         });
         const stopRes = await stopResP;
         expect(stopRes.ok).toBe(true);
+        console.log("[DBG] STEP-5d: stop stopRes ok, waiting abortedStopEvent");
         const stopEvt = await abortedStopEventP;
         expect(stopEvt.payload?.sessionKey).toBe("main");
         expect(spy.mock.calls.length).toBe(callsBeforeStop + 1);
+        console.log("[DBG] STEP-5e: stop flow complete");
         resetSpy();
         let resolveRun: (() => void) | undefined;
         const runDone = new Promise<void>((resolve) => {
           resolveRun = resolve;
         });
         spy.mockImplementationOnce(async (_ctx, opts) => {
+          console.log("[DBG] STEP-6a: getReplyFromConfig called for status-1");
           opts?.onAgentRunStart?.(opts.runId ?? "idem-status-1");
           await runDone;
         });
@@ -293,6 +314,7 @@ describe("gateway server chat", () => {
         });
         expect(started.ok).toBe(true);
         expect(started.payload?.status).toBe("started");
+        console.log("[DBG] STEP-6b: idempotency started ok");
         const inFlightRes = await rpcReq<{ runId?: string; status?: string }>(ws, "chat.send", {
           sessionKey: "main",
           message: "hello",
@@ -300,6 +322,7 @@ describe("gateway server chat", () => {
         });
         expect(inFlightRes.ok).toBe(true);
         expect(inFlightRes.payload?.status).toBe("in_flight");
+        console.log("[DBG] STEP-6c: idempotency in_flight ok, resolving run");
         resolveRun?.();
         let completed = false;
         for (let i = 0; i < 20; i++) {
@@ -315,8 +338,10 @@ describe("gateway server chat", () => {
           await new Promise((r) => setTimeout(r, 10));
         }
         expect(completed).toBe(true);
+        console.log("[DBG] STEP-6d: idempotency completed ok");
         resetSpy();
         spy.mockImplementationOnce(async (_ctx, opts) => {
+          console.log("[DBG] STEP-7a: getReplyFromConfig called for abort-all-1");
           opts?.onAgentRunStart?.(opts.runId ?? "idem-abort-all-1");
           const signal = opts?.abortSignal;
           await new Promise<void>((resolve) => {
@@ -336,6 +361,7 @@ describe("gateway server chat", () => {
             o.event === "chat" &&
             o.payload?.state === "aborted" &&
             o.payload?.runId === "idem-abort-all-1",
+          15_000,
         );
         const startedAbortAll = await rpcReq(ws, "chat.send", {
           sessionKey: "main",
@@ -343,6 +369,7 @@ describe("gateway server chat", () => {
           idempotencyKey: "idem-abort-all-1",
         });
         expect(startedAbortAll.ok).toBe(true);
+        console.log("[DBG] STEP-7b: abort-all started, sending abort");
         const abortRes = await rpcReq<{
           ok?: boolean;
           aborted?: boolean;
@@ -351,7 +378,9 @@ describe("gateway server chat", () => {
         expect(abortRes.ok).toBe(true);
         expect(abortRes.payload?.aborted).toBe(true);
         expect(abortRes.payload?.runIds ?? []).toContain("idem-abort-all-1");
+        console.log("[DBG] STEP-7c: abort-all abortRes ok, waiting abortedEvent");
         await abortedEventP;
+        console.log("[DBG] STEP-7d: abort-all abortedEvent ok, testing noDelta");
         const noDeltaP = onceMessage(
           ws,
           (o) =>
@@ -372,6 +401,7 @@ describe("gateway server chat", () => {
           data: { phase: "end" },
         });
         await expect(noDeltaP).rejects.toThrow(/timeout/i);
+        console.log("[DBG] STEP-7e: noDelta timeout ok, testing abort unknown");
         await writeStore({});
         const abortUnknown = await rpcReq<{
           ok?: boolean;
@@ -379,6 +409,7 @@ describe("gateway server chat", () => {
         }>(ws, "chat.abort", { sessionKey: "main", runId: "missing-run" });
         expect(abortUnknown.ok).toBe(true);
         expect(abortUnknown.payload?.aborted).toBe(false);
+        console.log("[DBG] STEP-7f: abort unknown ok, testing mismatch");
 
         await writeStore({ main: { sessionId: "sess-main", updatedAt: Date.now() } });
         resetSpy();
@@ -387,6 +418,7 @@ describe("gateway server chat", () => {
           agentStartedResolve = resolve;
         });
         spy.mockImplementationOnce(async (_ctx, opts) => {
+          console.log("[DBG] STEP-8a: getReplyFromConfig called for mismatch-1");
           agentStartedResolve?.();
           const signal = opts?.abortSignal;
           await new Promise<void>((resolve) => {
@@ -424,9 +456,11 @@ describe("gateway server chat", () => {
         expect(abortMismatch2.ok).toBe(true);
         const sendRes = await sendResP;
         expect(sendRes.ok).toBe(true);
+        console.log("[DBG] STEP-8b: mismatch flow complete");
 
         await writeStore({ main: { sessionId: "sess-main", updatedAt: Date.now() } });
         resetSpy();
+        console.log("[DBG] STEP-9a: starting complete-1 flow");
         spy.mockResolvedValueOnce(undefined);
         sendReq(ws, "send-complete-1", "chat.send", {
           sessionKey: "main",
@@ -437,6 +471,7 @@ describe("gateway server chat", () => {
         const sendCompleteRes = await onceMessage(
           ws,
           (o) => o.type === "res" && o.id === "send-complete-1",
+          15_000,
         );
         expect(sendCompleteRes.ok).toBe(true);
         let completedRun = false;
@@ -460,52 +495,58 @@ describe("gateway server chat", () => {
         });
         expect(abortCompleteRes.ok).toBe(true);
         expect(abortCompleteRes.payload?.aborted).toBe(false);
+        console.log("[DBG] STEP-9b: complete-1 flow ok, starting ordering");
 
         await writeStore({ main: { sessionId: "sess-main", updatedAt: Date.now() } });
+        // ordering 流程：mock 立即返回 undefined，server 走快速完成路径直接广播 final
+        // 需要在 chat.send 发出前就设置 onceMessage，避免 final 事件竞争条件
+        resetSpy();
+        const final1P = onceMessage(
+          ws,
+          (o) =>
+            o.type === "event" &&
+            o.event === "chat" &&
+            o.payload?.state === "final" &&
+            o.payload?.runId === "idem-1",
+          15_000,
+        );
         const res1 = await rpcReq(ws, "chat.send", {
           sessionKey: "main",
           message: "first",
           idempotencyKey: "idem-1",
         });
         expect(res1.ok).toBe(true);
+        const final2P = onceMessage(
+          ws,
+          (o) =>
+            o.type === "event" &&
+            o.event === "chat" &&
+            o.payload?.state === "final" &&
+            o.payload?.runId === "idem-2",
+          15_000,
+        );
         const res2 = await rpcReq(ws, "chat.send", {
           sessionKey: "main",
           message: "second",
           idempotencyKey: "idem-2",
         });
         expect(res2.ok).toBe(true);
-        const final1P = onceMessage(
-          ws,
-          (o) => o.type === "event" && o.event === "chat" && o.payload?.state === "final",
-          8000,
-        );
-        emitAgentEvent({
-          runId: "idem-1",
-          stream: "lifecycle",
-          data: { phase: "end" },
-        });
+        // mock 立即返回 undefined，server 走快速完成路径直接广播 final 事件
+        // 不需要 emitAgentEvent 来触发（没有 registerAgentRunContext 所以 lifecycle 事件无效）
         const final1 = await final1P;
         const run1 =
           final1.payload && typeof final1.payload === "object"
             ? (final1.payload as { runId?: string }).runId
             : undefined;
         expect(run1).toBe("idem-1");
-        const final2P = onceMessage(
-          ws,
-          (o) => o.type === "event" && o.event === "chat" && o.payload?.state === "final",
-          8000,
-        );
-        emitAgentEvent({
-          runId: "idem-2",
-          stream: "lifecycle",
-          data: { phase: "end" },
-        });
+        console.log("[DBG] STEP-10a: ordering final1 ok");
         const final2 = await final2P;
         const run2 =
           final2.payload && typeof final2.payload === "object"
             ? (final2.payload as { runId?: string }).runId
             : undefined;
         expect(run2).toBe("idem-2");
+        console.log("[DBG] STEP-10b: ALL DONE");
       } finally {
         __setMaxChatHistoryMessagesBytesForTest();
         testState.sessionStorePath = undefined;

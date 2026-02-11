@@ -1,0 +1,47 @@
+{
+  "suite": "admin-console-users",
+  "date": "2026-02-11T03:15:36.870Z",
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0
+  },
+  "results": [
+    {
+      "id": "AC-USER-001",
+      "name": "用户列表页渲染",
+      "status": "PASS",
+      "detail": "用户管理页面渲染正确：标题✓ 搜索框✓ 卡片✓ 筛选器✓",
+      "timestamp": "2026-02-11T03:15:05.818Z"
+    },
+    {
+      "id": "AC-USER-002",
+      "name": "用户搜索功能",
+      "status": "PASS",
+      "detail": "搜索输入正常，页面无报错",
+      "timestamp": "2026-02-11T03:15:12.952Z"
+    },
+    {
+      "id": "AC-USER-003",
+      "name": "用户状态筛选",
+      "status": "PASS",
+      "detail": "状态筛选器可正常交互",
+      "timestamp": "2026-02-11T03:15:18.670Z"
+    },
+    {
+      "id": "AC-USER-004",
+      "name": "用户详情查看",
+      "status": "PASS",
+      "detail": "用户列表为空（无数据可查看），页面正常显示空状态",
+      "timestamp": "2026-02-11T03:15:21.442Z"
+    },
+    {
+      "id": "AC-USER-005",
+      "name": "页面导航与侧边栏",
+      "status": "PASS",
+      "detail": "侧边栏导航 5/5 通过 [仪表盘:✓ 用户管理:✓ 订阅管理:✓ 技能商店:✓ 操作日志:✓]",
+      "timestamp": "2026-02-11T03:15:34.898Z"
+    }
+  ]
+}

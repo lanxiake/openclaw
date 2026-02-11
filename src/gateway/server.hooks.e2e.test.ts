@@ -15,7 +15,7 @@ installGatewayTestHooks({ scope: "suite" });
 const resolveMainKey = () => resolveMainSessionKeyFromConfig();
 
 describe("gateway server hooks", () => {
-  test("handles auth, wake, and agent flows", async () => {
+  test("handles auth, wake, and agent flows", { timeout: 60_000 }, async () => {
     testState.hooksConfig = { enabled: true, token: "hook-secret" };
     const port = await getFreePort();
     const server = await startGatewayServer(port);

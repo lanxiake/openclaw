@@ -54,33 +54,40 @@ function Get-UIProcess {
     return $null
 }
 
-# Read auth token from ~/.openclaw/openclaw.json
+# Read auth token from Gateway log or config
 function Get-AuthToken {
-    if (Test-Path $OpenClawConfigPath) {
-        try {
-            $config = Get-Content $OpenClawConfigPath -Raw | ConvertFrom-Json
-            # 优先从 gateway.auth.token 获取
-            $token = $config.gateway.auth.token
-            if ($token) {
-                Write-Info "Using auth token from ~/.openclaw/openclaw.json (gateway.auth.token)"
-                return $token
-            }
-            # 备选: channels.wechat.authToken
-            $token = $config.channels.wechat.authToken
-            if ($token) {
-                Write-Info "Using auth token from config (channels.wechat.authToken)"
-                return $token
-            }
-        } catch {
-            Write-Warn "Failed to read config: $_"
-        }
-    }
-    # 环境变量
+    # 优先从环境变量获取
     $token = $env:WECHAT_AUTH_TOKEN
     if ($token) {
         Write-Info "Using auth token from WECHAT_AUTH_TOKEN env"
         return $token
     }
+
+    # 从 Gateway 日志中提取 wechat 插件生成的 token
+    if (Test-Path $GatewayLogFile) {
+        $logContent = Get-Content $GatewayLogFile -Raw -ErrorAction SilentlyContinue
+        if ($logContent -match "Generated auth token: ([a-f0-9]+)") {
+            $token = $Matches[1]
+            Write-Info "Using wechat auth token from Gateway log"
+            return $token
+        }
+    }
+
+    # 从配置文件获取
+    if (Test-Path $OpenClawConfigPath) {
+        try {
+            $config = Get-Content $OpenClawConfigPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            # gateway.auth.token
+            $token = $config.gateway.auth.token
+            if ($token) {
+                Write-Info "Using auth token from ~/.openclaw/openclaw.json (gateway.auth.token)"
+                return $token
+            }
+        } catch {
+            Write-Warn "Failed to read config, trying Gateway log..."
+        }
+    }
+
     Write-Warn "No auth token found"
     return $null
 }
