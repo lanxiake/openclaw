@@ -4,7 +4,7 @@ import type { AuthStorage, ModelRegistry } from "../../pi-model-discovery.js";
 
 import type { ReasoningLevel, ThinkLevel, VerboseLevel } from "../../../../messaging/thinking.js";
 import type { OpenClawConfig } from "../../../../config/config.js";
-import type { AgentStreamParams } from "../../../../commands/agent/types.js";
+import type { AgentStreamParams } from "../../../../cli/commands/agent/types.js";
 import type { ExecElevatedDefaults, ExecToolDefaults } from "../../../tools/bash-tools.js";
 import type { MessagingToolSend } from "../../pi-embedded-messaging.js";
 import type { BlockReplyChunking, ToolResultFormat } from "../../pi-embedded-subscribe.js";

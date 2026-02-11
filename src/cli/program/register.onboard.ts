@@ -1,13 +1,13 @@
 import type { Command } from "commander";
-import type { GatewayDaemonRuntime } from "../../commands/daemon-runtime.js";
-import { onboardCommand } from "../../commands/onboard.js";
+import type { GatewayDaemonRuntime } from "../commands/daemon-runtime.js";
+import { onboardCommand } from "../commands/onboard.js";
 import type {
   AuthChoice,
   GatewayAuthChoice,
   GatewayBind,
   NodeManagerChoice,
   TailscaleMode,
-} from "../../commands/onboard-types.js";
+} from "../commands/onboard-types.js";
 import { defaultRuntime } from "../../runtime.js";
 import { formatDocsLink } from "../../shared/terminal/links.js";
 import { theme } from "../../shared/terminal/theme.js";

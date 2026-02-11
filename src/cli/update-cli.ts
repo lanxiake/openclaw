@@ -48,7 +48,7 @@ import {
   formatUpdateAvailableHint,
   formatUpdateOneLiner,
   resolveUpdateAvailability,
-} from "../commands/status.update.js";
+} from "./commands/status.update.js";
 import { syncPluginsForUpdateChannel, updateNpmInstalledPlugins } from "../plugins/update.js";
 import { runCommandWithTimeout } from "../infra/process/exec.js";
 
@@ -967,7 +967,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
         defaultRuntime.log("");
         process.env.OPENCLAW_UPDATE_IN_PROGRESS = "1";
         try {
-          const { doctorCommand } = await import("../commands/doctor.js");
+          const { doctorCommand } = await import("./commands/doctor.js");
           const interactiveDoctor = Boolean(process.stdin.isTTY) && !opts.json && opts.yes !== true;
           await doctorCommand(defaultRuntime, {
             nonInteractive: !interactiveDoctor,

@@ -43,7 +43,7 @@ vi.mock("../config/config.js", async (importActual) => {
 });
 
 vi.mock("../commands/onboard-helpers.js", async (importActual) => {
-  const actual = await importActual<typeof import("../../commands/onboard-helpers.js")>();
+  const actual = await importActual<typeof import("../../cli/commands/onboard-helpers.js")>();
   return {
     ...actual,
     ensureWorkspaceAndSessions,

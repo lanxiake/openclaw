@@ -1,7 +1,7 @@
 import type { ImageContent } from "@mariozechner/pi-ai";
 import type { ReasoningLevel, ThinkLevel, VerboseLevel } from "../../../../messaging/thinking.js";
 import type { OpenClawConfig } from "../../../../config/config.js";
-import type { AgentStreamParams } from "../../../../commands/agent/types.js";
+import type { AgentStreamParams } from "../../../../cli/commands/agent/types.js";
 import type { enqueueCommand } from "../../../../infra/process/command-queue.js";
 import type { ExecElevatedDefaults, ExecToolDefaults } from "../../../tools/bash-tools.js";
 import type { BlockReplyChunking, ToolResultFormat } from "../../pi-embedded-subscribe.js";

@@ -1,6 +1,6 @@
 import type { ModelCatalogEntry } from "../../agent/models/model-catalog.js";
 import type { createDefaultDeps } from "../../cli/deps.js";
-import type { HealthSummary } from "../../commands/health.js";
+import type { HealthSummary } from "../../cli/commands/health.js";
 import type { CronService } from "../../services/cron/service.js";
 import type { WizardSession } from "../../platform/wizard/session.js";
 import type { ChatAbortControllerEntry } from "../chat-abort.js";
@@ -97,7 +97,7 @@ export type GatewayRequestContext = {
     accountId?: string,
   ) => void;
   wizardRunner: (
-    opts: import("../../commands/onboard-types.js").OnboardOptions,
+    opts: import("../../cli/commands/onboard-types.js").OnboardOptions,
     runtime: import("../../runtime.js").RuntimeEnv,
     prompter: import("../../platform/wizard/prompts.js").WizardPrompter,
   ) => Promise<void>;

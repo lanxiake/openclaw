@@ -3,7 +3,7 @@ import {
   CONFIGURE_WIZARD_SECTIONS,
   configureCommand,
   configureCommandWithSections,
-} from "../../commands/configure.js";
+} from "../commands/configure.js";
 import { defaultRuntime } from "../../runtime.js";
 import { formatDocsLink } from "../../shared/terminal/links.js";
 import { theme } from "../../shared/terminal/theme.js";

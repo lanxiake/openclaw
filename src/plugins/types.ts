@@ -17,7 +17,7 @@ import type { ModelProviderConfig } from "../config/types.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { ReplyPayload } from "../messaging/types.js";
 import type { WizardPrompter } from "../platform/wizard/prompts.js";
-import type { createVpsAwareOAuthHandlers } from "../commands/oauth-flow.js";
+import type { createVpsAwareOAuthHandlers } from "../cli/commands/oauth-flow.js";
 import type { GatewayRequestHandler } from "../gateway/server-methods/types.js";
 import type { PluginRuntime } from "./runtime/types.js";
 

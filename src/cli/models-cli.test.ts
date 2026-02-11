@@ -5,7 +5,7 @@ const modelsStatusCommand = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("../commands/models.js", async () => {
   const actual =
-    await vi.importActual<typeof import("../commands/models.js")>("../commands/models.js");
+    await vi.importActual<typeof import("./commands/models.js")>("../commands/models.js");
 
   return {
     ...actual,

@@ -1,8 +1,8 @@
-import { buildNodeInstallPlan } from "../../commands/node-daemon-install-helpers.js";
+import { buildNodeInstallPlan } from "../commands/node-daemon-install-helpers.js";
 import {
   DEFAULT_NODE_DAEMON_RUNTIME,
   isNodeDaemonRuntime,
-} from "../../commands/node-daemon-runtime.js";
+} from "../commands/node-daemon-runtime.js";
 import {
   resolveNodeLaunchAgentLabel,
   resolveNodeSystemdServiceName,

@@ -5,7 +5,7 @@ import { SILENT_REPLY_TOKEN } from "../messaging/tokens.js";
 import type { CliDeps } from "../cli/deps.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { resolveMainSessionKey } from "../config/sessions/main-session.js";
-import { agentCommand } from "../commands/agent.js";
+import { agentCommand } from "../cli/commands/agent.js";
 import { createSubsystemLogger } from "../shared/logging/subsystem.js";
 import { type RuntimeEnv, defaultRuntime } from "../runtime.js";
 

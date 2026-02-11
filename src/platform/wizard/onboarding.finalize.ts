@@ -5,9 +5,9 @@ import { DEFAULT_BOOTSTRAP_FILENAME } from "../../agent/runtime/workspace.js";
 import {
   DEFAULT_GATEWAY_DAEMON_RUNTIME,
   GATEWAY_DAEMON_RUNTIME_OPTIONS,
-} from "../../commands/daemon-runtime.js";
-import { healthCommand } from "../../commands/health.js";
-import { formatHealthCheckFailure } from "../../commands/health-format.js";
+} from "../../cli/commands/daemon-runtime.js";
+import { healthCommand } from "../../cli/commands/health.js";
+import { formatHealthCheckFailure } from "../../cli/commands/health-format.js";
 import {
   detectBrowserOpenSupport,
   formatControlUiSshHint,
@@ -16,9 +16,9 @@ import {
   probeGatewayReachable,
   waitForGatewayReachable,
   resolveControlUiLinks,
-} from "../../commands/onboard-helpers.js";
+} from "../../cli/commands/onboard-helpers.js";
 import { formatCliCommand } from "../../cli/command-format.js";
-import type { OnboardOptions } from "../../commands/onboard-types.js";
+import type { OnboardOptions } from "../../cli/commands/onboard-types.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { resolveGatewayService } from "../daemon/service.js";
 import { isSystemdUserServiceAvailable } from "../daemon/systemd.js";
@@ -29,7 +29,7 @@ import { resolveUserPath } from "../../utils.js";
 import {
   buildGatewayInstallPlan,
   gatewayInstallErrorHint,
-} from "../../commands/daemon-install-helpers.js";
+} from "../../cli/commands/daemon-install-helpers.js";
 import type { GatewayWizardSettings, WizardFlow } from "./onboarding.types.js";
 import type { WizardPrompter } from "./prompts.js";
 
@@ -70,7 +70,8 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
   }
 
   if (process.platform === "linux" && systemdAvailable) {
-    const { ensureSystemdUserLingerInteractive } = await import("../../commands/systemd-linger.js");
+    const { ensureSystemdUserLingerInteractive } =
+      await import("../../cli/commands/systemd-linger.js");
     await ensureSystemdUserLingerInteractive({
       runtime,
       prompter: {

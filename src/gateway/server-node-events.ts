@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { normalizeChannelId } from "../channels/core/plugins/index.js";
-import { agentCommand } from "../commands/agent.js";
+import { agentCommand } from "../cli/commands/agent.js";
 import { loadConfig } from "../config/config.js";
 import { updateSessionStore } from "../config/sessions.js";
 import { requestHeartbeatNow } from "../infra/heartbeat-wake.js";

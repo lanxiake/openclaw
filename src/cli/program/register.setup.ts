@@ -1,6 +1,6 @@
 import type { Command } from "commander";
-import { onboardCommand } from "../../commands/onboard.js";
-import { setupCommand } from "../../commands/setup.js";
+import { onboardCommand } from "../commands/onboard.js";
+import { setupCommand } from "../commands/setup.js";
 import { defaultRuntime } from "../../runtime.js";
 import { formatDocsLink } from "../../shared/terminal/links.js";
 import { theme } from "../../shared/terminal/theme.js";

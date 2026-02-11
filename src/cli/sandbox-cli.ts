@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 
-import { sandboxListCommand, sandboxRecreateCommand } from "../commands/sandbox.js";
-import { sandboxExplainCommand } from "../commands/sandbox-explain.js";
+import { sandboxListCommand, sandboxRecreateCommand } from "./commands/sandbox.js";
+import { sandboxExplainCommand } from "./commands/sandbox-explain.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../shared/terminal/links.js";
 import { theme } from "../shared/terminal/theme.js";

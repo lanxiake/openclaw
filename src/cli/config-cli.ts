@@ -233,7 +233,7 @@ export function registerConfigCli(program: Command) {
     )
     .action(async (opts) => {
       const { CONFIGURE_WIZARD_SECTIONS, configureCommand, configureCommandWithSections } =
-        await import("../commands/configure.js");
+        await import("./commands/configure.js");
       const sections: string[] = Array.isArray(opts.section)
         ? opts.section
             .map((value: unknown) => (typeof value === "string" ? value.trim() : ""))

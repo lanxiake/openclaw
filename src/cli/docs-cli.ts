@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 
-import { docsSearchCommand } from "../commands/docs.js";
+import { docsSearchCommand } from "./commands/docs.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../shared/terminal/links.js";
 import { theme } from "../shared/terminal/theme.js";

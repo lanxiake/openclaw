@@ -1,8 +1,8 @@
 import {
   DEFAULT_GATEWAY_DAEMON_RUNTIME,
   isGatewayDaemonRuntime,
-} from "../../commands/daemon-runtime.js";
-import { buildGatewayInstallPlan } from "../../commands/daemon-install-helpers.js";
+} from "../commands/daemon-runtime.js";
+import { buildGatewayInstallPlan } from "../commands/daemon-install-helpers.js";
 import { loadConfig, resolveGatewayPort } from "../../config/config.js";
 import { resolveIsNixMode } from "../../config/paths.js";
 import { resolveGatewayService } from "../../platform/daemon/service.js";

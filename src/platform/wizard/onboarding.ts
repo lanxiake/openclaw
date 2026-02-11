@@ -4,10 +4,10 @@ import {
   applyAuthChoice,
   resolvePreferredProviderForAuthChoice,
   warnIfModelConfigLooksOff,
-} from "../../commands/auth-choice.js";
-import { promptAuthChoiceGrouped } from "../../commands/auth-choice-prompt.js";
-import { applyPrimaryModel, promptDefaultModel } from "../../commands/model-picker.js";
-import { setupChannels } from "../../commands/onboard-channels.js";
+} from "../../cli/commands/auth-choice.js";
+import { promptAuthChoiceGrouped } from "../../cli/commands/auth-choice-prompt.js";
+import { applyPrimaryModel, promptDefaultModel } from "../../cli/commands/model-picker.js";
+import { setupChannels } from "../../cli/commands/onboard-channels.js";
 import {
   applyWizardMetadata,
   DEFAULT_WORKSPACE,
@@ -16,16 +16,16 @@ import {
   printWizardHeader,
   probeGatewayReachable,
   summarizeExistingConfig,
-} from "../../commands/onboard-helpers.js";
-import { promptRemoteGatewayConfig } from "../../commands/onboard-remote.js";
-import { setupSkills } from "../../commands/onboard-skills.js";
-import { setupInternalHooks } from "../../commands/onboard-hooks.js";
+} from "../../cli/commands/onboard-helpers.js";
+import { promptRemoteGatewayConfig } from "../../cli/commands/onboard-remote.js";
+import { setupSkills } from "../../cli/commands/onboard-skills.js";
+import { setupInternalHooks } from "../../cli/commands/onboard-hooks.js";
 import type {
   GatewayAuthChoice,
   OnboardMode,
   OnboardOptions,
   ResetScope,
-} from "../../commands/onboard-types.js";
+} from "../../cli/commands/onboard-types.js";
 import { formatCliCommand } from "../../cli/command-format.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import {

@@ -10,7 +10,7 @@ import { isTruthyEnvValue } from "../../infra/env.js";
 import {
   ANTHROPIC_SETUP_TOKEN_PREFIX,
   validateAnthropicSetupToken,
-} from "../../commands/auth-token.js";
+} from "../../cli/commands/auth-token.js";
 import { loadConfig } from "../../config/config.js";
 import { resolveOpenClawAgentDir } from "../agent-paths.js";
 import {

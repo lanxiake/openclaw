@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { resolveDefaultAgentWorkspaceDir } from "../../agent/runtime/workspace.js";
 import { resolveWorkspaceTemplateDir } from "../../agent/runtime/workspace-templates.js";
-import { handleReset } from "../../commands/onboard-helpers.js";
+import { handleReset } from "../commands/onboard-helpers.js";
 import { createConfigIO, writeConfigFile } from "../../config/config.js";
 import { defaultRuntime } from "../../runtime.js";
 import { resolveUserPath, shortenHomePath } from "../../utils.js";

@@ -1,5 +1,5 @@
 import { readConfigFileSnapshot } from "../../config/config.js";
-import { loadAndMaybeMigrateDoctorConfig } from "../../commands/doctor-config-flow.js";
+import { loadAndMaybeMigrateDoctorConfig } from "../commands/doctor-config-flow.js";
 import { colorize, isRich, theme } from "../../shared/terminal/theme.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { formatCliCommand } from "../command-format.js";

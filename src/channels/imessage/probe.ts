@@ -1,4 +1,4 @@
-import { detectBinary } from "../../commands/onboard-helpers.js";
+import { detectBinary } from "../../cli/commands/onboard-helpers.js";
 import { loadConfig } from "../../config/config.js";
 import { runCommandWithTimeout } from "../../infra/process/exec.js";
 import type { RuntimeEnv } from "../../runtime.js";

@@ -138,7 +138,7 @@ export type GatewayServerOptions = {
    * Test-only: override the onboarding wizard runner.
    */
   wizardRunner?: (
-    opts: import("../commands/onboard-types.js").OnboardOptions,
+    opts: import("../cli/commands/onboard-types.js").OnboardOptions,
     runtime: import("../runtime.js").RuntimeEnv,
     prompter: import("../platform/wizard/prompts.js").WizardPrompter,
   ) => Promise<void>;

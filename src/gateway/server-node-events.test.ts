@@ -11,7 +11,7 @@ import { enqueueSystemEvent } from "../infra/system-events.js";
 import { requestHeartbeatNow } from "../infra/heartbeat-wake.js";
 import { handleNodeEvent } from "./server-node-events.js";
 import type { NodeEventContext } from "./server-node-events-types.js";
-import type { HealthSummary } from "../commands/health.js";
+import type { HealthSummary } from "../cli/commands/health.js";
 import type { CliDeps } from "../cli/deps.js";
 
 const enqueueSystemEventMock = vi.mocked(enqueueSystemEvent);

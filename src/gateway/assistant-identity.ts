@@ -1,6 +1,6 @@
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agent/agent-scope.js";
 import { resolveAgentIdentity } from "../agent/runtime/identity.js";
-import { loadAgentIdentity } from "../commands/agents.config.js";
+import { loadAgentIdentity } from "../cli/commands/agents.config.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { normalizeAgentId } from "../messaging/routing/session-key.js";
 

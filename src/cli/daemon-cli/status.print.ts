@@ -1,4 +1,4 @@
-import { resolveControlUiLinks } from "../../commands/onboard-helpers.js";
+import { resolveControlUiLinks } from "../commands/onboard-helpers.js";
 import {
   resolveGatewayLaunchAgentLabel,
   resolveGatewaySystemdServiceName,
