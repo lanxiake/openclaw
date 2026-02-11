@@ -550,6 +550,10 @@ export const chatHandlers: GatewayRequestHandlers = {
                 };
               }
             }
+            const isCommand = trimmedMessage.startsWith("/");
+            if (isCommand) {
+              message = { ...(message ?? {}), command: true };
+            }
             broadcastChatFinal({
               context,
               runId: clientRunId,
