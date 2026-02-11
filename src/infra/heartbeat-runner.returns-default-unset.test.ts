@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { HEARTBEAT_PROMPT } from "../auto-reply/heartbeat.js";
-import * as replyModule from "../auto-reply/reply.js";
+import { HEARTBEAT_PROMPT } from "../messaging/heartbeat.js";
+import * as replyModule from "../messaging/reply.js";
 import type { OpenClawConfig } from "../config/config.js";
 import {
   resolveAgentIdFromSessionKey,
@@ -11,14 +11,14 @@ import {
   resolveMainSessionKey,
   resolveStorePath,
 } from "../config/sessions.js";
-import { buildAgentPeerSessionKey } from "../routing/session-key.js";
+import { buildAgentPeerSessionKey } from "../messaging/routing/session-key.js";
 import {
   isHeartbeatEnabledForAgent,
   resolveHeartbeatIntervalMs,
   resolveHeartbeatPrompt,
   runHeartbeatOnce,
 } from "./heartbeat-runner.js";
-import { resolveHeartbeatDeliveryTarget } from "./outbound/targets.js";
+import { resolveHeartbeatDeliveryTarget } from "../messaging/outbound/targets.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
 import { createPluginRuntime } from "../plugins/runtime/index.js";
 import { createTestRegistry } from "../test-utils/channel-plugins.js";

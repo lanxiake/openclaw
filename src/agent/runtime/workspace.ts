@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { isSubagentSessionKey } from "../../routing/session-key.js";
+import { isSubagentSessionKey } from "../../messaging/routing/session-key.js";
 import { runCommandWithTimeout } from "../../infra/process/exec.js";
 import { resolveUserPath } from "../../utils.js";
 import { resolveWorkspaceTemplateDir } from "./workspace-templates.js";

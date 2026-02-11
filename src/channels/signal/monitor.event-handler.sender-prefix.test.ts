@@ -19,7 +19,7 @@ describe("signal event handler sender prefix", () => {
 
   it("prefixes group bodies with sender label", async () => {
     let capturedBody = "";
-    const dispatchModule = await import("../../auto-reply/dispatch.js");
+    const dispatchModule = await import("../../messaging/dispatch.js");
     vi.spyOn(dispatchModule, "dispatchInboundMessage").mockImplementation(
       async (...args: unknown[]) => dispatchMock(...args),
     );

@@ -1,6 +1,6 @@
 import type { OpenClawConfig } from "../../config/config.js";
 import type { TelegramGroupConfig } from "../../config/types.telegram.js";
-import { normalizeAccountId } from "../../routing/session-key.js";
+import { normalizeAccountId } from "../../messaging/routing/session-key.js";
 
 type TelegramGroups = Record<string, TelegramGroupConfig>;
 

@@ -5,7 +5,7 @@ import path from "node:path";
 
 import type { AgentTool } from "@mariozechner/pi-agent-core";
 import type { ImageContent } from "@mariozechner/pi-ai";
-import type { ThinkLevel } from "../../../auto-reply/thinking.js";
+import type { ThinkLevel } from "../../../messaging/thinking.js";
 import type { OpenClawConfig } from "../../../config/config.js";
 import type { CliBackendConfig } from "../../../config/types.js";
 import { runExec } from "../../../infra/process/exec.js";

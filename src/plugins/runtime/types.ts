@@ -2,14 +2,15 @@ import type { LogLevel } from "../../shared/logging/levels.js";
 
 type ShouldLogVerbose = typeof import("../../globals.js").shouldLogVerbose;
 type DispatchReplyWithBufferedBlockDispatcher =
-  typeof import("../../auto-reply/reply/provider-dispatcher.js").dispatchReplyWithBufferedBlockDispatcher;
+  typeof import("../../messaging/reply/provider-dispatcher.js").dispatchReplyWithBufferedBlockDispatcher;
 type CreateReplyDispatcherWithTyping =
-  typeof import("../../auto-reply/reply/reply-dispatcher.js").createReplyDispatcherWithTyping;
+  typeof import("../../messaging/reply/reply-dispatcher.js").createReplyDispatcherWithTyping;
 type ResolveEffectiveMessagesConfig =
   typeof import("../../agent/runtime/identity.js").resolveEffectiveMessagesConfig;
 type ResolveHumanDelayConfig =
   typeof import("../../agent/runtime/identity.js").resolveHumanDelayConfig;
-type ResolveAgentRoute = typeof import("../../routing/resolve-route.js").resolveAgentRoute;
+type ResolveAgentRoute =
+  typeof import("../../messaging/routing/resolve-route.js").resolveAgentRoute;
 type BuildPairingReply =
   typeof import("../../infra/device/pairing/pairing-messages.js").buildPairingReply;
 type ReadChannelAllowFromStore =
@@ -19,11 +20,11 @@ type UpsertChannelPairingRequest =
 type FetchRemoteMedia = typeof import("../../services/media/fetch.js").fetchRemoteMedia;
 type SaveMediaBuffer = typeof import("../../services/media/store.js").saveMediaBuffer;
 type TextToSpeechTelephony = typeof import("../../services/tts/tts.js").textToSpeechTelephony;
-type BuildMentionRegexes = typeof import("../../auto-reply/reply/mentions.js").buildMentionRegexes;
+type BuildMentionRegexes = typeof import("../../messaging/reply/mentions.js").buildMentionRegexes;
 type MatchesMentionPatterns =
-  typeof import("../../auto-reply/reply/mentions.js").matchesMentionPatterns;
+  typeof import("../../messaging/reply/mentions.js").matchesMentionPatterns;
 type MatchesMentionWithExplicit =
-  typeof import("../../auto-reply/reply/mentions.js").matchesMentionWithExplicit;
+  typeof import("../../messaging/reply/mentions.js").matchesMentionWithExplicit;
 type ShouldAckReaction = typeof import("../../channels/core/ack-reactions.js").shouldAckReaction;
 type RemoveAckReactionAfterReply =
   typeof import("../../channels/core/ack-reactions.js").removeAckReactionAfterReply;
@@ -32,37 +33,37 @@ type ResolveChannelGroupPolicy =
 type ResolveChannelGroupRequireMention =
   typeof import("../../config/group-policy.js").resolveChannelGroupRequireMention;
 type CreateInboundDebouncer =
-  typeof import("../../auto-reply/inbound-debounce.js").createInboundDebouncer;
+  typeof import("../../messaging/inbound-debounce.js").createInboundDebouncer;
 type ResolveInboundDebounceMs =
-  typeof import("../../auto-reply/inbound-debounce.js").resolveInboundDebounceMs;
+  typeof import("../../messaging/inbound-debounce.js").resolveInboundDebounceMs;
 type ResolveCommandAuthorizedFromAuthorizers =
   typeof import("../../channels/core/command-gating.js").resolveCommandAuthorizedFromAuthorizers;
-type ResolveTextChunkLimit = typeof import("../../auto-reply/chunk.js").resolveTextChunkLimit;
-type ResolveChunkMode = typeof import("../../auto-reply/chunk.js").resolveChunkMode;
-type ChunkMarkdownText = typeof import("../../auto-reply/chunk.js").chunkMarkdownText;
+type ResolveTextChunkLimit = typeof import("../../messaging/chunk.js").resolveTextChunkLimit;
+type ResolveChunkMode = typeof import("../../messaging/chunk.js").resolveChunkMode;
+type ChunkMarkdownText = typeof import("../../messaging/chunk.js").chunkMarkdownText;
 type ChunkMarkdownTextWithMode =
-  typeof import("../../auto-reply/chunk.js").chunkMarkdownTextWithMode;
-type ChunkText = typeof import("../../auto-reply/chunk.js").chunkText;
-type ChunkTextWithMode = typeof import("../../auto-reply/chunk.js").chunkTextWithMode;
-type ChunkByNewline = typeof import("../../auto-reply/chunk.js").chunkByNewline;
+  typeof import("../../messaging/chunk.js").chunkMarkdownTextWithMode;
+type ChunkText = typeof import("../../messaging/chunk.js").chunkText;
+type ChunkTextWithMode = typeof import("../../messaging/chunk.js").chunkTextWithMode;
+type ChunkByNewline = typeof import("../../messaging/chunk.js").chunkByNewline;
 type ResolveMarkdownTableMode =
   typeof import("../../config/markdown-tables.js").resolveMarkdownTableMode;
 type ConvertMarkdownTables = typeof import("../../shared/markdown/tables.js").convertMarkdownTables;
-type HasControlCommand = typeof import("../../auto-reply/command-detection.js").hasControlCommand;
+type HasControlCommand = typeof import("../../messaging/command-detection.js").hasControlCommand;
 type IsControlCommandMessage =
-  typeof import("../../auto-reply/command-detection.js").isControlCommandMessage;
+  typeof import("../../messaging/command-detection.js").isControlCommandMessage;
 type ShouldComputeCommandAuthorized =
-  typeof import("../../auto-reply/command-detection.js").shouldComputeCommandAuthorized;
+  typeof import("../../messaging/command-detection.js").shouldComputeCommandAuthorized;
 type ShouldHandleTextCommands =
-  typeof import("../../auto-reply/commands-registry.js").shouldHandleTextCommands;
+  typeof import("../../messaging/commands-registry.js").shouldHandleTextCommands;
 type DispatchReplyFromConfig =
-  typeof import("../../auto-reply/reply/dispatch-from-config.js").dispatchReplyFromConfig;
+  typeof import("../../messaging/reply/dispatch-from-config.js").dispatchReplyFromConfig;
 type FinalizeInboundContext =
-  typeof import("../../auto-reply/reply/inbound-context.js").finalizeInboundContext;
-type FormatAgentEnvelope = typeof import("../../auto-reply/envelope.js").formatAgentEnvelope;
-type FormatInboundEnvelope = typeof import("../../auto-reply/envelope.js").formatInboundEnvelope;
+  typeof import("../../messaging/reply/inbound-context.js").finalizeInboundContext;
+type FormatAgentEnvelope = typeof import("../../messaging/envelope.js").formatAgentEnvelope;
+type FormatInboundEnvelope = typeof import("../../messaging/envelope.js").formatInboundEnvelope;
 type ResolveEnvelopeFormatOptions =
-  typeof import("../../auto-reply/envelope.js").resolveEnvelopeFormatOptions;
+  typeof import("../../messaging/envelope.js").resolveEnvelopeFormatOptions;
 type ResolveStateDir = typeof import("../../config/paths.js").resolveStateDir;
 type RecordInboundSession = typeof import("../../channels/core/session.js").recordInboundSession;
 type RecordSessionMetaFromInbound =

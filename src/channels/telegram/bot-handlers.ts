@@ -1,12 +1,12 @@
 // @ts-nocheck
-import { hasControlCommand } from "../../auto-reply/command-detection.js";
+import { hasControlCommand } from "../../messaging/command-detection.js";
 import {
   createInboundDebouncer,
   resolveInboundDebounceMs,
-} from "../../auto-reply/inbound-debounce.js";
-import { buildCommandsPaginationKeyboard } from "../../auto-reply/reply/commands-info.js";
-import { buildCommandsMessagePaginated } from "../../auto-reply/status.js";
-import { listSkillCommandsForAgents } from "../../auto-reply/skill-commands.js";
+} from "../../messaging/inbound-debounce.js";
+import { buildCommandsPaginationKeyboard } from "../../messaging/reply/commands-info.js";
+import { buildCommandsMessagePaginated } from "../../messaging/status.js";
+import { listSkillCommandsForAgents } from "../../messaging/skill-commands.js";
 import { resolveDefaultAgentId } from "../../agent/agent-scope.js";
 import { loadConfig } from "../../config/config.js";
 import { writeConfigFile } from "../../config/io.js";

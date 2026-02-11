@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { MsgContext } from "../../auto-reply/templating.js";
+import type { MsgContext } from "../../messaging/templating.js";
 import type { MediaUnderstandingAttachmentsConfig } from "../../config/types.tools.js";
 import { fetchRemoteMedia, MediaFetchError } from "../media/fetch.js";
 import { detectMime, getFileExtension, isAudioFileName, kindFromMime } from "../media/mime.js";

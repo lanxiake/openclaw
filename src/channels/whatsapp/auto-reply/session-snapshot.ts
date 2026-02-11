@@ -9,7 +9,7 @@ import {
   resolveSessionKey,
   resolveStorePath,
 } from "../../../config/sessions.js";
-import { normalizeMainKey } from "../../../routing/session-key.js";
+import { normalizeMainKey } from "../../../messaging/routing/session-key.js";
 
 export function getSessionSnapshot(
   cfg: ReturnType<typeof loadConfig>,

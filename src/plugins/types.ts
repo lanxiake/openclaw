@@ -15,7 +15,7 @@ import type { InternalHookHandler } from "../services/hooks/internal-hooks.js";
 import type { HookEntry } from "../services/hooks/types.js";
 import type { ModelProviderConfig } from "../config/types.js";
 import type { RuntimeEnv } from "../runtime.js";
-import type { ReplyPayload } from "../auto-reply/types.js";
+import type { ReplyPayload } from "../messaging/types.js";
 import type { WizardPrompter } from "../platform/wizard/prompts.js";
 import type { createVpsAwareOAuthHandlers } from "../commands/oauth-flow.js";
 import type { GatewayRequestHandler } from "../gateway/server-methods/types.js";

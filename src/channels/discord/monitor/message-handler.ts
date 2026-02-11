@@ -1,11 +1,11 @@
 import type { Client } from "@buape/carbon";
 
-import { hasControlCommand } from "../../../auto-reply/command-detection.js";
+import { hasControlCommand } from "../../../messaging/command-detection.js";
 import {
   createInboundDebouncer,
   resolveInboundDebounceMs,
-} from "../../../auto-reply/inbound-debounce.js";
-import type { HistoryEntry } from "../../../auto-reply/reply/history.js";
+} from "../../../messaging/inbound-debounce.js";
+import type { HistoryEntry } from "../../../messaging/reply/history.js";
 import type { ReplyToMode } from "../../../config/config.js";
 import { danger } from "../../../globals.js";
 import type { RuntimeEnv } from "../../../runtime.js";

@@ -1,4 +1,4 @@
-import { normalizeVerboseLevel } from "../auto-reply/thinking.js";
+import { normalizeVerboseLevel } from "../messaging/thinking.js";
 import { loadConfig } from "../config/config.js";
 import { type AgentEventPayload, getAgentRunContext } from "../infra/agent-events.js";
 import { resolveHeartbeatVisibility } from "../infra/heartbeat-visibility.js";

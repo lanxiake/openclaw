@@ -9,8 +9,8 @@ import {
   loadModelCatalog,
   modelSupportsVision,
 } from "../../agent/models/model-catalog.js";
-import type { MsgContext } from "../../auto-reply/templating.js";
-import { applyTemplate } from "../../auto-reply/templating.js";
+import type { MsgContext } from "../../messaging/templating.js";
+import { applyTemplate } from "../../messaging/templating.js";
 import { requireApiKey, resolveApiKeyForProvider } from "../../agent/models/model-auth.js";
 import { logVerbose, shouldLogVerbose } from "../../globals.js";
 import { runExec } from "../../infra/process/exec.js";

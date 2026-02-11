@@ -6,12 +6,12 @@ import {
   resolveAgentMainSessionKey,
   resolveStorePath,
 } from "../../../config/sessions.js";
-import { resolveMessageChannelSelection } from "../../../infra/outbound/channel-selection.js";
-import type { OutboundChannel } from "../../../infra/outbound/targets.js";
+import { resolveMessageChannelSelection } from "../../../messaging/outbound/channel-selection.js";
+import type { OutboundChannel } from "../../../messaging/outbound/targets.js";
 import {
   resolveOutboundTarget,
   resolveSessionDeliveryTarget,
-} from "../../../infra/outbound/targets.js";
+} from "../../../messaging/outbound/targets.js";
 
 export async function resolveDeliveryTarget(
   cfg: OpenClawConfig,

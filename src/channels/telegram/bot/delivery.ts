@@ -5,9 +5,9 @@ import {
   renderTelegramHtmlText,
 } from "../format.js";
 import { withTelegramApiErrorLogging } from "../api-logging.js";
-import { chunkMarkdownTextWithMode, type ChunkMode } from "../../../auto-reply/chunk.js";
+import { chunkMarkdownTextWithMode, type ChunkMode } from "../../../messaging/chunk.js";
 import { splitTelegramCaption } from "../caption.js";
-import type { ReplyPayload } from "../../../auto-reply/types.js";
+import type { ReplyPayload } from "../../../messaging/types.js";
 import type { ReplyToMode } from "../../../config/config.js";
 import type { MarkdownTableMode } from "../../../config/types.base.js";
 import { danger, logVerbose } from "../../../globals.js";

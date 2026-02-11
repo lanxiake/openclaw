@@ -12,7 +12,7 @@ import { formatDurationSeconds } from "../../../infra/format-duration.js";
 import { enqueueSystemEvent } from "../../../infra/system-events.js";
 import { setPresence } from "./presence-cache.js";
 import { createSubsystemLogger } from "../../../shared/logging/subsystem.js";
-import { resolveAgentRoute } from "../../../routing/resolve-route.js";
+import { resolveAgentRoute } from "../../../messaging/routing/resolve-route.js";
 import {
   normalizeDiscordSlug,
   resolveDiscordChannelConfigWithFallback,

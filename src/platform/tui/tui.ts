@@ -13,7 +13,7 @@ import {
   normalizeAgentId,
   normalizeMainKey,
   parseAgentSessionKey,
-} from "../../routing/session-key.js";
+} from "../../messaging/routing/session-key.js";
 import { getSlashCommands } from "./commands.js";
 import { ChatLog } from "./components/chat-log.js";
 import { CustomEditor } from "./components/custom-editor.js";

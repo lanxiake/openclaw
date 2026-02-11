@@ -16,7 +16,7 @@ import {
 } from "../../config/sessions.js";
 import { logVerbose } from "../../globals.js";
 import { clearCommandLane, getQueueSize } from "../../infra/process/command-queue.js";
-import { normalizeMainKey } from "../../routing/session-key.js";
+import { normalizeMainKey } from "../routing/session-key.js";
 import { isReasoningTagProvider } from "../../shared/utils/provider-utils.js";
 import { hasControlCommand } from "../command-detection.js";
 import { buildInboundMediaNote } from "../media-note.js";

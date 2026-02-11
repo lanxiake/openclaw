@@ -11,22 +11,22 @@ import {
   formatInboundEnvelope,
   formatThreadStarterEnvelope,
   resolveEnvelopeFormatOptions,
-} from "../../../auto-reply/envelope.js";
-import { dispatchInboundMessage } from "../../../auto-reply/dispatch.js";
+} from "../../../messaging/envelope.js";
+import { dispatchInboundMessage } from "../../../messaging/dispatch.js";
 import {
   buildPendingHistoryContextFromMap,
   clearHistoryEntriesIfEnabled,
-} from "../../../auto-reply/reply/history.js";
-import { finalizeInboundContext } from "../../../auto-reply/reply/inbound-context.js";
-import { createReplyDispatcherWithTyping } from "../../../auto-reply/reply/reply-dispatcher.js";
-import type { ReplyPayload } from "../../../auto-reply/types.js";
+} from "../../../messaging/reply/history.js";
+import { finalizeInboundContext } from "../../../messaging/reply/inbound-context.js";
+import { createReplyDispatcherWithTyping } from "../../../messaging/reply/reply-dispatcher.js";
+import type { ReplyPayload } from "../../../messaging/types.js";
 import { recordInboundSession } from "../../core/session.js";
 import { readSessionUpdatedAt, resolveStorePath } from "../../../config/sessions.js";
-import { resolveChunkMode } from "../../../auto-reply/chunk.js";
+import { resolveChunkMode } from "../../../messaging/chunk.js";
 import { resolveMarkdownTableMode } from "../../../config/markdown-tables.js";
 import { danger, logVerbose, shouldLogVerbose } from "../../../globals.js";
-import { buildAgentSessionKey } from "../../../routing/resolve-route.js";
-import { resolveThreadSessionKeys } from "../../../routing/session-key.js";
+import { buildAgentSessionKey } from "../../../messaging/routing/resolve-route.js";
+import { resolveThreadSessionKeys } from "../../../messaging/routing/session-key.js";
 import { truncateUtf16Safe } from "../../../utils.js";
 import { reactMessageDiscord, removeReactionDiscord } from "../send.js";
 import { normalizeDiscordSlug } from "./allow-list.js";

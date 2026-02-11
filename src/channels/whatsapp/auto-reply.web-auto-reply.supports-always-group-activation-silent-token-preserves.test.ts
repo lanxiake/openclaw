@@ -14,7 +14,7 @@ vi.mock("../agents/pi-embedded.js", () => ({
   resolveEmbeddedSessionLane: (key: string) => `session:${key.trim() || "main"}`,
 }));
 
-import { resetInboundDedupe } from "../../auto-reply/reply/inbound-dedupe.js";
+import { resetInboundDedupe } from "../../messaging/reply/inbound-dedupe.js";
 import { expectInboundContextContract } from "../../../test/helpers/inbound-contract.js";
 import { resetLogger, setLoggerOverride } from "../../logging.js";
 import { monitorWebChannel, SILENT_REPLY_TOKEN } from "./auto-reply.js";

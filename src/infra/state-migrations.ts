@@ -19,7 +19,7 @@ import {
   DEFAULT_ACCOUNT_ID,
   DEFAULT_MAIN_KEY,
   normalizeAgentId,
-} from "../routing/session-key.js";
+} from "../messaging/routing/session-key.js";
 import { canonicalizeMainSessionAlias } from "../config/sessions/main-session.js";
 import {
   ensureDir,

@@ -15,7 +15,7 @@ import {
   resolveEffectiveMessagesConfig,
   resolveHumanDelayConfig,
 } from "../../../agent/runtime/identity.js";
-import { resolveChunkMode, resolveTextChunkLimit } from "../../../auto-reply/chunk.js";
+import { resolveChunkMode, resolveTextChunkLimit } from "../../../messaging/chunk.js";
 import {
   buildCommandTextFromArgs,
   findCommandByNativeName,
@@ -24,24 +24,24 @@ import {
   resolveCommandArgChoices,
   resolveCommandArgMenu,
   serializeCommandArgs,
-} from "../../../auto-reply/commands-registry.js";
+} from "../../../messaging/commands-registry.js";
 import type {
   ChatCommandDefinition,
   CommandArgDefinition,
   CommandArgValues,
   CommandArgs,
   NativeCommandSpec,
-} from "../../../auto-reply/commands-registry.js";
-import { dispatchReplyWithDispatcher } from "../../../auto-reply/reply/provider-dispatcher.js";
-import { finalizeInboundContext } from "../../../auto-reply/reply/inbound-context.js";
-import type { ReplyPayload } from "../../../auto-reply/types.js";
+} from "../../../messaging/commands-registry.js";
+import { dispatchReplyWithDispatcher } from "../../../messaging/reply/provider-dispatcher.js";
+import { finalizeInboundContext } from "../../../messaging/reply/inbound-context.js";
+import type { ReplyPayload } from "../../../messaging/types.js";
 import type { OpenClawConfig, loadConfig } from "../../../config/config.js";
 import { buildPairingReply } from "../../../infra/device/pairing/pairing-messages.js";
 import {
   readChannelAllowFromStore,
   upsertChannelPairingRequest,
 } from "../../../infra/device/pairing/pairing-store.js";
-import { resolveAgentRoute } from "../../../routing/resolve-route.js";
+import { resolveAgentRoute } from "../../../messaging/routing/resolve-route.js";
 import { loadWebMedia } from "../../whatsapp/media.js";
 import { chunkDiscordTextWithMode } from "../chunk.js";
 import { resolveCommandAuthorizedFromAuthorizers } from "../../core/command-gating.js";

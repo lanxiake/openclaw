@@ -4,7 +4,7 @@ import {
   normalizeAgentId,
   normalizeMainKey,
   resolveAgentIdFromSessionKey,
-} from "../../routing/session-key.js";
+} from "../../messaging/routing/session-key.js";
 import { loadConfig } from "../config.js";
 import type { SessionScope } from "./types.js";
 

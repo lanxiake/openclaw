@@ -3,18 +3,18 @@ import { getChannelPlugin, normalizeChannelId } from "../../channels/core/plugin
 import { createOutboundSendDeps, type CliDeps } from "../../cli/outbound-send-deps.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
-import { deliverOutboundPayloads } from "../../infra/outbound/deliver.js";
-import { buildOutboundResultEnvelope } from "../../infra/outbound/envelope.js";
+import { deliverOutboundPayloads } from "../../messaging/outbound/deliver.js";
+import { buildOutboundResultEnvelope } from "../../messaging/outbound/envelope.js";
 import {
   formatOutboundPayloadLog,
   type NormalizedOutboundPayload,
   normalizeOutboundPayloads,
   normalizeOutboundPayloadsForJson,
-} from "../../infra/outbound/payloads.js";
+} from "../../messaging/outbound/payloads.js";
 import {
   resolveAgentDeliveryPlan,
   resolveAgentOutboundTarget,
-} from "../../infra/outbound/agent-delivery.js";
+} from "../../messaging/outbound/agent-delivery.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { isInternalMessageChannel } from "../../shared/utils/message-channel.js";
 import type { AgentCommandOpts } from "./types.js";

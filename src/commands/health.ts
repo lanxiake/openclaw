@@ -15,8 +15,11 @@ import {
   resolveHeartbeatSummaryForAgent,
 } from "../infra/heartbeat-runner.js";
 import type { RuntimeEnv } from "../runtime.js";
-import { buildChannelAccountBindings, resolvePreferredAccountId } from "../routing/bindings.js";
-import { normalizeAgentId } from "../routing/session-key.js";
+import {
+  buildChannelAccountBindings,
+  resolvePreferredAccountId,
+} from "../messaging/routing/bindings.js";
+import { normalizeAgentId } from "../messaging/routing/session-key.js";
 import { theme } from "../shared/terminal/theme.js";
 
 export type ChannelAccountHealthSummary = {

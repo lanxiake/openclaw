@@ -1,7 +1,7 @@
 import type { Bot, Context } from "grammy";
 
 import { resolveEffectiveMessagesConfig } from "../../agent/runtime/identity.js";
-import { resolveChunkMode } from "../../auto-reply/chunk.js";
+import { resolveChunkMode } from "../../messaging/chunk.js";
 import {
   buildCommandTextFromArgs,
   findCommandByNativeName,
@@ -9,12 +9,12 @@ import {
   listNativeCommandSpecsForConfig,
   parseCommandArgs,
   resolveCommandArgMenu,
-} from "../../auto-reply/commands-registry.js";
-import { listSkillCommandsForAgents } from "../../auto-reply/skill-commands.js";
-import type { CommandArgs } from "../../auto-reply/commands-registry.js";
+} from "../../messaging/commands-registry.js";
+import { listSkillCommandsForAgents } from "../../messaging/skill-commands.js";
+import type { CommandArgs } from "../../messaging/commands-registry.js";
 import { resolveTelegramCustomCommands } from "../../config/telegram-custom-commands.js";
-import { dispatchReplyWithBufferedBlockDispatcher } from "../../auto-reply/reply/provider-dispatcher.js";
-import { finalizeInboundContext } from "../../auto-reply/reply/inbound-context.js";
+import { dispatchReplyWithBufferedBlockDispatcher } from "../../messaging/reply/provider-dispatcher.js";
+import { finalizeInboundContext } from "../../messaging/reply/inbound-context.js";
 import { danger, logVerbose } from "../../globals.js";
 import { resolveMarkdownTableMode } from "../../config/markdown-tables.js";
 import { withTelegramApiErrorLogging } from "./api-logging.js";
@@ -22,8 +22,8 @@ import {
   normalizeTelegramCommandName,
   TELEGRAM_COMMAND_NAME_PATTERN,
 } from "../../config/telegram-custom-commands.js";
-import { resolveAgentRoute } from "../../routing/resolve-route.js";
-import { resolveThreadSessionKeys } from "../../routing/session-key.js";
+import { resolveAgentRoute } from "../../messaging/routing/resolve-route.js";
+import { resolveThreadSessionKeys } from "../../messaging/routing/session-key.js";
 import { resolveCommandAuthorizedFromAuthorizers } from "../core/command-gating.js";
 import {
   executePluginCommand,

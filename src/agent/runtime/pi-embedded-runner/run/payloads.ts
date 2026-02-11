@@ -1,8 +1,8 @@
 import type { AssistantMessage } from "@mariozechner/pi-ai";
-import { parseReplyDirectives } from "../../../../auto-reply/reply/reply-directives.js";
-import type { ReasoningLevel, VerboseLevel } from "../../../../auto-reply/thinking.js";
-import { isSilentReplyText, SILENT_REPLY_TOKEN } from "../../../../auto-reply/tokens.js";
-import { formatToolAggregate } from "../../../../auto-reply/tool-meta.js";
+import { parseReplyDirectives } from "../../../../messaging/reply/reply-directives.js";
+import type { ReasoningLevel, VerboseLevel } from "../../../../messaging/thinking.js";
+import { isSilentReplyText, SILENT_REPLY_TOKEN } from "../../../../messaging/tokens.js";
+import { formatToolAggregate } from "../../../../messaging/tool-meta.js";
 import type { OpenClawConfig } from "../../../../config/config.js";
 import {
   formatAssistantErrorText,

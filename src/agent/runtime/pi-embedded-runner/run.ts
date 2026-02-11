@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import type { ThinkLevel } from "../../../auto-reply/thinking.js";
+import type { ThinkLevel } from "../../../messaging/thinking.js";
 import { enqueueCommandInLane } from "../../../infra/process/command-queue.js";
 import { resolveUserPath } from "../../../utils.js";
 import { isMarkdownCapableMessageChannel } from "../../../shared/utils/message-channel.js";

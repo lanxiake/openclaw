@@ -11,7 +11,7 @@ import type { OpenClawConfig } from "../config/config.js";
 import { isChannelConfigured } from "../config/plugin-auto-enable.js";
 import type { DmPolicy } from "../config/types.js";
 import { resolveChannelDefaultAccountId } from "../channels/core/plugins/helpers.js";
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../messaging/routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { formatDocsLink } from "../shared/terminal/links.js";
 import { formatCliCommand } from "../cli/command-format.js";

@@ -7,9 +7,9 @@ import {
 import type { ChannelAccountSnapshot } from "../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { formatErrorMessage } from "../infra/errors.js";
-import { resetDirectoryCache } from "../infra/outbound/target-resolver.js";
+import { resetDirectoryCache } from "../messaging/outbound/target-resolver.js";
 import type { createSubsystemLogger } from "../shared/logging/subsystem.js";
-import { DEFAULT_ACCOUNT_ID } from "../routing/session-key.js";
+import { DEFAULT_ACCOUNT_ID } from "../messaging/routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
 
 export type ChannelRuntimeSnapshot = {

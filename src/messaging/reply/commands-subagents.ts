@@ -14,7 +14,7 @@ import type { SubagentRunRecord } from "../../agent/runtime/subagent-registry.js
 import { loadSessionStore, resolveStorePath, updateSessionStore } from "../../config/sessions.js";
 import { callGateway } from "../../gateway/call.js";
 import { logVerbose } from "../../globals.js";
-import { parseAgentSessionKey } from "../../routing/session-key.js";
+import { parseAgentSessionKey } from "../routing/session-key.js";
 import { INTERNAL_MESSAGE_CHANNEL } from "../../shared/utils/message-channel.js";
 import {
   formatAgeShort,

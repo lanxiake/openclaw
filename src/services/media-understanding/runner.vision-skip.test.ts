@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { MsgContext } from "../../auto-reply/templating.js";
+import type { MsgContext } from "../../messaging/templating.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import {
   buildProviderRegistry,

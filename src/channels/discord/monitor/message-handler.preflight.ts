@@ -1,15 +1,15 @@
 import { ChannelType, MessageType, type User } from "@buape/carbon";
 
-import { hasControlCommand } from "../../../auto-reply/command-detection.js";
-import { shouldHandleTextCommands } from "../../../auto-reply/commands-registry.js";
+import { hasControlCommand } from "../../../messaging/command-detection.js";
+import { shouldHandleTextCommands } from "../../../messaging/commands-registry.js";
 import {
   recordPendingHistoryEntryIfEnabled,
   type HistoryEntry,
-} from "../../../auto-reply/reply/history.js";
+} from "../../../messaging/reply/history.js";
 import {
   buildMentionRegexes,
   matchesMentionWithExplicit,
-} from "../../../auto-reply/reply/mentions.js";
+} from "../../../messaging/reply/mentions.js";
 import { logVerbose, shouldLogVerbose } from "../../../globals.js";
 import { recordChannelActivity } from "../../../infra/channel-activity.js";
 import { enqueueSystemEvent } from "../../../infra/system-events.js";
@@ -19,7 +19,7 @@ import {
   readChannelAllowFromStore,
   upsertChannelPairingRequest,
 } from "../../../infra/device/pairing/pairing-store.js";
-import { resolveAgentRoute } from "../../../routing/resolve-route.js";
+import { resolveAgentRoute } from "../../../messaging/routing/resolve-route.js";
 import { resolveMentionGatingWithBypass } from "../../core/mention-gating.js";
 import { formatAllowlistMatchMeta } from "../../core/allowlist-match.js";
 import { sendMessageDiscord } from "../send.js";

@@ -1,6 +1,6 @@
 import type { MessageEvent, StickerEventMessage, EventSource, PostbackEvent } from "@line/bot-sdk";
-import { formatInboundEnvelope, resolveEnvelopeFormatOptions } from "../../auto-reply/envelope.js";
-import { finalizeInboundContext } from "../../auto-reply/reply/inbound-context.js";
+import { formatInboundEnvelope, resolveEnvelopeFormatOptions } from "../../messaging/envelope.js";
+import { finalizeInboundContext } from "../../messaging/reply/inbound-context.js";
 import { formatLocationText, toLocationContext } from "../core/location.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import {
@@ -11,7 +11,7 @@ import {
 } from "../../config/sessions.js";
 import { logVerbose, shouldLogVerbose } from "../../globals.js";
 import { recordChannelActivity } from "../../infra/channel-activity.js";
-import { resolveAgentRoute } from "../../routing/resolve-route.js";
+import { resolveAgentRoute } from "../../messaging/routing/resolve-route.js";
 import type { ResolvedLineAccount } from "./types.js";
 
 interface MediaRef {

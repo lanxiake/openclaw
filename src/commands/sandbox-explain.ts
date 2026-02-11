@@ -18,7 +18,7 @@ import {
   normalizeMainKey,
   parseAgentSessionKey,
   resolveAgentIdFromSessionKey,
-} from "../routing/session-key.js";
+} from "../messaging/routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { formatDocsLink } from "../shared/terminal/links.js";
 import { colorize, isRich, theme } from "../shared/terminal/theme.js";

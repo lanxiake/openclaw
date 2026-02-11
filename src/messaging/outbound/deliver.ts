@@ -3,8 +3,8 @@ import {
   chunkMarkdownTextWithMode,
   resolveChunkMode,
   resolveTextChunkLimit,
-} from "../../auto-reply/chunk.js";
-import type { ReplyPayload } from "../../auto-reply/types.js";
+} from "../chunk.js";
+import type { ReplyPayload } from "../types.js";
 import { resolveChannelMediaMaxBytes } from "../../channels/core/plugins/media-limits.js";
 import { loadChannelOutboundAdapter } from "../../channels/core/plugins/outbound/load.js";
 import type { ChannelOutboundAdapter } from "../../channels/core/plugins/types.js";

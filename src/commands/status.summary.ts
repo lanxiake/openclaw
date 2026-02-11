@@ -16,7 +16,7 @@ import { listAgentsForGateway } from "../gateway/session-utils.js";
 import { buildChannelSummary } from "../infra/channel-summary.js";
 import { resolveHeartbeatSummaryForAgent } from "../infra/heartbeat-runner.js";
 import { peekSystemEvents } from "../infra/system-events.js";
-import { parseAgentSessionKey } from "../routing/session-key.js";
+import { parseAgentSessionKey } from "../messaging/routing/session-key.js";
 import { resolveLinkChannelContext } from "./status.link-channel.js";
 import type { HeartbeatStatus, SessionStatus, StatusSummary } from "./status.types.js";
 

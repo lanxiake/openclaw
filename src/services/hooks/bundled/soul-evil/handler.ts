@@ -1,4 +1,4 @@
-import { isSubagentSessionKey } from "../../../../routing/session-key.js";
+import { isSubagentSessionKey } from "../../../../messaging/routing/session-key.js";
 import { resolveHookConfig } from "../../config.js";
 import { isAgentBootstrapEvent, type HookHandler } from "../../hooks.js";
 import { applySoulEvilOverride, resolveSoulEvilConfigFromHook } from "../../soul-evil.js";

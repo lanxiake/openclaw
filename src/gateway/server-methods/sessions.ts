@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 
 import { abortEmbeddedPiRun, waitForEmbeddedPiRunEnd } from "../../agent/runtime/pi-embedded.js";
-import { stopSubagentsForRequester } from "../../auto-reply/reply/abort.js";
-import { clearSessionQueues } from "../../auto-reply/reply/queue.js";
+import { stopSubagentsForRequester } from "../../messaging/reply/abort.js";
+import { clearSessionQueues } from "../../messaging/reply/queue.js";
 import { loadConfig } from "../../config/config.js";
 import {
   loadSessionStore,

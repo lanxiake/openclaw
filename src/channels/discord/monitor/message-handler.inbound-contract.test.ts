@@ -4,13 +4,13 @@ import path from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
 
-import type { MsgContext } from "../../../auto-reply/templating.js";
+import type { MsgContext } from "../../../messaging/templating.js";
 import { expectInboundContextContract } from "../../../../test/helpers/inbound-contract.js";
 
 let capturedCtx: MsgContext | undefined;
 
 vi.mock("../../auto-reply/dispatch.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../../auto-reply/dispatch.js")>();
+  const actual = await importOriginal<typeof import("../../../messaging/dispatch.js")>();
   const dispatchInboundMessage = vi.fn(async (params: { ctx: MsgContext }) => {
     capturedCtx = params.ctx;
     return { queuedFinal: false, counts: { tool: 0, block: 0, final: 0 } };

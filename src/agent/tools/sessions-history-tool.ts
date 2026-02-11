@@ -2,7 +2,10 @@ import { Type } from "@sinclair/typebox";
 
 import { loadConfig } from "../../config/config.js";
 import { callGateway } from "../../gateway/call.js";
-import { isSubagentSessionKey, resolveAgentIdFromSessionKey } from "../../routing/session-key.js";
+import {
+  isSubagentSessionKey,
+  resolveAgentIdFromSessionKey,
+} from "../../messaging/routing/session-key.js";
 import type { AnyAgentTool } from "./common.js";
 import { jsonResult, readStringParam } from "./common.js";
 import {

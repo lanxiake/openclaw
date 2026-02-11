@@ -10,13 +10,13 @@ import {
 } from "../../agent/runtime/identity.js";
 import { resolveThinkingDefault } from "../../agent/models/model-selection.js";
 import { resolveAgentTimeoutMs } from "../../agent/runtime/timeout.js";
-import { dispatchInboundMessage } from "../../auto-reply/dispatch.js";
-import { createReplyDispatcher } from "../../auto-reply/reply/reply-dispatcher.js";
+import { dispatchInboundMessage } from "../../messaging/dispatch.js";
+import { createReplyDispatcher } from "../../messaging/reply/reply-dispatcher.js";
 import {
   extractShortModelName,
   type ResponsePrefixContext,
-} from "../../auto-reply/reply/response-prefix-template.js";
-import type { MsgContext } from "../../auto-reply/templating.js";
+} from "../../messaging/reply/response-prefix-template.js";
+import type { MsgContext } from "../../messaging/templating.js";
 import { resolveSendPolicy } from "../../sessions/send-policy.js";
 import { INTERNAL_MESSAGE_CHANNEL } from "../../shared/utils/message-channel.js";
 import {

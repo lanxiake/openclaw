@@ -7,11 +7,11 @@ import {
   DEFAULT_AGENT_ID,
   normalizeAgentId,
   parseAgentSessionKey,
-} from "../routing/session-key.js";
+} from "../messaging/routing/session-key.js";
 import { resolveUserPath } from "../utils.js";
 import { DEFAULT_AGENT_WORKSPACE_DIR } from "./runtime/workspace.js";
 
-export { resolveAgentIdFromSessionKey } from "../routing/session-key.js";
+export { resolveAgentIdFromSessionKey } from "../messaging/routing/session-key.js";
 
 type AgentEntry = NonNullable<NonNullable<OpenClawConfig["agents"]>["list"]>[number];
 

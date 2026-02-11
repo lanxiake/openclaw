@@ -5,7 +5,7 @@ import type {
   ChannelResolveKind,
   ChannelResolveResult,
 } from "../../channels/core/plugins/types.js";
-import { resolveMessageChannelSelection } from "../../infra/outbound/channel-selection.js";
+import { resolveMessageChannelSelection } from "../../messaging/outbound/channel-selection.js";
 import type { RuntimeEnv } from "../../runtime.js";
 
 export type ChannelsResolveOptions = {

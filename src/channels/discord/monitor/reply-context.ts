@@ -1,6 +1,6 @@
 import type { Guild, Message, User } from "@buape/carbon";
 
-import { formatAgentEnvelope, type EnvelopeFormatOptions } from "../../../auto-reply/envelope.js";
+import { formatAgentEnvelope, type EnvelopeFormatOptions } from "../../../messaging/envelope.js";
 import { formatDiscordUserTag, resolveTimestampMs } from "./format.js";
 
 export function resolveReplyContext(

@@ -117,11 +117,11 @@ export {
 export { ToolPolicySchema } from "../config/zod-schema.agent-runtime.js";
 export type { RuntimeEnv } from "../runtime.js";
 export type { WizardPrompter } from "../platform/wizard/prompts.js";
-export { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
+export { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../messaging/routing/session-key.js";
 export { resolveAckReaction } from "../agent/runtime/identity.js";
-export type { ReplyPayload } from "../auto-reply/types.js";
-export type { ChunkMode } from "../auto-reply/chunk.js";
-export { SILENT_REPLY_TOKEN, isSilentReplyText } from "../auto-reply/tokens.js";
+export type { ReplyPayload } from "../messaging/types.js";
+export type { ChunkMode } from "../messaging/chunk.js";
+export { SILENT_REPLY_TOKEN, isSilentReplyText } from "../messaging/tokens.js";
 export { resolveToolsBySender } from "../config/group-policy.js";
 export {
   buildPendingHistoryContextFromMap,
@@ -130,8 +130,8 @@ export {
   DEFAULT_GROUP_HISTORY_LIMIT,
   recordPendingHistoryEntry,
   recordPendingHistoryEntryIfEnabled,
-} from "../auto-reply/reply/history.js";
-export type { HistoryEntry } from "../auto-reply/reply/history.js";
+} from "../messaging/reply/history.js";
+export type { HistoryEntry } from "../messaging/reply/history.js";
 export { mergeAllowlist, summarizeMapping } from "../channels/core/allowlists/resolve-utils.js";
 export {
   resolveMentionGating,
@@ -225,7 +225,7 @@ export {
 export { formatDocsLink } from "../shared/terminal/links.js";
 export type { HookEntry } from "../services/hooks/types.js";
 export { normalizeE164 } from "../utils.js";
-export { missingTargetError } from "../infra/outbound/target-errors.js";
+export { missingTargetError } from "../messaging/outbound/target-errors.js";
 export { registerLogTransport } from "../shared/logging/logger.js";
 export type { LogTransport, LogTransportRecord } from "../shared/logging/logger.js";
 export {

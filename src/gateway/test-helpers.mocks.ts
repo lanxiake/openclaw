@@ -11,7 +11,7 @@ import type { AgentBinding } from "../config/types.agents.js";
 import type { HooksConfig } from "../config/types.hooks.js";
 import type { PluginRegistry } from "../plugins/registry.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
-import { DEFAULT_ACCOUNT_ID } from "../routing/session-key.js";
+import { DEFAULT_ACCOUNT_ID } from "../messaging/routing/session-key.js";
 
 type StubChannelOptions = {
   id: ChannelPlugin["id"];

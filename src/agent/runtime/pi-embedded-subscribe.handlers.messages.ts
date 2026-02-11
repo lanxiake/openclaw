@@ -1,6 +1,6 @@
 import type { AgentEvent, AgentMessage } from "@mariozechner/pi-agent-core";
 
-import { parseReplyDirectives } from "../../auto-reply/reply/reply-directives.js";
+import { parseReplyDirectives } from "../../messaging/reply/reply-directives.js";
 import { emitAgentEvent } from "../../infra/agent-events.js";
 import {
   isMessagingToolDuplicateNormalized,

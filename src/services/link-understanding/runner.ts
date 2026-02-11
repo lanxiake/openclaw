@@ -1,6 +1,6 @@
 import type { OpenClawConfig } from "../../config/config.js";
-import type { MsgContext } from "../../auto-reply/templating.js";
-import { applyTemplate } from "../../auto-reply/templating.js";
+import type { MsgContext } from "../../messaging/templating.js";
+import { applyTemplate } from "../../messaging/templating.js";
 import type { LinkModelConfig, LinkToolsConfig } from "../../config/types.tools.js";
 import { logVerbose, shouldLogVerbose } from "../../globals.js";
 import { runExec } from "../../infra/process/exec.js";

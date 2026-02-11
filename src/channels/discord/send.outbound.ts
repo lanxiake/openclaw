@@ -1,6 +1,6 @@
 import type { RequestClient } from "@buape/carbon";
 import { Routes } from "discord-api-types/v10";
-import { resolveChunkMode } from "../../auto-reply/chunk.js";
+import { resolveChunkMode } from "../../messaging/chunk.js";
 import { loadConfig } from "../../config/config.js";
 import { resolveMarkdownTableMode } from "../../config/markdown-tables.js";
 import { recordChannelActivity } from "../../infra/channel-activity.js";

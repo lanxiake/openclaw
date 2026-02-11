@@ -1,6 +1,6 @@
 import type { ImageContent } from "@mariozechner/pi-ai";
-import { resolveHeartbeatPrompt } from "../../auto-reply/heartbeat.js";
-import type { ThinkLevel } from "../../auto-reply/thinking.js";
+import { resolveHeartbeatPrompt } from "../../messaging/heartbeat.js";
+import type { ThinkLevel } from "../../messaging/thinking.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { isTruthyEnvValue } from "../../infra/env.js";
 import { shouldLogVerbose } from "../../globals.js";

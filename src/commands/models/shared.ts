@@ -12,7 +12,7 @@ import {
   readConfigFileSnapshot,
   writeConfigFile,
 } from "../../config/config.js";
-import { normalizeAgentId } from "../../routing/session-key.js";
+import { normalizeAgentId } from "../../messaging/routing/session-key.js";
 
 export const ensureFlagCompatibility = (opts: { json?: boolean; plain?: boolean }) => {
   if (opts.json && opts.plain) {

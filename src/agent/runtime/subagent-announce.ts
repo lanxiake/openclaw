@@ -8,8 +8,8 @@ import {
   resolveMainSessionKey,
   resolveStorePath,
 } from "../../config/sessions.js";
-import { normalizeMainKey } from "../../routing/session-key.js";
-import { resolveQueueSettings } from "../../auto-reply/reply/queue.js";
+import { normalizeMainKey } from "../../messaging/routing/session-key.js";
+import { resolveQueueSettings } from "../../messaging/reply/queue.js";
 import { callGateway } from "../../gateway/call.js";
 import { defaultRuntime } from "../../runtime.js";
 import {

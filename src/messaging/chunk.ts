@@ -5,7 +5,7 @@
 import type { ChannelId } from "../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { findFenceSpanAt, isSafeFenceBreak, parseFenceSpans } from "../shared/markdown/fences.js";
-import { normalizeAccountId } from "../routing/session-key.js";
+import { normalizeAccountId } from "./routing/session-key.js";
 import { INTERNAL_MESSAGE_CHANNEL } from "../shared/utils/message-channel.js";
 
 export type TextChunkProvider = ChannelId | typeof INTERNAL_MESSAGE_CHANNEL;

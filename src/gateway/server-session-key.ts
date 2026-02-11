@@ -1,7 +1,7 @@
 import { loadConfig } from "../config/config.js";
 import { loadSessionStore, resolveStorePath } from "../config/sessions.js";
 import { getAgentRunContext, registerAgentRunContext } from "../infra/agent-events.js";
-import { toAgentRequestSessionKey } from "../routing/session-key.js";
+import { toAgentRequestSessionKey } from "../messaging/routing/session-key.js";
 
 export function resolveSessionKeyForRun(runId: string) {
   const cached = getAgentRunContext(runId)?.sessionKey;

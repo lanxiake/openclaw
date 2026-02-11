@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 
-import { buildAgentMainSessionKey, normalizeAgentId } from "../routing/session-key.js";
+import { buildAgentMainSessionKey, normalizeAgentId } from "../messaging/routing/session-key.js";
 
 export function getHeader(req: IncomingMessage, name: string): string | undefined {
   const raw = req.headers[name.toLowerCase()];

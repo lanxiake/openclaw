@@ -1,18 +1,18 @@
 import { resolveIdentityNamePrefix } from "../../../../agent/runtime/identity.js";
-import { resolveChunkMode, resolveTextChunkLimit } from "../../../../auto-reply/chunk.js";
+import { resolveChunkMode, resolveTextChunkLimit } from "../../../../messaging/chunk.js";
 import {
   formatInboundEnvelope,
   resolveEnvelopeFormatOptions,
-} from "../../../../auto-reply/envelope.js";
+} from "../../../../messaging/envelope.js";
 import {
   buildHistoryContextFromEntries,
   type HistoryEntry,
-} from "../../../../auto-reply/reply/history.js";
-import { dispatchReplyWithBufferedBlockDispatcher } from "../../../../auto-reply/reply/provider-dispatcher.js";
-import type { getReplyFromConfig } from "../../../../auto-reply/reply.js";
-import type { ReplyPayload } from "../../../../auto-reply/types.js";
-import { shouldComputeCommandAuthorized } from "../../../../auto-reply/command-detection.js";
-import { finalizeInboundContext } from "../../../../auto-reply/reply/inbound-context.js";
+} from "../../../../messaging/reply/history.js";
+import { dispatchReplyWithBufferedBlockDispatcher } from "../../../../messaging/reply/provider-dispatcher.js";
+import type { getReplyFromConfig } from "../../../../messaging/reply.js";
+import type { ReplyPayload } from "../../../../messaging/types.js";
+import { shouldComputeCommandAuthorized } from "../../../../messaging/command-detection.js";
+import { finalizeInboundContext } from "../../../../messaging/reply/inbound-context.js";
 import { toLocationContext } from "../../../core/location.js";
 import { createReplyPrefixContext } from "../../../core/reply-prefix.js";
 import type { loadConfig } from "../../../../config/config.js";
@@ -25,7 +25,7 @@ import { resolveMarkdownTableMode } from "../../../../config/markdown-tables.js"
 import { logVerbose, shouldLogVerbose } from "../../../../globals.js";
 import type { getChildLogger } from "../../../../logging.js";
 import { readChannelAllowFromStore } from "../../../../infra/device/pairing/pairing-store.js";
-import type { resolveAgentRoute } from "../../../../routing/resolve-route.js";
+import type { resolveAgentRoute } from "../../../../messaging/routing/resolve-route.js";
 import { jidToE164, normalizeE164 } from "../../../../utils.js";
 import { newConnectionId } from "../../reconnect.js";
 import { formatError } from "../../session.js";

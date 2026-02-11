@@ -1,4 +1,4 @@
-import { normalizeAgentId } from "../../../routing/session-key.js";
+import { normalizeAgentId } from "../../../messaging/routing/session-key.js";
 import { truncateUtf16Safe } from "../../../utils.js";
 import type { CronPayload } from "../types.js";
 

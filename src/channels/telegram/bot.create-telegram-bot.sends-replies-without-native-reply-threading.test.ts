@@ -4,7 +4,7 @@ import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 let createTelegramBot: typeof import("./bot.js").createTelegramBot;
-let resetInboundDedupe: typeof import("../../auto-reply/reply/inbound-dedupe.js").resetInboundDedupe;
+let resetInboundDedupe: typeof import("../../messaging/reply/inbound-dedupe.js").resetInboundDedupe;
 
 const { sessionStorePath } = vi.hoisted(() => ({
   sessionStorePath: `/tmp/openclaw-telegram-reply-threading-${Math.random()
@@ -129,7 +129,7 @@ vi.mock("../auto-reply/reply.js", () => {
   return { getReplyFromConfig: replySpy, __replySpy: replySpy };
 });
 
-let replyModule: typeof import("../../auto-reply/reply.js");
+let replyModule: typeof import("../../messaging/reply.js");
 
 const getOnHandler = (event: string) => {
   const handler = onSpy.mock.calls.find((call) => call[0] === event)?.[1];
@@ -142,9 +142,9 @@ const getOnHandler = (event: string) => {
 describe("createTelegramBot", () => {
   beforeEach(async () => {
     vi.resetModules();
-    ({ resetInboundDedupe } = await import("../../auto-reply/reply/inbound-dedupe.js"));
+    ({ resetInboundDedupe } = await import("../../messaging/reply/inbound-dedupe.js"));
     ({ createTelegramBot } = await import("./bot.js"));
-    replyModule = await import("../../auto-reply/reply.js");
+    replyModule = await import("../../messaging/reply.js");
     resetInboundDedupe();
     loadConfig.mockReturnValue({
       channels: {

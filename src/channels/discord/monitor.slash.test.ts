@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createReplyDispatcherWithTyping } from "../../auto-reply/reply/reply-dispatcher.js";
+import { createReplyDispatcherWithTyping } from "../../messaging/reply/reply-dispatcher.js";
 
 const dispatchMock = vi.fn();
 
@@ -21,7 +21,7 @@ vi.mock("@buape/carbon", () => ({
 }));
 
 vi.mock("../auto-reply/dispatch.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../auto-reply/dispatch.js")>();
+  const actual = await importOriginal<typeof import("../../messaging/dispatch.js")>();
   return {
     ...actual,
     dispatchInboundMessage: (...args: unknown[]) => dispatchMock(...args),

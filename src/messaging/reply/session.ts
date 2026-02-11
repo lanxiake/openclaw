@@ -25,7 +25,7 @@ import {
   type SessionScope,
   updateSessionStore,
 } from "../../config/sessions.js";
-import { normalizeMainKey } from "../../routing/session-key.js";
+import { normalizeMainKey } from "../routing/session-key.js";
 import { resolveCommandAuthorization } from "../command-auth.js";
 import type { MsgContext, TemplateContext } from "../templating.js";
 import { normalizeChatType } from "../../channels/core/chat-type.js";

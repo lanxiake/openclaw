@@ -4,7 +4,7 @@ import { resolveChannelDefaultAccountId } from "../channels/core/plugins/helpers
 import { getChannelPlugin } from "../channels/core/plugins/index.js";
 import { loadConfig } from "../config/config.js";
 import { danger } from "../globals.js";
-import { resolveMessageChannelSelection } from "../infra/outbound/channel-selection.js";
+import { resolveMessageChannelSelection } from "../messaging/outbound/channel-selection.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../shared/terminal/links.js";
 import { theme } from "../shared/terminal/theme.js";

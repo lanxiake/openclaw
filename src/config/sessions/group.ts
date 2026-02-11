@@ -1,4 +1,4 @@
-import type { MsgContext } from "../../auto-reply/templating.js";
+import type { MsgContext } from "../../messaging/templating.js";
 import { listDeliverableMessageChannels } from "../../shared/utils/message-channel.js";
 import type { GroupKeyResolution } from "./types.js";
 

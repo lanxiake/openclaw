@@ -7,19 +7,16 @@ import {
   modelSupportsVision,
 } from "../../agent/models/model-catalog.js";
 import { resolveDefaultModelForAgent } from "../../agent/models/model-selection.js";
-import { hasControlCommand } from "../../auto-reply/command-detection.js";
-import { normalizeCommandBody } from "../../auto-reply/commands-registry.js";
-import { formatInboundEnvelope, resolveEnvelopeFormatOptions } from "../../auto-reply/envelope.js";
+import { hasControlCommand } from "../../messaging/command-detection.js";
+import { normalizeCommandBody } from "../../messaging/commands-registry.js";
+import { formatInboundEnvelope, resolveEnvelopeFormatOptions } from "../../messaging/envelope.js";
 import {
   buildPendingHistoryContextFromMap,
   recordPendingHistoryEntryIfEnabled,
   type HistoryEntry,
-} from "../../auto-reply/reply/history.js";
-import { finalizeInboundContext } from "../../auto-reply/reply/inbound-context.js";
-import {
-  buildMentionRegexes,
-  matchesMentionWithExplicit,
-} from "../../auto-reply/reply/mentions.js";
+} from "../../messaging/reply/history.js";
+import { finalizeInboundContext } from "../../messaging/reply/inbound-context.js";
+import { buildMentionRegexes, matchesMentionWithExplicit } from "../../messaging/reply/mentions.js";
 import { formatLocationText, toLocationContext } from "../core/location.js";
 import { recordInboundSession } from "../core/session.js";
 import { formatCliCommand } from "../../cli/command-format.js";
@@ -28,8 +25,8 @@ import type { OpenClawConfig } from "../../config/config.js";
 import type { DmPolicy, TelegramGroupConfig, TelegramTopicConfig } from "../../config/types.js";
 import { logVerbose, shouldLogVerbose } from "../../globals.js";
 import { recordChannelActivity } from "../../infra/channel-activity.js";
-import { resolveAgentRoute } from "../../routing/resolve-route.js";
-import { resolveThreadSessionKeys } from "../../routing/session-key.js";
+import { resolveAgentRoute } from "../../messaging/routing/resolve-route.js";
+import { resolveThreadSessionKeys } from "../../messaging/routing/session-key.js";
 import { shouldAckReaction as shouldAckReactionGate } from "../core/ack-reactions.js";
 import { resolveMentionGatingWithBypass } from "../core/mention-gating.js";
 import { resolveControlCommandGate } from "../core/command-gating.js";

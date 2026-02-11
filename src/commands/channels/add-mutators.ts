@@ -1,7 +1,7 @@
 import { getChannelPlugin } from "../../channels/core/plugins/index.js";
 import type { ChannelId, ChannelSetupInput } from "../../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../../config/config.js";
-import { normalizeAccountId } from "../../routing/session-key.js";
+import { normalizeAccountId } from "../../messaging/routing/session-key.js";
 
 type ChatChannel = ChannelId;
 

@@ -1,28 +1,28 @@
 import fs from "node:fs/promises";
 
 import { resolveHumanDelayConfig } from "../../../agent/runtime/identity.js";
-import { resolveTextChunkLimit } from "../../../auto-reply/chunk.js";
-import { hasControlCommand } from "../../../auto-reply/command-detection.js";
+import { resolveTextChunkLimit } from "../../../messaging/chunk.js";
+import { hasControlCommand } from "../../../messaging/command-detection.js";
 import {
   formatInboundEnvelope,
   formatInboundFromLabel,
   resolveEnvelopeFormatOptions,
-} from "../../../auto-reply/envelope.js";
+} from "../../../messaging/envelope.js";
 import {
   createInboundDebouncer,
   resolveInboundDebounceMs,
-} from "../../../auto-reply/inbound-debounce.js";
-import { dispatchInboundMessage } from "../../../auto-reply/dispatch.js";
-import { finalizeInboundContext } from "../../../auto-reply/reply/inbound-context.js";
+} from "../../../messaging/inbound-debounce.js";
+import { dispatchInboundMessage } from "../../../messaging/dispatch.js";
+import { finalizeInboundContext } from "../../../messaging/reply/inbound-context.js";
 import {
   buildPendingHistoryContextFromMap,
   clearHistoryEntriesIfEnabled,
   DEFAULT_GROUP_HISTORY_LIMIT,
   recordPendingHistoryEntryIfEnabled,
   type HistoryEntry,
-} from "../../../auto-reply/reply/history.js";
-import { buildMentionRegexes, matchesMentionPatterns } from "../../../auto-reply/reply/mentions.js";
-import { createReplyDispatcher } from "../../../auto-reply/reply/reply-dispatcher.js";
+} from "../../../messaging/reply/history.js";
+import { buildMentionRegexes, matchesMentionPatterns } from "../../../messaging/reply/mentions.js";
+import { createReplyDispatcher } from "../../../messaging/reply/reply-dispatcher.js";
 import { logInboundDrop } from "../../core/logging.js";
 import { createReplyPrefixContext } from "../../core/reply-prefix.js";
 import { recordInboundSession } from "../../core/session.js";
@@ -40,7 +40,7 @@ import {
   readChannelAllowFromStore,
   upsertChannelPairingRequest,
 } from "../../../infra/device/pairing/pairing-store.js";
-import { resolveAgentRoute } from "../../../routing/resolve-route.js";
+import { resolveAgentRoute } from "../../../messaging/routing/resolve-route.js";
 import { truncateUtf16Safe } from "../../../utils.js";
 import { resolveControlCommandGate } from "../../core/command-gating.js";
 import { resolveIMessageAccount } from "../accounts.js";

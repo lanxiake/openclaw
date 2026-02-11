@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { resetInboundDedupe } from "../../auto-reply/reply/inbound-dedupe.js";
+import { resetInboundDedupe } from "../../messaging/reply/inbound-dedupe.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { peekSystemEvents, resetSystemEventsForTest } from "../../infra/system-events.js";
-import { resolveAgentRoute } from "../../routing/resolve-route.js";
+import { resolveAgentRoute } from "../../messaging/routing/resolve-route.js";
 import { normalizeE164 } from "../../utils.js";
 import { monitorSignalProvider } from "./monitor.js";
 

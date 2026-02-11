@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { SILENT_REPLY_TOKEN } from "../auto-reply/tokens.js";
+import { SILENT_REPLY_TOKEN } from "../messaging/tokens.js";
 import type { CliDeps } from "../cli/deps.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { resolveMainSessionKey } from "../config/sessions/main-session.js";

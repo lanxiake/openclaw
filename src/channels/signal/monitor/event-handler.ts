@@ -1,21 +1,21 @@
 import { resolveHumanDelayConfig } from "../../../agent/runtime/identity.js";
-import { hasControlCommand } from "../../../auto-reply/command-detection.js";
+import { hasControlCommand } from "../../../messaging/command-detection.js";
 import {
   formatInboundEnvelope,
   formatInboundFromLabel,
   resolveEnvelopeFormatOptions,
-} from "../../../auto-reply/envelope.js";
+} from "../../../messaging/envelope.js";
 import {
   createInboundDebouncer,
   resolveInboundDebounceMs,
-} from "../../../auto-reply/inbound-debounce.js";
-import { dispatchInboundMessage } from "../../../auto-reply/dispatch.js";
+} from "../../../messaging/inbound-debounce.js";
+import { dispatchInboundMessage } from "../../../messaging/dispatch.js";
 import {
   buildPendingHistoryContextFromMap,
   clearHistoryEntriesIfEnabled,
-} from "../../../auto-reply/reply/history.js";
-import { finalizeInboundContext } from "../../../auto-reply/reply/inbound-context.js";
-import { createReplyDispatcherWithTyping } from "../../../auto-reply/reply/reply-dispatcher.js";
+} from "../../../messaging/reply/history.js";
+import { finalizeInboundContext } from "../../../messaging/reply/inbound-context.js";
+import { createReplyDispatcherWithTyping } from "../../../messaging/reply/reply-dispatcher.js";
 import { logInboundDrop, logTypingFailure } from "../../core/logging.js";
 import { createReplyPrefixContext } from "../../core/reply-prefix.js";
 import { recordInboundSession } from "../../core/session.js";
@@ -29,7 +29,7 @@ import {
   readChannelAllowFromStore,
   upsertChannelPairingRequest,
 } from "../../../infra/device/pairing/pairing-store.js";
-import { resolveAgentRoute } from "../../../routing/resolve-route.js";
+import { resolveAgentRoute } from "../../../messaging/routing/resolve-route.js";
 import { normalizeE164 } from "../../../utils.js";
 import { resolveControlCommandGate } from "../../core/command-gating.js";
 import {

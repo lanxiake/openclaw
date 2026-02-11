@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { resetInboundDedupe } from "../../auto-reply/reply/inbound-dedupe.js";
+import { resetInboundDedupe } from "../../messaging/reply/inbound-dedupe.js";
 
 const useSpy = vi.fn();
 const middlewareUseSpy = vi.fn();
@@ -99,7 +99,7 @@ describe("telegram inbound media", () => {
     "includes location text and ctx fields for pins",
     async () => {
       const { createTelegramBot } = await import("./bot.js");
-      const replyModule = await import("../../auto-reply/reply.js");
+      const replyModule = await import("../../messaging/reply.js");
       const replySpy = replyModule.__replySpy as unknown as ReturnType<typeof vi.fn>;
 
       onSpy.mockReset();
@@ -143,7 +143,7 @@ describe("telegram inbound media", () => {
     "captures venue fields for named places",
     async () => {
       const { createTelegramBot } = await import("./bot.js");
-      const replyModule = await import("../../auto-reply/reply.js");
+      const replyModule = await import("../../messaging/reply.js");
       const replySpy = replyModule.__replySpy as unknown as ReturnType<typeof vi.fn>;
 
       onSpy.mockReset();

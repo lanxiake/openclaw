@@ -1,7 +1,7 @@
 import { listChannelPlugins } from "../channels/core/plugins/index.js";
 import type { ChannelAccountSnapshot, ChannelPlugin } from "../channels/core/plugins/types.js";
 import { type OpenClawConfig, loadConfig } from "../config/config.js";
-import { DEFAULT_ACCOUNT_ID } from "../routing/session-key.js";
+import { DEFAULT_ACCOUNT_ID } from "../messaging/routing/session-key.js";
 import { theme } from "../shared/terminal/theme.js";
 
 export type ChannelSummaryOptions = {

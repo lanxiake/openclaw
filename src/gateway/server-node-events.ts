@@ -5,7 +5,7 @@ import { loadConfig } from "../config/config.js";
 import { updateSessionStore } from "../config/sessions.js";
 import { requestHeartbeatNow } from "../infra/heartbeat-wake.js";
 import { enqueueSystemEvent } from "../infra/system-events.js";
-import { normalizeMainKey } from "../routing/session-key.js";
+import { normalizeMainKey } from "../messaging/routing/session-key.js";
 import { defaultRuntime } from "../runtime.js";
 import type { NodeEvent, NodeEventContext } from "./server-node-events-types.js";
 import { loadSessionEntry } from "./session-utils.js";

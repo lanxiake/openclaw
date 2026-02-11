@@ -2,7 +2,7 @@ import { Type } from "@sinclair/typebox";
 import {
   CHANNEL_TARGET_DESCRIPTION,
   CHANNEL_TARGETS_DESCRIPTION,
-} from "../../../infra/outbound/channel-target.js";
+} from "../../../messaging/outbound/channel-target.js";
 
 type StringEnumOptions<T extends readonly string[]> = {
   description?: string;

@@ -1,11 +1,14 @@
-import { parseAgentSessionKey, type ParsedAgentSessionKey } from "../sessions/session-key-utils.js";
+import {
+  parseAgentSessionKey,
+  type ParsedAgentSessionKey,
+} from "../../sessions/session-key-utils.js";
 
 export {
   isAcpSessionKey,
   isSubagentSessionKey,
   parseAgentSessionKey,
   type ParsedAgentSessionKey,
-} from "../sessions/session-key-utils.js";
+} from "../../sessions/session-key-utils.js";
 
 export const DEFAULT_AGENT_ID = "main";
 export const DEFAULT_MAIN_KEY = "main";

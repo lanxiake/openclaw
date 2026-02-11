@@ -2,7 +2,7 @@ import type { CliDeps } from "../cli/deps.js";
 import type { loadConfig } from "../config/config.js";
 import { startGmailWatcher, stopGmailWatcher } from "../services/hooks/gmail-watcher.js";
 import type { HeartbeatRunner } from "../infra/heartbeat-runner.js";
-import { resetDirectoryCache } from "../infra/outbound/target-resolver.js";
+import { resetDirectoryCache } from "../messaging/outbound/target-resolver.js";
 import {
   authorizeGatewaySigusr1Restart,
   setGatewaySigusr1RestartPolicy,

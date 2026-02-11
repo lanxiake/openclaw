@@ -13,7 +13,7 @@ import { registerAgentRunContext } from "../../infra/agent-events.js";
 import {
   resolveAgentDeliveryPlan,
   resolveAgentOutboundTarget,
-} from "../../infra/outbound/agent-delivery.js";
+} from "../../messaging/outbound/agent-delivery.js";
 import { defaultRuntime } from "../../runtime.js";
 import { resolveSendPolicy } from "../../sessions/send-policy.js";
 import { normalizeSessionDeliveryFields } from "../../shared/utils/delivery-context.js";
@@ -23,7 +23,7 @@ import {
   isGatewayMessageChannel,
   normalizeMessageChannel,
 } from "../../shared/utils/message-channel.js";
-import { normalizeAgentId } from "../../routing/session-key.js";
+import { normalizeAgentId } from "../../messaging/routing/session-key.js";
 import { parseMessageWithAttachments } from "../chat-attachments.js";
 import {
   ErrorCodes,

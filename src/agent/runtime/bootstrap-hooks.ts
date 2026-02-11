@@ -4,7 +4,7 @@ import {
   triggerInternalHook,
 } from "../../services/hooks/internal-hooks.js";
 import type { AgentBootstrapHookContext } from "../../services/hooks/internal-hooks.js";
-import { resolveAgentIdFromSessionKey } from "../../routing/session-key.js";
+import { resolveAgentIdFromSessionKey } from "../../messaging/routing/session-key.js";
 import type { WorkspaceBootstrapFile } from "./workspace.js";
 
 export async function applyBootstrapHookOverrides(params: {

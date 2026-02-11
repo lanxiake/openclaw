@@ -55,7 +55,10 @@ import { callGatewayTool } from "./gateway.js";
 import { listNodes, resolveNodeIdFromList } from "./nodes-utils.js";
 import { getShellConfig, sanitizeBinaryOutput } from "./shell-utils.js";
 import { buildCursorPositionResponse, stripDsrRequests } from "./pty-dsr.js";
-import { parseAgentSessionKey, resolveAgentIdFromSessionKey } from "../../routing/session-key.js";
+import {
+  parseAgentSessionKey,
+  resolveAgentIdFromSessionKey,
+} from "../../messaging/routing/session-key.js";
 
 const DEFAULT_MAX_OUTPUT = clampNumber(
   readEnvInt("PI_BASH_MAX_OUTPUT_CHARS"),

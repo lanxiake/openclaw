@@ -1,11 +1,11 @@
 import type { loadConfig } from "../../../../config/config.js";
-import type { resolveAgentRoute } from "../../../../routing/resolve-route.js";
-import { buildAgentSessionKey } from "../../../../routing/resolve-route.js";
+import type { resolveAgentRoute } from "../../../../messaging/routing/resolve-route.js";
+import { buildAgentSessionKey } from "../../../../messaging/routing/resolve-route.js";
 import {
   buildAgentMainSessionKey,
   DEFAULT_MAIN_KEY,
   normalizeAgentId,
-} from "../../../../routing/session-key.js";
+} from "../../../../messaging/routing/session-key.js";
 import { formatError } from "../../session.js";
 import { whatsappInboundLog } from "../loggers.js";
 import type { WebInboundMsg } from "../types.js";

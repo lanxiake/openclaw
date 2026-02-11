@@ -6,7 +6,7 @@ import {
   stripMinimaxToolCallXml,
   stripThinkingTagsFromText,
 } from "../runtime/pi-embedded-utils.js";
-import { isAcpSessionKey, normalizeMainKey } from "../../routing/session-key.js";
+import { isAcpSessionKey, normalizeMainKey } from "../../messaging/routing/session-key.js";
 
 export type SessionKind = "main" | "group" | "cron" | "hook" | "node" | "other";
 

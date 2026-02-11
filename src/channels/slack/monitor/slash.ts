@@ -1,6 +1,6 @@
 import type { SlackActionMiddlewareArgs, SlackCommandMiddlewareArgs } from "@slack/bolt";
-import type { ChatCommandDefinition, CommandArgs } from "../../../auto-reply/commands-registry.js";
-import { resolveChunkMode } from "../../../auto-reply/chunk.js";
+import type { ChatCommandDefinition, CommandArgs } from "../../../messaging/commands-registry.js";
+import { resolveChunkMode } from "../../../messaging/chunk.js";
 import { resolveEffectiveMessagesConfig } from "../../../agent/runtime/identity.js";
 import {
   buildCommandTextFromArgs,
@@ -8,10 +8,10 @@ import {
   listNativeCommandSpecsForConfig,
   parseCommandArgs,
   resolveCommandArgMenu,
-} from "../../../auto-reply/commands-registry.js";
-import { listSkillCommandsForAgents } from "../../../auto-reply/skill-commands.js";
-import { dispatchReplyWithDispatcher } from "../../../auto-reply/reply/provider-dispatcher.js";
-import { finalizeInboundContext } from "../../../auto-reply/reply/inbound-context.js";
+} from "../../../messaging/commands-registry.js";
+import { listSkillCommandsForAgents } from "../../../messaging/skill-commands.js";
+import { dispatchReplyWithDispatcher } from "../../../messaging/reply/provider-dispatcher.js";
+import { finalizeInboundContext } from "../../../messaging/reply/inbound-context.js";
 import {
   resolveNativeCommandsEnabled,
   resolveNativeSkillsEnabled,
@@ -23,7 +23,7 @@ import {
   readChannelAllowFromStore,
   upsertChannelPairingRequest,
 } from "../../../infra/device/pairing/pairing-store.js";
-import { resolveAgentRoute } from "../../../routing/resolve-route.js";
+import { resolveAgentRoute } from "../../../messaging/routing/resolve-route.js";
 import { resolveConversationLabel } from "../../core/conversation-label.js";
 import { resolveCommandAuthorizedFromAuthorizers } from "../../core/command-gating.js";
 import { formatAllowlistMatchMeta } from "../../core/allowlist-match.js";

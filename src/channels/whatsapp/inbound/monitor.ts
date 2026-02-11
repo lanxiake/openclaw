@@ -6,7 +6,7 @@ import { recordChannelActivity } from "../../../infra/channel-activity.js";
 import { getChildLogger } from "../../../shared/logging/logger.js";
 import { createSubsystemLogger } from "../../../shared/logging/subsystem.js";
 import { saveMediaBuffer } from "../../../services/media/store.js";
-import { createInboundDebouncer } from "../../../auto-reply/inbound-debounce.js";
+import { createInboundDebouncer } from "../../../messaging/inbound-debounce.js";
 import { jidToE164, resolveJidToE164 } from "../../../utils.js";
 import { createWaSocket, getStatusCode, waitForWaConnection } from "../session.js";
 import { checkInboundAccessControl } from "./access-control.js";

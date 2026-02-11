@@ -1,6 +1,6 @@
-import { parseReplyDirectives } from "../../auto-reply/reply/reply-directives.js";
-import { createStreamingDirectiveAccumulator } from "../../auto-reply/reply/streaming-directives.js";
-import { formatToolAggregate } from "../../auto-reply/tool-meta.js";
+import { parseReplyDirectives } from "../../messaging/reply/reply-directives.js";
+import { createStreamingDirectiveAccumulator } from "../../messaging/reply/streaming-directives.js";
+import { formatToolAggregate } from "../../messaging/tool-meta.js";
 import { createSubsystemLogger } from "../../shared/logging/subsystem.js";
 import type { InlineCodeState } from "../../shared/markdown/code-spans.js";
 import { buildCodeSpanIndex, createInlineCodeState } from "../../shared/markdown/code-spans.js";

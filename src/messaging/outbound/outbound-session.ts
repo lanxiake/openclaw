@@ -1,4 +1,4 @@
-import type { MsgContext } from "../../auto-reply/templating.js";
+import type { MsgContext } from "../templating.js";
 import { getChannelPlugin } from "../../channels/core/plugins/index.js";
 import type { ChannelId } from "../../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../../config/config.js";
@@ -9,8 +9,8 @@ import {
   buildAgentSessionKey,
   type RoutePeer,
   type RoutePeerKind,
-} from "../../routing/resolve-route.js";
-import { resolveThreadSessionKeys } from "../../routing/session-key.js";
+} from "../routing/resolve-route.js";
+import { resolveThreadSessionKeys } from "../routing/session-key.js";
 import { resolveSlackAccount } from "../../channels/slack/accounts.js";
 import { createSlackWebClient } from "../../channels/slack/client.js";
 import { normalizeAllowListLower } from "../../channels/slack/monitor/allow-list.js";

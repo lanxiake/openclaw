@@ -20,7 +20,7 @@ import { resolveMainSessionKey } from "../config/sessions.js";
 import { logWarn } from "../logger.js";
 import { isTestDefaultMemorySlotDisabled } from "../plugins/config-state.js";
 import { getPluginToolMeta } from "../plugins/tools.js";
-import { isSubagentSessionKey } from "../routing/session-key.js";
+import { isSubagentSessionKey } from "../messaging/routing/session-key.js";
 import { normalizeMessageChannel } from "../shared/utils/message-channel.js";
 
 import { authorizeGatewayConnect, type ResolvedGatewayAuth } from "./auth.js";

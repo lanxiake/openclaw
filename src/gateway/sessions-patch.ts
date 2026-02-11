@@ -6,7 +6,7 @@ import {
   resolveAllowedModelRef,
   resolveConfiguredModelRef,
 } from "../agent/models/model-selection.js";
-import { normalizeGroupActivation } from "../auto-reply/group-activation.js";
+import { normalizeGroupActivation } from "../messaging/group-activation.js";
 import {
   formatThinkingLevels,
   formatXHighModelHint,
@@ -15,10 +15,10 @@ import {
   normalizeThinkLevel,
   normalizeUsageDisplay,
   supportsXHighThinking,
-} from "../auto-reply/thinking.js";
+} from "../messaging/thinking.js";
 import type { OpenClawConfig } from "../config/config.js";
 import type { SessionEntry } from "../config/sessions.js";
-import { isSubagentSessionKey } from "../routing/session-key.js";
+import { isSubagentSessionKey } from "../messaging/routing/session-key.js";
 import { applyVerboseOverride, parseVerboseOverride } from "../sessions/level-overrides.js";
 import { normalizeSendPolicy } from "../sessions/send-policy.js";
 import { parseSessionLabel } from "../sessions/session-label.js";

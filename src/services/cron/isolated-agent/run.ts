@@ -40,15 +40,18 @@ import {
   normalizeThinkLevel,
   normalizeVerboseLevel,
   supportsXHighThinking,
-} from "../../../auto-reply/thinking.js";
+} from "../../../messaging/thinking.js";
 import { createOutboundSendDeps, type CliDeps } from "../../../cli/outbound-send-deps.js";
 import type { OpenClawConfig } from "../../../config/config.js";
 import { resolveSessionTranscriptPath, updateSessionStore } from "../../../config/sessions.js";
 import type { AgentDefaultsConfig } from "../../../config/types.js";
 import { registerAgentRunContext } from "../../../infra/agent-events.js";
-import { deliverOutboundPayloads } from "../../../infra/outbound/deliver.js";
+import { deliverOutboundPayloads } from "../../../messaging/outbound/deliver.js";
 import { getRemoteSkillEligibility } from "../../../infra/skills-remote.js";
-import { buildAgentMainSessionKey, normalizeAgentId } from "../../../routing/session-key.js";
+import {
+  buildAgentMainSessionKey,
+  normalizeAgentId,
+} from "../../../messaging/routing/session-key.js";
 import {
   buildSafeExternalPrompt,
   detectSuspiciousPatterns,

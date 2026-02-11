@@ -1,6 +1,6 @@
 import type { OpenClawConfig } from "../../config/config.js";
 import type { SlackChannelConfig } from "../../config/types.slack.js";
-import { normalizeAccountId } from "../../routing/session-key.js";
+import { normalizeAccountId } from "../../messaging/routing/session-key.js";
 
 type SlackChannels = Record<string, SlackChannelConfig>;
 

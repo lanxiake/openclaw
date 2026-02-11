@@ -2,10 +2,10 @@ import { inspect } from "node:util";
 import { Client } from "@buape/carbon";
 import { GatewayIntents, GatewayPlugin } from "@buape/carbon/gateway";
 import { Routes } from "discord-api-types/v10";
-import { resolveTextChunkLimit } from "../../../auto-reply/chunk.js";
-import { listNativeCommandSpecsForConfig } from "../../../auto-reply/commands-registry.js";
-import { listSkillCommandsForAgents } from "../../../auto-reply/skill-commands.js";
-import type { HistoryEntry } from "../../../auto-reply/reply/history.js";
+import { resolveTextChunkLimit } from "../../../messaging/chunk.js";
+import { listNativeCommandSpecsForConfig } from "../../../messaging/commands-registry.js";
+import { listSkillCommandsForAgents } from "../../../messaging/skill-commands.js";
+import type { HistoryEntry } from "../../../messaging/reply/history.js";
 import { mergeAllowlist, summarizeMapping } from "../../core/allowlists/resolve-utils.js";
 import {
   isNativeCommandsExplicitlyDisabled,

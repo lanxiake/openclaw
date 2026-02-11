@@ -2,7 +2,7 @@ import type { AgentMessage } from "@mariozechner/pi-agent-core";
 import type { Api, AssistantMessage, ImageContent, Model } from "@mariozechner/pi-ai";
 import type { AuthStorage, ModelRegistry } from "../../pi-model-discovery.js";
 
-import type { ReasoningLevel, ThinkLevel, VerboseLevel } from "../../../../auto-reply/thinking.js";
+import type { ReasoningLevel, ThinkLevel, VerboseLevel } from "../../../../messaging/thinking.js";
 import type { OpenClawConfig } from "../../../../config/config.js";
 import type { AgentStreamParams } from "../../../../commands/agent/types.js";
 import type { ExecElevatedDefaults, ExecToolDefaults } from "../../../tools/bash-tools.js";

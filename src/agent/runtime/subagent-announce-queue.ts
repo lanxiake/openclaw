@@ -1,4 +1,4 @@
-import { type QueueDropPolicy, type QueueMode } from "../../auto-reply/reply/queue.js";
+import { type QueueDropPolicy, type QueueMode } from "../../messaging/reply/queue.js";
 import { defaultRuntime } from "../../runtime.js";
 import {
   type DeliveryContext,

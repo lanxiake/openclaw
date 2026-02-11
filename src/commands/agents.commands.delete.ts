@@ -2,7 +2,7 @@ import { resolveAgentDir, resolveAgentWorkspaceDir } from "../agent/agent-scope.
 import { writeConfigFile } from "../config/config.js";
 import { logConfigUpdated } from "../config/logging.js";
 import { resolveSessionTranscriptsDirForAgent } from "../config/sessions.js";
-import { DEFAULT_AGENT_ID, normalizeAgentId } from "../routing/session-key.js";
+import { DEFAULT_AGENT_ID, normalizeAgentId } from "../messaging/routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { defaultRuntime } from "../runtime.js";
 import { createClackPrompter } from "../platform/wizard/clack-prompter.js";

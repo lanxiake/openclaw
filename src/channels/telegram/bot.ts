@@ -4,9 +4,9 @@ import { apiThrottler } from "@grammyjs/transformer-throttler";
 import type { ApiClientOptions } from "grammy";
 import { Bot, webhookCallback } from "grammy";
 import { resolveDefaultAgentId } from "../../agent/agent-scope.js";
-import { isControlCommandMessage } from "../../auto-reply/command-detection.js";
-import { resolveTextChunkLimit } from "../../auto-reply/chunk.js";
-import { DEFAULT_GROUP_HISTORY_LIMIT, type HistoryEntry } from "../../auto-reply/reply/history.js";
+import { isControlCommandMessage } from "../../messaging/command-detection.js";
+import { resolveTextChunkLimit } from "../../messaging/chunk.js";
+import { DEFAULT_GROUP_HISTORY_LIMIT, type HistoryEntry } from "../../messaging/reply/history.js";
 import {
   isNativeCommandsExplicitlyDisabled,
   resolveNativeCommandsEnabled,
@@ -25,8 +25,8 @@ import { formatUncaughtError } from "../../infra/errors.js";
 import { enqueueSystemEvent } from "../../infra/system-events.js";
 import { getChildLogger } from "../../logging.js";
 import { withTelegramApiErrorLogging } from "./api-logging.js";
-import { resolveAgentRoute } from "../../routing/resolve-route.js";
-import { resolveThreadSessionKeys } from "../../routing/session-key.js";
+import { resolveAgentRoute } from "../../messaging/routing/resolve-route.js";
+import { resolveThreadSessionKeys } from "../../messaging/routing/session-key.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { resolveTelegramAccount } from "./accounts.js";
 import {

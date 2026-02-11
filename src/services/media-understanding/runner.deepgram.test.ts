@@ -5,7 +5,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import type { OpenClawConfig } from "../../config/config.js";
-import type { MsgContext } from "../../auto-reply/templating.js";
+import type { MsgContext } from "../../messaging/templating.js";
 import {
   buildProviderRegistry,
   createMediaAttachmentCache,

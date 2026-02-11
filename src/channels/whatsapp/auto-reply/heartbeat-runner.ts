@@ -2,10 +2,10 @@ import {
   DEFAULT_HEARTBEAT_ACK_MAX_CHARS,
   resolveHeartbeatPrompt,
   stripHeartbeatToken,
-} from "../../../auto-reply/heartbeat.js";
-import { HEARTBEAT_TOKEN } from "../../../auto-reply/tokens.js";
-import { getReplyFromConfig } from "../../../auto-reply/reply.js";
-import type { ReplyPayload } from "../../../auto-reply/types.js";
+} from "../../../messaging/heartbeat.js";
+import { HEARTBEAT_TOKEN } from "../../../messaging/tokens.js";
+import { getReplyFromConfig } from "../../../messaging/reply.js";
+import type { ReplyPayload } from "../../../messaging/types.js";
 import { resolveWhatsAppHeartbeatRecipients } from "../../core/plugins/whatsapp-heartbeat.js";
 import { loadConfig } from "../../../config/config.js";
 import {
@@ -17,7 +17,7 @@ import {
 import { emitHeartbeatEvent, resolveIndicatorType } from "../../../infra/heartbeat-events.js";
 import { resolveHeartbeatVisibility } from "../../../infra/heartbeat-visibility.js";
 import { getChildLogger } from "../../../logging.js";
-import { normalizeMainKey } from "../../../routing/session-key.js";
+import { normalizeMainKey } from "../../../messaging/routing/session-key.js";
 import { sendMessageWhatsApp } from "../outbound.js";
 import { newConnectionId } from "../reconnect.js";
 import { formatError } from "../session.js";

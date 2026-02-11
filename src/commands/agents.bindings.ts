@@ -3,7 +3,7 @@ import { getChannelPlugin, normalizeChannelId } from "../channels/core/plugins/i
 import type { ChannelId } from "../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../config/config.js";
 import type { AgentBinding } from "../config/types.js";
-import { DEFAULT_ACCOUNT_ID, normalizeAgentId } from "../routing/session-key.js";
+import { DEFAULT_ACCOUNT_ID, normalizeAgentId } from "../messaging/routing/session-key.js";
 import type { ChannelChoice } from "./onboard-types.js";
 
 function bindingMatchKey(match: AgentBinding["match"]) {

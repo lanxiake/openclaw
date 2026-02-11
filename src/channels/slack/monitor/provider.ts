@@ -2,13 +2,13 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import SlackBolt from "@slack/bolt";
 
-import { resolveTextChunkLimit } from "../../../auto-reply/chunk.js";
-import { DEFAULT_GROUP_HISTORY_LIMIT } from "../../../auto-reply/reply/history.js";
+import { resolveTextChunkLimit } from "../../../messaging/chunk.js";
+import { DEFAULT_GROUP_HISTORY_LIMIT } from "../../../messaging/reply/history.js";
 import { mergeAllowlist, summarizeMapping } from "../../core/allowlists/resolve-utils.js";
 import { loadConfig } from "../../../config/config.js";
 import type { SessionScope } from "../../../config/sessions.js";
 import { warn } from "../../../globals.js";
-import { normalizeMainKey } from "../../../routing/session-key.js";
+import { normalizeMainKey } from "../../../messaging/routing/session-key.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 
 import { resolveSlackAccount } from "../accounts.js";

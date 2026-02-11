@@ -1,27 +1,27 @@
 import { resolveAckReaction } from "../../../../agent/runtime/identity.js";
-import { hasControlCommand } from "../../../../auto-reply/command-detection.js";
-import { shouldHandleTextCommands } from "../../../../auto-reply/commands-registry.js";
-import type { FinalizedMsgContext } from "../../../../auto-reply/templating.js";
+import { hasControlCommand } from "../../../../messaging/command-detection.js";
+import { shouldHandleTextCommands } from "../../../../messaging/commands-registry.js";
+import type { FinalizedMsgContext } from "../../../../messaging/templating.js";
 import {
   formatInboundEnvelope,
   formatThreadStarterEnvelope,
   resolveEnvelopeFormatOptions,
-} from "../../../../auto-reply/envelope.js";
+} from "../../../../messaging/envelope.js";
 import {
   buildPendingHistoryContextFromMap,
   recordPendingHistoryEntryIfEnabled,
-} from "../../../../auto-reply/reply/history.js";
-import { finalizeInboundContext } from "../../../../auto-reply/reply/inbound-context.js";
+} from "../../../../messaging/reply/history.js";
+import { finalizeInboundContext } from "../../../../messaging/reply/inbound-context.js";
 import {
   buildMentionRegexes,
   matchesMentionWithExplicit,
-} from "../../../../auto-reply/reply/mentions.js";
+} from "../../../../messaging/reply/mentions.js";
 import { logVerbose, shouldLogVerbose } from "../../../../globals.js";
 import { enqueueSystemEvent } from "../../../../infra/system-events.js";
 import { buildPairingReply } from "../../../../infra/device/pairing/pairing-messages.js";
 import { upsertChannelPairingRequest } from "../../../../infra/device/pairing/pairing-store.js";
-import { resolveAgentRoute } from "../../../../routing/resolve-route.js";
-import { resolveThreadSessionKeys } from "../../../../routing/session-key.js";
+import { resolveAgentRoute } from "../../../../messaging/routing/resolve-route.js";
+import { resolveThreadSessionKeys } from "../../../../messaging/routing/session-key.js";
 import {
   shouldAckReaction as shouldAckReactionGate,
   type AckReactionScope,

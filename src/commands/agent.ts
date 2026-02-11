@@ -31,7 +31,7 @@ import {
   supportsXHighThinking,
   type ThinkLevel,
   type VerboseLevel,
-} from "../auto-reply/thinking.js";
+} from "../messaging/thinking.js";
 import { type CliDeps, createDefaultDeps } from "../cli/deps.js";
 import { loadConfig } from "../config/config.js";
 import {
@@ -58,7 +58,7 @@ import { resolveAgentRunContext } from "./agent/run-context.js";
 import { resolveSession } from "./agent/session.js";
 import { updateSessionStoreAfterAgentRun } from "./agent/session-store.js";
 import type { AgentCommandOpts } from "./agent/types.js";
-import { normalizeAgentId } from "../routing/session-key.js";
+import { normalizeAgentId } from "../messaging/routing/session-key.js";
 
 export async function agentCommand(
   opts: AgentCommandOpts,

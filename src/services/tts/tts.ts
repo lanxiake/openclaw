@@ -14,7 +14,7 @@ import path from "node:path";
 import { completeSimple, type TextContent } from "@mariozechner/pi-ai";
 import { EdgeTTS } from "node-edge-tts";
 
-import type { ReplyPayload } from "../../auto-reply/types.js";
+import type { ReplyPayload } from "../../messaging/types.js";
 import { normalizeChannelId } from "../../channels/core/plugins/index.js";
 import type { ChannelId } from "../../channels/core/plugins/types.js";
 import type { OpenClawConfig } from "../../config/config.js";

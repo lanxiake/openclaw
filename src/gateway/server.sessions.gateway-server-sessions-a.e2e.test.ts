@@ -22,7 +22,7 @@ const sessionCleanupMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("../auto-reply/reply/queue.js", async () => {
-  const actual = await vi.importActual<typeof import("../auto-reply/reply/queue.js")>(
+  const actual = await vi.importActual<typeof import("../messaging/reply/queue.js")>(
     "../auto-reply/reply/queue.js",
   );
   return {
@@ -32,7 +32,7 @@ vi.mock("../auto-reply/reply/queue.js", async () => {
 });
 
 vi.mock("../auto-reply/reply/abort.js", async () => {
-  const actual = await vi.importActual<typeof import("../auto-reply/reply/abort.js")>(
+  const actual = await vi.importActual<typeof import("../messaging/reply/abort.js")>(
     "../auto-reply/reply/abort.js",
   );
   return {

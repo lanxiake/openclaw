@@ -1,6 +1,6 @@
 import type { AgentSession } from "@mariozechner/pi-coding-agent";
 
-import type { ReasoningLevel, VerboseLevel } from "../../auto-reply/thinking.js";
+import type { ReasoningLevel, VerboseLevel } from "../../messaging/thinking.js";
 import type { BlockReplyChunking } from "./pi-embedded-block-chunker.js";
 
 export type ToolResultFormat = "markdown" | "plain";

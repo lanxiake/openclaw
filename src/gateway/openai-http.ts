@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { buildHistoryContextFromEntries, type HistoryEntry } from "../auto-reply/reply/history.js";
+import { buildHistoryContextFromEntries, type HistoryEntry } from "../messaging/reply/history.js";
 import { createDefaultDeps } from "../cli/deps.js";
 import { agentCommand } from "../commands/agent.js";
 import { emitAgentEvent, onAgentEvent } from "../infra/agent-events.js";

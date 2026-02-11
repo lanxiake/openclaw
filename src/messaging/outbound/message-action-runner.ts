@@ -8,7 +8,7 @@ import {
   readStringParam,
 } from "../../agent/tools/common.js";
 import { resolveSessionAgentId } from "../../agent/agent-scope.js";
-import { parseReplyDirectives } from "../../auto-reply/reply/reply-directives.js";
+import { parseReplyDirectives } from "../reply/reply-directives.js";
 import { dispatchChannelMessageAction } from "../../channels/core/plugins/message-actions.js";
 import type {
   ChannelId,

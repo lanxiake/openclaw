@@ -1,5 +1,5 @@
 import type { ImageContent } from "@mariozechner/pi-ai";
-import type { ReasoningLevel, ThinkLevel, VerboseLevel } from "../../../../auto-reply/thinking.js";
+import type { ReasoningLevel, ThinkLevel, VerboseLevel } from "../../../../messaging/thinking.js";
 import type { OpenClawConfig } from "../../../../config/config.js";
 import type { AgentStreamParams } from "../../../../commands/agent/types.js";
 import type { enqueueCommand } from "../../../../infra/process/command-queue.js";

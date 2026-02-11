@@ -3,8 +3,8 @@ import {
   formatThinkingLevels,
   normalizeUsageDisplay,
   resolveResponseUsageMode,
-} from "../../auto-reply/thinking.js";
-import { normalizeAgentId } from "../../routing/session-key.js";
+} from "../../messaging/thinking.js";
+import { normalizeAgentId } from "../../messaging/routing/session-key.js";
 import { formatRelativeTime } from "../../shared/utils/time-format.js";
 import { helpText, parseCommand } from "./commands.js";
 import type { ChatLog } from "./components/chat-log.js";

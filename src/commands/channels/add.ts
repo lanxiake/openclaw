@@ -3,7 +3,7 @@ import { listChannelPluginCatalogEntries } from "../../channels/core/plugins/cat
 import { getChannelPlugin, normalizeChannelId } from "../../channels/core/plugins/index.js";
 import type { ChannelId } from "../../channels/core/plugins/types.js";
 import { writeConfigFile, type OpenClawConfig } from "../../config/config.js";
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../routing/session-key.js";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../messaging/routing/session-key.js";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
 import { createClackPrompter } from "../../platform/wizard/clack-prompter.js";
 import { setupChannels } from "../onboard-channels.js";

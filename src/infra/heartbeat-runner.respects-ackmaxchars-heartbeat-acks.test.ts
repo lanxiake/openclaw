@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as replyModule from "../auto-reply/reply.js";
+import * as replyModule from "../messaging/reply.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { resolveMainSessionKey } from "../config/sessions.js";
 import { runHeartbeatOnce } from "./heartbeat-runner.js";

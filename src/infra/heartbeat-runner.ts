@@ -15,10 +15,10 @@ import {
   isHeartbeatContentEffectivelyEmpty,
   resolveHeartbeatPrompt as resolveHeartbeatPromptText,
   stripHeartbeatToken,
-} from "../auto-reply/heartbeat.js";
-import { HEARTBEAT_TOKEN } from "../auto-reply/tokens.js";
-import { getReplyFromConfig } from "../auto-reply/reply.js";
-import type { ReplyPayload } from "../auto-reply/types.js";
+} from "../messaging/heartbeat.js";
+import { HEARTBEAT_TOKEN } from "../messaging/tokens.js";
+import { getReplyFromConfig } from "../messaging/reply.js";
+import type { ReplyPayload } from "../messaging/types.js";
 import { getChannelPlugin } from "../channels/core/plugins/index.js";
 import type { ChannelHeartbeatDeps } from "../channels/core/plugins/types.js";
 import { parseDurationMs } from "../cli/parse-duration.js";
@@ -40,7 +40,7 @@ import { createSubsystemLogger } from "../shared/logging/subsystem.js";
 import { getQueueSize } from "./process/command-queue.js";
 import { CommandLane } from "./process/lanes.js";
 import { defaultRuntime, type RuntimeEnv } from "../runtime.js";
-import { normalizeAgentId, toAgentStoreSessionKey } from "../routing/session-key.js";
+import { normalizeAgentId, toAgentStoreSessionKey } from "../messaging/routing/session-key.js";
 import { emitHeartbeatEvent, resolveIndicatorType } from "./heartbeat-events.js";
 import { resolveHeartbeatVisibility } from "./heartbeat-visibility.js";
 import {
@@ -49,12 +49,12 @@ import {
   requestHeartbeatNow,
   setHeartbeatWakeHandler,
 } from "./heartbeat-wake.js";
-import type { OutboundSendDeps } from "./outbound/deliver.js";
-import { deliverOutboundPayloads } from "./outbound/deliver.js";
+import type { OutboundSendDeps } from "../messaging/outbound/deliver.js";
+import { deliverOutboundPayloads } from "../messaging/outbound/deliver.js";
 import {
   resolveHeartbeatDeliveryTarget,
   resolveHeartbeatSenderContext,
-} from "./outbound/targets.js";
+} from "../messaging/outbound/targets.js";
 
 type HeartbeatDeps = OutboundSendDeps &
   ChannelHeartbeatDeps & {

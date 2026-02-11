@@ -1,5 +1,5 @@
-import type { HistoryEntry } from "../../../auto-reply/reply/history.js";
-import type { ReplyPayload } from "../../../auto-reply/types.js";
+import type { HistoryEntry } from "../../../messaging/reply/history.js";
+import type { ReplyPayload } from "../../../messaging/types.js";
 import type { OpenClawConfig } from "../../../config/config.js";
 import type {
   DmPolicy,

@@ -1,12 +1,12 @@
 import crypto from "node:crypto";
 
-import type { MsgContext } from "../../auto-reply/templating.js";
+import type { MsgContext } from "../../messaging/templating.js";
 import {
   normalizeThinkLevel,
   normalizeVerboseLevel,
   type ThinkLevel,
   type VerboseLevel,
-} from "../../auto-reply/thinking.js";
+} from "../../messaging/thinking.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import {
   evaluateSessionFreshness,
@@ -20,7 +20,7 @@ import {
   resolveStorePath,
   type SessionEntry,
 } from "../../config/sessions.js";
-import { normalizeMainKey } from "../../routing/session-key.js";
+import { normalizeMainKey } from "../../messaging/routing/session-key.js";
 
 export type SessionResolution = {
   sessionId: string;

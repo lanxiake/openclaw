@@ -1,5 +1,5 @@
-import type { ReasoningLevel, ThinkLevel } from "../../auto-reply/thinking.js";
-import { SILENT_REPLY_TOKEN } from "../../auto-reply/tokens.js";
+import type { ReasoningLevel, ThinkLevel } from "../../messaging/thinking.js";
+import { SILENT_REPLY_TOKEN } from "../../messaging/tokens.js";
 import { listDeliverableMessageChannels } from "../../shared/utils/message-channel.js";
 import type { ResolvedTimeFormat } from "./date-time.js";
 import type { EmbeddedContextFile } from "./pi-embedded-helpers.js";

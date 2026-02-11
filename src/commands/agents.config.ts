@@ -10,7 +10,7 @@ import {
   parseIdentityMarkdown as parseIdentityMarkdownFile,
 } from "../agent/runtime/identity-file.js";
 import type { OpenClawConfig } from "../config/config.js";
-import { normalizeAgentId } from "../routing/session-key.js";
+import { normalizeAgentId } from "../messaging/routing/session-key.js";
 
 export type AgentSummary = {
   id: string;

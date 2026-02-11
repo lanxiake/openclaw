@@ -1,5 +1,5 @@
 import type { AgentBinding } from "../config/types.js";
-import { normalizeAgentId } from "../routing/session-key.js";
+import { normalizeAgentId } from "../messaging/routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatCliCommand } from "../cli/command-format.js";

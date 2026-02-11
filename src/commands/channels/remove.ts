@@ -5,7 +5,7 @@ import {
   normalizeChannelId,
 } from "../../channels/core/plugins/index.js";
 import { type OpenClawConfig, writeConfigFile } from "../../config/config.js";
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../routing/session-key.js";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../messaging/routing/session-key.js";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
 import { createClackPrompter } from "../../platform/wizard/clack-prompter.js";
 import { type ChatChannel, channelLabel, requireValidConfig, shouldUseWizard } from "./shared.js";

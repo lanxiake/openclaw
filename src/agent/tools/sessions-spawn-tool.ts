@@ -2,14 +2,14 @@ import crypto from "node:crypto";
 
 import { Type } from "@sinclair/typebox";
 
-import { formatThinkingLevels, normalizeThinkLevel } from "../../auto-reply/thinking.js";
+import { formatThinkingLevels, normalizeThinkLevel } from "../../messaging/thinking.js";
 import { loadConfig } from "../../config/config.js";
 import { callGateway } from "../../gateway/call.js";
 import {
   isSubagentSessionKey,
   normalizeAgentId,
   parseAgentSessionKey,
-} from "../../routing/session-key.js";
+} from "../../messaging/routing/session-key.js";
 import { normalizeDeliveryContext } from "../../shared/utils/delivery-context.js";
 import type { GatewayMessageChannel } from "../../shared/utils/message-channel.js";
 import { resolveAgentConfig } from "../agent-scope.js";

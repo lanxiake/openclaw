@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { isVerbose } from "../globals.js";
-import { parseAgentSessionKey } from "../routing/session-key.js";
+import { parseAgentSessionKey } from "../messaging/routing/session-key.js";
 import { shouldLogSubsystemToConsole } from "../shared/logging/console.js";
 import { createSubsystemLogger } from "../shared/logging/subsystem.js";
 import { getDefaultRedactPatterns, redactSensitiveText } from "../shared/logging/redact.js";

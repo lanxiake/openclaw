@@ -5,7 +5,7 @@ import {
   DEFAULT_AGENT_ID,
   normalizeAgentId,
   parseAgentSessionKey,
-} from "../../routing/session-key.js";
+} from "../../messaging/routing/session-key.js";
 import { resolveAgentConfig } from "../agent-scope.js";
 import type { AnyAgentTool } from "./common.js";
 import { jsonResult } from "./common.js";

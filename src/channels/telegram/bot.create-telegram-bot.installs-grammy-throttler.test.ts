@@ -4,7 +4,7 @@ import { resolveTelegramFetch } from "./fetch.js";
 
 let createTelegramBot: typeof import("./bot.js").createTelegramBot;
 let getTelegramSequentialKey: typeof import("./bot.js").getTelegramSequentialKey;
-let resetInboundDedupe: typeof import("../../auto-reply/reply/inbound-dedupe.js").resetInboundDedupe;
+let resetInboundDedupe: typeof import("../../messaging/reply/inbound-dedupe.js").resetInboundDedupe;
 
 const { sessionStorePath } = vi.hoisted(() => ({
   sessionStorePath: `/tmp/openclaw-telegram-throttler-${Math.random().toString(16).slice(2)}.json`,
@@ -128,7 +128,7 @@ vi.mock("../auto-reply/reply.js", () => {
   return { getReplyFromConfig: replySpy, __replySpy: replySpy };
 });
 
-let replyModule: typeof import("../../auto-reply/reply.js");
+let replyModule: typeof import("../../messaging/reply.js");
 
 const getOnHandler = (event: string) => {
   const handler = onSpy.mock.calls.find((call) => call[0] === event)?.[1];
@@ -143,9 +143,9 @@ const ORIGINAL_TZ = process.env.TZ;
 describe("createTelegramBot", () => {
   beforeEach(async () => {
     vi.resetModules();
-    ({ resetInboundDedupe } = await import("../../auto-reply/reply/inbound-dedupe.js"));
+    ({ resetInboundDedupe } = await import("../../messaging/reply/inbound-dedupe.js"));
     ({ createTelegramBot, getTelegramSequentialKey } = await import("./bot.js"));
-    replyModule = await import("../../auto-reply/reply.js");
+    replyModule = await import("../../messaging/reply.js");
     process.env.TZ = "UTC";
     resetInboundDedupe();
     loadConfig.mockReturnValue({

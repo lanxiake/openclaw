@@ -20,9 +20,9 @@ import {
   resolveUserTimeFormat,
   resolveUserTimezone,
 } from "../runtime/date-time.js";
-import { normalizeGroupActivation } from "../../auto-reply/group-activation.js";
-import { getFollowupQueueDepth, resolveQueueSettings } from "../../auto-reply/reply/queue.js";
-import { buildStatusMessage } from "../../auto-reply/status.js";
+import { normalizeGroupActivation } from "../../messaging/group-activation.js";
+import { getFollowupQueueDepth, resolveQueueSettings } from "../../messaging/reply/queue.js";
+import { buildStatusMessage } from "../../messaging/status.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { loadConfig } from "../../config/config.js";
 import {
@@ -40,7 +40,7 @@ import {
   buildAgentMainSessionKey,
   DEFAULT_AGENT_ID,
   resolveAgentIdFromSessionKey,
-} from "../../routing/session-key.js";
+} from "../../messaging/routing/session-key.js";
 import { applyModelOverrideToSessionEntry } from "../../sessions/model-overrides.js";
 import type { AnyAgentTool } from "./common.js";
 import { readStringParam } from "./common.js";

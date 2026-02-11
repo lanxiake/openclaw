@@ -1,5 +1,5 @@
 import { normalizeChannelId } from "../channels/core/plugins/index.js";
-import { normalizeAccountId } from "../routing/session-key.js";
+import { normalizeAccountId } from "../messaging/routing/session-key.js";
 import type { OpenClawConfig } from "./config.js";
 import type { TelegramCapabilitiesConfig } from "./types.telegram.js";
 

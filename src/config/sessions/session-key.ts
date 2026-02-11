@@ -1,9 +1,9 @@
-import type { MsgContext } from "../../auto-reply/templating.js";
+import type { MsgContext } from "../../messaging/templating.js";
 import {
   buildAgentMainSessionKey,
   DEFAULT_AGENT_ID,
   normalizeMainKey,
-} from "../../routing/session-key.js";
+} from "../../messaging/routing/session-key.js";
 import { normalizeE164 } from "../../utils.js";
 import { resolveGroupSessionKey } from "./group.js";
 import type { SessionScope } from "./types.js";

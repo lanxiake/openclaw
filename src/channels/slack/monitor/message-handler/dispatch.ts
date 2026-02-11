@@ -1,11 +1,11 @@
 import { resolveHumanDelayConfig } from "../../../../agent/runtime/identity.js";
-import { dispatchInboundMessage } from "../../../../auto-reply/dispatch.js";
-import { clearHistoryEntriesIfEnabled } from "../../../../auto-reply/reply/history.js";
+import { dispatchInboundMessage } from "../../../../messaging/dispatch.js";
+import { clearHistoryEntriesIfEnabled } from "../../../../messaging/reply/history.js";
 import { removeAckReactionAfterReply } from "../../../core/ack-reactions.js";
 import { logAckFailure, logTypingFailure } from "../../../core/logging.js";
 import { createReplyPrefixContext } from "../../../core/reply-prefix.js";
 import { createTypingCallbacks } from "../../../core/typing.js";
-import { createReplyDispatcherWithTyping } from "../../../../auto-reply/reply/reply-dispatcher.js";
+import { createReplyDispatcherWithTyping } from "../../../../messaging/reply/reply-dispatcher.js";
 import { resolveStorePath, updateLastRoute } from "../../../../config/sessions.js";
 import { danger, logVerbose, shouldLogVerbose } from "../../../../globals.js";
 import { removeSlackReaction } from "../../actions.js";

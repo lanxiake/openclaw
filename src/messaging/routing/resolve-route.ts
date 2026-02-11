@@ -1,5 +1,5 @@
-import { resolveDefaultAgentId } from "../agent/agent-scope.js";
-import type { OpenClawConfig } from "../config/config.js";
+import { resolveDefaultAgentId } from "../../agent/agent-scope.js";
+import type { OpenClawConfig } from "../../config/config.js";
 import { listBindings } from "./bindings.js";
 import {
   buildAgentMainSessionKey,

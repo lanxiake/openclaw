@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAgentSessionKey } from "../../../routing/resolve-route.js";
+import { buildAgentSessionKey } from "../../../messaging/routing/resolve-route.js";
 import type { Client } from "@buape/carbon";
 import {
   resolveDiscordAutoThreadContext,

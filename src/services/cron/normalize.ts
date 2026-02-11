@@ -1,4 +1,4 @@
-import { sanitizeAgentId } from "../../routing/session-key.js";
+import { sanitizeAgentId } from "../../messaging/routing/session-key.js";
 import { parseAbsoluteTimeMs } from "./parse.js";
 import { migrateLegacyCronPayload } from "./payload-migration.js";
 import type { CronJobCreate, CronJobPatch } from "./types.js";

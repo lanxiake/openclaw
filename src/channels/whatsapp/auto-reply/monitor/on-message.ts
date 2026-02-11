@@ -1,9 +1,9 @@
-import type { MsgContext } from "../../../../auto-reply/templating.js";
-import type { getReplyFromConfig } from "../../../../auto-reply/reply.js";
+import type { MsgContext } from "../../../../messaging/templating.js";
+import type { getReplyFromConfig } from "../../../../messaging/reply.js";
 import type { loadConfig } from "../../../../config/config.js";
 import { logVerbose } from "../../../../globals.js";
-import { resolveAgentRoute } from "../../../../routing/resolve-route.js";
-import { buildGroupHistoryKey } from "../../../../routing/session-key.js";
+import { resolveAgentRoute } from "../../../../messaging/routing/resolve-route.js";
+import { buildGroupHistoryKey } from "../../../../messaging/routing/session-key.js";
 import { normalizeE164 } from "../../../../utils.js";
 import type { MentionConfig } from "../mentions.js";
 import type { WebInboundMsg } from "../types.js";

@@ -2,14 +2,14 @@ import { getChannelPlugin, normalizeChannelId } from "../../channels/core/plugin
 import { DEFAULT_CHAT_CHANNEL } from "../../channels/core/registry.js";
 import { loadConfig } from "../../config/config.js";
 import { createOutboundSendDeps } from "../../cli/deps.js";
-import { deliverOutboundPayloads } from "../../infra/outbound/deliver.js";
-import { normalizeReplyPayloadsForDelivery } from "../../infra/outbound/payloads.js";
+import { deliverOutboundPayloads } from "../../messaging/outbound/deliver.js";
+import { normalizeReplyPayloadsForDelivery } from "../../messaging/outbound/payloads.js";
 import {
   ensureOutboundSessionEntry,
   resolveOutboundSessionRoute,
-} from "../../infra/outbound/outbound-session.js";
+} from "../../messaging/outbound/outbound-session.js";
 import { resolveSessionAgentId } from "../../agent/agent-scope.js";
-import { resolveOutboundTarget } from "../../infra/outbound/targets.js";
+import { resolveOutboundTarget } from "../../messaging/outbound/targets.js";
 import { normalizePollInput } from "../../polls.js";
 import {
   ErrorCodes,

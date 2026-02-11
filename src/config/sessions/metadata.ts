@@ -1,4 +1,4 @@
-import type { MsgContext } from "../../auto-reply/templating.js";
+import type { MsgContext } from "../../messaging/templating.js";
 import { normalizeChatType } from "../../channels/core/chat-type.js";
 import { resolveConversationLabel } from "../../channels/core/conversation-label.js";
 import { getChannelDock } from "../../channels/core/dock.js";

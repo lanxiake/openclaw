@@ -8,31 +8,31 @@ import {
   chunkTextWithMode,
   resolveChunkMode,
   resolveTextChunkLimit,
-} from "../../auto-reply/chunk.js";
+} from "../../messaging/chunk.js";
 import {
   hasControlCommand,
   isControlCommandMessage,
   shouldComputeCommandAuthorized,
-} from "../../auto-reply/command-detection.js";
-import { shouldHandleTextCommands } from "../../auto-reply/commands-registry.js";
+} from "../../messaging/command-detection.js";
+import { shouldHandleTextCommands } from "../../messaging/commands-registry.js";
 import {
   createInboundDebouncer,
   resolveInboundDebounceMs,
-} from "../../auto-reply/inbound-debounce.js";
+} from "../../messaging/inbound-debounce.js";
 import {
   formatAgentEnvelope,
   formatInboundEnvelope,
   resolveEnvelopeFormatOptions,
-} from "../../auto-reply/envelope.js";
-import { dispatchReplyFromConfig } from "../../auto-reply/reply/dispatch-from-config.js";
+} from "../../messaging/envelope.js";
+import { dispatchReplyFromConfig } from "../../messaging/reply/dispatch-from-config.js";
 import {
   buildMentionRegexes,
   matchesMentionPatterns,
   matchesMentionWithExplicit,
-} from "../../auto-reply/reply/mentions.js";
-import { dispatchReplyWithBufferedBlockDispatcher } from "../../auto-reply/reply/provider-dispatcher.js";
-import { createReplyDispatcherWithTyping } from "../../auto-reply/reply/reply-dispatcher.js";
-import { finalizeInboundContext } from "../../auto-reply/reply/inbound-context.js";
+} from "../../messaging/reply/mentions.js";
+import { dispatchReplyWithBufferedBlockDispatcher } from "../../messaging/reply/provider-dispatcher.js";
+import { createReplyDispatcherWithTyping } from "../../messaging/reply/reply-dispatcher.js";
+import { finalizeInboundContext } from "../../messaging/reply/inbound-context.js";
 import {
   resolveEffectiveMessagesConfig,
   resolveHumanDelayConfig,
@@ -95,7 +95,7 @@ import {
   upsertChannelPairingRequest,
 } from "../../infra/device/pairing/pairing-store.js";
 import { runCommandWithTimeout } from "../../infra/process/exec.js";
-import { resolveAgentRoute } from "../../routing/resolve-route.js";
+import { resolveAgentRoute } from "../../messaging/routing/resolve-route.js";
 import { monitorSignalProvider } from "../../channels/signal/index.js";
 import { probeSignal } from "../../channels/signal/probe.js";
 import { sendMessageSignal } from "../../channels/signal/send.js";

@@ -1,5 +1,5 @@
 import type { App } from "@slack/bolt";
-import type { HistoryEntry } from "../../../auto-reply/reply/history.js";
+import type { HistoryEntry } from "../../../messaging/reply/history.js";
 import type { OpenClawConfig, SlackReactionNotificationMode } from "../../../config/config.js";
 import { resolveSessionKey, type SessionScope } from "../../../config/sessions.js";
 import type { DmPolicy, GroupPolicy } from "../../../config/types.js";

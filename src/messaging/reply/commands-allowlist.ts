@@ -8,7 +8,7 @@ import { getChannelDock } from "../../channels/core/dock.js";
 import { normalizeChannelId } from "../../channels/core/registry.js";
 import { listPairingChannels } from "../../channels/core/plugins/pairing.js";
 import { logVerbose } from "../../globals.js";
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../routing/session-key.js";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
 import { resolveDiscordAccount } from "../../channels/discord/accounts.js";
 import { resolveIMessageAccount } from "../../channels/imessage/accounts.js";
 import { resolveSignalAccount } from "../../channels/signal/accounts.js";

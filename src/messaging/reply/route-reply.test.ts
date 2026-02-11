@@ -51,7 +51,7 @@ vi.mock("../../web/outbound.js", () => ({
   sendPollWhatsApp: mocks.sendMessageWhatsApp,
 }));
 vi.mock("../../infra/outbound/deliver.js", async () => {
-  const actual = await vi.importActual<typeof import("../../infra/outbound/deliver.js")>(
+  const actual = await vi.importActual<typeof import("../outbound/deliver.js")>(
     "../../infra/outbound/deliver.js",
   );
   return {
@@ -59,7 +59,7 @@ vi.mock("../../infra/outbound/deliver.js", async () => {
     deliverOutboundPayloads: mocks.deliverOutboundPayloads,
   };
 });
-const actualDeliver = await vi.importActual<typeof import("../../infra/outbound/deliver.js")>(
+const actualDeliver = await vi.importActual<typeof import("../outbound/deliver.js")>(
   "../../infra/outbound/deliver.js",
 );
 

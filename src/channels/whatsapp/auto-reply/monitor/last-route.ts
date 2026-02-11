@@ -1,4 +1,4 @@
-import type { MsgContext } from "../../../../auto-reply/templating.js";
+import type { MsgContext } from "../../../../messaging/templating.js";
 import type { loadConfig } from "../../../../config/config.js";
 import { resolveStorePath, updateLastRoute } from "../../../../config/sessions.js";
 import { formatError } from "../../session.js";

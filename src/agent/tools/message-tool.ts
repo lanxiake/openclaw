@@ -12,10 +12,10 @@ import { BLUEBUBBLES_GROUP_ACTIONS } from "../../channels/core/plugins/bluebubbl
 import type { OpenClawConfig } from "../../config/config.js";
 import { loadConfig } from "../../config/config.js";
 import { GATEWAY_CLIENT_IDS, GATEWAY_CLIENT_MODES } from "../../gateway/protocol/client-info.js";
-import { normalizeTargetForProvider } from "../../infra/outbound/target-normalization.js";
-import { getToolResult, runMessageAction } from "../../infra/outbound/message-action-runner.js";
+import { normalizeTargetForProvider } from "../../messaging/outbound/target-normalization.js";
+import { getToolResult, runMessageAction } from "../../messaging/outbound/message-action-runner.js";
 import { resolveSessionAgentId } from "../agent-scope.js";
-import { normalizeAccountId } from "../../routing/session-key.js";
+import { normalizeAccountId } from "../../messaging/routing/session-key.js";
 import { channelTargetSchema, channelTargetsSchema, stringEnum } from "./schema/typebox.js";
 import { listChannelSupportedActions } from "./channel-tools.js";
 import { normalizeMessageChannel } from "../../shared/utils/message-channel.js";

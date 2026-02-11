@@ -6,9 +6,9 @@ import {
   modelSupportsVision,
 } from "../../agent/models/model-catalog.js";
 import { resolveDefaultModelForAgent } from "../../agent/models/model-selection.js";
-import { resolveChunkMode } from "../../auto-reply/chunk.js";
-import { clearHistoryEntriesIfEnabled } from "../../auto-reply/reply/history.js";
-import { dispatchReplyWithBufferedBlockDispatcher } from "../../auto-reply/reply/provider-dispatcher.js";
+import { resolveChunkMode } from "../../messaging/chunk.js";
+import { clearHistoryEntriesIfEnabled } from "../../messaging/reply/history.js";
+import { dispatchReplyWithBufferedBlockDispatcher } from "../../messaging/reply/provider-dispatcher.js";
 import { removeAckReactionAfterReply } from "../core/ack-reactions.js";
 import { logAckFailure, logTypingFailure } from "../core/logging.js";
 import { createReplyPrefixContext } from "../core/reply-prefix.js";

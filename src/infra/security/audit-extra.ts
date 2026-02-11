@@ -20,7 +20,7 @@ import {
 import { resolveGatewayAuth } from "../../gateway/auth.js";
 import type { SandboxToolPolicy } from "../../agent/sandbox/types.js";
 import { INCLUDE_KEY, MAX_INCLUDE_DEPTH } from "../../config/includes.js";
-import { normalizeAgentId } from "../../routing/session-key.js";
+import { normalizeAgentId } from "../../messaging/routing/session-key.js";
 import {
   formatPermissionDetail,
   formatPermissionRemediation,

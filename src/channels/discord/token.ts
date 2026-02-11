@@ -1,5 +1,5 @@
 import type { OpenClawConfig } from "../../config/config.js";
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../routing/session-key.js";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../messaging/routing/session-key.js";
 
 export type DiscordTokenSource = "env" | "config" | "none";
 

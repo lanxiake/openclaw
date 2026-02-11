@@ -4,7 +4,7 @@ import path from "node:path";
 import type { OpenClawConfig } from "../../config/config.js";
 import { resolveOAuthDir } from "../../config/paths.js";
 import type { DmPolicy, GroupPolicy, WhatsAppAccountConfig } from "../../config/types.js";
-import { DEFAULT_ACCOUNT_ID } from "../../routing/session-key.js";
+import { DEFAULT_ACCOUNT_ID } from "../../messaging/routing/session-key.js";
 import { resolveUserPath } from "../../utils.js";
 import { hasWebCredsSync } from "./auth-store.js";
 

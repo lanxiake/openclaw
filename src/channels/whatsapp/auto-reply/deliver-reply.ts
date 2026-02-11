@@ -1,7 +1,7 @@
-import { chunkMarkdownTextWithMode, type ChunkMode } from "../../../auto-reply/chunk.js";
+import { chunkMarkdownTextWithMode, type ChunkMode } from "../../../messaging/chunk.js";
 import type { MarkdownTableMode } from "../../../config/types.base.js";
 import { convertMarkdownTables } from "../../../shared/markdown/tables.js";
-import type { ReplyPayload } from "../../../auto-reply/types.js";
+import type { ReplyPayload } from "../../../messaging/types.js";
 import { logVerbose, shouldLogVerbose } from "../../../globals.js";
 import { loadWebMedia } from "../media.js";
 import { newConnectionId } from "../reconnect.js";

@@ -9,8 +9,8 @@ import {
   SettingsManager,
 } from "@mariozechner/pi-coding-agent";
 
-import { resolveHeartbeatPrompt } from "../../../auto-reply/heartbeat.js";
-import type { ReasoningLevel, ThinkLevel } from "../../../auto-reply/thinking.js";
+import { resolveHeartbeatPrompt } from "../../../messaging/heartbeat.js";
+import type { ReasoningLevel, ThinkLevel } from "../../../messaging/thinking.js";
 import {
   listChannelSupportedActions,
   resolveChannelMessageToolHints,
@@ -23,7 +23,7 @@ import { resolveTelegramReactionLevel } from "../../../channels/telegram/reactio
 import { resolveSignalReactionLevel } from "../../../channels/signal/reaction-level.js";
 import { type enqueueCommand, enqueueCommandInLane } from "../../../infra/process/command-queue.js";
 import { normalizeMessageChannel } from "../../../shared/utils/message-channel.js";
-import { isSubagentSessionKey } from "../../../routing/session-key.js";
+import { isSubagentSessionKey } from "../../../messaging/routing/session-key.js";
 import { isReasoningTagProvider } from "../../../shared/utils/provider-utils.js";
 import { resolveUserPath } from "../../../utils.js";
 import { resolveOpenClawAgentDir } from "../../agent-paths.js";

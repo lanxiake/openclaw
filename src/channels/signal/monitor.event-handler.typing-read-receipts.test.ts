@@ -10,7 +10,7 @@ vi.mock("./send.js", () => ({
 }));
 
 vi.mock("../auto-reply/dispatch.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../auto-reply/dispatch.js")>();
+  const actual = await importOriginal<typeof import("../../messaging/dispatch.js")>();
   const dispatchInboundMessage = vi.fn(
     async (params: { replyOptions?: { onReplyStart?: () => void } }) => {
       await Promise.resolve(params.replyOptions?.onReplyStart?.());

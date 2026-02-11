@@ -9,7 +9,7 @@ import { createDiscordRetryRunner, type RetryRunner } from "../../infra/retry-po
 import { normalizePollDurationHours, normalizePollInput, type PollInput } from "../../polls.js";
 import { loadWebMedia } from "../whatsapp/media.js";
 import { resolveDiscordAccount } from "./accounts.js";
-import type { ChunkMode } from "../../auto-reply/chunk.js";
+import type { ChunkMode } from "../../messaging/chunk.js";
 import { chunkDiscordTextWithMode } from "./chunk.js";
 import { fetchChannelPermissionsDiscord, isThreadChannelType } from "./send.permissions.js";
 import { DiscordSendError } from "./send.types.js";

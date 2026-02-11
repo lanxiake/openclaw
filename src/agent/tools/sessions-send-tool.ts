@@ -8,7 +8,7 @@ import {
   isSubagentSessionKey,
   normalizeAgentId,
   resolveAgentIdFromSessionKey,
-} from "../../routing/session-key.js";
+} from "../../messaging/routing/session-key.js";
 import { SESSION_LABEL_MAX_LENGTH } from "../../sessions/session-label.js";
 import {
   type GatewayMessageChannel,

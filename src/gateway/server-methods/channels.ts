@@ -11,7 +11,7 @@ import type { ChannelAccountSnapshot, ChannelPlugin } from "../../channels/core/
 import type { OpenClawConfig } from "../../config/config.js";
 import { loadConfig, readConfigFileSnapshot } from "../../config/config.js";
 import { getChannelActivity } from "../../infra/channel-activity.js";
-import { DEFAULT_ACCOUNT_ID } from "../../routing/session-key.js";
+import { DEFAULT_ACCOUNT_ID } from "../../messaging/routing/session-key.js";
 import { defaultRuntime } from "../../runtime.js";
 import {
   ErrorCodes,

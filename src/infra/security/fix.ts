@@ -8,7 +8,7 @@ import { createConfigIO } from "../../config/config.js";
 import { resolveConfigPath, resolveOAuthDir, resolveStateDir } from "../../config/paths.js";
 import { resolveDefaultAgentId } from "../../agent/agent-scope.js";
 import { INCLUDE_KEY, MAX_INCLUDE_DEPTH } from "../../config/includes.js";
-import { normalizeAgentId } from "../../routing/session-key.js";
+import { normalizeAgentId } from "../../messaging/routing/session-key.js";
 import { readChannelAllowFromStore } from "../device/pairing/pairing-store.js";
 import { runExec } from "../process/exec.js";
 import { createIcaclsResetCommand, formatIcaclsResetCommand, type ExecFn } from "./windows-acl.js";

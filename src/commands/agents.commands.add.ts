@@ -10,7 +10,7 @@ import { ensureAuthProfileStore } from "../agent/models/auth-profiles.js";
 import { resolveAuthStorePath } from "../agent/models/auth-profiles/paths.js";
 import { writeConfigFile } from "../config/config.js";
 import { logConfigUpdated } from "../config/logging.js";
-import { DEFAULT_AGENT_ID, normalizeAgentId } from "../routing/session-key.js";
+import { DEFAULT_AGENT_ID, normalizeAgentId } from "../messaging/routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { defaultRuntime } from "../runtime.js";
 import { resolveUserPath, shortenHomePath } from "../utils.js";

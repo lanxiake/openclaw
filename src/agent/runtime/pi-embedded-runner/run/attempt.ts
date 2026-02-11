@@ -11,7 +11,7 @@ import {
   SettingsManager,
 } from "@mariozechner/pi-coding-agent";
 
-import { resolveHeartbeatPrompt } from "../../../../auto-reply/heartbeat.js";
+import { resolveHeartbeatPrompt } from "../../../../messaging/heartbeat.js";
 import {
   listChannelSupportedActions,
   resolveChannelMessageToolHints,
@@ -23,7 +23,7 @@ import { resolveTelegramReactionLevel } from "../../../../channels/telegram/reac
 import { resolveSignalReactionLevel } from "../../../../channels/signal/reaction-level.js";
 import { normalizeMessageChannel } from "../../../../shared/utils/message-channel.js";
 import { isReasoningTagProvider } from "../../../../shared/utils/provider-utils.js";
-import { isSubagentSessionKey } from "../../../../routing/session-key.js";
+import { isSubagentSessionKey } from "../../../../messaging/routing/session-key.js";
 import { resolveUserPath } from "../../../../utils.js";
 import { createCacheTrace } from "../../cache-trace.js";
 import { createAnthropicPayloadLogger } from "../../../models/anthropic-payload-log.js";

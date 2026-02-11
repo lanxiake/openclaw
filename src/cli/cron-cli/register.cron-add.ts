@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import type { CronJob } from "../../services/cron/types.js";
 import { danger } from "../../globals.js";
 import { defaultRuntime } from "../../runtime.js";
-import { sanitizeAgentId } from "../../routing/session-key.js";
+import { sanitizeAgentId } from "../../messaging/routing/session-key.js";
 import type { GatewayRpcOpts } from "../gateway-rpc.js";
 import { addGatewayClientOptions, callGatewayFromCli } from "../gateway-rpc.js";
 import { parsePositiveIntOrUndefined } from "../program/helpers.js";

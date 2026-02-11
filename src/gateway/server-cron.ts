@@ -10,7 +10,7 @@ import { runHeartbeatOnce } from "../infra/heartbeat-runner.js";
 import { requestHeartbeatNow } from "../infra/heartbeat-wake.js";
 import { enqueueSystemEvent } from "../infra/system-events.js";
 import { getChildLogger } from "../logging.js";
-import { normalizeAgentId } from "../routing/session-key.js";
+import { normalizeAgentId } from "../messaging/routing/session-key.js";
 import { defaultRuntime } from "../runtime.js";
 
 export type GatewayCronState = {

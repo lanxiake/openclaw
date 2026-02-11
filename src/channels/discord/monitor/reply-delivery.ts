@@ -1,7 +1,7 @@
 import type { RequestClient } from "@buape/carbon";
 
-import type { ChunkMode } from "../../../auto-reply/chunk.js";
-import type { ReplyPayload } from "../../../auto-reply/types.js";
+import type { ChunkMode } from "../../../messaging/chunk.js";
+import type { ReplyPayload } from "../../../messaging/types.js";
 import type { MarkdownTableMode } from "../../../config/types.base.js";
 import { convertMarkdownTables } from "../../../shared/markdown/tables.js";
 import type { RuntimeEnv } from "../../../runtime.js";

@@ -3,7 +3,7 @@ import { normalizeChannelId } from "../channels/core/plugins/index.js";
 import type { CliDeps } from "../cli/deps.js";
 import { agentCommand } from "../commands/agent.js";
 import { resolveMainSessionKeyFromConfig } from "../config/sessions.js";
-import { resolveOutboundTarget } from "../infra/outbound/targets.js";
+import { resolveOutboundTarget } from "../messaging/outbound/targets.js";
 import {
   consumeRestartSentinel,
   formatRestartSentinelMessage,

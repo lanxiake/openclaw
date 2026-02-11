@@ -8,7 +8,7 @@ import {
   type SessionEntry,
   updateSessionStore,
 } from "../../config/sessions.js";
-import { parseAgentSessionKey } from "../../routing/session-key.js";
+import { parseAgentSessionKey } from "../routing/session-key.js";
 import { resolveCommandAuthorization } from "../command-auth.js";
 import { normalizeCommandBody } from "../commands-registry.js";
 import type { FinalizedMsgContext, MsgContext } from "../templating.js";

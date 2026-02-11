@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { MessageActionRunResult } from "../../infra/outbound/message-action-runner.js";
+import type { MessageActionRunResult } from "../../messaging/outbound/message-action-runner.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
 import type { ChannelPlugin } from "../../channels/core/plugins/types.js";
 import { createTestRegistry } from "../../test-utils/channel-plugins.js";
@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("../../infra/outbound/message-action-runner.js", async () => {
   const actual = await vi.importActual<
-    typeof import("../../infra/outbound/message-action-runner.js")
+    typeof import("../../messaging/outbound/message-action-runner.js")
   >("../../infra/outbound/message-action-runner.js");
   return {
     ...actual,

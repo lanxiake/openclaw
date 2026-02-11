@@ -1,7 +1,7 @@
 import { logWebSelfId, sendMessageWhatsApp } from "../channels/core/web/index.js";
 import { sendMessageDiscord } from "../channels/discord/send.js";
 import { sendMessageIMessage } from "../channels/imessage/send.js";
-import type { OutboundSendDeps } from "../infra/outbound/deliver.js";
+import type { OutboundSendDeps } from "../messaging/outbound/deliver.js";
 import { sendMessageSignal } from "../channels/signal/send.js";
 import { sendMessageSlack } from "../channels/slack/send.js";
 import { sendMessageTelegram } from "../channels/telegram/send.js";

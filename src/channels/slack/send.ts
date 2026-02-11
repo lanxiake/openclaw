@@ -4,7 +4,7 @@ import {
   chunkMarkdownTextWithMode,
   resolveChunkMode,
   resolveTextChunkLimit,
-} from "../../auto-reply/chunk.js";
+} from "../../messaging/chunk.js";
 import { loadConfig } from "../../config/config.js";
 import { logVerbose } from "../../globals.js";
 import { loadWebMedia } from "../whatsapp/media.js";

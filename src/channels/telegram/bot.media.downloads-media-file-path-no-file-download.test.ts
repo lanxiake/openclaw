@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { resetInboundDedupe } from "../../auto-reply/reply/inbound-dedupe.js";
+import { resetInboundDedupe } from "../../messaging/reply/inbound-dedupe.js";
 import { MEDIA_GROUP_TIMEOUT_MS } from "./bot-updates.js";
 
 const useSpy = vi.fn();
@@ -112,7 +112,7 @@ describe("telegram inbound media", () => {
     "downloads media via file_path (no file.download)",
     async () => {
       const { createTelegramBot } = await import("./bot.js");
-      const replyModule = await import("../../auto-reply/reply.js");
+      const replyModule = await import("../../messaging/reply.js");
       const replySpy = replyModule.__replySpy as unknown as ReturnType<typeof vi.fn>;
 
       onSpy.mockReset();
@@ -218,7 +218,7 @@ describe("telegram inbound media", () => {
 
   it("logs a handler error when getFile returns no file_path", async () => {
     const { createTelegramBot } = await import("./bot.js");
-    const replyModule = await import("../../auto-reply/reply.js");
+    const replyModule = await import("../../messaging/reply.js");
     const replySpy = replyModule.__replySpy as unknown as ReturnType<typeof vi.fn>;
 
     onSpy.mockReset();
@@ -280,7 +280,7 @@ describe("telegram media groups", () => {
     "buffers messages with same media_group_id and processes them together",
     async () => {
       const { createTelegramBot } = await import("./bot.js");
-      const replyModule = await import("../../auto-reply/reply.js");
+      const replyModule = await import("../../messaging/reply.js");
       const replySpy = replyModule.__replySpy as unknown as ReturnType<typeof vi.fn>;
 
       onSpy.mockReset();
@@ -356,7 +356,7 @@ describe("telegram media groups", () => {
     "processes separate media groups independently",
     async () => {
       const { createTelegramBot } = await import("./bot.js");
-      const replyModule = await import("../../auto-reply/reply.js");
+      const replyModule = await import("../../messaging/reply.js");
       const replySpy = replyModule.__replySpy as unknown as ReturnType<typeof vi.fn>;
 
       onSpy.mockReset();
@@ -428,7 +428,7 @@ describe("telegram stickers", () => {
     "downloads static sticker (WEBP) and includes sticker metadata",
     async () => {
       const { createTelegramBot } = await import("./bot.js");
-      const replyModule = await import("../../auto-reply/reply.js");
+      const replyModule = await import("../../messaging/reply.js");
       const replySpy = replyModule.__replySpy as unknown as ReturnType<typeof vi.fn>;
 
       onSpy.mockReset();
@@ -501,7 +501,7 @@ describe("telegram stickers", () => {
     "refreshes cached sticker metadata on cache hit",
     async () => {
       const { createTelegramBot } = await import("./bot.js");
-      const replyModule = await import("../../auto-reply/reply.js");
+      const replyModule = await import("../../messaging/reply.js");
       const replySpy = replyModule.__replySpy as unknown as ReturnType<typeof vi.fn>;
 
       onSpy.mockReset();
@@ -583,7 +583,7 @@ describe("telegram stickers", () => {
     "skips animated stickers (TGS format)",
     async () => {
       const { createTelegramBot } = await import("./bot.js");
-      const replyModule = await import("../../auto-reply/reply.js");
+      const replyModule = await import("../../messaging/reply.js");
       const replySpy = replyModule.__replySpy as unknown as ReturnType<typeof vi.fn>;
 
       onSpy.mockReset();
@@ -643,7 +643,7 @@ describe("telegram stickers", () => {
     "skips video stickers (WEBM format)",
     async () => {
       const { createTelegramBot } = await import("./bot.js");
-      const replyModule = await import("../../auto-reply/reply.js");
+      const replyModule = await import("../../messaging/reply.js");
       const replySpy = replyModule.__replySpy as unknown as ReturnType<typeof vi.fn>;
 
       onSpy.mockReset();
@@ -715,7 +715,7 @@ describe("telegram text fragments", () => {
     "buffers near-limit text and processes sequential parts as one message",
     async () => {
       const { createTelegramBot } = await import("./bot.js");
-      const replyModule = await import("../../auto-reply/reply.js");
+      const replyModule = await import("../../messaging/reply.js");
       const replySpy = replyModule.__replySpy as unknown as ReturnType<typeof vi.fn>;
 
       onSpy.mockReset();

@@ -3,7 +3,7 @@ import {
   normalizeAgentId,
   normalizeMainKey,
   parseAgentSessionKey,
-} from "../../routing/session-key.js";
+} from "../../messaging/routing/session-key.js";
 import type { ChatLog } from "./components/chat-log.js";
 import type { GatewayAgentsList, GatewayChatClient } from "./gateway-chat.js";
 import { asString, extractTextFromMessage, isCommandMessage } from "./tui-formatters.js";
