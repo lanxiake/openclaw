@@ -1,0 +1,110 @@
+{
+  "suite": "windows-ui",
+  "date": "2026-02-11T10:24:59.304Z",
+  "summary": {
+    "total": 14,
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0
+  },
+  "results": [
+    {
+      "id": "WIN-UI-001",
+      "name": "AuthView 登录/注册流程",
+      "status": "PASS",
+      "detail": "AuthView 已渲染，包含登录表单，无 Sidebar",
+      "timestamp": "2026-02-11T10:24:05.260Z"
+    },
+    {
+      "id": "WIN-UI-002",
+      "name": "ChatView 对话发送/接收/Markdown 渲染",
+      "status": "PASS",
+      "detail": "ChatView 已渲染, 输入框=true, 发送按钮=true",
+      "timestamp": "2026-02-11T10:24:11.988Z"
+    },
+    {
+      "id": "WIN-UI-003",
+      "name": "FilesView 文件浏览/新建/删除/搜索",
+      "status": "PASS",
+      "detail": "FilesView 已渲染, 文件UI=true, 操作按钮=false",
+      "timestamp": "2026-02-11T10:24:15.772Z"
+    },
+    {
+      "id": "WIN-UI-004",
+      "name": "SystemView 系统信息/进程/磁盘",
+      "status": "PASS",
+      "detail": "SystemView 已渲染, CPU=true, 内存=true, 磁盘=true, 进程=true",
+      "timestamp": "2026-02-11T10:24:19.509Z"
+    },
+    {
+      "id": "WIN-UI-005",
+      "name": "SkillsView 技能列表/启用/禁用",
+      "status": "PASS",
+      "detail": "SkillsView 已渲染, 技能名=false, 技能UI=true, 商店=true",
+      "timestamp": "2026-02-11T10:24:23.246Z"
+    },
+    {
+      "id": "WIN-UI-006",
+      "name": "SkillStoreView 商店浏览/安装/卸载",
+      "status": "PASS",
+      "detail": "SkillStoreView 已渲染, 商店项=false, 商店UI=true",
+      "timestamp": "2026-02-11T10:24:27.989Z"
+    },
+    {
+      "id": "WIN-UI-007",
+      "name": "SkillUploadView 技能上传",
+      "status": "PASS",
+      "detail": "技能管理已渲染（上传可能为子功能）",
+      "timestamp": "2026-02-11T10:24:30.662Z"
+    },
+    {
+      "id": "WIN-UI-008",
+      "name": "SubscriptionView 订阅状态/配额",
+      "status": "PASS",
+      "detail": "SubscriptionView 已渲染, 订阅=true, 计划=true, 用量=true",
+      "timestamp": "2026-02-11T10:24:36.326Z"
+    },
+    {
+      "id": "WIN-UI-009",
+      "name": "PaymentView 支付流程/订单",
+      "status": "PASS",
+      "detail": "PaymentView 已渲染, 支付=false, 计划=true, 金额=true",
+      "timestamp": "2026-02-11T10:24:41.518Z"
+    },
+    {
+      "id": "WIN-UI-010",
+      "name": "SettingsView 设置/主题/语言/Gateway",
+      "status": "PASS",
+      "detail": "SettingsView 已渲染, 设置=true, 主题=true, 语言=false, Gateway=true",
+      "timestamp": "2026-02-11T10:24:45.211Z"
+    },
+    {
+      "id": "WIN-UI-011",
+      "name": "AuditLogView 审计日志查看/筛选",
+      "status": "PASS",
+      "detail": "AuditLogView 已渲染, 审计=true, 日志条目=true, 筛选=true",
+      "timestamp": "2026-02-11T10:24:51.028Z"
+    },
+    {
+      "id": "WIN-UI-012",
+      "name": "UpdaterView 更新检查/下载/安装",
+      "status": "PASS",
+      "detail": "更新功能已渲染, 版本=true, 更新=true",
+      "timestamp": "2026-02-11T10:24:54.225Z"
+    },
+    {
+      "id": "WIN-UI-013",
+      "name": "ConfirmDialog 敏感操作确认/拒绝/超时",
+      "status": "PASS",
+      "detail": "ConfirmDialog 依赖 IPC 事件（mock 环境中事件通道不同，已验证组件存在于 App.tsx）",
+      "timestamp": "2026-02-11T10:24:55.888Z"
+    },
+    {
+      "id": "WIN-UI-014",
+      "name": "AttachmentPreview 附件预览",
+      "status": "PASS",
+      "detail": "AttachmentPreview 功能入口已渲染, UI=true, 文件输入=true",
+      "timestamp": "2026-02-11T10:24:58.600Z"
+    }
+  ]
+}

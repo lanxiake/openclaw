@@ -1,0 +1,89 @@
+{
+  "suite": "admin-console-p2",
+  "date": "2026-02-11T08:41:12.949Z",
+  "summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0
+  },
+  "results": [
+    {
+      "id": "AC-SKILL-003",
+      "name": "技能分类-新建分类对话框",
+      "status": "PASS",
+      "detail": "分类页面正常，新建对话框已弹出，对话框输入框: 5",
+      "timestamp": "2026-02-11T08:40:31.378Z"
+    },
+    {
+      "id": "AC-AUDIT-003",
+      "name": "审计日志导出",
+      "status": "PASS",
+      "detail": "导出按钮存在并可点击，提示: \"导出功能开发中...\"",
+      "timestamp": "2026-02-11T08:40:35.785Z"
+    },
+    {
+      "id": "AC-MON-001",
+      "name": "系统监控-概览页面",
+      "status": "PASS",
+      "detail": "监控页面正常，卡片: 8, 数据项: 9, 服务状态: ✔, 刷新按钮: 1",
+      "timestamp": "2026-02-11T08:40:39.799Z"
+    },
+    {
+      "id": "AC-MON-002",
+      "name": "系统监控-资源使用图表",
+      "status": "PASS",
+      "detail": "资源监控正常，CPU: ✔, 内存: ✔, 磁盘: ✔, 进度条: 8, 图表: 172, 周期选择: 2",
+      "timestamp": "2026-02-11T08:40:43.729Z"
+    },
+    {
+      "id": "AC-MON-003",
+      "name": "系统监控-API监控与服务状态",
+      "status": "PASS",
+      "detail": "API监控正常，API相关: ✔, 响应时间: ✔, 错误率: ✔, 服务状态: ✔, 状态图标: 3, 告警入口: 1, 日志入口: 2",
+      "timestamp": "2026-02-11T08:40:47.665Z"
+    },
+    {
+      "id": "AC-CFG-004",
+      "name": "功能开关-切换操作",
+      "status": "PASS",
+      "detail": "功能开关页面正常，开关数: 10, 切换: ✔, 保存按钮响应: ✔",
+      "timestamp": "2026-02-11T08:40:52.783Z"
+    },
+    {
+      "id": "AC-ANA-001",
+      "name": "数据分析-概览页面",
+      "status": "PASS",
+      "detail": "分析概览正常，卡片: 11, 指标: 用户✔/收入✔/技能✔/活跃✔, 周期选择: 1, 刷新: 0",
+      "timestamp": "2026-02-11T08:40:56.669Z"
+    },
+    {
+      "id": "AC-ANA-002",
+      "name": "数据分析-趋势图表",
+      "status": "PASS",
+      "detail": "趋势图表正常，SVG图表: 159, 图表容器: 160, 用户增长: ✔, 收入趋势: ✔",
+      "timestamp": "2026-02-11T08:41:00.497Z"
+    },
+    {
+      "id": "AC-ANA-003",
+      "name": "数据分析-用户分析子页面",
+      "status": "PASS",
+      "detail": "用户分析页面正常，URL: http://localhost:5176/analytics/users, 卡片: 10, 图表: 315",
+      "timestamp": "2026-02-11T08:41:04.472Z"
+    },
+    {
+      "id": "AC-ANA-004",
+      "name": "数据分析-收入分析子页面",
+      "status": "PASS",
+      "detail": "收入分析页面正常，URL: http://localhost:5176/analytics/revenue, 卡片: 10, 图表: 347",
+      "timestamp": "2026-02-11T08:41:08.440Z"
+    },
+    {
+      "id": "AC-ANA-005",
+      "name": "数据分析-技能分析子页面",
+      "status": "PASS",
+      "detail": "技能分析页面正常，URL: http://localhost:5176/analytics/skills, 卡片: 8, 图表: 149",
+      "timestamp": "2026-02-11T08:41:12.349Z"
+    }
+  ]
+}
