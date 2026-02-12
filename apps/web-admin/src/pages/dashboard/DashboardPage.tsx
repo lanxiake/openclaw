@@ -89,7 +89,7 @@ function formatLimit(value: number | 'unlimited'): string {
  */
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const { user, hasScope } = useAuthStore()
+  const { admin, hasScope } = useAuthStore()
   const isAdmin = hasScope(SCOPES.OPERATOR_READ)
 
   // 获取订阅概览
@@ -124,7 +124,7 @@ export default function DashboardPage() {
       {/* 欢迎信息 */}
       <div>
         <h1 className="text-2xl font-bold">
-          欢迎回来，{user?.displayName || '用户'}
+          欢迎回来，{admin?.displayName || '用户'}
         </h1>
         <p className="text-muted-foreground">
           这是您的控制面板，可以查看和管理所有功能

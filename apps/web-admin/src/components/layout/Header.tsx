@@ -18,7 +18,7 @@ import { ROUTES } from '@/lib/constants'
  */
 export function Header() {
   const navigate = useNavigate()
-  const { user, logout } = useAuthStore()
+  const { admin, logout } = useAuthStore()
   const { darkMode, toggleDarkMode } = useUIStore()
 
   /**
@@ -53,25 +53,25 @@ export function Header() {
         <div className="relative group">
           <Button variant="ghost" className="flex items-center gap-2 px-3">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              {user?.avatarUrl ? (
+              {admin?.avatar ? (
                 <img
-                  src={user.avatarUrl}
-                  alt={user.displayName}
+                  src={admin.avatar}
+                  alt={admin.displayName}
                   className="w-8 h-8 rounded-full"
                 />
               ) : (
                 <User className="w-4 h-4 text-primary" />
               )}
             </div>
-            <span className="max-w-[100px] truncate">{user?.displayName || '用户'}</span>
+            <span className="max-w-[100px] truncate">{admin?.displayName || '用户'}</span>
             <ChevronDown className="w-4 h-4" />
           </Button>
 
           {/* 下拉菜单 */}
           <div className="absolute right-0 mt-2 w-48 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
             <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-              <p className="font-medium truncate">{user?.displayName}</p>
-              <p className="text-sm text-gray-500 truncate">{user?.phone || user?.email}</p>
+              <p className="font-medium truncate">{admin?.displayName}</p>
+              <p className="text-sm text-gray-500 truncate">{admin?.phone || admin?.email}</p>
             </div>
             <div className="py-1">
               <button

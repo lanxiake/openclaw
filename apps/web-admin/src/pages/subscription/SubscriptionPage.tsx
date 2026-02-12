@@ -278,9 +278,20 @@ export default function SubscriptionPage() {
                 </div>
               </div>
             ) : (
-              <div className="text-center py-4">
-                <AlertCircle className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">暂无订阅，请选择一个计划</p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <div className="text-lg font-semibold">免费版</div>
+                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    永久有效
+                  </div>
+                </div>
+                <Button onClick={() => {
+                  const plansSection = document.getElementById('plans-section')
+                  plansSection?.scrollIntoView({ behavior: 'smooth' })
+                }}>
+                  升级计划
+                </Button>
               </div>
             )}
           </CardContent>
@@ -325,7 +336,7 @@ export default function SubscriptionPage() {
 
       {/* 订阅计划 */}
       {!isLoading && plans && plans.length > 0 && (
-        <div>
+        <div id="plans-section">
           <h2 className="text-lg font-semibold mb-4">选择计划</h2>
           <div className="grid gap-4 md:grid-cols-3">
             {plans.map((plan) => (
