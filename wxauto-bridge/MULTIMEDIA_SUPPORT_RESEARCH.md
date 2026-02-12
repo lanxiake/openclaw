@@ -10,44 +10,49 @@
 
 根据 `wxauto/msgs/type.py` 分析，wxauto 支持以下消息类型：
 
-| 消息类型 | 类名 | type 值 | 接收支持 | 下载支持 |
-|---------|------|---------|---------|---------|
-| 文本消息 | TextMessage | `text` | YES | N/A |
-| 图片消息 | ImageMessage | `image` | YES | YES |
-| 视频消息 | VideoMessage | `video` | YES | YES |
-| 语音消息 | VoiceMessage | `voice` | YES | 转文字 |
-| 文件消息 | FileMessage | `file` | YES | YES |
-| 链接消息 | LinkMessage | `link` | YES | 获取URL |
-| 位置消息 | LocationMessage | `location` | YES | N/A |
-| 表情消息 | EmotionMessage | `emotion` | YES | N/A |
-| 引用消息 | QuoteMessage | `quote` | YES | 下载引用图片 |
-| 合并消息 | MergeMessage | `merge` | YES | 获取内容 |
-| 名片消息 | PersonalCardMessage | `personal_card` | YES | N/A |
-| 笔记消息 | NoteMessage | `note` | YES | 保存文件 |
-| 其他消息 | OtherMessage | `other` | YES | N/A |
+| 消息类型 | 类名                | type 值         | 接收支持 | 下载支持     |
+| -------- | ------------------- | --------------- | -------- | ------------ |
+| 文本消息 | TextMessage         | `text`          | YES      | N/A          |
+| 图片消息 | ImageMessage        | `image`         | YES      | YES          |
+| 视频消息 | VideoMessage        | `video`         | YES      | YES          |
+| 语音消息 | VoiceMessage        | `voice`         | YES      | 转文字       |
+| 文件消息 | FileMessage         | `file`          | YES      | YES          |
+| 链接消息 | LinkMessage         | `link`          | YES      | 获取URL      |
+| 位置消息 | LocationMessage     | `location`      | YES      | N/A          |
+| 表情消息 | EmotionMessage      | `emotion`       | YES      | N/A          |
+| 引用消息 | QuoteMessage        | `quote`         | YES      | 下载引用图片 |
+| 合并消息 | MergeMessage        | `merge`         | YES      | 获取内容     |
+| 名片消息 | PersonalCardMessage | `personal_card` | YES      | N/A          |
+| 笔记消息 | NoteMessage         | `note`          | YES      | 保存文件     |
+| 其他消息 | OtherMessage        | `other`         | YES      | N/A          |
 
 ### 1.2 多媒体消息处理方法
 
 #### 图片消息 (ImageMessage)
+
 ```python
 # 下载图片
 msg.download(dir_path=None, timeout=10, mouse_move=False) -> Path
 ```
 
 #### 视频消息 (VideoMessage)
+
 ```python
 # 下载视频
 msg.download(dir_path=None, timeout=10, mouse_move=False) -> Path
 ```
 
 #### 语音消息 (VoiceMessage)
+
 ```python
 # 语音转文字
 msg.to_text() -> str
 ```
+
 注意：wxauto 不支持直接下载语音文件，只能转换为文字。
 
 #### 文件消息 (FileMessage)
+
 ```python
 # 下载文件
 msg.download(dir_path=None, force_click=False, timeout=10) -> Path
@@ -61,6 +66,7 @@ msg.filesize  # 文件大小
 ### 2.1 消息回调处理 (wechat_handler.py:233-281)
 
 当前实现只处理消息的基本属性：
+
 - `sender`: 发送者
 - `content`: 消息内容（文本）
 - `chat_name`: 聊天名称
@@ -74,6 +80,7 @@ msg.filesize  # 文件大小
 ### 2.2 消息推送 (bridge.py:297-314)
 
 当前推送到 Gateway 的消息格式：
+
 ```json
 {
   "from": "发送者",
@@ -94,6 +101,7 @@ msg.filesize  # 文件大小
 ### 3.1 接收多媒体消息
 
 #### 方案 A：本地下载 + 文件路径
+
 1. 收到多媒体消息时，调用 `msg.download()` 下载到本地
 2. 将本地文件路径发送给 Gateway
 3. Gateway 通过 HTTP 接口获取文件
@@ -102,6 +110,7 @@ msg.filesize  # 文件大小
 **缺点**：需要额外的 HTTP 服务，文件管理复杂
 
 #### 方案 B：本地下载 + Base64 编码
+
 1. 收到多媒体消息时，调用 `msg.download()` 下载到本地
 2. 读取文件并转换为 Base64
 3. 通过 WebSocket 发送 Base64 数据
@@ -110,6 +119,7 @@ msg.filesize  # 文件大小
 **缺点**：大文件会占用大量带宽和内存
 
 #### 方案 C：本地下载 + HTTP 文件服务 (推荐)
+
 1. 桥接器启动一个简单的 HTTP 文件服务
 2. 收到多媒体消息时下载到指定目录
 3. 发送文件的 HTTP URL 给 Gateway
@@ -120,6 +130,7 @@ msg.filesize  # 文件大小
 ### 3.2 发送多媒体消息
 
 wxauto 已支持发送文件：
+
 ```python
 # 发送文件
 wx.SendFiles(filepath, who=None, exact=False) -> WxResponse
@@ -130,11 +141,13 @@ wx.SendFiles(filepath, who=None, exact=False) -> WxResponse
 ### 3.3 语音消息特殊处理
 
 wxauto 不支持直接下载语音文件，只能转文字：
+
 ```python
 msg.to_text() -> str
 ```
 
 **建议**：
+
 1. 收到语音消息时，调用 `to_text()` 转换为文字
 2. 在消息中标记 `type: "voice"` 和 `voiceText: "转换后的文字"`
 
@@ -244,6 +257,7 @@ class MediaServer:
 ### 5.1 接收多媒体消息
 
 Gateway 收到带 `media.url` 的消息时：
+
 1. 下载文件到本地或云存储
 2. 将文件 URL 传递给 AI Agent
 3. AI Agent 可以使用图片理解能力处理图片
@@ -251,6 +265,7 @@ Gateway 收到带 `media.url` 的消息时：
 ### 5.2 发送多媒体消息
 
 Gateway 发送多媒体消息时：
+
 1. 将文件下载到桥接器可访问的路径
 2. 调用 `sendFile` 方法发送
 
@@ -272,6 +287,7 @@ Gateway 发送多媒体消息时：
 ## 八、总结
 
 wxauto 库完整支持多媒体消息的接收和下载，当前桥接器只需要：
+
 1. 在消息回调中添加多媒体下载逻辑
 2. 启动 HTTP 文件服务提供文件访问
 3. 修改消息推送格式包含媒体信息
