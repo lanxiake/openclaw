@@ -23,6 +23,7 @@ import {
   securityUtils,
   SecurityError,
 } from './security-utils'
+import { fileLogger } from './file-logger'
 
 // 日志输出
 const log = {
@@ -817,6 +818,9 @@ async function initialize(): Promise<void> {
   // 等待 app ready
   await app.whenReady()
 
+  // 初始化文件日志系统（必须在 app.whenReady() 之后）
+  fileLogger.initialize()
+
   log.info('应用已就绪')
 
   // 初始化各模块
@@ -853,6 +857,7 @@ app.on('before-quit', async () => {
   await gatewayClient?.disconnect()
   updaterService?.destroy()
   trayManager?.destroy()
+  fileLogger.destroy()
 })
 
 // 启动应用

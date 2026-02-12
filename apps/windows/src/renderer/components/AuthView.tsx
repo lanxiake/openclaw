@@ -8,6 +8,7 @@
 import React, { useState, useCallback } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useCaptcha } from '../hooks/useCaptcha'
+import { useSettings } from '../hooks/useSettings'
 import './AuthView.css'
 
 /**
@@ -39,6 +40,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
   // 图形验证码
   const { svgHtml, validate: validateCaptcha, refresh: refreshCaptcha } = useCaptcha()
 
+  // 网关设置
+  const { settings, updateGateway } = useSettings()
+
   // 表单状态
   const [mode, setMode] = useState<AuthMode>('login')
   const [identifier, setIdentifier] = useState('')
@@ -46,6 +50,10 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
   const [displayName, setDisplayName] = useState('')
   const [captchaInput, setCaptchaInput] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
+  const [showGatewayConfig, setShowGatewayConfig] = useState(false)
+  const [gatewayUrl, setGatewayUrl] = useState(settings.gateway.url || 'ws://localhost:18789')
+  const [gatewayTesting, setGatewayTesting] = useState(false)
+  const [gatewayTestResult, setGatewayTestResult] = useState<'success' | 'error' | null>(null)
 
   /**
    * 判断输入是手机号还是邮箱
@@ -168,6 +176,133 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
     setCaptchaInput('')
     refreshCaptcha()
   }, [clearError, refreshCaptcha])
+
+  /**
+   * 测试网关连通性
+   *
+   * 先尝试 HTTP 请求（ws:// → http://），再尝试 WebSocket 连接。
+   * Gateway 在同一端口同时处理 HTTP 和 WebSocket。
+   */
+  const testGatewayConnection = useCallback(async (url: string): Promise<boolean> => {
+    console.log('[AuthView] 测试网关连通性:', url)
+
+    // 将 ws:// 转换为 http:// 进行 HTTP 探测
+    const httpUrl = url.replace(/^ws(s?):\/\//, 'http$1://')
+
+    // 方式1: HTTP fetch 探测（更快更可靠）
+    try {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 5000)
+      const response = await fetch(httpUrl, {
+        method: 'GET',
+        signal: controller.signal,
+        mode: 'no-cors',
+      })
+      clearTimeout(timer)
+      // no-cors 模式下 response.type 为 'opaque'，status 为 0，但不会抛异常说明端口可达
+      console.log('[AuthView] HTTP 探测成功, status:', response.status, 'type:', response.type)
+      return true
+    } catch (httpError) {
+      console.log('[AuthView] HTTP 探测失败，尝试 WebSocket:', httpError)
+    }
+
+    // 方式2: 降级为 WebSocket 探测
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        console.log('[AuthView] 网关连接超时')
+        resolve(false)
+      }, 5000)
+
+      try {
+        const ws = new WebSocket(url)
+
+        ws.onopen = () => {
+          console.log('[AuthView] WebSocket 连接成功')
+          clearTimeout(timeout)
+          ws.close()
+          resolve(true)
+        }
+
+        ws.onerror = () => {
+          console.log('[AuthView] WebSocket 连接失败')
+          clearTimeout(timeout)
+          resolve(false)
+        }
+
+        ws.onclose = () => {
+          clearTimeout(timeout)
+        }
+      } catch (error) {
+        console.error('[AuthView] WebSocket 连接异常:', error)
+        clearTimeout(timeout)
+        resolve(false)
+      }
+    })
+  }, [])
+
+  /**
+   * 直接将网关地址持久化到 localStorage 并同步 React state
+   *
+   * 绕过 useSettings 的 saveSettings，因为 updateGateway (setSettings) 是异步的，
+   * 紧接着调用 saveSettings 会因为闭包捕获旧 settings 而保存过期数据。
+   */
+  const persistGatewayUrl = useCallback((url: string) => {
+    const STORAGE_KEY = 'openclaw-assistant-settings'
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      const current = raw ? JSON.parse(raw) : {}
+      const updated = {
+        ...current,
+        gateway: { ...(current.gateway || {}), url },
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+      console.log('[AuthView] 网关地址已直接写入 localStorage:', url)
+
+      // 同步 React state，让其他组件也能读到最新值
+      updateGateway({ url })
+    } catch (error) {
+      console.error('[AuthView] 保存网关地址失败:', error)
+    }
+  }, [updateGateway])
+
+  /**
+   * 保存网关地址配置（带连通性测试）
+   */
+  const handleSaveGateway = useCallback(async () => {
+    const trimmedUrl = gatewayUrl.trim()
+    if (!trimmedUrl) {
+      setFormError('请输入网关地址')
+      return
+    }
+
+    // 验证 URL 格式
+    if (!trimmedUrl.startsWith('ws://') && !trimmedUrl.startsWith('wss://')) {
+      setFormError('网关地址必须以 ws:// 或 wss:// 开头')
+      return
+    }
+
+    console.log('[AuthView] 测试并保存网关地址:', trimmedUrl)
+    setGatewayTesting(true)
+    setGatewayTestResult(null)
+    setFormError(null)
+
+    // 测试连通性
+    const isReachable = await testGatewayConnection(trimmedUrl)
+
+    // 无论连通与否都持久化，用户可能稍后启动网关
+    persistGatewayUrl(trimmedUrl)
+
+    if (isReachable) {
+      setGatewayTestResult('success')
+      console.log('[AuthView] 网关地址已保存，连接正常')
+    } else {
+      setGatewayTestResult('error')
+      setFormError('无法连接到网关，请检查地址是否正确或网关是否已启动')
+      console.log('[AuthView] 网关地址已保存（但连接失败）')
+    }
+
+    setGatewayTesting(false)
+  }, [gatewayUrl, testGatewayConnection, persistGatewayUrl])
 
   // 错误信息
   const errorMessage = formError || authError
@@ -311,6 +446,58 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
                 立即登录
               </button>
             </p>
+          )}
+        </div>
+
+        {/* 网关配置入口 */}
+        <div className="gateway-config-section">
+          <button
+            type="button"
+            className="gateway-toggle-btn"
+            onClick={() => setShowGatewayConfig(!showGatewayConfig)}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            网关配置
+          </button>
+
+          {showGatewayConfig && (
+            <div className="gateway-config-panel">
+              <label className="form-label">
+                Gateway 地址
+                <span className="optional-label">（登录前需配置正确地址）</span>
+              </label>
+              <div className="gateway-input-row">
+                <input
+                  type="text"
+                  className="form-input gateway-url-input"
+                  placeholder="如 ws://192.168.1.100:18789 或 wss://gw.example.com"
+                  value={gatewayUrl}
+                  onChange={(e) => {
+                    setGatewayUrl(e.target.value)
+                    setGatewayTestResult(null)
+                  }}
+                  disabled={gatewayTesting}
+                />
+                <button
+                  type="button"
+                  className={`gateway-save-btn ${gatewayTestResult === 'success' ? 'success' : gatewayTestResult === 'error' ? 'warning' : ''}`}
+                  onClick={handleSaveGateway}
+                  disabled={gatewayTesting}
+                >
+                  {gatewayTesting ? '测试中...' : gatewayTestResult === 'success' ? '已保存' : '测试并保存'}
+                </button>
+              </div>
+              <span className={`gateway-hint ${gatewayTestResult === 'success' ? 'success' : gatewayTestResult === 'error' ? 'warning' : ''}`}>
+                {gatewayTestResult === 'success'
+                  ? '连接成功，配置已保存'
+                  : gatewayTestResult === 'error'
+                    ? '连接失败，配置已保存（请确保网关已启动）'
+                    : `当前: ${settings.gateway.url || '未配置 (默认 ws://localhost:18789)'}`}
+              </span>
+            </div>
           )}
         </div>
       </div>
