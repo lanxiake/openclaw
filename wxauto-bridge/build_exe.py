@@ -120,6 +120,9 @@ def build_exe():
         # 隐藏导入 - PIL
         "--hidden-import", "PIL",
         "--hidden-import", "PIL.Image",
+        "--hidden-import", "PIL.ImageGrab",
+        "--hidden-import", "PIL.ImageDraw",
+        "--hidden-import", "PIL.ImageFont",
         # 隐藏导入 - aiohttp (多媒体服务器)
         "--hidden-import", "aiohttp",
         "--hidden-import", "aiohttp.web",
@@ -134,6 +137,15 @@ def build_exe():
         "--hidden-import", "yarl",
         "--hidden-import", "frozenlist",
         "--hidden-import", "aiosignal",
+        # 隐藏导入 - tkinter (wxauto uiplug.py 需要)
+        "--hidden-import", "tkinter",
+        "--hidden-import", "_tkinter",
+        # 隐藏导入 - wxauto 其他依赖
+        "--hidden-import", "tenacity",
+        "--hidden-import", "colorama",
+        "--hidden-import", "requests",
+        "--hidden-import", "comtypes.stream",
+        "--hidden-import", "win32process",
         # 隐藏导入 - 其他
         "--hidden-import", "psutil",
         "--hidden-import", "pyperclip",
@@ -198,8 +210,20 @@ hiddenimports = [
     'uiautomation',
     'PIL',
     'PIL.Image',
+    'PIL.ImageGrab',
+    'PIL.ImageDraw',
+    'PIL.ImageFont',
     'psutil',
     'pyperclip',
+    # tkinter (wxauto uiplug.py 需要)
+    'tkinter',
+    '_tkinter',
+    # wxauto 其他依赖
+    'tenacity',
+    'colorama',
+    'requests',
+    'comtypes.stream',
+    'win32process',
     # aiohttp 多媒体服务器
     'aiohttp',
     'aiohttp.web',

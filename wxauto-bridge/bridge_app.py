@@ -268,11 +268,14 @@ class BridgeApi:
             return {"success": False, "error": str(e)}
 
     def stop_bridge(self) -> Dict[str, Any]:
-        """停止桥接"""
+        """停止桥接，即使后台线程已失败也执行清理"""
         logger.info("停止桥接")
 
-        if not self._is_running:
-            return {"success": False, "error": "桥接未运行"}
+        if not self._is_running and not self._bridge_instance and not self._bridge_thread:
+            # 完全没有运行痕迹，直接重置前端状态
+            self._update_status('disconnected', '已断开')
+            self._call_js('onBridgeStopped')
+            return {"success": True}
 
         try:
             self._is_running = False
@@ -359,12 +362,15 @@ class BridgeApi:
         finally:
             self._is_running = False
             self._bridge_instance = None
+            self._bridge_thread = None
             if self._loop:
                 try:
                     self._loop.close()
                 except Exception:
                     pass
                 self._loop = None
+            # 通知前端重置按钮状态，允许重新启动
+            self._call_js('onBridgeStopped')
 
 
 def get_asset_path(filename: str) -> str:

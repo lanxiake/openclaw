@@ -385,8 +385,12 @@ async function stopBridge() {
                 addLog('info', '桥接已停止');
                 updateStatus('disconnected', '已停止');
             } else {
+                // 即使停止失败也重置按钮状态，避免UI死锁
+                state.isRunning = false;
+                updateBridgeButtons();
                 showToast('停止失败: ' + result.error, 'error');
                 addLog('error', '桥接停止失败: ' + result.error);
+                updateStatus('disconnected', '已停止');
             }
         } else {
             await delay(500);
@@ -397,8 +401,12 @@ async function stopBridge() {
             updateStatus('disconnected', '已停止');
         }
     } catch (error) {
+        // 异常时也重置按钮状态，避免UI死锁
+        state.isRunning = false;
+        updateBridgeButtons();
         showToast('停止桥接失败', 'error');
         addLog('error', '停止桥接异常: ' + error.message);
+        updateStatus('disconnected', '已停止');
     }
 }
 
@@ -484,6 +492,12 @@ function updateStatus(status, text) {
 }
 
 window.updateConnectionStatus = function(status, text) { updateStatus(status, text); };
+
+// 后端桥接停止后的回调（包括异常退出），重置前端按钮状态
+window.onBridgeStopped = function() {
+    state.isRunning = false;
+    updateBridgeButtons();
+};
 
 function updateUI() {
     updateConfigUI();

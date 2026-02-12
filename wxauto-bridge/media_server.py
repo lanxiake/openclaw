@@ -48,34 +48,53 @@ class MediaServer:
         mimetypes.add_type('audio/silk', '.silk')
 
     async def start(self) -> bool:
-        """启动 HTTP 服务器
+        """启动 HTTP 服务器，端口被占用时自动尝试备选端口
 
         Returns:
             是否启动成功
         """
-        try:
-            self._app = web.Application()
+        # 尝试原始端口和最多 5 个备选端口
+        ports_to_try = [self.port + i for i in range(6)]
+        for port in ports_to_try:
+            try:
+                self._app = web.Application()
 
-            # 添加 CORS 中间件
-            self._app.middlewares.append(self._cors_middleware)
+                # 添加 CORS 中间件
+                self._app.middlewares.append(self._cors_middleware)
 
-            # 添加路由
-            self._app.router.add_get('/media/{path:.*}', self._handle_media)
-            self._app.router.add_get('/health', self._handle_health)
+                # 添加路由
+                self._app.router.add_get('/media/{path:.*}', self._handle_media)
+                self._app.router.add_get('/health', self._handle_health)
 
-            # 启动服务器
-            self._runner = web.AppRunner(self._app)
-            await self._runner.setup()
-            self._site = web.TCPSite(self._runner, self.host, self.port)
-            await self._site.start()
+                # 启动服务器
+                self._runner = web.AppRunner(self._app)
+                await self._runner.setup()
+                self._site = web.TCPSite(self._runner, self.host, port)
+                await self._site.start()
 
-            logger.info(f"HTTP 文件服务器已启动: http://{self.host}:{self.port}")
-            logger.info(f"媒体文件目录: {self.media_dir}")
-            return True
+                self.port = port
+                logger.info(f"HTTP 文件服务器已启动: http://{self.host}:{self.port}")
+                logger.info(f"媒体文件目录: {self.media_dir}")
+                return True
 
-        except Exception as e:
-            logger.error(f"启动 HTTP 文件服务器失败: {e}")
-            return False
+            except OSError as e:
+                logger.warning(f"端口 {port} 被占用: {e}")
+                # 清理本次失败的 runner
+                if self._runner:
+                    try:
+                        await self._runner.cleanup()
+                    except Exception:
+                        pass
+                    self._runner = None
+                self._site = None
+                self._app = None
+                continue
+            except Exception as e:
+                logger.error(f"启动 HTTP 文件服务器失败: {e}")
+                return False
+
+        logger.error(f"所有端口 {ports_to_try[0]}-{ports_to_try[-1]} 均被占用，HTTP 文件服务器启动失败")
+        return False
 
     async def stop(self) -> None:
         """停止 HTTP 服务器"""

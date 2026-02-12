@@ -113,10 +113,9 @@ class WeChatBridge:
         self._loop = asyncio.get_running_loop()
         logger.info("启动微信桥接器")
 
-        # 启动 HTTP 文件服务器
+        # 启动 HTTP 文件服务器（失败不阻断主流程，仅多媒体功能不可用）
         if not await self.media_server.start():
-            logger.error("HTTP 文件服务器启动失败")
-            return
+            logger.warning("HTTP 文件服务器启动失败，多媒体文件将无法通过 HTTP 访问")
 
         # 首先连接微信
         if not self.wechat.connect(debug=debug):
@@ -124,7 +123,20 @@ class WeChatBridge:
             await self.media_server.stop()
             return
 
-        # 添加监听
+        # 先连接 Gateway WebSocket，确保消息通道就绪后再添加监听
+        first_connect = False
+        for attempt in range(3):
+            if await self.connect():
+                first_connect = True
+                logger.info("Gateway 连接成功，开始添加监听")
+                break
+            logger.info(f"Gateway 连接失败，第 {attempt + 1}/3 次重试...")
+            await asyncio.sleep(2)
+
+        if not first_connect:
+            logger.warning("Gateway 初始连接失败，仍将添加监听并持续重连")
+
+        # 添加监听（在 WebSocket 连接建立后，避免消息丢失）
         if listen_chats:
             logger.info(f"添加监听: {listen_chats}")
             for chat_name in listen_chats:
@@ -134,7 +146,17 @@ class WeChatBridge:
                 else:
                     logger.warning(f"监听 {chat_name} 失败: {result.get('error', '未知错误')}")
 
-        # 连接到 Gateway 并保持运行
+        # 如果已连接，发送通知并进入消息循环；否则进入重连循环
+        if first_connect:
+            try:
+                await self._send_connected_notification()
+                await self._message_loop()
+            except websockets.ConnectionClosed as e:
+                logger.warning(f"WebSocket 连接断开: {e}")
+            except Exception as e:
+                logger.error(f"发生错误: {e}")
+
+        # 持续重连循环
         while self._running:
             try:
                 if not await self.connect():
