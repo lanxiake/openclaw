@@ -44,6 +44,14 @@ export {
   getCouponRepository,
 } from "./subscriptions.js";
 
+// 对话与消息仓库
+export {
+  ConversationRepository,
+  MessageRepository,
+  getConversationRepository,
+  getMessageRepository,
+} from "./conversations.js";
+
 // 管理员仓库
 export {
   AdminRepository,

@@ -42,6 +42,29 @@ export type {
   UserPreferences,
 } from "./users.js";
 
+// 对话与消息相关表
+export {
+  conversations,
+  messages,
+  conversationsRelations,
+  messagesRelations,
+  // Zod schemas
+  insertConversationSchema,
+  selectConversationSchema,
+  insertMessageSchema,
+  selectMessageSchema,
+} from "./conversations.js";
+
+// 对话与消息相关类型
+export type {
+  Conversation,
+  NewConversation,
+  Message,
+  NewMessage,
+  AgentConfig,
+  MessageAttachment,
+} from "./conversations.js";
+
 // 订阅与计费相关表
 export {
   plans,
