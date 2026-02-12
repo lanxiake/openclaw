@@ -18,6 +18,7 @@ import { adminSkillHandlers } from "./server-methods/admin-skills.js";
 import { adminMonitorHandlers } from "./server-methods/admin-monitor.js";
 import { adminConfigHandlers } from "./server-methods/admin-config.js";
 import { adminAnalyticsHandlers } from "./server-methods/admin-analytics.js";
+import { adminAdminMethods } from "./server-methods/admin-admins.js";
 import { browserHandlers } from "./server-methods/browser.js";
 import { channelsHandlers } from "./server-methods/channels.js";
 import { chatHandlers } from "./server-methods/chat.js";
@@ -332,6 +333,7 @@ export const coreGatewayHandlers: GatewayRequestHandlers = {
   ...adminMonitorHandlers,
   ...adminConfigHandlers,
   ...adminAnalyticsHandlers,
+  ...adminAdminMethods,
 };
 
 export async function handleGatewayRequest(
