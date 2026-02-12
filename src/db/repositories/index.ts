@@ -52,6 +52,12 @@ export {
   getMessageRepository,
 } from "./conversations.js";
 
+// 用户记忆仓库
+export { MemoryRepository, getMemoryRepository } from "./memories.js";
+
+// 用户文件仓库
+export { FileRepository, getFileRepository } from "./files.js";
+
 // 管理员仓库
 export {
   AdminRepository,

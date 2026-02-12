@@ -93,7 +93,7 @@ export class ConversationRepository extends TenantScopedRepository {
   async findAll(options?: {
     limit?: number;
     offset?: number;
-    status?: string;
+    status?: "active" | "archived" | "deleted";
   }): Promise<{ conversations: Conversation[]; total: number }> {
     const limit = options?.limit ?? 20;
     const offset = options?.offset ?? 0;

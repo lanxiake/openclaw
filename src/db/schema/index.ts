@@ -65,6 +65,30 @@ export type {
   MessageAttachment,
 } from "./conversations.js";
 
+// 用户记忆相关表
+export {
+  userMemories,
+  userMemoriesRelations,
+  // Zod schemas
+  insertUserMemorySchema,
+  selectUserMemorySchema,
+} from "./memories.js";
+
+// 用户记忆相关类型
+export type { UserMemory, NewUserMemory } from "./memories.js";
+
+// 用户文件相关表
+export {
+  userFiles,
+  userFilesRelations,
+  // Zod schemas
+  insertUserFileSchema,
+  selectUserFileSchema,
+} from "./files.js";
+
+// 用户文件相关类型
+export type { UserFile, NewUserFile } from "./files.js";
+
 // 订阅与计费相关表
 export {
   plans,
