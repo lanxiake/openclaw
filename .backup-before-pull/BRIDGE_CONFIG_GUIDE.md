@@ -46,6 +46,7 @@ pip install pywin32
 ### 3. 配置 Bridge
 
 #### 配置文件位置
+
 - Bridge 配置: `wxauto-bridge/config.json` (可选)
 - Gateway 配置: `~/.openclaw-dev/openclaw.json`
 
@@ -65,12 +66,14 @@ pip install pywin32
 ### 1. 消息检测死循环问题
 
 **问题现象**：
+
 - Bridge 连接成功，监听器添加成功
 - 但收不到任何微信消息
 - `get_new_msgs()` 日志显示 `used_ids=0` 且永不更新
 
 **根本原因**：
 在 `chatbox.py` 的 `get_new_msgs()` 方法中：
+
 ```python
 # 原代码问题：
 if not self.used_msg_ids and now_msg_ids:
@@ -80,6 +83,7 @@ if not self.used_msg_ids and now_msg_ids:
 ```
 
 **解决方案**：
+
 ```python
 # 修复后的代码：
 if not self.used_msg_ids and now_msg_ids:
@@ -91,12 +95,14 @@ if not self.used_msg_ids and now_msg_ids:
 ### 2. 群聊消息发送失败（剪贴板竞争）
 
 **问题现象**：
+
 - 私聊消息发送成功
 - 群聊 @me 回复时发送失败
 - 错误：`Error calling OpenClipboard ([WinError 0] 操作成功完成。)`
 
 **根本原因**：
 wxauto 在群聊中发送 @ 消息时：
+
 1. `input_at()` 操作编辑框，触发 UI 事件
 2. `send_text()` 调用 `SetClipboardText()` 打开剪贴板
 3. Windows 剪贴板被其他进程（或 wxauto 自身）锁定
@@ -136,20 +142,24 @@ def send_message(self, chat_name: str, message: str, at: Optional[List[str]] = N
 ### 3. Python 环境问题
 
 **问题现象**：
+
 - `python` 命令返回 exit code 49
 - Windows 应用商店的 Python 无法启动
 
 **解决方案**：
+
 1. 使用本地安装的 Python 3.12
 2. 指定完整路径：`"C:\Users\<用户名>\AppData\Local\Programs\Python\Python312\python.exe"`
 
 ### 4. Gateway Auth Token 变化
 
 **问题现象**：
+
 - Bridge 连接被拒绝 (1008 policy violation)
 - Gateway 每次重启生成新的 auth token
 
 **解决方案**：
+
 1. 启动 Gateway 后，从控制台输出获取新 token
 2. 更新 Bridge 启动命令中的 token 参数
 3. 或设置固定 token（见下文）
@@ -159,12 +169,14 @@ def send_message(self, chat_name: str, message: str, at: Optional[List[str]] = N
 ### 1. 自动获取 Auth Token
 
 Gateway 启动时输出：
+
 ```
 [wechat:default] Generated auth token: 9021e21b4e574349bc7a6e39574c7845
 Configure your bridge with: --token 9021e21b4e574349bc7a6e39574c7845
 ```
 
 AI 可以：
+
 1. 解析 Gateway 启动日志中的 token
 2. 自动更新 Bridge 启动命令
 3. 或将 token 保存到配置文件
@@ -172,6 +184,7 @@ AI 可以：
 ### 2. 设置固定 Auth Token
 
 在 `openclaw.json` 中配置固定 token：
+
 ```json
 {
   "channels": {
@@ -185,6 +198,7 @@ AI 可以：
 ```
 
 然后使用固定 token 启动 Gateway：
+
 ```bash
 OPENCLAW_GATEWAY_TOKEN=your-fixed-token node openclaw.mjs --dev gateway --token your-fixed-token
 ```
@@ -192,11 +206,13 @@ OPENCLAW_GATEWAY_TOKEN=your-fixed-token node openclaw.mjs --dev gateway --token 
 ### 3. 自动检测微信窗口
 
 Bridge 启动时自动检测已登录的微信窗口：
+
 ```
 初始化成功，获取到已登录窗口：Loop
 ```
 
 AI 可以：
+
 1. 验证微信客户端是否已登录
 2. 确认微信昵称是否正确
 3. 检查监听聊天窗口是否成功打开
@@ -452,18 +468,19 @@ if __name__ == "__main__":
 
 ### 常见问题及解决方案
 
-| 问题 | 症状 | 解决方案 |
-|------|------|----------|
-| **消息检测死循环** | `used_ids=0` 永不更新 | 修复 `chatbox.py` 的基线初始化逻辑 |
-| **群聊发送失败** | `OpenClipboard` 错误 | 在 `send_message()` 中添加重试机制 |
-| **Python 无法启动** | exit code 49 | 使用本地 Python 3.12，而非 Windows 商店版 |
-| **WebSocket 断开** | `no close frame received` | 检查 Gateway 是否崩溃，重新启动 |
-| **认证失败** | `1008 policy violation` | 更新 Bridge 的 auth token |
-| **微信窗口未找到** | `获取到已登录窗口：None` | 确保微信客户端已登录并打开 |
+| 问题                | 症状                      | 解决方案                                  |
+| ------------------- | ------------------------- | ----------------------------------------- |
+| **消息检测死循环**  | `used_ids=0` 永不更新     | 修复 `chatbox.py` 的基线初始化逻辑        |
+| **群聊发送失败**    | `OpenClipboard` 错误      | 在 `send_message()` 中添加重试机制        |
+| **Python 无法启动** | exit code 49              | 使用本地 Python 3.12，而非 Windows 商店版 |
+| **WebSocket 断开**  | `no close frame received` | 检查 Gateway 是否崩溃，重新启动           |
+| **认证失败**        | `1008 policy violation`   | 更新 Bridge 的 auth token                 |
+| **微信窗口未找到**  | `获取到已登录窗口：None`  | 确保微信客户端已登录并打开                |
 
 ### 日志分析指南
 
 **正常启动日志**：
+
 ```
 ✅ WebSocket 连接成功
 ✅ 微信客户端连接成功: Loop
@@ -472,6 +489,7 @@ if __name__ == "__main__":
 ```
 
 **异常日志**：
+
 ```
 ❌ used_ids=0, _empty=False (消息检测死循环)
 ❌ Error calling OpenClipboard (剪贴板竞争)
@@ -482,22 +500,26 @@ if __name__ == "__main__":
 ## 最佳实践
 
 ### 1. 启动顺序
+
 1. 启动微信客户端并登录
 2. 启动 OpenClaw Gateway
 3. 复制 Gateway 输出的 auth token
 4. 使用正确 token 启动 Bridge
 
 ### 2. 监控建议
+
 - 定期检查 Gateway 和 Bridge 进程是否存活
 - 监控微信窗口是否被意外关闭
 - 设置日志轮转，避免日志文件过大
 
 ### 3. 性能优化
+
 - 减少不必要的 debug 日志（生产环境）
 - 调整监听间隔（默认 1 秒）
 - 限制基线消息数量（默认最近 100 条）
 
 ### 4. 安全注意事项
+
 - auth token 应定期更换
 - 不要将 token 提交到版本控制
 - 限制监听聊天的范围，避免隐私泄露
@@ -505,6 +527,7 @@ if __name__ == "__main__":
 ## 更新记录
 
 ### v1.0.0 (2026-02-10)
+
 - ✅ 修复消息检测死循环问题
 - ✅ 添加剪贴板竞争重试机制
 - ✅ 支持 Python 3.12 环境
@@ -513,4 +536,4 @@ if __name__ == "__main__":
 
 ---
 
-*本文档由 AI 根据实际调试经验生成，将持续更新。*
+_本文档由 AI 根据实际调试经验生成，将持续更新。_

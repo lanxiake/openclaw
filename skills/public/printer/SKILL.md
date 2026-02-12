@@ -10,11 +10,13 @@ Print documents, images, and text to Windows printers with support for formattin
 ## Available Printers
 
 Check available printers:
+
 ```powershell
 Get-Printer | Select-Object Name, PrinterStatus
 ```
 
 Current system has:
+
 - **Epson L4260 Series** (EPSONBE72A5) - Main printer
 - Microsoft Print to PDF
 - Fax
@@ -30,6 +32,7 @@ powershell -ExecutionPolicy Bypass -File "D:\AI-workspace\openclaw\skills\public
 ```
 
 Examples:
+
 ```powershell
 # Print to Epson printer
 powershell -ExecutionPolicy Bypass -File "D:\AI-workspace\openclaw\skills\public\printer\scripts\print_document.ps1" -FilePath "document.pdf" -Printer "EPSONBE72A5 (L4260 Series)"
@@ -43,11 +46,13 @@ powershell -ExecutionPolicy Bypass -File "D:\AI-workspace\openclaw\skills\public
 When user sends images or text via WeChat that need formatting:
 
 **Step 1: Create HTML document**
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File "D:\AI-workspace\openclaw\skills\public\printer\scripts\create_print_html.ps1" -Output "D:\AI-workspace\workspace\print.html" -Title "Document Title" -Images "path\to\image1.jpg","path\to\image2.jpg" -Texts "Text content 1","Text content 2"
 ```
 
 **Step 2: Print the document**
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File "D:\AI-workspace\openclaw\skills\public\printer\scripts\print_document.ps1" -FilePath "D:\AI-workspace\workspace\print.html" -Printer "EPSONBE72A5 (L4260 Series)"
 ```
@@ -59,11 +64,13 @@ powershell -ExecutionPolicy Bypass -File "D:\AI-workspace\openclaw\skills\public
 WeChat images are saved to: `D:\AI-workspace\openclaw\wxauto-bridge\media\wxauto_image_*.jpg`
 
 **Option A: Print directly**
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File "D:\AI-workspace\openclaw\skills\public\printer\scripts\print_document.ps1" -FilePath "D:\AI-workspace\openclaw\wxauto-bridge\media\wxauto_image_20260211003034776939.jpg" -Printer "EPSONBE72A5 (L4260 Series)"
 ```
 
 **Option B: Add to formatted document first (if need title or multiple images)**
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File "D:\AI-workspace\openclaw\skills\public\printer\scripts\create_print_html.ps1" -Output "D:\AI-workspace\workspace\photo.html" -Title "Photo" -Images "D:\AI-workspace\openclaw\wxauto-bridge\media\wxauto_image_20260211003034776939.jpg"
 
@@ -110,6 +117,7 @@ powershell -ExecutionPolicy Bypass -File "D:\AI-workspace\openclaw\skills\public
 ## Features
 
 ✅ **Tested and Working:**
+
 - Direct print images (JPG, PNG)
 - Direct print PDFs and documents
 - Create HTML documents with images
@@ -121,6 +129,7 @@ powershell -ExecutionPolicy Bypass -File "D:\AI-workspace\openclaw\skills\public
 ## Troubleshooting
 
 If printer shows as "Offline":
+
 ```powershell
 # Check printer status
 Get-Printer
@@ -130,6 +139,7 @@ Get-Printer
 ```
 
 If print fails:
+
 - Verify printer is online and has paper
 - Check printer queue for errors
 - Try printing to "Microsoft Print to PDF" for testing

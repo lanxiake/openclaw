@@ -10,7 +10,7 @@
  */
 
 (function () {
-  'use strict';
+  "use strict";
 
   /* ========== 滚动淡入动画 ========== */
 
@@ -19,19 +19,19 @@
    * 进入后添加 .visible 类触发 CSS transition
    */
   function initFadeIn() {
-    const elements = document.querySelectorAll('.fade-in');
+    const elements = document.querySelectorAll(".fade-in");
     if (!elements.length) return;
 
     const observer = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+            entry.target.classList.add("visible");
             observer.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
     );
 
     elements.forEach(function (el) {
@@ -47,14 +47,14 @@
    * 2. 高亮当前 section 对应的导航链接
    */
   function initNavScroll() {
-    var nav = document.getElementById('nav');
-    var links = document.querySelectorAll('.nav-link');
+    var nav = document.getElementById("nav");
+    var links = document.querySelectorAll(".nav-link");
     var sections = [];
 
     // 收集 sections 与对应链接
     links.forEach(function (link) {
-      var href = link.getAttribute('href');
-      if (href && href.startsWith('#')) {
+      var href = link.getAttribute("href");
+      if (href && href.startsWith("#")) {
         var target = document.querySelector(href);
         if (target) {
           sections.push({ el: target, link: link });
@@ -73,9 +73,9 @@
 
         // 毛玻璃背景
         if (scrollY > 50) {
-          nav.classList.add('scrolled');
+          nav.classList.add("scrolled");
         } else {
-          nav.classList.remove('scrolled');
+          nav.classList.remove("scrolled");
         }
 
         // 高亮当前 section
@@ -87,16 +87,18 @@
           }
         });
 
-        links.forEach(function (l) { l.classList.remove('active'); });
+        links.forEach(function (l) {
+          l.classList.remove("active");
+        });
         if (current) {
-          current.link.classList.add('active');
+          current.link.classList.add("active");
         }
 
         ticking = false;
       });
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
   }
 
@@ -106,18 +108,18 @@
    * 汉堡按钮切换导航链接的展开/收起
    */
   function initMobileMenu() {
-    var toggle = document.getElementById('nav-toggle');
-    var links = document.getElementById('nav-links');
+    var toggle = document.getElementById("nav-toggle");
+    var links = document.getElementById("nav-links");
     if (!toggle || !links) return;
 
-    toggle.addEventListener('click', function () {
-      links.classList.toggle('open');
+    toggle.addEventListener("click", function () {
+      links.classList.toggle("open");
     });
 
     // 点击链接后自动关闭
-    links.querySelectorAll('.nav-link').forEach(function (link) {
-      link.addEventListener('click', function () {
-        links.classList.remove('open');
+    links.querySelectorAll(".nav-link").forEach(function (link) {
+      link.addEventListener("click", function () {
+        links.classList.remove("open");
       });
     });
   }
@@ -129,21 +131,21 @@
    * CSS 使用 max-height 过渡实现平滑展开/收起
    */
   function initFAQ() {
-    var items = document.querySelectorAll('.faq-item');
+    var items = document.querySelectorAll(".faq-item");
 
     items.forEach(function (item) {
-      var btn = item.querySelector('.faq-question');
+      var btn = item.querySelector(".faq-question");
       if (!btn) return;
 
-      btn.addEventListener('click', function () {
+      btn.addEventListener("click", function () {
         // 关闭其他
         items.forEach(function (other) {
           if (other !== item) {
-            other.classList.remove('active');
+            other.classList.remove("active");
           }
         });
         // 切换当前
-        item.classList.toggle('active');
+        item.classList.toggle("active");
       });
     });
   }
@@ -155,12 +157,14 @@
    * 使用 IntersectionObserver 当终端进入视口时触发
    */
   function initTypewriter() {
-    var terminal = document.getElementById('terminal-body');
+    var terminal = document.getElementById("terminal-body");
     if (!terminal) return;
 
-    var userText = '帮我把桌面上的文件按类型整理到对应文件夹里';
-    var aiText = '好的，我来帮你整理桌面文件。检测到桌面有 23 个文件，将按以下规则分类：\n\n📄 文档 → Documents/\n🖼️ 图片 → Pictures/\n📊 表格 → Spreadsheets/\n📦 其他 → Misc/\n\n确认执行吗？';
-    var resultText = '已完成整理！移动了 23 个文件：\n• 文档 8 个 → Documents/\n• 图片 9 个 → Pictures/\n• 表格 4 个 → Spreadsheets/\n• 其他 2 个 → Misc/';
+    var userText = "帮我把桌面上的文件按类型整理到对应文件夹里";
+    var aiText =
+      "好的，我来帮你整理桌面文件。检测到桌面有 23 个文件，将按以下规则分类：\n\n📄 文档 → Documents/\n🖼️ 图片 → Pictures/\n📊 表格 → Spreadsheets/\n📦 其他 → Misc/\n\n确认执行吗？";
+    var resultText =
+      "已完成整理！移动了 23 个文件：\n• 文档 8 个 → Documents/\n• 图片 9 个 → Pictures/\n• 表格 4 个 → Spreadsheets/\n• 其他 2 个 → Misc/";
 
     var started = false;
 
@@ -174,7 +178,7 @@
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.3 },
     );
 
     observer.observe(terminal);
@@ -183,18 +187,18 @@
      * 依次打出用户消息、AI 回复、执行结果
      */
     function runTypewriter() {
-      var userEl = document.getElementById('type-user');
-      var aiEl = document.getElementById('type-ai');
-      var resultEl = document.getElementById('type-result');
-      var aiResponse = document.getElementById('ai-response');
-      var aiResult = document.getElementById('ai-result');
+      var userEl = document.getElementById("type-user");
+      var aiEl = document.getElementById("type-ai");
+      var resultEl = document.getElementById("type-result");
+      var aiResponse = document.getElementById("ai-response");
+      var aiResult = document.getElementById("ai-result");
 
       typeText(userEl, userText, 40, function () {
         setTimeout(function () {
-          aiResponse.style.display = '';
+          aiResponse.style.display = "";
           typeText(aiEl, aiText, 25, function () {
             setTimeout(function () {
-              aiResult.style.display = '';
+              aiResult.style.display = "";
               typeText(resultEl, resultText, 20, function () {
                 // 完成
               });
@@ -213,17 +217,17 @@
      */
     function typeText(el, text, speed, callback) {
       var i = 0;
-      var cursor = document.createElement('span');
-      cursor.className = 'cursor';
-      el.textContent = '';
+      var cursor = document.createElement("span");
+      cursor.className = "cursor";
+      el.textContent = "";
       el.appendChild(cursor);
 
       function tick() {
         if (i < text.length) {
           // 在光标前插入文字
           var char = text[i];
-          if (char === '\n') {
-            el.insertBefore(document.createElement('br'), cursor);
+          if (char === "\n") {
+            el.insertBefore(document.createElement("br"), cursor);
           } else {
             el.insertBefore(document.createTextNode(char), cursor);
           }
@@ -252,9 +256,9 @@
    */
   function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(function (link) {
-      link.addEventListener('click', function (e) {
-        var href = link.getAttribute('href');
-        if (!href || href === '#') return;
+      link.addEventListener("click", function (e) {
+        var href = link.getAttribute("href");
+        if (!href || href === "#") return;
 
         var target = document.querySelector(href);
         if (!target) return;
@@ -263,14 +267,14 @@
         var navHeight = 64;
         var top = target.getBoundingClientRect().top + window.scrollY - navHeight;
 
-        window.scrollTo({ top: top, behavior: 'smooth' });
+        window.scrollTo({ top: top, behavior: "smooth" });
       });
     });
   }
 
   /* ========== 初始化 ========== */
 
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener("DOMContentLoaded", function () {
     initFadeIn();
     initNavScroll();
     initMobileMenu();
@@ -278,5 +282,4 @@
     initTypewriter();
     initSmoothScroll();
   });
-
 })();

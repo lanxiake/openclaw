@@ -73,7 +73,10 @@ try {
 // 测试4: 验证码验证逻辑
 console.log("\n--- 测试4: 验证码验证逻辑 ---");
 
-function verifyCodeSimulated(code: string, attempt: number = 1): { valid: boolean; reason?: string } {
+function verifyCodeSimulated(
+  code: string,
+  attempt: number = 1,
+): { valid: boolean; reason?: string } {
   // 检查长度
   if (code.length !== 6) {
     return { valid: false, reason: "验证码长度不正确" };
