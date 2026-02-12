@@ -70,6 +70,9 @@ export const ROUTES = {
   SYSTEM: '/system',
   SYSTEM_MONITOR: '/system/monitor',
   SYSTEM_CONFIG: '/system/config',
+
+  // 管理员管理
+  ADMINS: '/admins',
 }
 
 /**
@@ -88,6 +91,24 @@ export const ADMIN_ROLE_LABELS: Record<string, string> = {
   super_admin: '超级管理员',
   admin: '管理员',
   operator: '运营人员',
+}
+
+/**
+ * 管理员状态
+ */
+export const ADMIN_STATUS = {
+  ACTIVE: 'active',
+  SUSPENDED: 'suspended',
+  LOCKED: 'locked',
+} as const
+
+/**
+ * 管理员状态显示名称
+ */
+export const ADMIN_STATUS_LABELS: Record<string, string> = {
+  active: '正常',
+  suspended: '已禁用',
+  locked: '已锁定',
 }
 
 /**
