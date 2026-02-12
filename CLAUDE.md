@@ -80,27 +80,27 @@ Messaging Channels (WhatsApp/Telegram/Slack/Discord/Signal/iMessage/Teams/etc.)
 
 ### Key Subsystems (by directory)
 
-| Directory | Purpose |
-|-----------|---------|
-| `src/gateway/` | WebSocket server, HTTP server, protocol methods, auth, bridge |
-| `src/agents/` | Pi RPC agent runtime, tool execution, auth profiles, model auth, sandbox |
-| `src/routing/` | Inbound message routing, session key derivation, allowlist matching |
-| `src/db/` | PostgreSQL via Drizzle ORM — schema (`schema/`), repositories, migrations, connection pool |
-| `src/channels/` | Shared channel logic (routing, pairing, onboarding) |
-| `src/telegram/`, `src/discord/`, `src/slack/`, `src/signal/`, `src/imessage/` | Built-in channel implementations |
-| `src/cli/` | Commander.js CLI wiring |
-| `src/commands/` | CLI command implementations |
-| `src/media/`, `src/media-understanding/` | Image/audio/video pipeline, transcription |
-| `src/browser/` | CDP-based Chrome automation |
-| `src/canvas-host/` | A2UI visual workspace host |
-| `src/security/` | Sandboxing, tool approval |
-| `src/hooks/bundled/` | Extensible event hooks |
-| `src/plugin-sdk/` | Extension SDK (exported as `openclaw/plugin-sdk`) |
-| `extensions/` | 40+ channel plugins (workspace packages) |
-| `apps/macos/` | Swift/SwiftUI macOS menu bar app |
-| `apps/ios/` | Swift iOS node app |
-| `apps/android/` | Kotlin Android node app |
-| `ui/` | React-based frontend (Control UI, WebChat) |
+| Directory                                                                     | Purpose                                                                                    |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `src/gateway/`                                                                | WebSocket server, HTTP server, protocol methods, auth, bridge                              |
+| `src/agents/`                                                                 | Pi RPC agent runtime, tool execution, auth profiles, model auth, sandbox                   |
+| `src/routing/`                                                                | Inbound message routing, session key derivation, allowlist matching                        |
+| `src/db/`                                                                     | PostgreSQL via Drizzle ORM — schema (`schema/`), repositories, migrations, connection pool |
+| `src/channels/`                                                               | Shared channel logic (routing, pairing, onboarding)                                        |
+| `src/telegram/`, `src/discord/`, `src/slack/`, `src/signal/`, `src/imessage/` | Built-in channel implementations                                                           |
+| `src/cli/`                                                                    | Commander.js CLI wiring                                                                    |
+| `src/commands/`                                                               | CLI command implementations                                                                |
+| `src/media/`, `src/media-understanding/`                                      | Image/audio/video pipeline, transcription                                                  |
+| `src/browser/`                                                                | CDP-based Chrome automation                                                                |
+| `src/canvas-host/`                                                            | A2UI visual workspace host                                                                 |
+| `src/security/`                                                               | Sandboxing, tool approval                                                                  |
+| `src/hooks/bundled/`                                                          | Extensible event hooks                                                                     |
+| `src/plugin-sdk/`                                                             | Extension SDK (exported as `openclaw/plugin-sdk`)                                          |
+| `extensions/`                                                                 | 40+ channel plugins (workspace packages)                                                   |
+| `apps/macos/`                                                                 | Swift/SwiftUI macOS menu bar app                                                           |
+| `apps/ios/`                                                                   | Swift iOS node app                                                                         |
+| `apps/android/`                                                               | Kotlin Android node app                                                                    |
+| `ui/`                                                                         | React-based frontend (Control UI, WebChat)                                                 |
 
 ### Gateway Protocol
 
@@ -160,6 +160,7 @@ Extensions live in `extensions/` as workspace packages. Plugin deps go in the ex
 ## CI Matrix
 
 CI runs on push/PR with these checks (Ubuntu + Windows + macOS):
+
 - `tsgo` (TypeScript native preview type-check)
 - `pnpm build && pnpm lint`
 - `pnpm canvas:a2ui:bundle && pnpm test`

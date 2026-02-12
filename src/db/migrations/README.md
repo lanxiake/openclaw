@@ -7,6 +7,7 @@
 ## 迁移文件
 
 当前迁移：
+
 - `0000_wandering_the_spike.sql` - 初始数据库schema，包含23个表
 
 ## 执行迁移
@@ -20,6 +21,7 @@ pnpm db:generate
 ```
 
 这将：
+
 1. 比较当前schema与数据库的差异
 2. 在 `src/db/migrations/` 目录生成SQL迁移文件
 
@@ -32,6 +34,7 @@ pnpm db:migrate
 ```
 
 这将：
+
 1. 连接到 `DATABASE_URL` 指定的数据库
 2. 执行所有未应用的迁移文件
 3. 更新数据库schema
@@ -60,6 +63,7 @@ DATABASE_URL=postgresql://user:password@host:port/database
 ### 步骤：
 
 1. **备份数据库**
+
    ```bash
    pg_dump -h 10.157.152.40 -p 22001 -U openclaw_admin openclaw_prod > backup_$(date +%Y%m%d_%H%M%S).sql
    ```
@@ -67,11 +71,13 @@ DATABASE_URL=postgresql://user:password@host:port/database
 2. **测试迁移（可选）**
 
    在测试数据库上先执行一次迁移，确保没有问题：
+
    ```bash
    DATABASE_URL=postgresql://...test_db pnpm db:migrate
    ```
 
 3. **执行生产迁移**
+
    ```bash
    DATABASE_URL=postgresql://openclaw_admin:Oc%402026!Pg%23Secure@10.157.152.40:22001/openclaw_prod pnpm db:migrate
    ```
@@ -79,6 +85,7 @@ DATABASE_URL=postgresql://user:password@host:port/database
 4. **验证迁移**
 
    检查表结构是否正确：
+
    ```bash
    psql "postgresql://..." -c "\d users"
    psql "postgresql://..." -c "\d verification_codes"
@@ -89,14 +96,17 @@ DATABASE_URL=postgresql://user:password@host:port/database
 从旧schema到新schema的主要变更：
 
 ### users表
+
 - **旧**: id, phone, phone_hash, display_name, avatar_url, status, preferences, created_at, updated_at, last_login_at, deleted_at
 - **新**: id, phone, email, wechatOpenId, wechatUnionId, passwordHash, displayName, avatarUrl, mfaSecret, mfaBackupCodes, mfaEnabled, isActive, emailVerified, phoneVerified, lastLoginAt, createdAt, updatedAt, preferences, metadata
 
 ### verification_codes表
+
 - **旧**: id, phone_hash, code_hash, type, expires_at, verified_at, attempts, created_at
 - **新**: id, target, targetType, code, purpose, expiresAt, used, attempts, createdAt
 
 ### user_sessions表
+
 - **旧**: id, user_id, device_id, refresh_token_hash, expires_at, created_at, last_used_at, revoked_at, ip_address, user_agent
 - **新**: id, userId, refreshTokenHash, userAgent, ipAddress, expiresAt, revoked, createdAt, lastRefreshedAt
 

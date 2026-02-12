@@ -112,7 +112,7 @@ bun run scripts/integration-test.ts
 
 ```typescript
 {
-  selector: 'button:has-text("登录")'
+  selector: 'button:has-text("登录")';
 }
 ```
 
@@ -166,7 +166,7 @@ bun run scripts/integration-test.ts
     } catch (error) {
       return { success: false, error: error.message };
     }
-  `
+  `;
 }
 ```
 
@@ -179,6 +179,7 @@ bun run scripts/integration-test.ts
 ### TC-ADMIN-001: 管理员登录成功
 
 **步骤**:
+
 1. ✅ 导航到登录页面
 2. ✅ 截图初始状态
 3. ✅ 填写用户名: `testadmin`
@@ -190,6 +191,7 @@ bun run scripts/integration-test.ts
 9. ✅ 验证 Token 存储
 
 **验证点**:
+
 - [ ] 页面 URL 包含 `/dashboard`
 - [ ] localStorage 中存在 `accessToken`
 - [ ] localStorage 中存在 `refreshToken`
@@ -200,6 +202,7 @@ bun run scripts/integration-test.ts
 ### TC-ADMIN-002: 错误密码登录
 
 **步骤**:
+
 1. ✅ 导航到登录页面
 2. ✅ 填写用户名: `testadmin`
 3. ✅ 填写密码: `WrongPassword123`
@@ -208,6 +211,7 @@ bun run scripts/integration-test.ts
 6. ✅ 截图错误状态
 
 **验证点**:
+
 - [ ] 页面仍在登录页面
 - [ ] 显示错误提示
 - [ ] localStorage 中无 Token
@@ -217,6 +221,7 @@ bun run scripts/integration-test.ts
 ### TC-ADMIN-003: 登出功能
 
 **步骤**:
+
 1. ✅ 先成功登录
 2. ✅ 查找登出按钮
 3. ✅ 点击登出按钮
@@ -224,6 +229,7 @@ bun run scripts/integration-test.ts
 5. ✅ 截图登出后状态
 
 **验证点**:
+
 - [ ] 跳转到登录页面
 - [ ] localStorage 中 Token 已清除
 
@@ -267,6 +273,7 @@ bun run scripts/integration-test.ts
 ## 常见选择器
 
 ### 登录页面
+
 ```css
 /* 用户名输入框 */
 input[placeholder="用户名"]
@@ -286,6 +293,7 @@ button[type="submit"]
 ```
 
 ### 仪表板页面
+
 ```css
 /* 用户菜单 */
 button:has-text("testadmin")
@@ -306,11 +314,11 @@ nav a
 
 ### 测试执行记录表
 
-| 测试用例 | 状态 | 截图 | 备注 |
-|---------|------|------|------|
-| TC-ADMIN-001 | ☐ | login-page-initial.png<br>login-page-filled.png<br>dashboard-after-login.png |  |
-| TC-ADMIN-002 | ☐ | login-error.png |  |
-| TC-ADMIN-003 | ☐ | after-logout.png |  |
+| 测试用例     | 状态 | 截图                                                                         | 备注 |
+| ------------ | ---- | ---------------------------------------------------------------------------- | ---- |
+| TC-ADMIN-001 | ☐    | login-page-initial.png<br>login-page-filled.png<br>dashboard-after-login.png |      |
+| TC-ADMIN-002 | ☐    | login-error.png                                                              |      |
+| TC-ADMIN-003 | ☐    | after-logout.png                                                             |      |
 
 ---
 
@@ -321,6 +329,7 @@ nav a
 **症状**: `net::ERR_CONNECTION_REFUSED`
 
 **解决方案**:
+
 ```bash
 # 检查前端是否启动
 curl http://localhost:5173
@@ -338,6 +347,7 @@ cd apps/web-admin && pnpm dev
 **症状**: `Element not found`
 
 **解决方案**:
+
 1. 先截图查看页面实际内容
 2. 使用浏览器开发者工具检查元素
 3. 调整选择器
@@ -349,6 +359,7 @@ cd apps/web-admin && pnpm dev
 **症状**: 点击登录后无响应或报错
 
 **解决方案**:
+
 1. 检查 Gateway 服务是否启动
 2. 检查测试账号是否已创建
 3. 查看浏览器控制台日志
@@ -371,6 +382,7 @@ bun run scripts/e2e-test.ts
 ## 测试报告
 
 测试完成后，结果将保存到：
+
 - **测试结果**: `docs/test-results.json`
 - **截图**: `docs/screenshots/`
 - **控制台日志**: 通过 MCP Resource `console://logs` 访问
@@ -380,6 +392,7 @@ bun run scripts/e2e-test.ts
 ## 下一步
 
 完成浏览器测试后：
+
 1. 更新 `docs/integration-test-tracking.md`
 2. 记录发现的问题
 3. 生成最终测试报告

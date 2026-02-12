@@ -23,6 +23,7 @@ pnpm drizzle-kit push
 ```
 
 迁移内容包括：
+
 - 修复 `admins.failed_login_attempts` 类型（text → integer）
 - 添加 `payment_orders.plan_id` 列
 - 添加 `user_sessions.device_id` 列
@@ -37,6 +38,7 @@ bun run scripts/integration-test.ts
 ```
 
 该脚本会自动：
+
 1. 测试数据库连接
 2. 创建测试用户账号
 3. 创建测试管理员账号
@@ -92,6 +94,7 @@ npm run dev:gateway
 Gateway 服务默认监听端口：`18789`
 
 验证服务启动：
+
 ```bash
 curl http://localhost:18789/health
 ```
@@ -165,29 +168,37 @@ pnpm dev
 ## 测试凭据
 
 ### 用户账号
+
 - **邮箱**: `test@example.com`
 - **密码**: `TestP@ssw0rd123`
 
 ### 管理员账号
+
 - **用户名**: `testadmin`
 - **密码**: `AdminP@ssw0rd123`
 
 ## 常见问题
 
 ### Q1: 数据库连接失败
+
 **解决方案**: 检查 `.env` 文件中的 `DATABASE_URL` 配置是否正确
 
 ### Q2: ID 字段长度错误
+
 **解决方案**: 执行步骤 1 中的数据库迁移脚本
 
 ### Q3: Gateway 服务启动失败
+
 **解决方案**:
+
 1. 检查端口 18789 是否被占用
 2. 检查环境变量是否正确加载
 3. 查看错误日志
 
 ### Q4: 前端无法连接后端
+
 **解决方案**:
+
 1. 检查 Gateway 服务是否正常运行
 2. 检查前端配置中的 API 地址
 3. 检查浏览器控制台的网络请求
@@ -209,6 +220,7 @@ pnpm dev
 ## 下一步
 
 完成联调测试后，可以进行：
+
 1. 性能测试
 2. 压力测试
 3. 安全渗透测试

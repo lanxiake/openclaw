@@ -3,6 +3,7 @@
 ## 测试目标
 
 验证 Windows 客户端能够：
+
 1. 成功连接到 OpenClaw Gateway
 2. 接收来自网关的消息和事件
 3. 执行网关下发的命令
@@ -12,16 +13,19 @@
 ## 当前问题分析
 
 ### 1. 网关服务启动问题
+
 - **问题**：使用 `pnpm openclaw gateway start` 启动后，服务注册成功但实际未运行
 - **原因**：Windows 计划任务可能配置有误或权限不足
 - **解决方案**：使用前台运行模式进行测试
 
 ### 2. 日志文件编码问题
+
 - **问题**：`logs/gateway.log` 和 `logs/.pids/gateway.pid` 文件使用 UTF-16 编码
 - **影响**：难以直接读取和调试
 - **解决方案**：使用 PowerShell 或专门的编码转换工具读取
 
 ### 3. TypeScript 编译错误
+
 - **问题**：
   - `src/db/migrations/relations.ts` 缺少 `.js` 扩展名
   - `src/db/repositories/admins.ts` 类型不匹配
@@ -32,6 +36,7 @@
 ### 阶段 1：环境准备
 
 #### 1.1 清理环境
+
 ```bash
 # 停止所有网关进程
 pnpm openclaw gateway stop
@@ -41,6 +46,7 @@ rm -rf logs/gateway.log logs/.pids/gateway.pid
 ```
 
 #### 1.2 验证编译
+
 ```bash
 # 确保 TypeScript 编译通过
 pnpm build
@@ -52,33 +58,39 @@ ls dist/
 ### 阶段 2：网关服务测试
 
 #### 2.1 启动网关（前台模式）
+
 ```bash
 # 在单独的终端窗口运行
 pnpm openclaw gateway run --bind loopback --port 18789 --force --verbose
 ```
 
 **预期输出**：
+
 - `[gateway] listening on ws://127.0.0.1:18789`
 - `[gateway] agent model: ...`
 - 无错误信息
 
 #### 2.2 验证网关运行
+
 ```bash
 # 在另一个终端窗口运行
 netstat -ano | findstr ":18789"
 ```
 
 **预期输出**：
+
 ```
 TCP    127.0.0.1:18789        0.0.0.0:0              LISTENING       <PID>
 ```
 
 #### 2.3 测试网关健康检查
+
 ```bash
 pnpm openclaw gateway health --json
 ```
 
 **预期输出**：
+
 ```json
 {
   "ok": true,
@@ -90,12 +102,14 @@ pnpm openclaw gateway health --json
 ### 阶段 3：Windows 客户端构建
 
 #### 3.1 安装依赖
+
 ```bash
 cd apps/windows
 pnpm install
 ```
 
 #### 3.2 构建客户端
+
 ```bash
 # 开发模式构建
 pnpm dev
@@ -107,32 +121,40 @@ pnpm build
 ### 阶段 4：集成测试
 
 #### 4.1 启动 Windows 客户端
+
 ```bash
 cd apps/windows
 pnpm dev
 ```
 
 **预期行为**：
+
 - 应用启动并显示托盘图标
 - 自动尝试连接到 `ws://127.0.0.1:18789`
 - 连接成功后托盘图标状态更新
 
 #### 4.2 测试消息接收
+
 **测试方法**：
+
 1. 打开网关日志监控：`tail -f logs/gateway.log`
 2. 在 Windows 客户端界面发送测试消息
 3. 观察网关日志中的消息接收记录
 
 **预期结果**：
+
 - 网关日志显示收到客户端消息
 - 客户端显示网关响应
 
 #### 4.3 测试命令执行
+
 **测试方法**：
+
 1. 通过网关 API 发送命令执行请求
 2. 观察 Windows 客户端是否收到并执行命令
 
 **测试命令示例**：
+
 ```typescript
 // 通过网关发送命令
 {
@@ -148,12 +170,15 @@ pnpm dev
 ```
 
 #### 4.4 测试技能执行
+
 **测试方法**：
+
 1. 注册测试技能
 2. 通过网关触发技能执行
 3. 验证技能执行结果
 
 **测试技能示例**：
+
 ```typescript
 {
   "type": "event",
@@ -171,7 +196,9 @@ pnpm dev
 ```
 
 #### 4.5 测试 CLI 命令
+
 **测试命令列表**：
+
 ```bash
 # 1. 查看连接状态
 pnpm openclaw gateway status
@@ -192,6 +219,7 @@ pnpm openclaw gateway usage-cost --days 7
 ## 自动化测试脚本
 
 ### 脚本 1：环境检查脚本
+
 文件：`scripts/test-gateway-env.ps1`
 
 ```powershell
@@ -233,6 +261,7 @@ Write-Host "`n=== 环境检查完成 ===" -ForegroundColor Cyan
 ```
 
 ### 脚本 2：网关启动脚本
+
 文件：`scripts/start-gateway-test.ps1`
 
 ```powershell
@@ -284,6 +313,7 @@ Write-Host "`n=== 网关启动完成 ===" -ForegroundColor Cyan
 ```
 
 ### 脚本 3：集成测试脚本
+
 文件：`scripts/test-windows-client-integration.ps1`
 
 ```powershell
@@ -348,6 +378,7 @@ Write-Host "`n=== 集成测试完成 ===" -ForegroundColor Cyan
 ## 测试检查清单
 
 ### 前置条件
+
 - [ ] Node.js 22+ 已安装
 - [ ] pnpm 已安装
 - [ ] 项目依赖已安装 (`pnpm install`)
@@ -355,12 +386,14 @@ Write-Host "`n=== 集成测试完成 ===" -ForegroundColor Cyan
 - [ ] 端口 18789 未被占用
 
 ### 网关测试
+
 - [ ] 网关服务可以启动
 - [ ] 网关监听在正确的端口
 - [ ] 健康检查返回正常
 - [ ] 可以通过 WebSocket 连接
 
 ### 客户端测试
+
 - [ ] Windows 客户端可以构建
 - [ ] 客户端可以启动
 - [ ] 客户端可以连接到网关
@@ -369,6 +402,7 @@ Write-Host "`n=== 集成测试完成 ===" -ForegroundColor Cyan
 - [ ] 客户端可以执行技能
 
 ### CLI 测试
+
 - [ ] `openclaw gateway status` 正常
 - [ ] `openclaw gateway health` 正常
 - [ ] `openclaw gateway discover` 正常
@@ -377,21 +411,27 @@ Write-Host "`n=== 集成测试完成 ===" -ForegroundColor Cyan
 ## 常见问题排查
 
 ### 问题 1：网关启动失败
+
 **排查步骤**：
+
 1. 检查端口是否被占用：`netstat -ano | findstr ":18789"`
 2. 检查日志文件：查看 `logs/gateway.log`
 3. 检查配置文件：`~/.openclaw/openclaw.json`
 4. 尝试使用不同端口：`--port 18790`
 
 ### 问题 2：客户端无法连接
+
 **排查步骤**：
+
 1. 确认网关正在运行
 2. 检查防火墙设置
 3. 验证 WebSocket URL 配置
 4. 查看客户端日志
 
 ### 问题 3：命令执行失败
+
 **排查步骤**：
+
 1. 检查命令格式是否正确
 2. 验证权限设置
 3. 查看错误日志
