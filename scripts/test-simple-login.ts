@@ -92,7 +92,6 @@ async function testSimpleLogin() {
     console.log("[TEST]   ✓ 错误密码正确拒绝");
     console.log("[TEST]   ✓ 不存在用户正确处理");
     console.log("\n[TEST] 数据库迁移后的核心认证功能验证完成！\n");
-
   } catch (error) {
     console.error("[TEST] ✗ 测试失败:", error);
     process.exit(1);

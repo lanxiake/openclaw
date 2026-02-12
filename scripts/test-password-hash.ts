@@ -40,7 +40,8 @@ async function testPasswordHashAndVerify() {
 
     // 4. 测试数据库中的哈希
     console.log("[TEST] 4. 测试数据库中的哈希...");
-    const dbHash = "$scrypt$16384$8$1$009ca1e68dc73ccd94ece84b0aaeca5d$b6ebe706772c09b2066fbfe3d2468d06d5180b1594f82c8c05ce12f65ffdae5a8c196ecefc0685cd0103ba7e62d46e80216014512b03222bb6a7a2839f738a15";
+    const dbHash =
+      "$scrypt$16384$8$1$009ca1e68dc73ccd94ece84b0aaeca5d$b6ebe706772c09b2066fbfe3d2468d06d5180b1594f82c8c05ce12f65ffdae5a8c196ecefc0685cd0103ba7e62d46e80216014512b03222bb6a7a2839f738a15";
 
     console.log(`[TEST]   - 数据库哈希: ${dbHash.substring(0, 50)}...`);
 
@@ -53,7 +54,6 @@ async function testPasswordHashAndVerify() {
     }
 
     console.log("[TEST] ========== 所有测试通过！ ==========\n");
-
   } catch (error) {
     console.error("[TEST] ✗ 测试失败:", error);
     process.exit(1);

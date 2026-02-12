@@ -66,7 +66,6 @@ async function testAdminLogin() {
     console.log(`[TEST]   - 错误代码: ${nonExistentResult.errorCode}\n`);
 
     console.log("[TEST] ========== 所有测试通过！ ==========\n");
-
   } catch (error) {
     console.error("[TEST] ✗ 测试失败:", error);
     process.exit(1);

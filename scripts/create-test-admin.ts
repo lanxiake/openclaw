@@ -10,7 +10,9 @@ import { promisify } from "node:util";
 
 const scryptAsync = promisify(scrypt);
 
-const connectionString = process.env["DATABASE_URL"] || "postgresql://openclaw_admin:Oc@2026!Pg#Secure@10.157.152.40:22001/openclaw_prod";
+const connectionString =
+  process.env["DATABASE_URL"] ||
+  "postgresql://openclaw_admin:Oc@2026!Pg#Secure@10.157.152.40:22001/openclaw_prod";
 
 /**
  * 哈希密码
@@ -69,7 +71,6 @@ async function createTestAdmin() {
     console.log(`用户名: ${username}`);
     console.log(`密码: ${password}`);
     console.log("=========================================\n");
-
   } catch (error) {
     console.error("[TEST] ✗ 创建失败:", error);
     process.exit(1);

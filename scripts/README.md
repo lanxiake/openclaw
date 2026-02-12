@@ -5,9 +5,11 @@
 ## 📋 脚本列表
 
 ### 1. `test-gateway-env.ps1` - 环境检查脚本
+
 检查测试所需的环境是否就绪。
 
 **用途**：
+
 - 验证 Node.js 和 pnpm 版本
 - 检查项目依赖是否安装
 - 验证 TypeScript 编译状态
@@ -15,20 +17,24 @@
 - 验证配置文件
 
 **使用方法**：
+
 ```powershell
 .\scripts\test-gateway-env.ps1
 ```
 
 ### 2. `start-gateway-test.ps1` - 网关启动脚本
+
 启动 OpenClaw Gateway 服务并验证其运行状态。
 
 **参数**：
+
 - `-Clean`: 清理旧环境（日志、PID 文件等）
 - `-Port <number>`: 指定端口（默认：18789）
 - `-Bind <mode>`: 绑定模式（默认：loopback）
 - `-Verbose`: 启用详细日志
 
 **使用方法**：
+
 ```powershell
 # 基本启动
 .\scripts\start-gateway-test.ps1
@@ -44,14 +50,17 @@
 ```
 
 ### 3. `test-windows-client-integration.ps1` - 集成测试脚本
+
 运行完整的集成测试套件。
 
 **参数**：
+
 - `-GatewayUrl <url>`: 网关 WebSocket URL（默认：ws://127.0.0.1:18789）
 - `-SkipBuild`: 跳过构建测试
 - `-Verbose`: 显示详细输出
 
 **测试项目**：
+
 1. 网关连接测试
 2. 网关状态查询
 3. 网关发现功能
@@ -60,6 +69,7 @@
 6. WebSocket 连接测试
 
 **使用方法**：
+
 ```powershell
 # 运行所有测试
 .\scripts\test-windows-client-integration.ps1
@@ -75,9 +85,11 @@
 ```
 
 ### 4. `run-full-test.ps1` - 完整测试流程
+
 自动化执行完整的测试流程，包括环境检查、网关启动、集成测试和报告生成。
 
 **参数**：
+
 - `-Clean`: 清理环境
 - `-SkipEnvCheck`: 跳过环境检查
 - `-SkipBuild`: 跳过构建测试
@@ -85,6 +97,7 @@
 - `-Port <number>`: 网关端口
 
 **使用方法**：
+
 ```powershell
 # 运行完整测试（推荐）
 .\scripts\run-full-test.ps1
@@ -102,6 +115,7 @@
 ## 🚀 快速开始
 
 ### 首次运行
+
 ```powershell
 # 1. 检查环境
 .\scripts\test-gateway-env.ps1
@@ -111,12 +125,14 @@
 ```
 
 ### 日常测试
+
 ```powershell
 # 快速测试（跳过环境检查）
 .\scripts\run-full-test.ps1 -SkipEnvCheck
 ```
 
 ### 调试模式
+
 ```powershell
 # 详细输出，便于排查问题
 .\scripts\run-full-test.ps1 -Clean -Verbose
@@ -137,6 +153,7 @@
    - 整体测试结果
 
 **查看报告**：
+
 ```powershell
 # 查看最新的测试报告
 Get-Content (Get-ChildItem test-report-*.json | Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName | ConvertFrom-Json | ConvertTo-Json -Depth 10
@@ -149,6 +166,7 @@ Get-Content (Get-ChildItem test-report-*.json | Sort-Object LastWriteTime -Desce
 **症状**：`test-gateway-env.ps1` 报错
 
 **解决方案**：
+
 ```powershell
 # 检查 Node.js 版本（需要 22+）
 node --version
@@ -168,6 +186,7 @@ pnpm build
 **症状**：`start-gateway-test.ps1` 无法启动网关
 
 **解决方案**：
+
 ```powershell
 # 检查端口占用
 netstat -ano | findstr ":18789"
@@ -184,6 +203,7 @@ Stop-Process -Id <PID> -Force
 **症状**：部分测试项失败
 
 **解决方案**：
+
 ```powershell
 # 查看网关日志
 Get-Content logs/gateway.log -Tail 100
@@ -203,6 +223,7 @@ pnpm openclaw gateway health
 **症状**：WebSocket 连接测试失败
 
 **解决方案**：
+
 ```powershell
 # 检查防火墙设置
 # 确保允许 Node.js 访问网络
@@ -217,6 +238,7 @@ netstat -ano | findstr ":18789"
 ## 📝 测试检查清单
 
 ### 前置条件
+
 - [ ] Node.js 22+ 已安装
 - [ ] pnpm 已安装
 - [ ] 项目依赖已安装 (`pnpm install`)
@@ -224,12 +246,14 @@ netstat -ano | findstr ":18789"
 - [ ] 端口 18789 未被占用
 
 ### 网关测试
+
 - [ ] 网关服务可以启动
 - [ ] 网关监听在正确的端口
 - [ ] 健康检查返回正常
 - [ ] 可以通过 WebSocket 连接
 
 ### 客户端测试
+
 - [ ] Windows 客户端可以构建
 - [ ] 客户端可以启动
 - [ ] 客户端可以连接到网关
@@ -238,6 +262,7 @@ netstat -ano | findstr ":18789"
 - [ ] 客户端可以执行技能
 
 ### CLI 测试
+
 - [ ] `openclaw gateway status` 正常
 - [ ] `openclaw gateway health` 正常
 - [ ] `openclaw gateway discover` 正常

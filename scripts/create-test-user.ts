@@ -77,7 +77,6 @@ async function createTestUser() {
     console.log(`手机: ${phone}`);
     console.log(`密码: ${password}`);
     console.log("=========================================\n");
-
   } catch (error) {
     console.error("[TEST] ✗ 创建失败:", error);
     process.exit(1);

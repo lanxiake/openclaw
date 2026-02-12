@@ -5,7 +5,9 @@
 import postgres from "postgres";
 import { hashPassword } from "../src/db/utils/password.js";
 
-const connectionString = process.env["DATABASE_URL"] || "postgresql://openclaw_admin:Oc@2026!Pg#Secure@10.157.152.40:22001/openclaw_prod";
+const connectionString =
+  process.env["DATABASE_URL"] ||
+  "postgresql://openclaw_admin:Oc@2026!Pg#Secure@10.157.152.40:22001/openclaw_prod";
 
 async function updateAdminPassword() {
   console.log("[TEST] 连接数据库...");
@@ -50,7 +52,6 @@ async function updateAdminPassword() {
     console.log(`用户名: ${username}`);
     console.log(`密码: ${newPassword}`);
     console.log("=========================================\n");
-
   } catch (error) {
     console.error("[TEST] ✗ 更新失败:", error);
     process.exit(1);

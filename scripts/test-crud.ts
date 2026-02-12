@@ -7,7 +7,9 @@ import postgres from "postgres";
 import { users } from "../src/db/schema/users.js";
 import { eq } from "drizzle-orm";
 
-const connectionString = process.env["DATABASE_URL"] || "postgresql://openclaw_admin:Oc@2026!Pg#Secure@10.157.152.40:22001/openclaw_prod";
+const connectionString =
+  process.env["DATABASE_URL"] ||
+  "postgresql://openclaw_admin:Oc@2026!Pg#Secure@10.157.152.40:22001/openclaw_prod";
 
 async function testCRUD() {
   console.log("[TEST] 连接数据库...");
@@ -20,16 +22,19 @@ async function testCRUD() {
     const testPhone = `+86138${Date.now().toString().slice(-8)}`;
     const testEmail = `test-${Date.now()}@example.com`;
 
-    const [newUser] = await db.insert(users).values({
-      id: `test-${Date.now()}`,
-      phone: testPhone,
-      email: testEmail,
-      passwordHash: "$scrypt$16384$8$1$test-hash",
-      isActive: true,
-      emailVerified: false,
-      phoneVerified: false,
-      mfaEnabled: false,
-    }).returning();
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        id: `test-${Date.now()}`,
+        phone: testPhone,
+        email: testEmail,
+        passwordHash: "$scrypt$16384$8$1$test-hash",
+        isActive: true,
+        emailVerified: false,
+        phoneVerified: false,
+        mfaEnabled: false,
+      })
+      .returning();
 
     console.log(`[TEST] ✓ 用户创建成功: ${newUser.id}`);
     console.log(`  - phone: ${newUser.phone}`);
@@ -53,7 +58,8 @@ async function testCRUD() {
 
     // 5. 更新用户
     console.log("\n[TEST] 5. 更新用户...");
-    await db.update(users)
+    await db
+      .update(users)
       .set({
         displayName: "测试用户",
         emailVerified: true,
