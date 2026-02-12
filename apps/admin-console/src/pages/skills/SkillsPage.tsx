@@ -16,6 +16,7 @@ import {
   Package,
   Clock,
   Download,
+  Upload,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -51,7 +52,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { formatDateTime, cn } from '@/lib/utils'
 import {
   SKILL_STATUS_LABELS,
@@ -65,6 +69,7 @@ import {
   usePublishSkill,
   useSetFeatured,
   useSkillCategories,
+  useCreateSkill,
 } from '@/hooks/useSkills'
 import type { Skill, SkillListQuery, SkillStatus } from '@/types/skill'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -157,6 +162,76 @@ export default function SkillsPage() {
   const reviewMutation = useReviewSkill()
   const publishMutation = usePublishSkill()
   const featuredMutation = useSetFeatured()
+  const createSkillMutation = useCreateSkill()
+
+  // 创建技能弹窗状态
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    description: '',
+    version: '1.0.0',
+    categoryId: '',
+    subscriptionLevel: 'free',
+    tags: '',
+    readme: '',
+    iconUrl: '',
+    manifestUrl: '',
+    packageUrl: '',
+  })
+  const [createError, setCreateError] = useState<string | null>(null)
+
+  /**
+   * 打开创建技能弹窗
+   */
+  const handleOpenCreateDialog = useCallback(() => {
+    setCreateForm({
+      name: '',
+      description: '',
+      version: '1.0.0',
+      categoryId: '',
+      subscriptionLevel: 'free',
+      tags: '',
+      readme: '',
+      iconUrl: '',
+      manifestUrl: '',
+      packageUrl: '',
+    })
+    setCreateError(null)
+    setCreateDialogOpen(true)
+  }, [])
+
+  /**
+   * 提交创建技能
+   */
+  const handleCreateSkill = useCallback(async () => {
+    if (!createForm.name.trim()) {
+      setCreateError('请输入技能名称')
+      return
+    }
+
+    setCreateError(null)
+    try {
+      console.log('[SkillsPage] 提交创建技能:', createForm.name)
+      await createSkillMutation.mutateAsync({
+        name: createForm.name.trim(),
+        description: createForm.description.trim() || undefined,
+        version: createForm.version.trim() || '1.0.0',
+        categoryId: createForm.categoryId || undefined,
+        subscriptionLevel: createForm.subscriptionLevel || 'free',
+        tags: createForm.tags ? createForm.tags.split(',').map((t) => t.trim()).filter(Boolean) : undefined,
+        readme: createForm.readme.trim() || undefined,
+        iconUrl: createForm.iconUrl.trim() || undefined,
+        manifestUrl: createForm.manifestUrl.trim() || undefined,
+        packageUrl: createForm.packageUrl.trim() || undefined,
+      })
+      console.log('[SkillsPage] 技能创建成功')
+      setCreateDialogOpen(false)
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : '创建技能失败'
+      console.error('[SkillsPage] 技能创建失败:', error)
+      setCreateError(errorMsg)
+    }
+  }, [createForm, createSkillMutation])
 
   // 计算分页信息
   const totalPages = data ? Math.ceil(data.total / pageSize) : 0
@@ -267,6 +342,10 @@ export default function SkillsPage() {
           <p className="text-muted-foreground">管理技能上架、审核和推荐</p>
         </div>
         <div className="flex gap-2">
+          <Button onClick={handleOpenCreateDialog}>
+            <Upload className="mr-2 h-4 w-4" />
+            上传技能
+          </Button>
           <Button variant="outline" asChild>
             <Link to="/skills/categories">分类管理</Link>
           </Button>
@@ -685,6 +764,180 @@ export default function SkillsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 创建技能弹窗 */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>上传技能</DialogTitle>
+            <DialogDescription>
+              管理员创建的技能将直接发布，跳过审核流程。
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* 技能名称（必填） */}
+            <div className="space-y-2">
+              <Label htmlFor="create-name">技能名称 *</Label>
+              <Input
+                id="create-name"
+                placeholder="请输入技能名称"
+                value={createForm.name}
+                onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                disabled={createSkillMutation.isPending}
+              />
+            </div>
+
+            {/* 描述 */}
+            <div className="space-y-2">
+              <Label htmlFor="create-description">描述</Label>
+              <Textarea
+                id="create-description"
+                placeholder="请输入技能描述"
+                rows={3}
+                value={createForm.description}
+                onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+                disabled={createSkillMutation.isPending}
+              />
+            </div>
+
+            {/* 版本 + 分类 */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="create-version">版本</Label>
+                <Input
+                  id="create-version"
+                  placeholder="1.0.0"
+                  value={createForm.version}
+                  onChange={(e) => setCreateForm({ ...createForm, version: e.target.value })}
+                  disabled={createSkillMutation.isPending}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>分类</Label>
+                <Select
+                  value={createForm.categoryId}
+                  onValueChange={(value) => setCreateForm({ ...createForm, categoryId: value })}
+                  disabled={createSkillMutation.isPending}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择分类" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(categories ?? []).map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* 订阅级别 + 标签 */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>订阅级别</Label>
+                <Select
+                  value={createForm.subscriptionLevel}
+                  onValueChange={(value) => setCreateForm({ ...createForm, subscriptionLevel: value })}
+                  disabled={createSkillMutation.isPending}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择级别" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">免费</SelectItem>
+                    <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="team">Team</SelectItem>
+                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-tags">标签</Label>
+                <Input
+                  id="create-tags"
+                  placeholder="多个标签用逗号分隔"
+                  value={createForm.tags}
+                  onChange={(e) => setCreateForm({ ...createForm, tags: e.target.value })}
+                  disabled={createSkillMutation.isPending}
+                />
+              </div>
+            </div>
+
+            {/* 图标 URL */}
+            <div className="space-y-2">
+              <Label htmlFor="create-icon">图标 URL</Label>
+              <Input
+                id="create-icon"
+                placeholder="https://example.com/icon.png"
+                value={createForm.iconUrl}
+                onChange={(e) => setCreateForm({ ...createForm, iconUrl: e.target.value })}
+                disabled={createSkillMutation.isPending}
+              />
+            </div>
+
+            {/* Manifest URL + Package URL */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="create-manifest">Manifest URL</Label>
+                <Input
+                  id="create-manifest"
+                  placeholder="https://example.com/manifest.json"
+                  value={createForm.manifestUrl}
+                  onChange={(e) => setCreateForm({ ...createForm, manifestUrl: e.target.value })}
+                  disabled={createSkillMutation.isPending}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-package">Package URL</Label>
+                <Input
+                  id="create-package"
+                  placeholder="https://example.com/package.tgz"
+                  value={createForm.packageUrl}
+                  onChange={(e) => setCreateForm({ ...createForm, packageUrl: e.target.value })}
+                  disabled={createSkillMutation.isPending}
+                />
+              </div>
+            </div>
+
+            {/* README */}
+            <div className="space-y-2">
+              <Label htmlFor="create-readme">README</Label>
+              <Textarea
+                id="create-readme"
+                placeholder="技能使用说明（支持 Markdown）"
+                rows={5}
+                value={createForm.readme}
+                onChange={(e) => setCreateForm({ ...createForm, readme: e.target.value })}
+                disabled={createSkillMutation.isPending}
+              />
+            </div>
+
+            {/* 错误提示 */}
+            {createError && (
+              <p className="text-sm text-destructive">{createError}</p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreateDialogOpen(false)}
+              disabled={createSkillMutation.isPending}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleCreateSkill}
+              disabled={createSkillMutation.isPending}
+            >
+              {createSkillMutation.isPending ? '提交中...' : '创建并发布'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

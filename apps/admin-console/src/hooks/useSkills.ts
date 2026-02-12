@@ -400,6 +400,51 @@ export function useUpdateCategory() {
 }
 
 /**
+ * 创建技能的输入参数
+ */
+export interface CreateSkillInput {
+  name: string
+  description?: string
+  version?: string
+  categoryId?: string
+  subscriptionLevel?: string
+  iconUrl?: string
+  tags?: string[]
+  readme?: string
+  manifestUrl?: string
+  packageUrl?: string
+  config?: Record<string, unknown>
+}
+
+/**
+ * 管理员创建技能（直接发布，跳过审核）
+ */
+export function useCreateSkill() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: CreateSkillInput) => {
+      const response = await gateway.call<{
+        success: boolean
+        skill?: Record<string, unknown>
+        message?: string
+        error?: string
+      }>('admin.skills.create', input as unknown as Record<string, unknown>)
+
+      if (!response.success) {
+        throw new Error(response.error || '创建技能失败')
+      }
+
+      return response.skill ? transformSkill(response.skill) : null
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'list'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'stats'] })
+    },
+  })
+}
+
+/**
  * 删除技能分类
  */
 export function useDeleteCategory() {

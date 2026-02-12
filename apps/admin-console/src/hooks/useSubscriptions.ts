@@ -265,3 +265,87 @@ export function usePlanList() {
     staleTime: 10 * 60 * 1000, // 10 分钟后过期
   })
 }
+
+/**
+ * 创建计划的输入参数
+ */
+export interface CreatePlanInput {
+  code: string
+  name: string
+  description?: string
+  priceMonthly: number
+  priceYearly: number
+  tokensPerMonth: number
+  storageMb: number
+  maxDevices: number
+  sortOrder?: number
+  features?: Record<string, unknown>
+}
+
+/**
+ * 创建订阅计划
+ */
+export function useCreatePlan() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: CreatePlanInput) => {
+      const response = await gateway.call<{
+        success: boolean
+        plan?: SubscriptionPlan
+        error?: string
+      }>('admin.plans.create', input)
+
+      if (!response.success) {
+        throw new Error(response.error || '创建计划失败')
+      }
+
+      return response.plan
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'plans'] })
+    },
+  })
+}
+
+/**
+ * 更新计划的输入参数
+ */
+export interface UpdatePlanInput {
+  planId: string
+  name?: string
+  description?: string
+  priceMonthly?: number
+  priceYearly?: number
+  tokensPerMonth?: number
+  storageMb?: number
+  maxDevices?: number
+  sortOrder?: number
+  isActive?: boolean
+  features?: Record<string, unknown>
+}
+
+/**
+ * 更新订阅计划
+ */
+export function useUpdatePlan() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: UpdatePlanInput) => {
+      const response = await gateway.call<{
+        success: boolean
+        error?: string
+      }>('admin.plans.update', input)
+
+      if (!response.success) {
+        throw new Error(response.error || '更新计划失败')
+      }
+
+      return response
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'plans'] })
+    },
+  })
+}
