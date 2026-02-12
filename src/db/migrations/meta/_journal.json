@@ -8,6 +8,27 @@
       "when": 1770558535857,
       "tag": "0000_wandering_the_spike",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770913884677,
+      "tag": "0001_lumpy_killmonger",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770917524515,
+      "tag": "0002_young_sabretooth",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770918332541,
+      "tag": "0003_lowly_tigra",
+      "breakpoints": true
     }
   ]
 }

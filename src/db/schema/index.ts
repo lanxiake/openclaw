@@ -89,6 +89,48 @@ export {
 // 用户文件相关类型
 export type { UserFile, NewUserFile } from "./files.js";
 
+// 用户自建技能相关表
+export {
+  userCustomSkills,
+  userCustomSkillsRelations,
+  // Zod schemas
+  insertUserCustomSkillSchema,
+  selectUserCustomSkillSchema,
+} from "./custom-skills.js";
+
+// 用户自建技能相关类型
+export type { UserCustomSkill, NewUserCustomSkill, SkillManifest } from "./custom-skills.js";
+
+// 用户助手配置相关表
+export {
+  userAssistantConfigs,
+  userAssistantConfigsRelations,
+  // Zod schemas
+  insertUserAssistantConfigSchema,
+  selectUserAssistantConfigSchema,
+} from "./assistant-configs.js";
+
+// 用户助手配置相关类型
+export type {
+  UserAssistantConfig,
+  NewUserAssistantConfig,
+  AssistantPersonality,
+  AssistantPreferences,
+  AssistantModelConfig,
+} from "./assistant-configs.js";
+
+// 用量配额相关表
+export {
+  usageQuotas,
+  usageQuotasRelations,
+  // Zod schemas
+  insertUsageQuotaSchema,
+  selectUsageQuotaSchema,
+} from "./usage-quotas.js";
+
+// 用量配额相关类型
+export type { UsageQuota, NewUsageQuota } from "./usage-quotas.js";
+
 // 订阅与计费相关表
 export {
   plans,

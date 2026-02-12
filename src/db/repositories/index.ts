@@ -58,6 +58,15 @@ export { MemoryRepository, getMemoryRepository } from "./memories.js";
 // 用户文件仓库
 export { FileRepository, getFileRepository } from "./files.js";
 
+// 用户自建技能仓库
+export { CustomSkillRepository, getCustomSkillRepository } from "./custom-skills.js";
+
+// 用户助手配置仓库
+export { AssistantConfigRepository, getAssistantConfigRepository } from "./assistant-configs.js";
+
+// 用量配额仓库
+export { UsageQuotaRepository, getUsageQuotaRepository } from "./usage-quotas.js";
+
 // 管理员仓库
 export {
   AdminRepository,

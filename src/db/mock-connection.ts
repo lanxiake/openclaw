@@ -451,6 +451,49 @@ class MockInsertBuilder {
 }
 
 /**
+ * 尝试将 SQL 算术表达式解析为可在 Mock 中执行的运算
+ *
+ * 支持形如 `sql\`${column} + ${number}\`` 的简单表达式
+ * queryChunks 结构: [StringChunk(""), Column, StringChunk(" + "), number|Param, StringChunk("")]
+ *
+ * @returns 解析结果，或 null 表示无法解析
+ */
+function tryEvaluateSQLArithmetic(
+  sqlObj: { queryChunks: unknown[] },
+  row: Record<string, unknown>,
+): unknown | null {
+  const chunks = sqlObj.queryChunks;
+
+  let columnName: string | null = null;
+  let operator: string | null = null;
+  let operand: number | null = null;
+
+  for (const chunk of chunks) {
+    if (isDrizzleColumn(chunk) && !columnName) {
+      columnName = chunk.name;
+    } else if (isStringChunk(chunk)) {
+      const text = (chunk as { value: string[] }).value.join("").trim();
+      if (text === "+" || text === "-") {
+        operator = text;
+      }
+    } else if (typeof chunk === "number") {
+      operand = chunk;
+    } else if (isDrizzleParam(chunk) && typeof chunk.value === "number") {
+      operand = chunk.value;
+    }
+  }
+
+  if (columnName && operator && operand !== null) {
+    const currentValue = getRowValue(row, columnName);
+    const numericCurrent = typeof currentValue === "number" ? currentValue : 0;
+    if (operator === "+") return numericCurrent + operand;
+    if (operator === "-") return numericCurrent - operand;
+  }
+
+  return null;
+}
+
+/**
  * Mock Update 构建器
  */
 class MockUpdateBuilder {
@@ -492,9 +535,23 @@ class MockUpdateBuilder {
       }
 
       if (matches) {
+        // 解析 updateData 中可能包含的 SQL 算术表达式
+        const resolvedData: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(this.updateData)) {
+          if (isDrizzleSQL(value)) {
+            const evaluated = tryEvaluateSQLArithmetic(
+              value as { queryChunks: unknown[] },
+              row as Record<string, unknown>,
+            );
+            resolvedData[key] = evaluated !== null ? evaluated : value;
+          } else {
+            resolvedData[key] = value;
+          }
+        }
+
         const updated = {
           ...(row as object),
-          ...this.updateData,
+          ...resolvedData,
           updatedAt: new Date(),
         };
         table.set(id, updated);
