@@ -14,6 +14,7 @@ import {
   logout,
   logoutAll,
   sendVerificationCode,
+  changeUserPassword,
 } from "../../assistant/auth/index.js";
 
 // 日志标签
@@ -110,17 +111,17 @@ export const authMethods: GatewayRequestHandlers = {
    * 参数:
    * - phone?: string - 手机号
    * - email?: string - 邮箱
-   * - code: string - 验证码
-   * - password?: string - 密码 (可选)
-   * - displayName?: string - 显示名称
+   * - password: string - 密码 (必填)
+   * - displayName: string - 显示名称 (必填)
+   * - code?: string - 验证码 (可选)
    */
   "auth.register": async ({ params, respond, context }) => {
     try {
       const phone = validateStringParam(params, "phone");
       const email = validateStringParam(params, "email");
-      const code = validateStringParam(params, "code", true)!;
-      const password = validateStringParam(params, "password");
-      const displayName = validateStringParam(params, "displayName");
+      const password = validateStringParam(params, "password", true)!;
+      const displayName = validateStringParam(params, "displayName", true)!;
+      const code = validateStringParam(params, "code");
       const ipAddress = params["ipAddress"] as string | undefined;
       const userAgent = params["userAgent"] as string | undefined;
 
@@ -168,21 +169,18 @@ export const authMethods: GatewayRequestHandlers = {
    *
    * 参数:
    * - identifier: string - 手机号或邮箱
-   * - password?: string - 密码 (二选一)
-   * - code?: string - 验证码 (二选一)
+   * - password: string - 密码 (必填)
    */
   "auth.login": async ({ params, respond, context }) => {
     try {
       const identifier = validateStringParam(params, "identifier", true)!;
-      const password = validateStringParam(params, "password");
-      const code = validateStringParam(params, "code");
+      const password = validateStringParam(params, "password", true)!;
       const ipAddress = params["ipAddress"] as string | undefined;
       const userAgent = params["userAgent"] as string | undefined;
 
       const result = await login({
         identifier,
         password,
-        code,
         ipAddress,
         userAgent,
       });
@@ -319,6 +317,58 @@ export const authMethods: GatewayRequestHandlers = {
         false,
         undefined,
         errorShape(ErrorCodes.INVALID_REQUEST, error instanceof Error ? error.message : "登出失败"),
+      );
+    }
+  },
+
+  /**
+   * 修改用户密码
+   *
+   * 参数:
+   * - userId: string - 用户 ID
+   * - currentPassword: string - 当前密码
+   * - newPassword: string - 新密码
+   */
+  "auth.changePassword": async ({ params, respond, context }) => {
+    try {
+      const userId = validateStringParam(params, "userId", true)!;
+      const currentPassword = validateStringParam(params, "currentPassword", true)!;
+      const newPassword = validateStringParam(params, "newPassword", true)!;
+      const ipAddress = params["ipAddress"] as string | undefined;
+      const userAgent = params["userAgent"] as string | undefined;
+
+      context.logGateway.info(`[${LOG_TAG}] 用户修改密码`, { userId });
+
+      const result = await changeUserPassword({
+        userId,
+        currentPassword,
+        newPassword,
+        ipAddress,
+        userAgent,
+      });
+
+      if (result.success) {
+        respond(true, {
+          success: true,
+          message: "密码修改成功，请重新登录",
+        });
+      } else {
+        respond(true, {
+          success: false,
+          error: { code: "CHANGE_PASSWORD_FAILED", message: result.error || "密码修改失败" },
+        });
+      }
+    } catch (error) {
+      context.logGateway.error(`[${LOG_TAG}] changePassword error`, {
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+      respond(
+        false,
+        undefined,
+        errorShape(
+          ErrorCodes.INVALID_REQUEST,
+          error instanceof Error ? error.message : "密码修改失败",
+        ),
       );
     }
   },

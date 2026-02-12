@@ -22,10 +22,12 @@ export {
   refreshToken,
   logout,
   logoutAll,
+  changeUserPassword,
   type AuthResult,
   type RegisterRequest,
   type LoginRequest,
   type RefreshTokenRequest,
+  type ChangeUserPasswordRequest,
 } from "./auth-service.js";
 
 // 验证码服务

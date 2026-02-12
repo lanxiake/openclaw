@@ -54,16 +54,12 @@ describe("AuthService - 用户注册", () => {
     disableMockDatabase();
   });
 
-  it("应该成功注册新用户（手机号 + 验证码）", async () => {
-    const codeRepo = getVerificationCodeRepository();
+  it("应该成功注册新用户（手机号 + 密码）", async () => {
     const phone = "13800138000";
-
-    // 创建验证码（使用仓库 API，获取自动生成的 code）
-    const { code } = await codeRepo.create(phone, "phone", "register");
 
     const request: RegisterRequest = {
       phone,
-      code,
+      password: "StrongP@ssw0rd123",
       displayName: "测试用户",
       ipAddress: "127.0.0.1",
       userAgent: "Test Agent",
@@ -81,7 +77,7 @@ describe("AuthService - 用户注册", () => {
     expect(result.expiresIn).toBeGreaterThan(0);
   });
 
-  it("应该成功注册新用户（邮箱 + 验证码 + 密码）", async () => {
+  it("应该成功注册新用户（邮箱 + 密码 + 验证码）", async () => {
     const codeRepo = getVerificationCodeRepository();
     const email = "test@example.com";
     const password = "StrongP@ssw0rd123";
@@ -109,7 +105,6 @@ describe("AuthService - 用户注册", () => {
   });
 
   it("应该拒绝重复注册", async () => {
-    const codeRepo = getVerificationCodeRepository();
     const userRepo = getUserRepository();
     const phone = "13800138001";
 
@@ -119,12 +114,10 @@ describe("AuthService - 用户注册", () => {
       displayName: "已存在用户",
     });
 
-    // 创建验证码
-    const { code } = await codeRepo.create(phone, "phone", "register");
-
     const request: RegisterRequest = {
       phone,
-      code,
+      password: "StrongP@ssw0rd123",
+      displayName: "新用户",
       ipAddress: "127.0.0.1",
       userAgent: "Test Agent",
     };
@@ -137,13 +130,15 @@ describe("AuthService - 用户注册", () => {
     expect(result.error).toContain("已注册");
   });
 
-  it("应该拒绝无效的验证码", async () => {
+  it("应该拒绝无效的验证码（当提供时）", async () => {
     const phone = "13800138002";
     const code = "999999"; // 不存在的验证码
 
     const request: RegisterRequest = {
       phone,
       code,
+      password: "StrongP@ssw0rd123",
+      displayName: "测试用户",
       ipAddress: "127.0.0.1",
       userAgent: "Test Agent",
     };
@@ -157,17 +152,13 @@ describe("AuthService - 用户注册", () => {
   });
 
   it("应该拒绝弱密码", async () => {
-    const codeRepo = getVerificationCodeRepository();
     const email = "weak@example.com";
     const weakPassword = "123"; // 弱密码
 
-    // 创建验证码
-    const { code } = await codeRepo.create(email, "email", "register");
-
     const request: RegisterRequest = {
       email,
-      code,
       password: weakPassword,
+      displayName: "弱密码用户",
       ipAddress: "127.0.0.1",
       userAgent: "Test Agent",
     };
@@ -181,7 +172,8 @@ describe("AuthService - 用户注册", () => {
 
   it("应该拒绝缺少标识符的注册", async () => {
     const request: RegisterRequest = {
-      code: "123456",
+      password: "StrongP@ssw0rd123",
+      displayName: "无标识用户",
       ipAddress: "127.0.0.1",
       userAgent: "Test Agent",
     };
@@ -191,6 +183,36 @@ describe("AuthService - 用户注册", () => {
     // 验证结果
     expect(result.success).toBe(false);
     expect(result.errorCode).toBe("MISSING_IDENTIFIER");
+  });
+
+  it("应该拒绝缺少密码的注册", async () => {
+    const request = {
+      phone: "13800138099",
+      displayName: "无密码用户",
+      ipAddress: "127.0.0.1",
+      userAgent: "Test Agent",
+    } as RegisterRequest;
+
+    const result = await register(request);
+
+    // 验证结果
+    expect(result.success).toBe(false);
+    expect(result.errorCode).toBe("MISSING_PASSWORD");
+  });
+
+  it("应该拒绝缺少昵称的注册", async () => {
+    const request = {
+      phone: "13800138098",
+      password: "StrongP@ssw0rd123",
+      ipAddress: "127.0.0.1",
+      userAgent: "Test Agent",
+    } as RegisterRequest;
+
+    const result = await register(request);
+
+    // 验证结果
+    expect(result.success).toBe(false);
+    expect(result.errorCode).toBe("MISSING_DISPLAY_NAME");
   });
 });
 
@@ -228,36 +250,6 @@ describe("AuthService - 用户登录", () => {
     // 验证结果
     expect(result.success).toBe(true);
     expect(result.user).toBeDefined();
-    expect(result.user?.id).toBe(user.id);
-    expect(result.accessToken).toBeDefined();
-    expect(result.refreshToken).toBeDefined();
-  });
-
-  it("应该成功使用验证码登录", async () => {
-    const userRepo = getUserRepository();
-    const codeRepo = getVerificationCodeRepository();
-    const email = "login@example.com";
-
-    // 创建用户
-    const user = await userRepo.create({
-      email,
-      displayName: "验证码用户",
-    });
-
-    // 创建验证码（使用仓库 API）
-    const { code } = await codeRepo.create(email, "email", "login");
-
-    const request: LoginRequest = {
-      identifier: email,
-      code,
-      ipAddress: "127.0.0.1",
-      userAgent: "Test Agent",
-    };
-
-    const result = await login(request);
-
-    // 验证结果
-    expect(result.success).toBe(true);
     expect(result.user?.id).toBe(user.id);
     expect(result.accessToken).toBeDefined();
     expect(result.refreshToken).toBeDefined();
@@ -373,12 +365,12 @@ describe("AuthService - 用户登录", () => {
     expect(result.error).toContain("锁定");
   });
 
-  it("应该拒绝缺少凭据的登录", async () => {
-    const request: LoginRequest = {
+  it("应该拒绝缺少密码的登录", async () => {
+    const request = {
       identifier: "test@example.com",
       ipAddress: "127.0.0.1",
       userAgent: "Test Agent",
-    };
+    } as LoginRequest;
 
     const result = await login(request);
 

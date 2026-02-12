@@ -11,6 +11,7 @@ import {
   getAllServicesHealth,
   getMonitorStats,
   generateResourceHistory,
+  getApiMonitorStats,
 } from "../../assistant/monitor/index.js";
 
 // 日志标签
@@ -20,31 +21,6 @@ const LOG_TAG = "admin-monitor";
  * 日志级别类型
  */
 type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
-
-/**
- * 生成模拟的 API 时间线数据
- *
- * TODO: 后续可从审计日志表聚合真实数据
- */
-function generateApiTimeline(hours: number = 24) {
-  const timeline = [];
-  const now = Date.now();
-
-  for (let i = hours - 1; i >= 0; i--) {
-    const timestamp = new Date(now - i * 60 * 60 * 1000).toISOString();
-    const baseRequests = 500 + Math.floor(Math.random() * 300);
-    const errorRate = 0.01 + Math.random() * 0.03;
-
-    timeline.push({
-      timestamp,
-      requests: baseRequests,
-      errors: Math.floor(baseRequests * errorRate),
-      avgTime: 50 + Math.floor(Math.random() * 100),
-    });
-  }
-
-  return timeline;
-}
 
 /**
  * 模拟日志数据
@@ -253,9 +229,7 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
   },
 
   /**
-   * 获取 API 监控数据
-   *
-   * TODO: 从审计日志表聚合真实数据
+   * 获取 API 监控数据（从审计日志聚合真实数据）
    */
   "admin.monitor.api": async ({ params, respond, context }) => {
     try {
@@ -265,69 +239,7 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
 
       const hours = period === "hour" ? 1 : period === "day" ? 24 : 168;
 
-      const data = {
-        summary: {
-          totalRequests: 125680,
-          successRequests: 124424,
-          errorRequests: 1256,
-          avgResponseTime: 85,
-          p95ResponseTime: 250,
-          p99ResponseTime: 500,
-          requestsPerSecond: 145.5,
-          errorRate: 1.0,
-        },
-        byEndpoint: [
-          {
-            method: "GET",
-            path: "/api/users",
-            count: 35420,
-            avgTime: 45,
-            errorCount: 35,
-            errorRate: 0.1,
-          },
-          {
-            method: "POST",
-            path: "/api/chat",
-            count: 28560,
-            avgTime: 120,
-            errorCount: 285,
-            errorRate: 1.0,
-          },
-          {
-            method: "GET",
-            path: "/api/skills",
-            count: 22340,
-            avgTime: 65,
-            errorCount: 112,
-            errorRate: 0.5,
-          },
-          {
-            method: "POST",
-            path: "/api/auth/login",
-            count: 15680,
-            avgTime: 180,
-            errorCount: 470,
-            errorRate: 3.0,
-          },
-          {
-            method: "GET",
-            path: "/api/subscriptions",
-            count: 12450,
-            avgTime: 55,
-            errorCount: 62,
-            errorRate: 0.5,
-          },
-        ],
-        byStatusCode: [
-          { code: 200, count: 118920 },
-          { code: 201, count: 5504 },
-          { code: 400, count: 628 },
-          { code: 401, count: 314 },
-          { code: 404, count: 188 },
-          { code: 500, count: 126 },
-        ],
-        timeline: generateApiTimeline(hours),
-      };
+      const data = await getApiMonitorStats(hours);
 
       respond(true, { success: true, data }, undefined);
     } catch (error) {

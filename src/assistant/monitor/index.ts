@@ -12,10 +12,12 @@ export {
   getTodayApiStats,
   getMonitorStats,
   generateResourceHistory,
+  getApiMonitorStats,
   formatBytes,
   formatUptime,
   type ServiceStatus,
   type SystemResources,
   type ServiceHealth,
   type MonitorStats,
+  type ApiMonitorData,
 } from "./monitor-service.js";

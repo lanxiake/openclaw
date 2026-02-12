@@ -17,6 +17,7 @@ import {
   getFeaturedSkills,
   setFeatured,
   updateFeaturedOrder,
+  createSkill,
   type SkillListQuery,
 } from "../../assistant/skills/skill-service.js";
 import {
@@ -767,6 +768,80 @@ export const adminSkillHandlers: GatewayRequestHandlers = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       context.logGateway.error(`[${LOG_TAG}] 更新推荐技能排序失败`, { error: errorMessage });
+      respond(false, undefined, errorShape(ErrorCodes.INTERNAL_ERROR, errorMessage));
+    }
+  },
+
+  /**
+   * 管理员创建技能并直接发布
+   *
+   * 管理员创建的技能跳过审核流程，直接设置为 published 状态
+   *
+   * 参数：
+   * - name: string (必填) - 技能名称
+   * - description: string - 技能描述
+   * - version: string - 版本号 (默认 1.0.0)
+   * - categoryId: string - 分类 ID
+   * - subscriptionLevel: string - 订阅级别 (free/pro/team/enterprise)
+   * - iconUrl: string - 图标 URL
+   * - tags: string[] - 标签列表
+   * - readme: string - 详细说明 (Markdown)
+   * - manifestUrl: string - 配置文件 URL
+   * - packageUrl: string - 技能包 URL
+   * - config: object - 技能配置
+   */
+  "admin.skills.create": async ({ params, respond, context }) => {
+    try {
+      const name = validateStringParam(params, "name", true)!;
+      const description = validateStringParam(params, "description");
+      const version = validateStringParam(params, "version") || "1.0.0";
+      const categoryId = validateStringParam(params, "categoryId");
+      const subscriptionLevel = validateStringParam(params, "subscriptionLevel") || "free";
+      const iconUrl = validateStringParam(params, "iconUrl");
+      const readme = validateStringParam(params, "readme");
+      const manifestUrl = validateStringParam(params, "manifestUrl");
+      const packageUrl = validateStringParam(params, "packageUrl");
+      const tags = params.tags as string[] | undefined;
+      const config = params.config as Record<string, unknown> | undefined;
+
+      context.logGateway.info(`[${LOG_TAG}] 管理员创建技能`, {
+        name,
+        categoryId,
+        subscriptionLevel,
+      });
+
+      const skill = await createSkill({
+        name,
+        description: description || null,
+        readme: readme || null,
+        version,
+        categoryId: categoryId || null,
+        tags: tags || null,
+        subscriptionLevel: (subscriptionLevel as SubscriptionLevel) || "free",
+        iconUrl: iconUrl || null,
+        manifestUrl: manifestUrl || null,
+        packageUrl: packageUrl || null,
+        config: config || null,
+        // 管理员创建直接发布，跳过审核
+        status: "published" as SkillStatus,
+        authorId: null,
+        authorName: "管理员",
+      });
+
+      context.logGateway.info(`[${LOG_TAG}] 技能创建成功`, { skillId: skill.id, name });
+
+      respond(
+        true,
+        {
+          success: true,
+          skill,
+          message: "技能创建成功，已直接发布",
+        },
+        undefined,
+      );
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      context.logGateway.error(`[${LOG_TAG}] 创建技能失败`, { error: errorMessage });
       respond(false, undefined, errorShape(ErrorCodes.INTERNAL_ERROR, errorMessage));
     }
   },

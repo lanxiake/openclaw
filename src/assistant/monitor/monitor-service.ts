@@ -8,6 +8,9 @@ import * as os from "os";
 import { sql, desc, count, and, gte, eq } from "drizzle-orm";
 import { getDatabase } from "../../db/index.js";
 import { auditLogs, adminAuditLogs } from "../../db/schema/index.js";
+import { getLogger } from "../../logging/logger.js";
+
+const monitorLogger = getLogger();
 
 /**
  * 服务状态类型
@@ -476,4 +479,238 @@ export function formatUptime(ms: number): string {
     return `${minutes}分钟 ${seconds % 60}秒`;
   }
   return `${seconds}秒`;
+}
+
+/**
+ * API 监控数据结构
+ */
+export interface ApiMonitorData {
+  summary: {
+    totalRequests: number;
+    successRequests: number;
+    errorRequests: number;
+    avgResponseTime: number;
+    p95ResponseTime: number;
+    p99ResponseTime: number;
+    requestsPerSecond: number;
+    errorRate: number;
+  };
+  byEndpoint: Array<{
+    method: string;
+    path: string;
+    count: number;
+    avgTime: number;
+    errorCount: number;
+    errorRate: number;
+  }>;
+  byStatusCode: Array<{
+    code: number;
+    count: number;
+  }>;
+  timeline: Array<{
+    timestamp: string;
+    requests: number;
+    errors: number;
+    avgTime: number;
+  }>;
+}
+
+/**
+ * 从 audit_logs + admin_audit_logs 表聚合 API 监控数据
+ *
+ * @param hours - 统计时间窗口（小时数）
+ * @returns API 监控聚合结果
+ */
+export async function getApiMonitorStats(hours: number): Promise<ApiMonitorData> {
+  monitorLogger.info("[MonitorService] 获取 API 监控统计", { hours });
+
+  const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+
+  try {
+    const db = await getDatabase();
+
+    // --- 1. 从 audit_logs 表聚合 summary ---
+    const summaryRows = await db
+      .select({
+        total: count(),
+        successCount: sql<number>`count(*) filter (where ${auditLogs.result} = 'success')`,
+        errorCount: sql<number>`count(*) filter (where ${auditLogs.result} != 'success')`,
+        avgDuration: sql<number>`coalesce(avg((${auditLogs.details}->>'durationMs')::numeric), 0)`,
+        p95Duration: sql<number>`coalesce(percentile_cont(0.95) within group (order by (${auditLogs.details}->>'durationMs')::numeric), 0)`,
+        p99Duration: sql<number>`coalesce(percentile_cont(0.99) within group (order by (${auditLogs.details}->>'durationMs')::numeric), 0)`,
+      })
+      .from(auditLogs)
+      .where(gte(auditLogs.createdAt, since));
+
+    const summaryRow = summaryRows[0] ?? {
+      total: 0,
+      successCount: 0,
+      errorCount: 0,
+      avgDuration: 0,
+      p95Duration: 0,
+      p99Duration: 0,
+    };
+
+    const totalRequests = Number(summaryRow.total) || 0;
+    const successRequests = Number(summaryRow.successCount) || 0;
+    const errorRequests = Number(summaryRow.errorCount) || 0;
+    const avgResponseTime = Math.round(Number(summaryRow.avgDuration) || 0);
+    const p95ResponseTime = Math.round(Number(summaryRow.p95Duration) || 0);
+    const p99ResponseTime = Math.round(Number(summaryRow.p99Duration) || 0);
+    const requestsPerSecond =
+      hours > 0 ? Math.round((totalRequests / (hours * 3600)) * 100) / 100 : 0;
+    const errorRate =
+      totalRequests > 0 ? Math.round((errorRequests / totalRequests) * 10000) / 100 : 0;
+
+    monitorLogger.debug("[MonitorService] API 监控 summary 完成", {
+      totalRequests,
+      errorRequests,
+      avgResponseTime,
+    });
+
+    // --- 2. 按端点（method + action）分组统计 TOP 10 ---
+    const endpointRows = await db
+      .select({
+        action: auditLogs.action,
+        method: sql<string>`coalesce(${auditLogs.details}->>'method', 'RPC')`,
+        cnt: count(),
+        avgTime: sql<number>`coalesce(avg((${auditLogs.details}->>'durationMs')::numeric), 0)`,
+        errCnt: sql<number>`count(*) filter (where ${auditLogs.result} != 'success')`,
+      })
+      .from(auditLogs)
+      .where(gte(auditLogs.createdAt, since))
+      .groupBy(auditLogs.action, sql`${auditLogs.details}->>'method'`)
+      .orderBy(desc(count()))
+      .limit(10);
+
+    const byEndpoint = endpointRows.map((row) => {
+      const c = Number(row.cnt) || 0;
+      const e = Number(row.errCnt) || 0;
+      return {
+        method: String(row.method || "RPC"),
+        path: String(row.action || "unknown"),
+        count: c,
+        avgTime: Math.round(Number(row.avgTime) || 0),
+        errorCount: e,
+        errorRate: c > 0 ? Math.round((e / c) * 10000) / 100 : 0,
+      };
+    });
+
+    // --- 3. 按状态码分组 ---
+    const statusCodeRows = await db
+      .select({
+        code: sql<string>`coalesce(${auditLogs.details}->>'statusCode', '0')`,
+        cnt: count(),
+      })
+      .from(auditLogs)
+      .where(gte(auditLogs.createdAt, since))
+      .groupBy(sql`${auditLogs.details}->>'statusCode'`)
+      .orderBy(desc(count()));
+
+    // 如果 audit_logs 中没有 statusCode，用 result 字段做一个映射
+    let byStatusCode: Array<{ code: number; count: number }>;
+    const hasRealStatusCodes = statusCodeRows.some((r) => r.code !== "0" && r.code !== null);
+
+    if (hasRealStatusCodes) {
+      byStatusCode = statusCodeRows
+        .filter((r) => r.code !== "0")
+        .map((r) => ({
+          code: Number(r.code) || 0,
+          count: Number(r.cnt) || 0,
+        }));
+    } else {
+      // 用 result 字段生成伪状态码分布
+      byStatusCode = [
+        { code: 200, count: successRequests },
+        ...(errorRequests > 0 ? [{ code: 500, count: errorRequests }] : []),
+      ];
+    }
+
+    // --- 4. 按小时生成时间线 ---
+    const timelineRows = await db
+      .select({
+        hourBucket: sql<string>`date_trunc('hour', ${auditLogs.createdAt})::text`,
+        requests: count(),
+        errors: sql<number>`count(*) filter (where ${auditLogs.result} != 'success')`,
+        avgTime: sql<number>`coalesce(avg((${auditLogs.details}->>'durationMs')::numeric), 0)`,
+      })
+      .from(auditLogs)
+      .where(gte(auditLogs.createdAt, since))
+      .groupBy(sql`date_trunc('hour', ${auditLogs.createdAt})`)
+      .orderBy(sql`date_trunc('hour', ${auditLogs.createdAt})`);
+
+    // 补全缺失的小时（让时间线连续）
+    const timeline: Array<{
+      timestamp: string;
+      requests: number;
+      errors: number;
+      avgTime: number;
+    }> = [];
+
+    const timelineMap = new Map<string, (typeof timelineRows)[0]>();
+    for (const row of timelineRows) {
+      timelineMap.set(row.hourBucket, row);
+    }
+
+    for (let i = hours - 1; i >= 0; i--) {
+      const ts = new Date(Date.now() - i * 60 * 60 * 1000);
+      ts.setMinutes(0, 0, 0);
+      const key = ts.toISOString().replace("T", " ").replace("Z", "+00");
+      // PostgreSQL 返回的格式可能不同，多做一次查找
+      const found =
+        timelineMap.get(key) ||
+        timelineMap.get(ts.toISOString()) ||
+        timelineMap.get(ts.toISOString().replace(/\.000Z$/, "+00"));
+
+      timeline.push({
+        timestamp: ts.toISOString(),
+        requests: Number(found?.requests ?? 0),
+        errors: Number(found?.errors ?? 0),
+        avgTime: Math.round(Number(found?.avgTime ?? 0)),
+      });
+    }
+
+    monitorLogger.info("[MonitorService] API 监控统计完成", {
+      totalRequests,
+      endpointCount: byEndpoint.length,
+      timelinePoints: timeline.length,
+    });
+
+    return {
+      summary: {
+        totalRequests,
+        successRequests,
+        errorRequests,
+        avgResponseTime,
+        p95ResponseTime,
+        p99ResponseTime,
+        requestsPerSecond,
+        errorRate,
+      },
+      byEndpoint,
+      byStatusCode,
+      timeline,
+    };
+  } catch (error) {
+    monitorLogger.error("[MonitorService] API 监控统计失败", {
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+
+    // 返回空数据结构，不使用假数据
+    return {
+      summary: {
+        totalRequests: 0,
+        successRequests: 0,
+        errorRequests: 0,
+        avgResponseTime: 0,
+        p95ResponseTime: 0,
+        p99ResponseTime: 0,
+        requestsPerSecond: 0,
+        errorRate: 0,
+      },
+      byEndpoint: [],
+      byStatusCode: [],
+      timeline: [],
+    };
+  }
 }

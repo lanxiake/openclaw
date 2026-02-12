@@ -9,9 +9,13 @@ export {
   adminLogout,
   adminLogoutAll,
   getAdminProfile,
+  changeAdminPassword,
+  updateAdminProfile,
   type AdminAuthResult,
   type AdminLoginRequest,
   type AdminRefreshTokenRequest,
+  type ChangeAdminPasswordRequest,
+  type UpdateAdminProfileRequest,
 } from "./admin-auth-service.js";
 
 // JWT 工具

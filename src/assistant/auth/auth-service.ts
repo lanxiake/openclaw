@@ -60,18 +60,21 @@ export interface AuthResult {
 
 /**
  * 注册请求参数
+ *
+ * 密码和昵称必填，手机号或邮箱至少填一个。
+ * 验证码可选（前端使用图形验证码，不经过后端校验）。
  */
 export interface RegisterRequest {
   /** 手机号 */
   phone?: string;
   /** 邮箱 */
   email?: string;
-  /** 密码 (可选，如果用验证码注册) */
-  password?: string;
-  /** 验证码 */
-  code: string;
-  /** 显示名称 */
-  displayName?: string;
+  /** 密码 (必填) */
+  password: string;
+  /** 验证码 (可选，前端图形验证码不走后端) */
+  code?: string;
+  /** 显示名称 (必填) */
+  displayName: string;
   /** 客户端 IP */
   ipAddress?: string;
   /** User Agent */
@@ -80,14 +83,14 @@ export interface RegisterRequest {
 
 /**
  * 登录请求参数
+ *
+ * 使用密码登录，验证码登录已移除。
  */
 export interface LoginRequest {
   /** 登录标识 (手机号/邮箱) */
   identifier: string;
-  /** 密码 (二选一) */
-  password?: string;
-  /** 验证码 (二选一) */
-  code?: string;
+  /** 密码 (必填) */
+  password: string;
   /** 客户端 IP */
   ipAddress?: string;
   /** User Agent */
@@ -123,6 +126,22 @@ export async function register(request: RegisterRequest): Promise<AuthResult> {
     };
   }
 
+  if (!request.password) {
+    return {
+      success: false,
+      error: "请设置密码",
+      errorCode: "MISSING_PASSWORD",
+    };
+  }
+
+  if (!request.displayName) {
+    return {
+      success: false,
+      error: "请输入昵称",
+      errorCode: "MISSING_DISPLAY_NAME",
+    };
+  }
+
   const identifier = request.phone || request.email!;
   const identifierType = request.phone ? "phone" : "email";
 
@@ -140,29 +159,29 @@ export async function register(request: RegisterRequest): Promise<AuthResult> {
       };
     }
 
-    // 2. 验证验证码
-    const codeValid = await codeRepo.verify(identifier, request.code, "register");
-    if (!codeValid) {
-      logger.warn("[auth] Registration failed: invalid code", {
-        identifier: maskIdentifier(identifier),
-      });
-      return {
-        success: false,
-        error: "验证码错误或已过期",
-        errorCode: "INVALID_CODE",
-      };
-    }
-
-    // 3. 验证密码强度 (如果提供)
-    if (request.password) {
-      const passwordValidation = validatePasswordStrength(request.password);
-      if (!passwordValidation.valid) {
+    // 2. 验证验证码 (仅在提供时校验，前端图形验证码不经过后端)
+    if (request.code) {
+      const codeValid = await codeRepo.verify(identifier, request.code, "register");
+      if (!codeValid) {
+        logger.warn("[auth] Registration failed: invalid code", {
+          identifier: maskIdentifier(identifier),
+        });
         return {
           success: false,
-          error: passwordValidation.errors.join("; "),
-          errorCode: "WEAK_PASSWORD",
+          error: "验证码错误或已过期",
+          errorCode: "INVALID_CODE",
         };
       }
+    }
+
+    // 3. 验证密码强度
+    const passwordValidation = validatePasswordStrength(request.password);
+    if (!passwordValidation.valid) {
+      return {
+        success: false,
+        error: passwordValidation.errors.join("; "),
+        errorCode: "WEAK_PASSWORD",
+      };
     }
 
     // 4. 创建用户
@@ -244,7 +263,6 @@ export async function login(request: LoginRequest): Promise<AuthResult> {
   const userRepo = getUserRepository();
   const sessionRepo = getUserSessionRepository();
   const attemptRepo = getLoginAttemptRepository();
-  const codeRepo = getVerificationCodeRepository();
 
   // 验证必填参数
   if (!request.identifier) {
@@ -255,10 +273,10 @@ export async function login(request: LoginRequest): Promise<AuthResult> {
     };
   }
 
-  if (!request.password && !request.code) {
+  if (!request.password) {
     return {
       success: false,
-      error: "请提供密码或验证码",
+      error: "请提供密码",
       errorCode: "MISSING_CREDENTIALS",
     };
   }
@@ -346,23 +364,15 @@ export async function login(request: LoginRequest): Promise<AuthResult> {
       };
     }
 
-    // 5. 验证凭据
-    let credentialsValid = false;
-
-    if (request.password) {
-      // 密码登录
-      if (!user.passwordHash) {
-        return {
-          success: false,
-          error: "该账号未设置密码，请使用验证码登录",
-          errorCode: "PASSWORD_NOT_SET",
-        };
-      }
-      credentialsValid = await verifyPassword(request.password, user.passwordHash);
-    } else if (request.code) {
-      // 验证码登录
-      credentialsValid = await codeRepo.verify(request.identifier, request.code, "login");
+    // 5. 验证密码
+    if (!user.passwordHash) {
+      return {
+        success: false,
+        error: "该账号未设置密码，请联系管理员",
+        errorCode: "PASSWORD_NOT_SET",
+      };
     }
+    const credentialsValid = await verifyPassword(request.password, user.passwordHash);
 
     if (!credentialsValid) {
       // 记录失败尝试
@@ -384,14 +394,14 @@ export async function login(request: LoginRequest): Promise<AuthResult> {
         result: "failure",
         riskLevel: "medium",
         details: {
-          method: request.password ? "password" : "code",
+          method: "password",
           failureReason: "invalid_credentials",
         },
       });
 
       logger.debug("[auth] Login failed: invalid credentials", {
         userId: user.id,
-        method: request.password ? "password" : "code",
+        method: "password",
       });
 
       return {
@@ -439,13 +449,13 @@ export async function login(request: LoginRequest): Promise<AuthResult> {
       userAgent: request.userAgent,
       result: "success",
       details: {
-        method: request.password ? "password" : "code",
+        method: "password",
       },
     });
 
     logger.info("[auth] User logged in successfully", {
       userId: user.id,
-      method: request.password ? "password" : "code",
+      method: "password",
     });
 
     return {
@@ -617,6 +627,108 @@ export async function logoutAll(
       userId,
     });
     return { success: false };
+  }
+}
+
+/**
+ * 用户修改密码请求参数
+ */
+export interface ChangeUserPasswordRequest {
+  /** 用户 ID */
+  userId: string;
+  /** 当前密码 */
+  currentPassword: string;
+  /** 新密码 */
+  newPassword: string;
+  /** 客户端 IP */
+  ipAddress?: string;
+  /** User Agent */
+  userAgent?: string;
+}
+
+/**
+ * 用户修改密码
+ *
+ * 流程：验证当前密码 → 校验新密码强度 → 更新密码 → 吊销所有会话
+ */
+export async function changeUserPassword(
+  request: ChangeUserPasswordRequest,
+): Promise<{ success: boolean; error?: string }> {
+  const userRepo = getUserRepository();
+  const sessionRepo = getUserSessionRepository();
+
+  try {
+    // 1. 查找用户
+    const user = await userRepo.findById(request.userId);
+    if (!user) {
+      logger.warn("[auth] Change password failed: user not found", {
+        userId: request.userId,
+      });
+      return { success: false, error: "用户不存在" };
+    }
+
+    // 2. 验证当前密码
+    if (!user.passwordHash) {
+      return { success: false, error: "该账号未设置密码" };
+    }
+
+    const currentPasswordValid = await verifyPassword(request.currentPassword, user.passwordHash);
+    if (!currentPasswordValid) {
+      logger.warn("[auth] Change password failed: invalid current password", {
+        userId: request.userId,
+      });
+
+      await audit({
+        userId: request.userId,
+        category: "security",
+        action: "user.change_password",
+        ipAddress: request.ipAddress,
+        userAgent: request.userAgent,
+        result: "failure",
+        riskLevel: "high",
+        details: { failureReason: "invalid_current_password" },
+      });
+
+      return { success: false, error: "当前密码不正确" };
+    }
+
+    // 3. 校验新密码强度
+    const validation = validatePasswordStrength(request.newPassword);
+    if (!validation.valid) {
+      return { success: false, error: validation.errors.join("; ") };
+    }
+
+    // 4. 更新密码（UserRepository.update 自动哈希）
+    await userRepo.update(request.userId, {
+      passwordHash: request.newPassword,
+    });
+
+    // 5. 吊销所有会话（强制重新登录）
+    await sessionRepo.revokeAllForUser(request.userId);
+
+    // 6. 记录审计日志
+    await audit({
+      userId: request.userId,
+      category: "security",
+      action: "user.change_password",
+      ipAddress: request.ipAddress,
+      userAgent: request.userAgent,
+      result: "success",
+      riskLevel: "high",
+    });
+
+    logger.info("[auth] User password changed successfully", {
+      userId: request.userId,
+    });
+
+    return { success: true };
+  } catch (error) {
+    logger.error("[auth] Change password error", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      userId: request.userId,
+    });
+
+    return { success: false, error: "密码修改失败，请稍后重试" };
   }
 }
 

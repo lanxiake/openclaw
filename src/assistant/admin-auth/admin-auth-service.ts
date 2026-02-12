@@ -12,7 +12,7 @@ import {
   adminAudit,
   type AdminPermissions,
 } from "../../db/index.js";
-import { verifyPassword } from "../../db/utils/password.js";
+import { verifyPassword, validatePasswordStrength } from "../../db/utils/password.js";
 import {
   generateAdminAccessToken,
   ADMIN_TOKEN_CONFIG,
@@ -512,5 +512,192 @@ export async function getAdminProfile(adminId: string): Promise<AdminAuthResult[
       adminId,
     });
     return null;
+  }
+}
+
+/**
+ * 修改管理员密码参数
+ */
+export interface ChangeAdminPasswordRequest {
+  /** 管理员 ID */
+  adminId: string;
+  /** 当前密码 */
+  currentPassword: string;
+  /** 新密码 */
+  newPassword: string;
+  /** 客户端 IP */
+  ipAddress?: string;
+  /** User Agent */
+  userAgent?: string;
+}
+
+/**
+ * 修改管理员密码
+ *
+ * 验证旧密码、校验新密码强度、更新密码、吊销所有会话、记录审计日志
+ */
+export async function changeAdminPassword(
+  request: ChangeAdminPasswordRequest,
+): Promise<{ success: boolean; error?: string }> {
+  const adminRepo = getAdminRepository();
+  const sessionRepo = getAdminSessionRepository();
+
+  try {
+    // 1. 查找管理员
+    const admin = await adminRepo.findById(request.adminId);
+    if (!admin || admin.status !== "active") {
+      logger.warn("[admin-auth] Change password failed: admin not found or inactive", {
+        adminId: request.adminId,
+      });
+      return { success: false, error: "管理员不存在或已被停用" };
+    }
+
+    // 2. 验证当前密码
+    const passwordValid = await verifyPassword(request.currentPassword, admin.passwordHash);
+    if (!passwordValid) {
+      logger.debug("[admin-auth] Change password failed: current password incorrect", {
+        adminId: request.adminId,
+      });
+
+      await adminAudit({
+        adminId: admin.id,
+        adminUsername: admin.username,
+        action: "admin.change_password",
+        ipAddress: request.ipAddress,
+        userAgent: request.userAgent,
+        riskLevel: "medium",
+        details: { failureReason: "invalid_current_password" },
+      });
+
+      return { success: false, error: "当前密码错误" };
+    }
+
+    // 3. 校验新密码强度
+    const strengthCheck = validatePasswordStrength(request.newPassword);
+    if (!strengthCheck.valid) {
+      return { success: false, error: strengthCheck.errors.join("；") };
+    }
+
+    // 4. 更新密码（Repository 自动哈希 + 设置 passwordChangedAt）
+    await adminRepo.update(admin.id, { passwordHash: request.newPassword });
+
+    // 5. 吊销所有会话（强制重新登录）
+    await sessionRepo.revokeAllForAdmin(admin.id);
+
+    // 6. 记录审计日志
+    await adminAudit({
+      adminId: admin.id,
+      adminUsername: admin.username,
+      action: "admin.change_password",
+      ipAddress: request.ipAddress,
+      userAgent: request.userAgent,
+      riskLevel: "high",
+      details: { method: "self_change" },
+    });
+
+    logger.info("[admin-auth] Admin password changed successfully", {
+      adminId: admin.id,
+      username: admin.username,
+    });
+
+    return { success: true };
+  } catch (error) {
+    logger.error("[admin-auth] Change password error", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      adminId: request.adminId,
+    });
+    return { success: false, error: "修改密码失败，请稍后重试" };
+  }
+}
+
+/**
+ * 更新管理员资料参数
+ */
+export interface UpdateAdminProfileRequest {
+  /** 管理员 ID */
+  adminId: string;
+  /** 显示名称 */
+  displayName?: string;
+  /** 邮箱 */
+  email?: string;
+  /** 客户端 IP */
+  ipAddress?: string;
+  /** User Agent */
+  userAgent?: string;
+}
+
+/**
+ * 更新管理员资料
+ *
+ * 允许管理员修改自己的显示名称和邮箱
+ */
+export async function updateAdminProfile(
+  request: UpdateAdminProfileRequest,
+): Promise<{ success: boolean; error?: string; admin?: AdminAuthResult["admin"] }> {
+  const adminRepo = getAdminRepository();
+
+  try {
+    // 1. 查找管理员
+    const admin = await adminRepo.findById(request.adminId);
+    if (!admin || admin.status !== "active") {
+      logger.warn("[admin-auth] Update profile failed: admin not found or inactive", {
+        adminId: request.adminId,
+      });
+      return { success: false, error: "管理员不存在或已被停用" };
+    }
+
+    // 2. 构建更新数据
+    const updateData: Record<string, unknown> = {};
+    if (request.displayName !== undefined) {
+      updateData.displayName = request.displayName.trim();
+    }
+    if (request.email !== undefined) {
+      updateData.email = request.email.trim().toLowerCase() || null;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return { success: false, error: "没有需要更新的内容" };
+    }
+
+    // 3. 更新资料
+    const updated = await adminRepo.update(admin.id, updateData);
+    if (!updated) {
+      return { success: false, error: "更新失败" };
+    }
+
+    // 4. 记录审计日志
+    await adminAudit({
+      adminId: admin.id,
+      adminUsername: admin.username,
+      action: "admin.update_profile",
+      ipAddress: request.ipAddress,
+      userAgent: request.userAgent,
+      riskLevel: "low",
+      details: { updatedFields: Object.keys(updateData) },
+    });
+
+    logger.info("[admin-auth] Admin profile updated", {
+      adminId: admin.id,
+      updatedFields: Object.keys(updateData),
+    });
+
+    return {
+      success: true,
+      admin: {
+        id: updated.id,
+        username: updated.username,
+        displayName: updated.displayName,
+        email: updated.email,
+        role: updated.role,
+        avatarUrl: updated.avatarUrl,
+        permissions: updated.permissions,
+      },
+    };
+  } catch (error) {
+    logger.error("[admin-auth] Update profile error", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      adminId: request.adminId,
+    });
+    return { success: false, error: "更新资料失败，请稍后重试" };
   }
 }

@@ -13,6 +13,8 @@ import {
   adminLogout,
   adminLogoutAll,
   getAdminProfile,
+  changeAdminPassword,
+  updateAdminProfile,
   verifyAdminAccessToken,
   extractAdminBearerToken,
 } from "../../assistant/admin-auth/index.js";
@@ -333,6 +335,142 @@ export const adminAuthMethods: GatewayRequestHandlers = {
       });
     } catch {
       respond(true, { valid: false });
+    }
+  },
+
+  /**
+   * 修改管理员密码
+   *
+   * 参数:
+   * - authorization: string - Bearer Token
+   * - currentPassword: string - 当前密码
+   * - newPassword: string - 新密码
+   */
+  "admin.changePassword": async ({ params, respond, context }) => {
+    try {
+      const auth = validateAdminAuth(params);
+      if (!auth) {
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
+            details: { errorCode: "UNAUTHORIZED" },
+          }),
+        );
+        return;
+      }
+
+      const currentPassword = validateStringParam(params, "currentPassword", true)!;
+      const newPassword = validateStringParam(params, "newPassword", true)!;
+      const ipAddress = params["ipAddress"] as string | undefined;
+      const userAgent = params["userAgent"] as string | undefined;
+
+      context.logGateway.info(`[${LOG_TAG}] Change password attempt`, {
+        adminId: auth.adminId,
+      });
+
+      const result = await changeAdminPassword({
+        adminId: auth.adminId,
+        currentPassword,
+        newPassword,
+        ipAddress,
+        userAgent,
+      });
+
+      if (result.success) {
+        context.logGateway.info(`[${LOG_TAG}] Password changed successfully`, {
+          adminId: auth.adminId,
+        });
+        respond(true, { success: true, message: "密码修改成功，请重新登录" });
+      } else {
+        context.logGateway.warn(`[${LOG_TAG}] Change password failed`, {
+          adminId: auth.adminId,
+          error: result.error,
+        });
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "修改密码失败"),
+        );
+      }
+    } catch (error) {
+      context.logGateway.error(`[${LOG_TAG}] Change password error`, {
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+      respond(
+        false,
+        undefined,
+        errorShape(
+          ErrorCodes.INVALID_REQUEST,
+          error instanceof Error ? error.message : "修改密码失败",
+        ),
+      );
+    }
+  },
+
+  /**
+   * 更新管理员资料
+   *
+   * 参数:
+   * - authorization: string - Bearer Token
+   * - displayName?: string - 显示名称
+   * - email?: string - 邮箱
+   */
+  "admin.updateProfile": async ({ params, respond, context }) => {
+    try {
+      const auth = validateAdminAuth(params);
+      if (!auth) {
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "未授权访问", {
+            details: { errorCode: "UNAUTHORIZED" },
+          }),
+        );
+        return;
+      }
+
+      const displayName = validateStringParam(params, "displayName");
+      const email = validateStringParam(params, "email");
+      const ipAddress = params["ipAddress"] as string | undefined;
+      const userAgent = params["userAgent"] as string | undefined;
+
+      context.logGateway.info(`[${LOG_TAG}] Update profile attempt`, {
+        adminId: auth.adminId,
+      });
+
+      const result = await updateAdminProfile({
+        adminId: auth.adminId,
+        displayName,
+        email,
+        ipAddress,
+        userAgent,
+      });
+
+      if (result.success) {
+        context.logGateway.info(`[${LOG_TAG}] Profile updated successfully`, {
+          adminId: auth.adminId,
+        });
+        respond(true, { success: true, admin: result.admin });
+      } else {
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, result.error || "更新失败"),
+        );
+      }
+    } catch (error) {
+      context.logGateway.error(`[${LOG_TAG}] Update profile error`, {
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+      respond(
+        false,
+        undefined,
+        errorShape(
+          ErrorCodes.INVALID_REQUEST,
+          error instanceof Error ? error.message : "更新资料失败",
+        ),
+      );
     }
   },
 };
