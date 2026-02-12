@@ -2,6 +2,9 @@
  * 仓库层统一导出
  */
 
+// 多租户基础层
+export { TenantScopedRepository, getTenantScopedRepository } from "./tenant-scope.js";
+
 // 用户相关仓库
 export {
   UserRepository,

@@ -406,9 +406,21 @@ export class SubscriptionRepository {
 
   /**
    * 根据 ID 获取订阅
+   *
+   * @param id - 订阅 ID
+   * @param userId - 可选用户 ID，传入时进行多租户隔离过滤
    */
-  async findById(id: string): Promise<Subscription | null> {
-    const [sub] = await this.db.select().from(subscriptions).where(eq(subscriptions.id, id));
+  async findById(id: string, userId?: string): Promise<Subscription | null> {
+    const conditions = [eq(subscriptions.id, id)];
+
+    if (userId) {
+      conditions.push(eq(subscriptions.userId, userId));
+    }
+
+    const [sub] = await this.db
+      .select()
+      .from(subscriptions)
+      .where(and(...conditions));
     return sub ?? null;
   }
 

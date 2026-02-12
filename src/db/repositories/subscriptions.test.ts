@@ -538,6 +538,79 @@ describe("SubscriptionRepository", () => {
       expect(found).toBeNull();
       console.log("[TEST] ✓ 正确返回null");
     });
+
+    it("SUB-FIND-003: 不传 userId 时向后兼容 - 返回任意用户的订阅", async () => {
+      console.log("[TEST] ========== SUB-FIND-003 ==========");
+      console.log("[TEST] 测试 findById 不传 userId（向后兼容）");
+
+      const now = new Date();
+      const created = await subRepo.create({
+        userId: "user-compat",
+        planId: "plan-1",
+        status: "active",
+        billingCycle: "monthly",
+        currentPeriodStart: now,
+        currentPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+      });
+
+      // 不传 userId，行为与改造前一致
+      const found = await subRepo.findById(created.id);
+
+      console.log("[TEST] 查找结果:", found ? "找到" : "未找到");
+
+      expect(found).toBeTruthy();
+      expect(found?.id).toBe(created.id);
+      expect(found?.userId).toBe("user-compat");
+      console.log("[TEST] ✓ 不传 userId 时向后兼容正常");
+    });
+
+    it("SUB-FIND-004: 传 userId 且匹配时正确返回订阅", async () => {
+      console.log("[TEST] ========== SUB-FIND-004 ==========");
+      console.log("[TEST] 测试 findById 传 userId 且匹配");
+
+      const now = new Date();
+      const created = await subRepo.create({
+        userId: "user-owner",
+        planId: "plan-1",
+        status: "active",
+        billingCycle: "monthly",
+        currentPeriodStart: now,
+        currentPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+      });
+
+      // 传正确的 userId
+      const found = await subRepo.findById(created.id, "user-owner");
+
+      console.log("[TEST] 查找结果:", found ? "找到" : "未找到");
+
+      expect(found).toBeTruthy();
+      expect(found?.id).toBe(created.id);
+      expect(found?.userId).toBe("user-owner");
+      console.log("[TEST] ✓ 传匹配 userId 时正确返回");
+    });
+
+    it("SUB-FIND-005: 传 userId 但不匹配时返回 null", async () => {
+      console.log("[TEST] ========== SUB-FIND-005 ==========");
+      console.log("[TEST] 测试 findById 传 userId 但属于其他用户");
+
+      const now = new Date();
+      const created = await subRepo.create({
+        userId: "user-real-owner",
+        planId: "plan-1",
+        status: "active",
+        billingCycle: "monthly",
+        currentPeriodStart: now,
+        currentPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+      });
+
+      // 传不同的 userId，模拟其他用户试图访问
+      const found = await subRepo.findById(created.id, "user-attacker");
+
+      console.log("[TEST] 查找结果:", found);
+
+      expect(found).toBeNull();
+      console.log("[TEST] ✓ 传不匹配 userId 时正确返回 null（多租户隔离）");
+    });
   });
 
   describe("findByUserId", () => {
