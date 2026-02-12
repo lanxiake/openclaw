@@ -20,6 +20,7 @@ import { TitleBar } from './components/TitleBar'
 import { useAuth } from './hooks/useAuth'
 import { useConfirmRequests } from './hooks/useConfirmRequests'
 import { useConnectionStatus } from './hooks/useConnectionStatus'
+import { useSettings } from './hooks/useSettings'
 
 /**
  * 视图类型
@@ -37,23 +38,26 @@ const App: React.FC = () => {
   const { isConnected, connect, disconnect } = useConnectionStatus()
   const { currentRequest, handleResponse } = useConfirmRequests()
 
+  // 用户设置
+  const { settings } = useSettings()
+
   // UI 状态
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeView, setActiveView] = useState<ViewType>('chat')
 
   /**
    * 认证成功后自动连接 Gateway
+   * 从用户设置中读取网关地址，而非使用硬编码值
    */
   useEffect(() => {
     if (isAuthenticated && accessToken && !isConnected) {
-      console.log('[App] 用户已认证，自动连接 Gateway')
-      // 从配置读取 Gateway URL，这里使用默认值
-      const gatewayUrl = 'ws://localhost:18789'
+      const gatewayUrl = settings.gateway.url || 'ws://localhost:18789'
+      console.log('[App] 用户已认证，自动连接 Gateway:', gatewayUrl)
       connect(gatewayUrl, { token: accessToken }).catch(err => {
         console.error('[App] 自动连接 Gateway 失败:', err)
       })
     }
-  }, [isAuthenticated, accessToken, isConnected, connect])
+  }, [isAuthenticated, accessToken, isConnected, connect, settings.gateway.url])
 
   /**
    * 用户登出时断开连接

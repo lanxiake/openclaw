@@ -146,9 +146,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, onClose
             className="setting-input"
             value={settings.gateway.url}
             onChange={(e) => updateGateway({ url: e.target.value })}
-            placeholder="ws://localhost:18789"
+            placeholder="ws://192.168.1.100:18789"
           />
-          <span className="setting-hint">Gateway 服务器的 WebSocket 地址</span>
+          <span className="setting-hint">IP 直连需带端口，如 ws://192.168.1.100:18789；域名无需端口，如 wss://gw.example.com</span>
         </div>
 
         <div className="setting-item">

@@ -41,8 +41,10 @@
     "artifactName": "${productName}-${version}-${arch}.${ext}",
     "requestedExecutionLevel": "asInvoker",
     "signingHashAlgorithms": ["sha256"],
-    "verifyUpdateCodeSignature": true,
-    "publisherName": "OpenClaw"
+    "verifyUpdateCodeSignature": false,
+    "publisherName": "OpenClaw",
+    "sign": null,
+    "forceCodeSigning": false
   },
   "nsis": {
     "oneClick": false,

@@ -4,7 +4,7 @@
  * 管理用户注册、登录、登出等认证操作
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 
 /**
  * 用户信息
@@ -38,22 +38,24 @@ export interface AuthState {
 
 /**
  * 注册参数
+ *
+ * 手机号或邮箱至少填一个，昵称和密码必填
  */
 export interface RegisterParams {
   phone?: string
   email?: string
-  code: string
-  password?: string
-  displayName?: string
+  password: string
+  displayName: string
 }
 
 /**
  * 登录参数
+ *
+ * identifier 为手机号或邮箱，password 必填
  */
 export interface LoginParams {
   identifier: string  // 手机号或邮箱
-  password?: string
-  code?: string
+  password: string
 }
 
 /**
@@ -65,16 +67,6 @@ interface AuthResponse {
   accessToken?: string
   refreshToken?: string
   expiresIn?: number
-  error?: string
-  errorCode?: string
-}
-
-/**
- * 验证码响应
- */
-interface SendCodeResponse {
-  success: boolean
-  nextSendAt?: number
   error?: string
   errorCode?: string
 }
@@ -169,46 +161,10 @@ export function useAuth() {
   })
 
   /**
-   * 发送验证码
-   */
-  const sendCode = useCallback(async (
-    target: string,
-    targetType: 'phone' | 'email',
-    purpose: 'register' | 'login' | 'reset_password'
-  ): Promise<{ success: boolean; nextSendAt?: number; error?: string }> => {
-    console.log('[useAuth] 发送验证码:', { target, targetType, purpose })
-
-    setState(prev => ({ ...prev, isLoading: true, error: null }))
-
-    try {
-      const response = await window.electronAPI.gateway.call<SendCodeResponse>('auth.sendCode', {
-        target,
-        targetType,
-        purpose,
-      })
-
-      console.log('[useAuth] 发送验证码响应:', response)
-
-      setState(prev => ({ ...prev, isLoading: false }))
-
-      if (response.success) {
-        return { success: true, nextSendAt: response.nextSendAt }
-      } else {
-        return { success: false, error: response.error || '发送验证码失败' }
-      }
-    } catch (error) {
-      console.error('[useAuth] 发送验证码失败:', error)
-      const errorMessage = error instanceof Error ? error.message : '发送验证码失败'
-      setState(prev => ({ ...prev, isLoading: false, error: errorMessage }))
-      return { success: false, error: errorMessage }
-    }
-  }, [])
-
-  /**
    * 用户注册
    */
   const register = useCallback(async (params: RegisterParams): Promise<{ success: boolean; error?: string }> => {
-    console.log('[useAuth] 用户注册:', { ...params, code: '***' })
+    console.log('[useAuth] 用户注册:', { ...params, password: '***' })
 
     setState(prev => ({ ...prev, isLoading: true, error: null }))
 
@@ -248,7 +204,7 @@ export function useAuth() {
    * 用户登录
    */
   const login = useCallback(async (params: LoginParams): Promise<{ success: boolean; error?: string }> => {
-    console.log('[useAuth] 用户登录:', { identifier: params.identifier, hasPassword: !!params.password, hasCode: !!params.code })
+    console.log('[useAuth] 用户登录:', { identifier: params.identifier })
 
     setState(prev => ({ ...prev, isLoading: true, error: null }))
 
@@ -363,7 +319,6 @@ export function useAuth() {
 
   return {
     ...state,
-    sendCode,
     register,
     login,
     logout,
