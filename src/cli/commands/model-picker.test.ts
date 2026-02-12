@@ -10,7 +10,7 @@ import {
 } from "./model-picker.js";
 
 const loadModelCatalog = vi.hoisted(() => vi.fn());
-vi.mock("../agents/model-catalog.js", () => ({
+vi.mock("../agent/model-catalog.js", () => ({
   loadModelCatalog,
 }));
 
@@ -21,14 +21,14 @@ const ensureAuthProfileStore = vi.hoisted(() =>
   })),
 );
 const listProfilesForProvider = vi.hoisted(() => vi.fn(() => []));
-vi.mock("../agents/auth-profiles.js", () => ({
+vi.mock("../agent/auth-profiles.js", () => ({
   ensureAuthProfileStore,
   listProfilesForProvider,
 }));
 
 const resolveEnvApiKey = vi.hoisted(() => vi.fn(() => undefined));
 const getCustomProviderApiKey = vi.hoisted(() => vi.fn(() => undefined));
-vi.mock("../agents/model-auth.js", () => ({
+vi.mock("../agent/model-auth.js", () => ({
   resolveEnvApiKey,
   getCustomProviderApiKey,
 }));

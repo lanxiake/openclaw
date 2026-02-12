@@ -227,9 +227,9 @@ export const testIsNixMode = hoisted.testIsNixMode;
 export const sessionStoreSaveDelayMs = hoisted.sessionStoreSaveDelayMs;
 export const embeddedRunMock = hoisted.embeddedRunMock;
 
-vi.mock("../agents/pi-model-discovery.js", async () => {
+vi.mock("../agent/pi-model-discovery.js", async () => {
   const actual = await vi.importActual<typeof import("../agent/runtime/pi-model-discovery.js")>(
-    "../agents/pi-model-discovery.js",
+    "../agent/pi-model-discovery.js",
   );
 
   class MockModelRegistry extends actual.ModelRegistry {
@@ -520,10 +520,11 @@ vi.mock("../config/config.js", async () => {
   };
 });
 
-vi.mock("../agents/pi-embedded.js", async () => {
-  const actual = await vi.importActual<typeof import("../agent/runtime/pi-embedded.js")>(
-    "../agents/pi-embedded.js",
-  );
+vi.mock("../agent/pi-embedded.js", async () => {
+  const actual =
+    await vi.importActual<typeof import("../agent/runtime/pi-embedded.js")>(
+      "../agent/pi-embedded.js",
+    );
   return {
     ...actual,
     isEmbeddedPiRunActive: (sessionId: string) => embeddedRunMock.activeIds.has(sessionId),

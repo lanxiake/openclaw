@@ -24,15 +24,15 @@ vi.mock("../config/config.js", () => ({
   loadConfig,
 }));
 
-vi.mock("../agents/models-config.js", () => ({
+vi.mock("../agent/models-config.js", () => ({
   ensureOpenClawModelsJson,
 }));
 
-vi.mock("../agents/agent-paths.js", () => ({
+vi.mock("../agent/agent-paths.js", () => ({
   resolveOpenClawAgentDir,
 }));
 
-vi.mock("../agents/auth-profiles.js", () => ({
+vi.mock("../agent/auth-profiles.js", () => ({
   ensureAuthProfileStore,
   listProfilesForProvider,
   resolveAuthProfileDisplayLabel,
@@ -40,7 +40,7 @@ vi.mock("../agents/auth-profiles.js", () => ({
   resolveProfileUnusableUntilForDisplay,
 }));
 
-vi.mock("../agents/model-auth.js", () => ({
+vi.mock("../agent/model-auth.js", () => ({
   resolveEnvApiKey,
   resolveAwsSdkEnvVarName,
   getCustomProviderApiKey,

@@ -10,7 +10,7 @@ vi.mock("@mariozechner/pi-ai", () => ({
   completeSimple: vi.fn(),
 }));
 
-vi.mock("../agents/pi-embedded-runner/model.js", () => ({
+vi.mock("../agent/pi-embedded-runner/model.js", () => ({
   resolveModel: vi.fn((provider: string, modelId: string) => ({
     model: {
       provider,
@@ -28,7 +28,7 @@ vi.mock("../agents/pi-embedded-runner/model.js", () => ({
   })),
 }));
 
-vi.mock("../agents/model-auth.js", () => ({
+vi.mock("../agent/model-auth.js", () => ({
   getApiKeyForModel: vi.fn(async () => ({
     apiKey: "test-api-key",
     source: "test",

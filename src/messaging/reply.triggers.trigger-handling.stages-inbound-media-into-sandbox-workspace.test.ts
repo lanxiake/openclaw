@@ -8,7 +8,7 @@ const sandboxMocks = vi.hoisted(() => ({
   ensureSandboxWorkspaceForSession: vi.fn(),
 }));
 
-vi.mock("../agents/sandbox.js", () => sandboxMocks);
+vi.mock("../agent/sandbox.js", () => sandboxMocks);
 
 import { ensureSandboxWorkspaceForSession } from "../agent/sandbox/sandbox.js";
 import { stageSandboxMedia } from "./reply/stage-sandbox-media.js";

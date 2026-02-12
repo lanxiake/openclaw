@@ -11,7 +11,7 @@ import { initSessionState } from "./session.js";
 import { applyResetModelOverride } from "./session-reset-model.js";
 import { prependSystemEvents } from "./session-updates.js";
 
-vi.mock("../../agents/model-catalog.js", () => ({
+vi.mock("../../agent/model-catalog.js", () => ({
   loadModelCatalog: vi.fn(async () => [
     { provider: "minimax", id: "m2.1", name: "M2.1" },
     { provider: "openai", id: "gpt-4o-mini", name: "GPT-4o mini" },

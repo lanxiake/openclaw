@@ -75,18 +75,18 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock("../../agents/agent-paths.js", () => ({
+vi.mock("../../agent/agent-paths.js", () => ({
   resolveOpenClawAgentDir: mocks.resolveOpenClawAgentDir,
 }));
 
-vi.mock("../../agents/agent-scope.js", () => ({
+vi.mock("../../agent/agent-scope.js", () => ({
   resolveAgentDir: mocks.resolveAgentDir,
   resolveAgentModelPrimary: mocks.resolveAgentModelPrimary,
   resolveAgentModelFallbacksOverride: mocks.resolveAgentModelFallbacksOverride,
   listAgentIds: mocks.listAgentIds,
 }));
 
-vi.mock("../../agents/auth-profiles.js", async (importOriginal) => {
+vi.mock("../../agent/auth-profiles.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../../agent/models/auth-profiles.js")>();
   return {
     ...actual,
@@ -97,7 +97,7 @@ vi.mock("../../agents/auth-profiles.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../../agents/model-auth.js", () => ({
+vi.mock("../../agent/model-auth.js", () => ({
   resolveEnvApiKey: mocks.resolveEnvApiKey,
   getCustomProviderApiKey: mocks.getCustomProviderApiKey,
 }));

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { withTempHome as withTempHomeBase } from "../../test/helpers/temp-home.js";
 
-vi.mock("../agents/pi-embedded.js", () => ({
+vi.mock("../agent/pi-embedded.js", () => ({
   abortEmbeddedPiRun: vi.fn().mockReturnValue(false),
   compactEmbeddedPiSession: vi.fn(),
   runEmbeddedPiAgent: vi.fn(),
@@ -46,7 +46,7 @@ const modelCatalogMocks = vi.hoisted(() => ({
   resetModelCatalogCacheForTest: vi.fn(),
 }));
 
-vi.mock("../agents/model-catalog.js", () => modelCatalogMocks);
+vi.mock("../agent/model-catalog.js", () => modelCatalogMocks);
 
 import { abortEmbeddedPiRun, runEmbeddedPiAgent } from "../agent/runtime/pi-embedded.js";
 import { getReplyFromConfig } from "./reply.js";
@@ -223,7 +223,7 @@ describe("trigger handling", () => {
 
       const text = Array.isArray(res) ? res[0]?.text : res?.text;
       expect(text).toBe(
-        "⚠️ Context overflow — prompt too large for this model. Try a shorter message or a larger-context model.",
+        "⚠️ Context overflow �?prompt too large for this model. Try a shorter message or a larger-context model.",
       );
       expect(runEmbeddedPiAgent).toHaveBeenCalledOnce();
     });

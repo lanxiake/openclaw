@@ -31,22 +31,22 @@ vi.mock("../web/session.js", () => ({
 }));
 
 const handleDiscordAction = vi.fn(async () => ({ details: { ok: true } }));
-vi.mock("../agents/tools/discord-actions.js", () => ({
+vi.mock("../agent/tools/discord-actions.js", () => ({
   handleDiscordAction: (...args: unknown[]) => handleDiscordAction(...args),
 }));
 
 const handleSlackAction = vi.fn(async () => ({ details: { ok: true } }));
-vi.mock("../agents/tools/slack-actions.js", () => ({
+vi.mock("../agent/tools/slack-actions.js", () => ({
   handleSlackAction: (...args: unknown[]) => handleSlackAction(...args),
 }));
 
 const handleTelegramAction = vi.fn(async () => ({ details: { ok: true } }));
-vi.mock("../agents/tools/telegram-actions.js", () => ({
+vi.mock("../agent/tools/telegram-actions.js", () => ({
   handleTelegramAction: (...args: unknown[]) => handleTelegramAction(...args),
 }));
 
 const handleWhatsAppAction = vi.fn(async () => ({ details: { ok: true } }));
-vi.mock("../agents/tools/whatsapp-actions.js", () => ({
+vi.mock("../agent/tools/whatsapp-actions.js", () => ({
   handleWhatsAppAction: (...args: unknown[]) => handleWhatsAppAction(...args),
 }));
 

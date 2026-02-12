@@ -8,12 +8,12 @@ import type { CliDeps } from "../../cli/deps.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { CronJob } from "./types.js";
 
-vi.mock("../agents/pi-embedded.js", () => ({
+vi.mock("../agent/pi-embedded.js", () => ({
   abortEmbeddedPiRun: vi.fn().mockReturnValue(false),
   runEmbeddedPiAgent: vi.fn(),
   resolveEmbeddedSessionLane: (key: string) => `session:${key.trim() || "main"}`,
 }));
-vi.mock("../agents/model-catalog.js", () => ({
+vi.mock("../agent/model-catalog.js", () => ({
   loadModelCatalog: vi.fn(),
 }));
 
@@ -540,7 +540,7 @@ describe("runCronIsolatedAgentTurn", () => {
       });
 
       expect(res.status).toBe("ok");
-      expect(String(res.summary ?? "")).toMatch(/â€¦$/);
+      expect(String(res.summary ?? "")).toMatch(/â€?/);
     });
   });
 

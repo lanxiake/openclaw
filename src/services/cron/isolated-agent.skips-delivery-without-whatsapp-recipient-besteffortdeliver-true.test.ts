@@ -17,12 +17,12 @@ import { setDiscordRuntime } from "../../../extensions/discord/src/runtime.js";
 import { setTelegramRuntime } from "../../../extensions/telegram/src/runtime.js";
 import { setWhatsAppRuntime } from "../../../extensions/whatsapp/src/runtime.js";
 
-vi.mock("../agents/pi-embedded.js", () => ({
+vi.mock("../agent/pi-embedded.js", () => ({
   abortEmbeddedPiRun: vi.fn().mockReturnValue(false),
   runEmbeddedPiAgent: vi.fn(),
   resolveEmbeddedSessionLane: (key: string) => `session:${key.trim() || "main"}`,
 }));
-vi.mock("../agents/model-catalog.js", () => ({
+vi.mock("../agent/model-catalog.js", () => ({
   loadModelCatalog: vi.fn(),
 }));
 

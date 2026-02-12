@@ -10,7 +10,7 @@ vi.mock("../hooks/hooks-status.js", () => ({
   buildWorkspaceHookStatus: vi.fn(),
 }));
 
-vi.mock("../agents/agent-scope.js", () => ({
+vi.mock("../agent/agent-scope.js", () => ({
   resolveAgentWorkspaceDir: vi.fn().mockReturnValue("/mock/workspace"),
   resolveDefaultAgentId: vi.fn().mockReturnValue("main"),
 }));

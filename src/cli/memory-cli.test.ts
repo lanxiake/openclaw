@@ -13,7 +13,7 @@ vi.mock("../config/config.js", () => ({
   loadConfig,
 }));
 
-vi.mock("../agents/agent-scope.js", () => ({
+vi.mock("../agent/agent-scope.js", () => ({
   resolveDefaultAgentId,
 }));
 

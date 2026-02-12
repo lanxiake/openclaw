@@ -11,13 +11,13 @@ import {
 } from "./directive-handling.model.js";
 
 // Mock dependencies for directive handling persistence.
-vi.mock("../../agents/agent-scope.js", () => ({
+vi.mock("../../agent/agent-scope.js", () => ({
   resolveAgentConfig: vi.fn(() => ({})),
   resolveAgentDir: vi.fn(() => "/tmp/agent"),
   resolveSessionAgentId: vi.fn(() => "main"),
 }));
 
-vi.mock("../../agents/sandbox.js", () => ({
+vi.mock("../../agent/sandbox.js", () => ({
   resolveSandboxRuntimeStatus: vi.fn(() => ({ sandboxed: false })),
 }));
 

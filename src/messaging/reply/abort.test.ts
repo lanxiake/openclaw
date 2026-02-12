@@ -8,7 +8,7 @@ import { enqueueFollowupRun, getFollowupQueueDepth, type FollowupRun } from "./q
 import { initSessionState } from "./session.js";
 import { buildTestCtx } from "./test-ctx.js";
 
-vi.mock("../../agents/pi-embedded.js", () => ({
+vi.mock("../../agent/pi-embedded.js", () => ({
   abortEmbeddedPiRun: vi.fn().mockReturnValue(true),
   resolveEmbeddedSessionLane: (key: string) => `session:${key.trim() || "main"}`,
 }));
@@ -23,7 +23,7 @@ const subagentRegistryMocks = vi.hoisted(() => ({
   listSubagentRunsForRequester: vi.fn(() => []),
 }));
 
-vi.mock("../../agents/subagent-registry.js", () => ({
+vi.mock("../../agent/subagent-registry.js", () => ({
   listSubagentRunsForRequester: subagentRegistryMocks.listSubagentRunsForRequester,
 }));
 

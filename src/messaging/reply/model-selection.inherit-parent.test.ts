@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { OpenClawConfig } from "../../config/config.js";
 import { createModelSelectionState } from "./model-selection.js";
 
-vi.mock("../../agents/model-catalog.js", () => ({
+vi.mock("../../agent/model-catalog.js", () => ({
   loadModelCatalog: vi.fn(async () => [
     { provider: "openai", id: "gpt-4o-mini", name: "GPT-4o mini" },
     { provider: "openai", id: "gpt-4o", name: "GPT-4o" },

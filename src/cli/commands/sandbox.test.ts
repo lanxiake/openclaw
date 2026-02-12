@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
   clackConfirm: vi.fn(),
 }));
 
-vi.mock("../agents/sandbox.js", () => ({
+vi.mock("../agent/sandbox.js", () => ({
   listSandboxContainers: mocks.listSandboxContainers,
   listSandboxBrowsers: mocks.listSandboxBrowsers,
   removeSandboxContainer: mocks.removeSandboxContainer,
@@ -320,7 +320,7 @@ describe("sandboxRecreateCommand", () => {
 
       await sandboxRecreateCommand({ all: true, browser: false, force: true }, runtime as never);
 
-      expectLogContains(runtime, "âœ“ Removed");
+      expectLogContains(runtime, "âœ?Removed");
       expectLogContains(runtime, "1 removed, 0 failed");
       expectLogContains(runtime, "automatically recreated");
     });

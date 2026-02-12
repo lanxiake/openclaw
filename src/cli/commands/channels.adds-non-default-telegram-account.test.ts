@@ -28,7 +28,7 @@ vi.mock("../config/config.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../agents/auth-profiles.js", async (importOriginal) => {
+vi.mock("../agent/auth-profiles.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../agent/models/auth-profiles.js")>();
   return {
     ...actual,

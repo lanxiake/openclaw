@@ -58,7 +58,7 @@ beforeEach(() => {
   loadOpenClawPlugins.mockReset().mockReturnValue({ plugins: [], diagnostics: [] });
   migrateLegacyConfig.mockReset().mockImplementation((raw: unknown) => ({
     config: raw as Record<string, unknown>,
-    changes: ["Moved routing.allowFrom â†’ channels.whatsapp.allowFrom."],
+    changes: ["Moved routing.allowFrom â†?channels.whatsapp.allowFrom."],
   }));
   findLegacyGatewayServices.mockReset().mockResolvedValue([]);
   uninstallLegacyGatewayServices.mockReset().mockResolvedValue([]);
@@ -119,7 +119,7 @@ const runGatewayUpdate = vi.fn().mockResolvedValue({
 });
 const migrateLegacyConfig = vi.fn((raw: unknown) => ({
   config: raw as Record<string, unknown>,
-  changes: ["Moved routing.allowFrom â†’ channels.whatsapp.allowFrom."],
+  changes: ["Moved routing.allowFrom â†?channels.whatsapp.allowFrom."],
 }));
 
 const runExec = vi.fn().mockResolvedValue({ stdout: "", stderr: "" });
@@ -170,7 +170,7 @@ vi.mock("@clack/prompts", () => ({
   select,
 }));
 
-vi.mock("../agents/skills-status.js", () => ({
+vi.mock("../agent/skills-status.js", () => ({
   buildWorkspaceSkillStatus: () => ({ skills: [] }),
 }));
 
@@ -224,7 +224,7 @@ vi.mock("../infra/update-runner.js", () => ({
   runGatewayUpdate,
 }));
 
-vi.mock("../agents/auth-profiles.js", async (importOriginal) => {
+vi.mock("../agent/auth-profiles.js", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,

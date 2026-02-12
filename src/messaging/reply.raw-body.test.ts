@@ -5,7 +5,7 @@ import { loadModelCatalog } from "../agent/models/model-catalog.js";
 import { runEmbeddedPiAgent } from "../agent/runtime/pi-embedded.js";
 import { getReplyFromConfig } from "./reply.js";
 
-vi.mock("../agents/pi-embedded.js", () => ({
+vi.mock("../agent/pi-embedded.js", () => ({
   abortEmbeddedPiRun: vi.fn().mockReturnValue(false),
   runEmbeddedPiAgent: vi.fn(),
   queueEmbeddedPiMessage: vi.fn().mockReturnValue(false),
@@ -13,7 +13,7 @@ vi.mock("../agents/pi-embedded.js", () => ({
   isEmbeddedPiRunActive: vi.fn().mockReturnValue(false),
   isEmbeddedPiRunStreaming: vi.fn().mockReturnValue(false),
 }));
-vi.mock("../agents/model-catalog.js", () => ({
+vi.mock("../agent/model-catalog.js", () => ({
   loadModelCatalog: vi.fn(),
 }));
 

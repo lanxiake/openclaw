@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { normalizeTestText } from "../../test/helpers/normalize-text.js";
 import { withTempHome as withTempHomeBase } from "../../test/helpers/temp-home.js";
 
-vi.mock("../agents/pi-embedded.js", () => ({
+vi.mock("../agent/pi-embedded.js", () => ({
   abortEmbeddedPiRun: vi.fn().mockReturnValue(false),
   compactEmbeddedPiSession: vi.fn(),
   runEmbeddedPiAgent: vi.fn(),
@@ -48,7 +48,7 @@ const modelCatalogMocks = vi.hoisted(() => ({
   resetModelCatalogCacheForTest: vi.fn(),
 }));
 
-vi.mock("../agents/model-catalog.js", () => modelCatalogMocks);
+vi.mock("../agent/model-catalog.js", () => modelCatalogMocks);
 
 import { abortEmbeddedPiRun, runEmbeddedPiAgent } from "../agent/runtime/pi-embedded.js";
 import { getReplyFromConfig } from "./reply.js";

@@ -9,7 +9,7 @@ import type { MsgContext } from "../../messaging/templating.js";
 import { resolveApiKeyForProvider } from "../../agent/models/model-auth.js";
 import { fetchRemoteMedia } from "../media/fetch.js";
 
-vi.mock("../agents/model-auth.js", () => ({
+vi.mock("../agent/model-auth.js", () => ({
   resolveApiKeyForProvider: vi.fn(async () => ({
     apiKey: "test-key",
     source: "test",
@@ -552,7 +552,7 @@ describe("applyMediaUnderstanding", () => {
   it("escapes XML special characters in filenames to prevent injection", async () => {
     const { applyMediaUnderstanding } = await loadApply();
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-media-"));
-    // Use & in filename â€” valid on all platforms (including Windows, which
+    // Use & in filename â€?valid on all platforms (including Windows, which
     // forbids < and > in NTFS filenames) and still requires XML escaping.
     // Note: The sanitizeFilename in store.ts would strip most dangerous chars,
     // but we test that even if some slip through, they get escaped in output
