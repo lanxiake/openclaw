@@ -26,6 +26,12 @@ import {
 } from "./routes/admin/index.js";
 import { registerAuthRoutes } from "./routes/auth/index.js";
 import { registerUsersRoutes } from "./routes/users/index.js";
+import { registerConversationsRoutes } from "./routes/conversations/index.js";
+import { registerMemoriesRoutes } from "./routes/memories/index.js";
+import { registerAssistantConfigRoutes } from "./routes/assistant-config/index.js";
+import { registerSkillsRoutes } from "./routes/skills/index.js";
+import { registerFilesRoutes } from "./routes/files/index.js";
+import { registerStoreRoutes } from "./routes/store/index.js";
 
 /**
  * 创建并配置 Fastify 实例
@@ -91,6 +97,16 @@ export async function createServer(
   // 7. 用户 API 路由（公开 + 认证）
   registerAuthRoutes(server);
   registerUsersRoutes(server);
+
+  // 8. 用户功能 API 路由（需认证）
+  registerConversationsRoutes(server);
+  registerMemoriesRoutes(server);
+  registerAssistantConfigRoutes(server);
+  registerSkillsRoutes(server);
+  registerFilesRoutes(server);
+
+  // 9. 技能商店 API 路由（部分公开）
+  registerStoreRoutes(server);
 
   return server;
 }
