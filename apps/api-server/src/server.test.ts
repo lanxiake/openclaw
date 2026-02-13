@@ -232,8 +232,9 @@ describe("App Server", () => {
         },
       });
 
-      // 路由不存在返回 404，但不是 401，说明认证通过
-      expect(response.statusCode).toBe(404);
+      // 认证通过后路由会尝试执行业务逻辑
+      // 由于没有数据库连接，可能返回 500，但不应该是 401
+      expect(response.statusCode).not.toBe(401);
 
       console.log("[TEST] ✓ 有效管理员 Token 通过认证");
     });
@@ -266,8 +267,10 @@ describe("App Server", () => {
         payload: { username: "test", password: "test" },
       });
 
-      // 路由不存在返回 404，但不是 401，说明认证被跳过
-      expect(response.statusCode).toBe(404);
+      // 登录路由无需认证，会尝试执行登录逻辑
+      // 由于没有数据库连接，可能返回 500 或 401（登录失败），但不应该是 ADMIN_UNAUTHORIZED
+      const body = JSON.parse(response.body);
+      expect(body.code).not.toBe("ADMIN_UNAUTHORIZED");
 
       console.log("[TEST] ✓ 管理员登录路由无需 Token");
     });

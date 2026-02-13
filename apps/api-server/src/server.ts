@@ -13,6 +13,12 @@ import { registerErrorHandler } from "./plugins/error-handler.js";
 import { registerAuthPlugin } from "./plugins/auth.js";
 import { registerAdminAuthPlugin } from "./plugins/admin-auth.js";
 import { registerHealthRoutes } from "./routes/health.js";
+import {
+  registerAdminAuthRoutes,
+  registerAdminUsersRoutes,
+  registerAdminSubscriptionsRoutes,
+  registerAdminPlansRoutes,
+} from "./routes/admin/index.js";
 
 /**
  * 创建并配置 Fastify 实例
@@ -63,6 +69,12 @@ export async function createServer(
 
   // 5. 路由注册
   registerHealthRoutes(server);
+
+  // 6. 管理员 API 路由
+  registerAdminAuthRoutes(server);
+  registerAdminUsersRoutes(server);
+  registerAdminSubscriptionsRoutes(server);
+  registerAdminPlansRoutes(server);
 
   return server;
 }
