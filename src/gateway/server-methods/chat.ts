@@ -7,7 +7,7 @@ import { resolveSessionAgentId } from "../../agents/agent-scope.js";
 import { resolveEffectiveMessagesConfig, resolveIdentityName } from "../../agents/identity.js";
 import { resolveThinkingDefault } from "../../agents/model-selection.js";
 import { resolveAgentTimeoutMs } from "../../agents/timeout.js";
-import { loadUserAgentContext } from "../../agents/user-context.js";
+import { loadUserAgentContext, hasQuotaAvailable } from "../../agents/user-context.js";
 import { extractUserIdFromSessionKey } from "../../routing/session-key.js";
 import { dispatchInboundMessage } from "../../auto-reply/dispatch.js";
 import { createReplyDispatcher } from "../../auto-reply/reply/reply-dispatcher.js";
@@ -392,6 +392,29 @@ export const chatHandlers: GatewayRequestHandlers = {
         errorShape(ErrorCodes.INVALID_REQUEST, "send blocked by session policy"),
       );
       return;
+    }
+
+    // 配额检查（多租户支持）
+    // 从 sessionKey 提取 userId，加载用户上下文并检查 token 配额
+    const userId = extractUserIdFromSessionKey(p.sessionKey);
+    if (userId) {
+      try {
+        const userContext = await loadUserAgentContext(userId);
+        // 检查 token 配额是否充足（预估最小消耗 100 tokens）
+        if (!hasQuotaAvailable(userContext, "tokens", 100)) {
+          respond(
+            false,
+            undefined,
+            errorShape(ErrorCodes.RESOURCE_EXHAUSTED, "Token quota exceeded"),
+          );
+          return;
+        }
+      } catch (error) {
+        // 配额检查失败不阻塞请求，记录日志继续执行
+        context.logGateway.warn(
+          `chat.send quota check failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
     }
 
     if (stopCommand) {

@@ -1,5 +1,6 @@
 import type { OpenClawConfig } from "../../config/config.js";
 import type { UserAgentContext } from "../../agents/user-context.js";
+import { persistUserMessage, persistAssistantMessage } from "../../agents/message-persistence.js";
 import { resolveSessionAgentId } from "../../agents/agent-scope.js";
 import { loadSessionStore, resolveStorePath } from "../../config/sessions.js";
 import { logVerbose } from "../../globals.js";
@@ -295,6 +296,28 @@ export async function dispatchReplyFromConfig(params: {
     let accumulatedBlockText = "";
     let blockCount = 0;
 
+    // 持久化用户消息（多租户支持）
+    // 在调用 AI 之前先保存用户消息
+    const userMessageContent =
+      typeof ctx.BodyForCommands === "string"
+        ? ctx.BodyForCommands
+        : typeof ctx.RawBody === "string"
+          ? ctx.RawBody
+          : typeof ctx.Body === "string"
+            ? ctx.Body
+            : "";
+
+    // 异步持久化用户消息，不阻塞主流程
+    const userMessagePersistPromise = userContext
+      ? persistUserMessage({
+          content: userMessageContent,
+          metadata: {
+            channel: ctx.Surface ?? ctx.Provider,
+            messageId: ctx.MessageSid ?? ctx.MessageSidFirst,
+          },
+        })
+      : Promise.resolve({ success: true, conversationId: undefined, messageId: undefined });
+
     const replyResult = await (params.replyResolver ?? getReplyFromConfig)(
       ctx,
       {
@@ -447,6 +470,29 @@ export async function dispatchReplyFromConfig(params: {
     }
 
     await dispatcher.waitForIdle();
+
+    // 持久化 AI 回复（多租户支持）
+    // 等待用户消息持久化完成，获取 conversationId
+    const userMessageResult = await userMessagePersistPromise;
+    if (userContext && userMessageResult.success && userMessageResult.conversationId) {
+      // 收集所有回复文本
+      const assistantContent =
+        replies.length > 0
+          ? replies.map((r) => r.text ?? "").join("\n")
+          : accumulatedBlockText.trim();
+
+      if (assistantContent) {
+        // 异步持久化 AI 回复，不阻塞返回
+        void persistAssistantMessage({
+          conversationId: userMessageResult.conversationId,
+          content: assistantContent,
+          metadata: {
+            channel: ctx.Surface ?? ctx.Provider,
+            blockCount,
+          },
+        });
+      }
+    }
 
     const counts = dispatcher.getQueuedCounts();
     counts.final += routedFinalCount;

@@ -3,6 +3,7 @@ import { SILENT_REPLY_TOKEN } from "../auto-reply/tokens.js";
 import { listDeliverableMessageChannels } from "../utils/message-channel.js";
 import type { ResolvedTimeFormat } from "./date-time.js";
 import type { EmbeddedContextFile } from "./pi-embedded-helpers.js";
+import type { UserAssistantConfig } from "./user-context.js";
 
 /**
  * Controls which hardcoded sections are included in the system prompt.
@@ -156,6 +157,57 @@ function buildDocsSection(params: { docsPath?: string; isMinimal: boolean; readT
   ];
 }
 
+/**
+ * 构建用户个性化提示部分
+ *
+ * 根据用户的助手配置生成个性化提示，包括：
+ * - 自定义系统提示
+ * - 性格特征
+ * - 用户偏好
+ *
+ * @param config - 用户助手配置
+ * @returns 个性化提示行数组
+ */
+function buildUserPersonalizationSection(config?: UserAssistantConfig): string[] {
+  if (!config) {
+    return [];
+  }
+
+  const lines: string[] = [];
+
+  // 添加用户自定义系统提示
+  const customPrompt = config.systemPrompt?.trim();
+  if (customPrompt) {
+    lines.push("## User Custom Instructions", customPrompt, "");
+  }
+
+  // 添加性格特征
+  const personality = config.personality;
+  if (personality && typeof personality === "object" && Object.keys(personality).length > 0) {
+    lines.push("## Personality");
+    for (const [key, value] of Object.entries(personality)) {
+      if (value !== undefined && value !== null && value !== "") {
+        lines.push(`- ${key}: ${String(value)}`);
+      }
+    }
+    lines.push("");
+  }
+
+  // 添加用户偏好
+  const preferences = config.preferences;
+  if (preferences && typeof preferences === "object" && Object.keys(preferences).length > 0) {
+    lines.push("## User Preferences");
+    for (const [key, value] of Object.entries(preferences)) {
+      if (value !== undefined && value !== null && value !== "") {
+        lines.push(`- ${key}: ${String(value)}`);
+      }
+    }
+    lines.push("");
+  }
+
+  return lines;
+}
+
 export function buildAgentSystemPrompt(params: {
   workspaceDir: string;
   defaultThinkLevel?: ThinkLevel;
@@ -208,6 +260,8 @@ export function buildAgentSystemPrompt(params: {
     level: "minimal" | "extensive";
     channel: string;
   };
+  /** 用户个性化配置（多租户支持） */
+  userPersonalization?: UserAssistantConfig;
 }) {
   const coreToolSummaries: Record<string, string> = {
     read: "Read file contents",
@@ -582,6 +636,12 @@ export function buildAgentSystemPrompt(params: {
     buildRuntimeLine(runtimeInfo, runtimeChannel, runtimeCapabilities, params.defaultThinkLevel),
     `Reasoning: ${reasoningLevel} (hidden unless on/stream). Toggle /reasoning; /status shows Reasoning when enabled.`,
   );
+
+  // 用户个性化部分（多租户支持）
+  const personalizationLines = buildUserPersonalizationSection(params.userPersonalization);
+  if (personalizationLines.length > 0) {
+    lines.push("", ...personalizationLines);
+  }
 
   return lines.filter(Boolean).join("\n");
 }

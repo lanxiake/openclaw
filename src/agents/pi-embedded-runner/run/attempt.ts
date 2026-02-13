@@ -48,6 +48,7 @@ import { resolveSandboxContext } from "../../sandbox.js";
 import { guardSessionManager } from "../../session-tool-result-guard-wrapper.js";
 import { resolveTranscriptPolicy } from "../../transcript-policy.js";
 import { acquireSessionWriteLock } from "../../session-write-lock.js";
+import { getUserContext } from "../../user-context-store.js";
 import {
   applySkillEnvOverrides,
   applySkillEnvOverridesFromSnapshot,
@@ -345,6 +346,10 @@ export async function runEmbeddedAttempt(
     });
     const ttsHint = params.config ? buildTtsSystemPromptHint(params.config) : undefined;
 
+    // 获取用户上下文中的助手配置（用于个性化系统提示）
+    const userContext = getUserContext();
+    const userPersonalization = userContext?.assistantConfig;
+
     const appendPrompt = buildEmbeddedSystemPrompt({
       workspaceDir: effectiveWorkspace,
       defaultThinkLevel: params.thinkLevel,
@@ -370,6 +375,7 @@ export async function runEmbeddedAttempt(
       userTime,
       userTimeFormat,
       contextFiles,
+      userPersonalization,
     });
     const systemPromptReport = buildSystemPromptReport({
       source: "run",

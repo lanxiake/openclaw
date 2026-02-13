@@ -10,6 +10,7 @@
 
 import { getDatabase } from "../db/connection.js";
 import { getAssistantConfigRepository } from "../db/repositories/assistant-configs.js";
+import { getUsageQuotaRepository } from "../db/repositories/usage-quotas.js";
 import { getLogger } from "../logging/logger.js";
 import { DEFAULT_USER_ID } from "../routing/session-key.js";
 
@@ -164,11 +165,30 @@ async function loadUserDevices(_userId: string): Promise<UserDevice[]> {
 /**
  * 加载用户配额信息
  *
- * TODO: 实际实现需要查询 usage_quotas 表，当前返回空数组
+ * 从 usage_quotas 表查询当前有效期内的所有配额
  */
-async function loadUserQuotas(_userId: string): Promise<UserQuota[]> {
-  // TODO: Sprint 10 实现配额计费后补充
-  return [];
+async function loadUserQuotas(userId: string): Promise<UserQuota[]> {
+  try {
+    const db = getDatabase();
+    const repo = getUsageQuotaRepository(db, userId);
+    const quotas = await repo.findAll();
+
+    // 过滤出当前有效期内的配额
+    const now = new Date();
+    const activeQuotas = quotas.filter((q) => q.periodStart <= now && q.periodEnd >= now);
+
+    return activeQuotas.map((q) => ({
+      quotaType: q.quotaType,
+      totalValue: q.limitValue,
+      usedValue: q.usedValue,
+      remainingValue: q.limitValue - q.usedValue,
+      periodStart: q.periodStart,
+      periodEnd: q.periodEnd,
+    }));
+  } catch (error) {
+    logger.warn(`[user-context] 加载配额信息失败, userId=${userId}`, error);
+    return [];
+  }
 }
 
 /**
