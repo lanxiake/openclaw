@@ -1,0 +1,117 @@
+# OpenClaw 开发环境 Docker Compose 配置
+#
+# 简化版配置，用于本地开发和测试
+#
+# 使用方式:
+#   docker compose -f docker-compose.dev.yml up -d        # 启动所有服务
+#   docker compose -f docker-compose.dev.yml down         # 停止所有服务
+#   docker compose -f docker-compose.dev.yml logs -f      # 查看日志
+#
+# 服务端口:
+#   PostgreSQL:     5432 (数据库)
+#   Redis:          6379 (缓存)
+#   MinIO API:      9000 (对象存储)
+#   MinIO 控制台:   9001
+#
+
+services:
+  # PostgreSQL - 主数据库 (启用 pgvector 扩展)
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: openclaw-dev-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-openclaw}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-openclaw_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-openclaw}
+      TZ: Asia/Shanghai
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+      - ./docker-init/postgres-dev:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-openclaw} -d ${POSTGRES_DB:-openclaw}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - openclaw-dev-network
+
+  # Redis - 缓存和会话存储
+  redis:
+    image: redis:7-alpine
+    container_name: openclaw-dev-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD:-openclaw_dev}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-dev-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-openclaw_dev}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - openclaw-dev-network
+
+  # MinIO - S3 兼容的对象存储
+  minio:
+    image: minio/minio:latest
+    container_name: openclaw-dev-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-openclaw}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-openclaw_dev}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-dev-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - openclaw-dev-network
+
+  # MinIO 初始化 - 创建默认存储桶
+  minio-init:
+    image: minio/mc:latest
+    container_name: openclaw-dev-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set myminio http://minio:9000 $${MINIO_ACCESS_KEY:-openclaw} $${MINIO_SECRET_KEY:-openclaw_dev};
+      mc mb --ignore-existing myminio/openclaw-files;
+      mc mb --ignore-existing myminio/openclaw-media;
+      mc mb --ignore-existing myminio/openclaw-temp;
+      mc anonymous set download myminio/openclaw-media;
+      echo 'MinIO buckets created successfully';
+      exit 0;
+      "
+    networks:
+      - openclaw-dev-network
+
+networks:
+  openclaw-dev-network:
+    driver: bridge
+    name: openclaw-dev-network
+
+volumes:
+  postgres-dev-data:
+    name: openclaw-dev-postgres-data
+  redis-dev-data:
+    name: openclaw-dev-redis-data
+  minio-dev-data:
+    name: openclaw-dev-minio-data
