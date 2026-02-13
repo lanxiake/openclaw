@@ -7,6 +7,8 @@ import { resolveSessionAgentId } from "../../agents/agent-scope.js";
 import { resolveEffectiveMessagesConfig, resolveIdentityName } from "../../agents/identity.js";
 import { resolveThinkingDefault } from "../../agents/model-selection.js";
 import { resolveAgentTimeoutMs } from "../../agents/timeout.js";
+import { loadUserAgentContext } from "../../agents/user-context.js";
+import { extractUserIdFromSessionKey } from "../../routing/session-key.js";
 import { dispatchInboundMessage } from "../../auto-reply/dispatch.js";
 import { createReplyDispatcher } from "../../auto-reply/reply/reply-dispatcher.js";
 import {
@@ -471,6 +473,11 @@ export const chatHandlers: GatewayRequestHandlers = {
         sessionKey: p.sessionKey,
         config: cfg,
       });
+
+      // 加载用户上下文（多租户支持）
+      const userId = extractUserIdFromSessionKey(p.sessionKey);
+      const userContext = await loadUserAgentContext(userId);
+
       let prefixContext: ResponsePrefixContext = {
         identityName: resolveIdentityName(cfg, agentId),
       };
@@ -498,6 +505,7 @@ export const chatHandlers: GatewayRequestHandlers = {
         ctx,
         cfg,
         dispatcher,
+        userContext,
         replyOptions: {
           runId: clientRunId,
           abortSignal: abortController.signal,

@@ -19,6 +19,7 @@ import { listChannelAgentTools } from "./channel-tools.js";
 import { createOpenClawTools } from "./openclaw-tools.js";
 import type { ModelAuthMode } from "./model-auth.js";
 import { wrapToolWithAbortSignal } from "./pi-tools.abort.js";
+import { wrapToolWithUserContextGuard } from "./tool-guard.js";
 import {
   filterToolsByPolicy,
   isToolAllowedByPolicies,
@@ -427,8 +428,12 @@ export function createOpenClawCodingTools(options?: {
     ? normalized.map((tool) => wrapToolWithAbortSignal(tool, options.abortSignal))
     : normalized;
 
+  // 添加用户上下文权限检查包装器（多租户支持）
+  // 工具执行时会从 AsyncLocalStorage 获取用户上下文并检查权限
+  const withUserContextGuard = withAbort.map(wrapToolWithUserContextGuard);
+
   // NOTE: Keep canonical (lowercase) tool names here.
   // pi-ai's Anthropic OAuth transport remaps tool names to Claude Code-style names
   // on the wire and maps them back for tool dispatch.
-  return withAbort;
+  return withUserContextGuard;
 }

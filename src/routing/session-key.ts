@@ -10,6 +10,7 @@ export {
 export const DEFAULT_AGENT_ID = "main";
 export const DEFAULT_MAIN_KEY = "main";
 export const DEFAULT_ACCOUNT_ID = "default";
+export const DEFAULT_USER_ID = "default";
 
 // Pre-compiled regex
 const VALID_ID_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/i;
@@ -112,6 +113,76 @@ export function normalizeAccountId(value: string | undefined | null): string {
       .replace(TRAILING_DASH_RE, "")
       .slice(0, 64) || DEFAULT_ACCOUNT_ID
   );
+}
+
+/**
+ * 规范化用户 ID
+ *
+ * 用于多租户场景下的用户隔离，空值返回 DEFAULT_USER_ID 以保持向后兼容
+ */
+export function normalizeUserId(value: string | undefined | null): string {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) {
+    return DEFAULT_USER_ID;
+  }
+  if (VALID_ID_RE.test(trimmed)) {
+    return trimmed.toLowerCase();
+  }
+  return (
+    trimmed
+      .toLowerCase()
+      .replace(INVALID_CHARS_RE, "-")
+      .replace(LEADING_DASH_RE, "")
+      .replace(TRAILING_DASH_RE, "")
+      .slice(0, 64) || DEFAULT_USER_ID
+  );
+}
+
+/**
+ * 构建带用户维度的 Agent Session Key
+ *
+ * 格式: user:{userId}:agent:{agentId}:{mainKey}
+ * 向后兼容: userId 为空或 "default" 时返回旧格式 agent:{agentId}:{mainKey}
+ */
+export function buildUserAgentSessionKey(params: {
+  userId?: string | null;
+  agentId: string;
+  mainKey?: string | undefined;
+}): string {
+  const userId = normalizeUserId(params.userId);
+  const agentId = normalizeAgentId(params.agentId);
+  const mainKey = normalizeMainKey(params.mainKey);
+
+  // 向后兼容：默认用户使用旧格式
+  if (userId === DEFAULT_USER_ID) {
+    return `agent:${agentId}:${mainKey}`;
+  }
+
+  return `user:${userId}:agent:${agentId}:${mainKey}`;
+}
+
+/**
+ * 从 Session Key 解析用户 ID
+ *
+ * 支持新格式 user:{userId}:agent:... 和旧格式 agent:...
+ * 旧格式返回 DEFAULT_USER_ID
+ */
+export function extractUserIdFromSessionKey(sessionKey: string | undefined | null): string {
+  const key = (sessionKey ?? "").trim().toLowerCase();
+  if (!key) {
+    return DEFAULT_USER_ID;
+  }
+
+  // 新格式: user:{userId}:agent:...
+  if (key.startsWith("user:")) {
+    const parts = key.split(":");
+    if (parts.length >= 2 && parts[1]) {
+      return parts[1];
+    }
+  }
+
+  // 旧格式: agent:... 返回默认用户
+  return DEFAULT_USER_ID;
 }
 
 export function buildAgentMainSessionKey(params: {
