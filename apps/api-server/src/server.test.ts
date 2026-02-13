@@ -175,9 +175,9 @@ describe("App Server", () => {
         },
       });
 
-      // 路由不存在会返回 404，但不是 401，说明认证通过
-      expect(response.statusCode).toBe(404);
-      console.log("[TEST] ✓ 有效用户 Token 通过认证（路由未注册返回 404）");
+      // 路由存在且认证通过，应返回非 401 状态码
+      expect(response.statusCode).not.toBe(401);
+      console.log("[TEST] ✓ 有效用户 Token 通过认证");
     });
 
     it("AUTH-004: 管理员 Token 不应通过用户认证", async () => {

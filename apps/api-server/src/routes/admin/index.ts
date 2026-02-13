@@ -8,3 +8,8 @@ export { registerAdminAuthRoutes } from "./auth.js";
 export { registerAdminUsersRoutes } from "./users.js";
 export { registerAdminSubscriptionsRoutes } from "./subscriptions.js";
 export { registerAdminPlansRoutes } from "./plans.js";
+export { registerAdminSkillsRoutes } from "./skills.js";
+export { registerAdminAuditRoutes } from "./audit.js";
+export { registerAdminConfigRoutes } from "./config.js";
+export { registerAdminMonitorRoutes } from "./monitor.js";
+export { registerAdminDashboardRoutes } from "./dashboard.js";
