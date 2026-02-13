@@ -6,12 +6,20 @@ export interface SubscriptionPlan {
   name: string
   code: string
   description?: string
-  price: number // 分
-  billingCycle: 'monthly' | 'yearly' | 'lifetime'
-  features: PlanFeature[]
-  quotas: PlanQuota
+  // 新增字段（后端 API 返回）
+  priceMonthly: number
+  priceYearly: number
+  tokensPerMonth: number
+  storageMb: number
+  maxDevices: number
+  sortOrder: number
+  features?: Record<string, unknown>
+  // 兼容旧字段
+  price?: number // 分
+  billingCycle?: 'monthly' | 'yearly' | 'lifetime'
+  quotas?: PlanQuota
+  displayOrder?: number
   isActive: boolean
-  displayOrder: number
   createdAt: string
   updatedAt: string
 }

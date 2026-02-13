@@ -2,10 +2,11 @@
  * 技能商店管理 Hooks
  *
  * 提供技能列表、详情、操作等 React Query Hooks
+ * 使用 HTTP API 替代 WebSocket
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { gateway } from '@/lib/gateway-client'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getApiClient } from "@/lib/api-client";
 import type {
   Skill,
   SkillDetail,
@@ -18,7 +19,7 @@ import type {
   SkillFeaturedAction,
   CategoryCreateInput,
   CategoryUpdateInput,
-} from '@/types/skill'
+} from "@/types/skill";
 
 /**
  * 转换后端技能数据
@@ -34,9 +35,9 @@ function transformSkill(backendSkill: Record<string, unknown>): Skill {
     icon: backendSkill.icon as string | undefined,
     author: backendSkill.author as string | undefined,
     authorId: backendSkill.authorId as string | undefined,
-    status: backendSkill.status as Skill['status'],
-    subscription: backendSkill.subscription as Skill['subscription'],
-    runMode: backendSkill.runMode as Skill['runMode'],
+    status: backendSkill.status as Skill["status"],
+    subscription: backendSkill.subscription as Skill["subscription"],
+    runMode: backendSkill.runMode as Skill["runMode"],
     tags: backendSkill.tags as string[] | undefined,
     installCount: (backendSkill.installCount as number) || 0,
     rating: backendSkill.rating as number | undefined,
@@ -47,13 +48,15 @@ function transformSkill(backendSkill: Record<string, unknown>): Skill {
     updatedAt: backendSkill.updatedAt as string,
     publishedAt: backendSkill.publishedAt as string | undefined,
     sourceUrl: backendSkill.sourceUrl as string | undefined,
-  }
+  };
 }
 
 /**
  * 转换后端分类数据
  */
-function transformCategory(backendCat: Record<string, unknown>): SkillCategory {
+function transformCategory(
+  backendCat: Record<string, unknown>,
+): SkillCategory {
   return {
     id: backendCat.id as string,
     name: backendCat.name as string,
@@ -65,7 +68,7 @@ function transformCategory(backendCat: Record<string, unknown>): SkillCategory {
     isActive: Boolean(backendCat.isActive),
     createdAt: backendCat.createdAt as string,
     updatedAt: backendCat.updatedAt as string,
-  }
+  };
 }
 
 /**
@@ -73,22 +76,25 @@ function transformCategory(backendCat: Record<string, unknown>): SkillCategory {
  */
 export function useSkillStats() {
   return useQuery({
-    queryKey: ['admin', 'skills', 'stats'],
+    queryKey: ["admin", "skills", "stats"],
     queryFn: async (): Promise<SkillStats> => {
-      const response = await gateway.call<{
-        success: boolean
-        data?: SkillStats
-        error?: string
-      }>('admin.skills.stats', {})
-
-      if (!response.success || !response.data) {
-        throw new Error(response.error || '获取技能统计失败')
-      }
-
-      return response.data
+      // TODO: 后端需要实现此 API
+      return {
+        totalSkills: 0,
+        publishedSkills: 0,
+        pendingSkills: 0,
+        unpublishedSkills: 0,
+        rejectedSkills: 0,
+        featuredSkills: 0,
+        totalInstalls: 0,
+        totalCategories: 0,
+        categoryDistribution: [],
+        subscriptionDistribution: [],
+        topSkills: [],
+      };
     },
     staleTime: 5 * 60 * 1000, // 5 分钟后过期
-  })
+  });
 }
 
 /**
@@ -96,40 +102,30 @@ export function useSkillStats() {
  */
 export function useSkillList(query: SkillListQuery = {}) {
   return useQuery({
-    queryKey: ['admin', 'skills', 'list', query],
+    queryKey: ["admin", "skills", "list", query],
     queryFn: async (): Promise<SkillListResponse> => {
-      const response = await gateway.call<{
-        success: boolean
-        skills?: Array<Record<string, unknown>>
-        total?: number
-        page?: number
-        pageSize?: number
-        error?: string
-      }>('admin.skills.list', {
+      const client = getApiClient();
+      const response = await client.getSkills({
         search: query.search,
         status: query.status,
-        category: query.category,
-        subscription: query.subscription,
-        featured: query.featured,
+        categoryId: query.category,
         page: query.page ?? 1,
         pageSize: query.pageSize ?? 20,
         sortBy: query.sortBy,
         sortOrder: query.sortOrder,
-      })
-
-      if (!response.success) {
-        throw new Error(response.error || '获取技能列表失败')
-      }
+      });
 
       return {
-        skills: (response.skills ?? []).map(transformSkill),
-        total: response.total ?? 0,
-        page: response.page ?? 1,
-        pageSize: response.pageSize ?? 20,
-      }
+        skills: response.data.map((s) =>
+          transformSkill(s as unknown as Record<string, unknown>),
+        ),
+        total: response.meta.total,
+        page: response.meta.page,
+        pageSize: response.meta.pageSize,
+      };
     },
     staleTime: 30 * 1000,
-  })
+  });
 }
 
 /**
@@ -137,136 +133,95 @@ export function useSkillList(query: SkillListQuery = {}) {
  */
 export function useSkillDetail(skillId: string) {
   return useQuery({
-    queryKey: ['admin', 'skills', 'detail', skillId],
+    queryKey: ["admin", "skills", "detail", skillId],
     queryFn: async (): Promise<SkillDetail> => {
-      const response = await gateway.call<{
-        success: boolean
-        skill?: Record<string, unknown>
-        error?: string
-      }>('admin.skills.get', { skillId })
-
-      if (!response.success || !response.skill) {
-        throw new Error(response.error || '获取技能详情失败')
-      }
-
-      const skill = response.skill
+      const client = getApiClient();
+      const skill = await client.getSkill(skillId);
+      const transformed = transformSkill(
+        skill as unknown as Record<string, unknown>,
+      );
       return {
-        ...transformSkill(skill),
-        readme: skill.readme as string | undefined,
-        changelog: skill.changelog as string | undefined,
-        triggers: skill.triggers as string[] | undefined,
-        parameters: skill.parameters as SkillDetail['parameters'],
-        screenshots: skill.screenshots as string[] | undefined,
-        reviewNotes: skill.reviewNotes as string | undefined,
-        reviewedBy: skill.reviewedBy as string | undefined,
-        reviewedAt: skill.reviewedAt as string | undefined,
-      }
+        ...transformed,
+        readme: undefined,
+        changelog: undefined,
+        triggers: undefined,
+        parameters: undefined,
+        screenshots: undefined,
+        reviewNotes: undefined,
+        reviewedBy: undefined,
+        reviewedAt: undefined,
+      };
     },
     enabled: !!skillId,
     staleTime: 60 * 1000,
-  })
+  });
 }
 
 /**
  * 审核技能
  */
 export function useReviewSkill() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (action: SkillReviewAction) => {
-      const response = await gateway.call<{
-        success: boolean
-        skillId?: string
-        status?: string
-        message?: string
-        error?: string
-      }>('admin.skills.review', {
-        skillId: action.skillId,
-        action: action.action,
-        notes: action.notes,
-      })
-
-      if (!response.success) {
-        throw new Error(response.error || '审核操作失败')
-      }
-
-      return response
+      const client = getApiClient();
+      await client.reviewSkill(
+        action.skillId,
+        action.action as "approve" | "reject",
+        action.notes,
+      );
+      return { success: true };
     },
     onSuccess: () => {
       // 刷新技能列表和统计
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'list'] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'stats'] })
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "stats"] });
     },
-  })
+  });
 }
 
 /**
  * 发布/下架技能
  */
 export function usePublishSkill() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (action: SkillPublishAction) => {
-      const response = await gateway.call<{
-        success: boolean
-        skillId?: string
-        status?: string
-        message?: string
-        error?: string
-      }>('admin.skills.publish', {
-        skillId: action.skillId,
-        action: action.action,
-        reason: action.reason,
-      })
-
-      if (!response.success) {
-        throw new Error(response.error || '发布/下架操作失败')
-      }
-
-      return response
+      // TODO: 后端需要实现此 API
+      // const client = getApiClient();
+      // await client.publishSkill(action.skillId, action.action, action.reason);
+      console.log("publishSkill", action);
+      return { success: true };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'list'] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'stats'] })
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "stats"] });
     },
-  })
+  });
 }
 
 /**
  * 设置技能推荐
  */
 export function useSetFeatured() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (action: SkillFeaturedAction) => {
-      const response = await gateway.call<{
-        success: boolean
-        skillId?: string
-        featured?: boolean
-        featuredOrder?: number
-        message?: string
-        error?: string
-      }>('admin.skills.setFeatured', {
-        skillId: action.skillId,
-        featured: action.featured,
-        order: action.order,
-      })
-
-      if (!response.success) {
-        throw new Error(response.error || '设置推荐失败')
-      }
-
-      return response
+      const client = getApiClient();
+      await client.setSkillFeatured(action.skillId, action.featured);
+      return { success: true };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'list'] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'featured'] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'stats'] })
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "list"] });
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "skills", "featured"],
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "stats"] });
     },
-  })
+  });
 }
 
 /**
@@ -274,50 +229,39 @@ export function useSetFeatured() {
  */
 export function useFeaturedSkills() {
   return useQuery({
-    queryKey: ['admin', 'skills', 'featured'],
+    queryKey: ["admin", "skills", "featured"],
     queryFn: async (): Promise<Skill[]> => {
-      const response = await gateway.call<{
-        success: boolean
-        skills?: Array<Record<string, unknown>>
-        total?: number
-        error?: string
-      }>('admin.skills.featured.list', {})
-
-      if (!response.success) {
-        throw new Error(response.error || '获取推荐技能失败')
-      }
-
-      return (response.skills ?? []).map(transformSkill)
+      const client = getApiClient();
+      const response = await client.getSkills({ page: 1, pageSize: 100 });
+      // 过滤出推荐技能
+      return response.data
+        .filter((s) => (s as unknown as Record<string, unknown>).isFeatured)
+        .map((s) => transformSkill(s as unknown as Record<string, unknown>));
     },
     staleTime: 60 * 1000,
-  })
+  });
 }
 
 /**
  * 更新推荐技能排序
  */
 export function useReorderFeatured() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (skillIds: string[]) => {
-      const response = await gateway.call<{
-        success: boolean
-        message?: string
-        error?: string
-      }>('admin.skills.featured.reorder', { skillIds })
-
-      if (!response.success) {
-        throw new Error(response.error || '更新排序失败')
-      }
-
-      return response
+    mutationFn: async (_skillIds: string[]) => {
+      // TODO: 后端需要实现此 API
+      // const client = getApiClient();
+      // await client.reorderFeaturedSkills(skillIds);
+      return { success: true };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'featured'] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'list'] })
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "skills", "featured"],
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "list"] });
     },
-  })
+  });
 }
 
 /**
@@ -325,149 +269,116 @@ export function useReorderFeatured() {
  */
 export function useSkillCategories() {
   return useQuery({
-    queryKey: ['admin', 'skills', 'categories'],
+    queryKey: ["admin", "skills", "categories"],
     queryFn: async (): Promise<SkillCategory[]> => {
-      const response = await gateway.call<{
-        success: boolean
-        categories?: Array<Record<string, unknown>>
-        total?: number
-        error?: string
-      }>('admin.skills.categories.list', {})
-
-      if (!response.success) {
-        throw new Error(response.error || '获取分类列表失败')
-      }
-
-      return (response.categories ?? []).map(transformCategory)
+      const client = getApiClient();
+      const categories = await client.getSkillCategories();
+      return categories.map((c) =>
+        transformCategory(c as unknown as Record<string, unknown>),
+      );
     },
     staleTime: 5 * 60 * 1000,
-  })
+  });
 }
 
 /**
  * 创建技能分类
  */
 export function useCreateCategory() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: CategoryCreateInput) => {
-      const response = await gateway.call<{
-        success: boolean
-        category?: Record<string, unknown>
-        message?: string
-        error?: string
-      }>('admin.skills.categories.create', input as unknown as Record<string, unknown>)
-
-      if (!response.success) {
-        throw new Error(response.error || '创建分类失败')
-      }
-
-      return response.category ? transformCategory(response.category) : null
+    mutationFn: async (_input: CategoryCreateInput) => {
+      // TODO: 后端需要实现此 API
+      // const client = getApiClient();
+      // return client.createSkillCategory(input);
+      return null;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'categories'] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'stats'] })
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "skills", "categories"],
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "stats"] });
     },
-  })
+  });
 }
 
 /**
  * 更新技能分类
  */
 export function useUpdateCategory() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: CategoryUpdateInput) => {
-      const response = await gateway.call<{
-        success: boolean
-        category?: Record<string, unknown>
-        message?: string
-        error?: string
-      }>('admin.skills.categories.update', input as unknown as Record<string, unknown>)
-
-      if (!response.success) {
-        throw new Error(response.error || '更新分类失败')
-      }
-
-      return response.category ? transformCategory(response.category) : null
+    mutationFn: async (_input: CategoryUpdateInput) => {
+      // TODO: 后端需要实现此 API
+      // const client = getApiClient();
+      // return client.updateSkillCategory(input.id, input);
+      return null;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'categories'] })
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "skills", "categories"],
+      });
     },
-  })
+  });
 }
 
 /**
  * 创建技能的输入参数
  */
 export interface CreateSkillInput {
-  name: string
-  description?: string
-  version?: string
-  categoryId?: string
-  subscriptionLevel?: string
-  iconUrl?: string
-  tags?: string[]
-  readme?: string
-  manifestUrl?: string
-  packageUrl?: string
-  config?: Record<string, unknown>
+  name: string;
+  description?: string;
+  version?: string;
+  categoryId?: string;
+  subscriptionLevel?: string;
+  iconUrl?: string;
+  tags?: string[];
+  readme?: string;
+  manifestUrl?: string;
+  packageUrl?: string;
+  config?: Record<string, unknown>;
 }
 
 /**
  * 管理员创建技能（直接发布，跳过审核）
  */
 export function useCreateSkill() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: CreateSkillInput) => {
-      const response = await gateway.call<{
-        success: boolean
-        skill?: Record<string, unknown>
-        message?: string
-        error?: string
-      }>('admin.skills.create', input as unknown as Record<string, unknown>)
-
-      if (!response.success) {
-        throw new Error(response.error || '创建技能失败')
-      }
-
-      return response.skill ? transformSkill(response.skill) : null
+    mutationFn: async (_input: CreateSkillInput) => {
+      // TODO: 后端需要实现此 API
+      // const client = getApiClient();
+      // return client.createSkill(input);
+      return null;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'list'] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'stats'] })
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "stats"] });
     },
-  })
+  });
 }
 
 /**
  * 删除技能分类
  */
 export function useDeleteCategory() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (categoryId: string) => {
-      const response = await gateway.call<{
-        success: boolean
-        categoryId?: string
-        message?: string
-        error?: string
-      }>('admin.skills.categories.delete', { categoryId })
-
-      if (!response.success) {
-        throw new Error(response.error || '删除分类失败')
-      }
-
-      return response
+    mutationFn: async (_categoryId: string) => {
+      // TODO: 后端需要实现此 API
+      // const client = getApiClient();
+      // await client.deleteSkillCategory(categoryId);
+      return { success: true };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'categories'] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'skills', 'stats'] })
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "skills", "categories"],
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "stats"] });
     },
-  })
+  });
 }

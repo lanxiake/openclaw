@@ -269,6 +269,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.9.0
         version: 3.10.0(react-hook-form@7.71.1(react@18.3.1))
+      '@openclaw/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.1
         version: 1.1.15(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -870,6 +873,12 @@ importers:
       openclaw:
         specifier: workspace:*
         version: link:../..
+
+  packages/api-client:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
 
   packages/clawdbot:
     dependencies:
@@ -10032,7 +10041,7 @@ snapshots:
     dependencies:
       '@types/node': 24.10.9
     optionalDependencies:
-      axios: 1.13.4
+      axios: 1.13.4(debug@4.4.3)
     transitivePeerDependencies:
       - debug
 
@@ -10244,7 +10253,7 @@ snapshots:
       '@azure/core-auth': 1.10.1
       '@azure/msal-node': 3.8.6
       '@microsoft/agents-activity': 1.2.3
-      axios: 1.13.4
+      axios: 1.13.4(debug@4.4.3)
       jsonwebtoken: 9.0.3
       jwks-rsa: 3.2.2
       object-path: 0.11.8
@@ -11468,7 +11477,7 @@ snapshots:
       '@slack/types': 2.19.0
       '@slack/web-api': 7.13.0
       '@types/express': 5.0.6
-      axios: 1.13.4
+      axios: 1.13.4(debug@4.4.3)
       express: 5.2.1
       path-to-regexp: 8.3.0
       raw-body: 3.0.2
@@ -11514,7 +11523,7 @@ snapshots:
       '@slack/types': 2.19.0
       '@types/node': 25.1.0
       '@types/retry': 0.12.0
-      axios: 1.13.4
+      axios: 1.13.4(debug@4.4.3)
       eventemitter3: 5.0.4
       form-data: 4.0.5
       is-electron: 2.2.2
@@ -12761,14 +12770,6 @@ snapshots:
 
   aws4@1.13.2: {}
 
-  axios@1.13.4:
-    dependencies:
-      follow-redirects: 1.15.11
-      form-data: 4.0.5
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
-
   axios@1.13.4(debug@4.4.3):
     dependencies:
       follow-redirects: 1.15.11(debug@4.4.3)
@@ -13946,8 +13947,6 @@ snapshots:
       array-back: 3.1.0
 
   flatbuffers@24.12.23: {}
-
-  follow-redirects@1.15.11: {}
 
   follow-redirects@1.15.11(debug@4.4.3):
     optionalDependencies:
