@@ -218,15 +218,15 @@ export default function SystemMonitorPage() {
               <Cpu className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{resources.cpu.usagePercent.toFixed(1)}%</div>
-              <p className="text-xs text-muted-foreground mt-1">{resources.cpu.cores} 核</p>
+              <div className="text-2xl font-bold">{(resources.cpu?.usagePercent ?? 0).toFixed(1)}%</div>
+              <p className="text-xs text-muted-foreground mt-1">{resources.cpu?.cores ?? 0} 核</p>
               <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all ${
-                    resources.cpu.usagePercent > 80 ? 'bg-red-500' :
-                    resources.cpu.usagePercent > 60 ? 'bg-yellow-500' : 'bg-primary'
+                    (resources.cpu?.usagePercent ?? 0) > 80 ? 'bg-red-500' :
+                    (resources.cpu?.usagePercent ?? 0) > 60 ? 'bg-yellow-500' : 'bg-primary'
                   }`}
-                  style={{ width: `${resources.cpu.usagePercent}%` }}
+                  style={{ width: `${resources.cpu?.usagePercent ?? 0}%` }}
                 />
               </div>
             </CardContent>
@@ -239,17 +239,17 @@ export default function SystemMonitorPage() {
               <MemoryStick className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{resources.memory.usagePercent.toFixed(1)}%</div>
+              <div className="text-2xl font-bold">{(resources.memory?.usagePercent ?? 0).toFixed(1)}%</div>
               <p className="text-xs text-muted-foreground mt-1">
-                {(resources.memory.usedMb / 1024).toFixed(1)} / {(resources.memory.totalMb / 1024).toFixed(1)} GB
+                {((resources.memory?.usedMb ?? 0) / 1024).toFixed(1)} / {((resources.memory?.totalMb ?? 0) / 1024).toFixed(1)} GB
               </p>
               <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all ${
-                    resources.memory.usagePercent > 80 ? 'bg-red-500' :
-                    resources.memory.usagePercent > 60 ? 'bg-yellow-500' : 'bg-primary'
+                    (resources.memory?.usagePercent ?? 0) > 80 ? 'bg-red-500' :
+                    (resources.memory?.usagePercent ?? 0) > 60 ? 'bg-yellow-500' : 'bg-primary'
                   }`}
-                  style={{ width: `${resources.memory.usagePercent}%` }}
+                  style={{ width: `${resources.memory?.usagePercent ?? 0}%` }}
                 />
               </div>
             </CardContent>
@@ -262,17 +262,17 @@ export default function SystemMonitorPage() {
               <HardDrive className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{resources.disk.usagePercent.toFixed(1)}%</div>
+              <div className="text-2xl font-bold">{(resources.disk?.usagePercent ?? 0).toFixed(1)}%</div>
               <p className="text-xs text-muted-foreground mt-1">
-                {resources.disk.usedGb.toFixed(1)} / {resources.disk.totalGb.toFixed(1)} GB
+                {(resources.disk?.usedGb ?? 0).toFixed(1)} / {(resources.disk?.totalGb ?? 0).toFixed(1)} GB
               </p>
               <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all ${
-                    resources.disk.usagePercent > 80 ? 'bg-red-500' :
-                    resources.disk.usagePercent > 60 ? 'bg-yellow-500' : 'bg-green-500'
+                    (resources.disk?.usagePercent ?? 0) > 80 ? 'bg-red-500' :
+                    (resources.disk?.usagePercent ?? 0) > 60 ? 'bg-yellow-500' : 'bg-green-500'
                   }`}
-                  style={{ width: `${resources.disk.usagePercent}%` }}
+                  style={{ width: `${resources.disk?.usagePercent ?? 0}%` }}
                 />
               </div>
             </CardContent>
@@ -285,8 +285,8 @@ export default function SystemMonitorPage() {
               <Network className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{resources.process.memoryMb.toFixed(0)} MB</div>
-              <p className="text-xs text-muted-foreground mt-1">PID: {resources.process.pid}</p>
+              <div className="text-2xl font-bold">{(resources.process?.memoryMb ?? 0).toFixed(0)} MB</div>
+              <p className="text-xs text-muted-foreground mt-1">PID: {resources.process?.pid ?? '-'}</p>
               {resources.network && (
                 <div className="mt-2 space-y-1">
                   <div className="flex justify-between text-xs">
@@ -370,7 +370,7 @@ export default function SystemMonitorPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <div className="space-y-1">
                 <div className="text-sm text-muted-foreground">运行时间</div>
-                <div className="font-medium">{formatUptime(resources.process.uptimeSeconds)}</div>
+                <div className="font-medium">{formatUptime(resources.process?.uptimeSeconds ?? 0)}</div>
               </div>
               {resources.appVersion && (
                 <div className="space-y-1">

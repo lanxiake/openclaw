@@ -6,6 +6,28 @@ import { isTokenExpired } from '@/lib/jwt'
 import type { Admin } from '@/services/admin-auth'
 
 /**
+ * 开发模式标识
+ * 设置为 true 可以启用模拟登录，用于 UI 测试
+ */
+const DEV_MODE = import.meta.env.DEV && import.meta.env.VITE_MOCK_AUTH === 'true'
+
+/**
+ * 模拟管理员数据 (开发模式)
+ */
+const mockAdmin: Admin = {
+  id: 'mock-admin-001',
+  username: 'admin',
+  displayName: '测试管理员',
+  email: 'admin@openclaw.ai',
+  role: 'super_admin',
+  status: 'active',
+  permissions: [],
+  mfaEnabled: false,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+}
+
+/**
  * 认证状态
  */
 interface AuthState {
@@ -58,6 +80,36 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true })
 
         try {
+          // 开发模式：使用模拟登录
+          if (DEV_MODE) {
+            console.log('[authStore] 开发模式：使用模拟登录')
+            // 模拟延迟
+            await new Promise((resolve) => setTimeout(resolve, 500))
+
+            // 验证用户名密码 (开发模式: admin/Admin@123456)
+            if (username !== 'admin' || password !== 'Admin@123456') {
+              throw new Error('用户名或密码错误')
+            }
+
+            const mockAccessToken = 'mock-access-token-' + Date.now()
+            const mockRefreshToken = 'mock-refresh-token-' + Date.now()
+
+            localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, mockAccessToken)
+            localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, mockRefreshToken)
+
+            set({
+              admin: mockAdmin,
+              accessToken: mockAccessToken,
+              refreshToken: mockRefreshToken,
+              isAuthenticated: true,
+              isLoading: false,
+            })
+
+            console.log('[authStore] 模拟登录成功')
+            return
+          }
+
+          // 生产模式：调用真实 API
           const response = await adminAuthService.login(username, password)
 
           if (!response.success || !response.admin || !response.accessToken || !response.refreshToken) {

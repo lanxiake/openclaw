@@ -364,11 +364,7 @@ export async function call<T = unknown>(
     type: 'req',
     id,
     method,
-    params: {
-      ...params,
-      // 添加认证令牌（如果有）
-      accessToken: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || undefined,
-    },
+    params,
   }
 
   console.log(`[gateway] 调用 ${method}`, params)
