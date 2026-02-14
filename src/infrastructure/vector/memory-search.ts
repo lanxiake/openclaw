@@ -5,8 +5,6 @@
  * 用于记忆检索、知识搜索等场景
  */
 
-import { sql } from "drizzle-orm";
-
 import { getDatabase, getSqlClient } from "../../db/connection.js";
 import { userMemories, type UserMemory } from "../../db/schema/memories.js";
 import { getLogger } from "../../logging/logger.js";
@@ -137,17 +135,20 @@ export async function searchMemories(
 
     // 执行向量搜索查询
     // 使用余弦距离 (<=>)，结果范围 0-2，0 表示完全相同
-    const results = await sqlClient`
+    // 使用 unsafe 方法构建动态 WHERE 子句
+    const query = `
       SELECT
         *,
-        1 - (embedding <=> ${vectorStr}::vector) as similarity,
-        embedding <=> ${vectorStr}::vector as distance
+        1 - (embedding <=> '${vectorStr}'::vector) as similarity,
+        embedding <=> '${vectorStr}'::vector as distance
       FROM user_memories
-      WHERE ${sql.raw(whereClause)}
-        AND 1 - (embedding <=> ${vectorStr}::vector) >= ${minSimilarity}
-      ORDER BY embedding <=> ${vectorStr}::vector
+      WHERE ${whereClause}
+        AND 1 - (embedding <=> '${vectorStr}'::vector) >= ${minSimilarity}
+      ORDER BY embedding <=> '${vectorStr}'::vector
       LIMIT ${limit}
     `;
+
+    const results = await sqlClient.unsafe(query);
 
     logger.debug("[memory-search] Search completed", {
       userId,

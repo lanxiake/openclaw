@@ -5,7 +5,10 @@
  * 支持事件发布、订阅、模式订阅等功能
  */
 
-import Redis from "ioredis";
+import RedisModule, { type Redis as RedisType } from "ioredis";
+
+// ioredis 默认导出是类本身
+const Redis = RedisModule.default ?? RedisModule;
 
 import { getLogger } from "../../logging/logger.js";
 import { getRedisConfigFromEnv } from "./connection.js";
@@ -63,33 +66,35 @@ export interface EventPayload<T = unknown> {
 export type EventHandler<T = unknown> = (event: EventPayload<T>) => void | Promise<void>;
 
 // 模块级变量
-let publisherClient: Redis | null = null;
-let subscriberClient: Redis | null = null;
+let publisherClient: RedisType | null = null;
+let subscriberClient: RedisType | null = null;
 const eventHandlers = new Map<string, Set<EventHandler>>();
 const patternHandlers = new Map<string, Set<EventHandler>>();
 
 /**
  * 获取发布者客户端
  */
-function getPublisher(): Redis {
+function getPublisher(): RedisType {
   if (!publisherClient) {
     const config = getRedisConfigFromEnv();
-    publisherClient = new Redis({
+    const client = new Redis({
       host: config.host,
       port: config.port,
       password: config.password,
       db: config.db,
       keyPrefix: config.keyPrefix,
       lazyConnect: false,
-    });
+    }) as RedisType;
 
-    publisherClient.on("error", (error) => {
+    client.on("error", (error: Error) => {
       logger.error("[pubsub] Publisher error", { error: error.message });
     });
 
-    publisherClient.on("connect", () => {
+    client.on("connect", () => {
       logger.info("[pubsub] Publisher connected");
     });
+
+    publisherClient = client;
   }
   return publisherClient;
 }
@@ -97,34 +102,36 @@ function getPublisher(): Redis {
 /**
  * 获取订阅者客户端
  */
-function getSubscriber(): Redis {
+function getSubscriber(): RedisType {
   if (!subscriberClient) {
     const config = getRedisConfigFromEnv();
-    subscriberClient = new Redis({
+    const client = new Redis({
       host: config.host,
       port: config.port,
       password: config.password,
       db: config.db,
       // 订阅者不需要 keyPrefix
       lazyConnect: false,
-    });
+    }) as RedisType;
 
-    subscriberClient.on("error", (error) => {
+    client.on("error", (error: Error) => {
       logger.error("[pubsub] Subscriber error", { error: error.message });
     });
 
-    subscriberClient.on("connect", () => {
+    client.on("connect", () => {
       logger.info("[pubsub] Subscriber connected");
     });
 
     // 设置消息处理器
-    subscriberClient.on("message", (channel: string, message: string) => {
+    client.on("message", (channel: string, message: string) => {
       handleMessage(channel, message);
     });
 
-    subscriberClient.on("pmessage", (pattern: string, channel: string, message: string) => {
+    client.on("pmessage", (pattern: string, channel: string, message: string) => {
       handlePatternMessage(pattern, channel, message);
     });
+
+    subscriberClient = client;
   }
   return subscriberClient;
 }

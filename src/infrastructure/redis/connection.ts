@@ -5,7 +5,10 @@
  * 提供连接池管理、健康检查、优雅关闭等功能
  */
 
-import Redis, { type RedisOptions } from "ioredis";
+import RedisModule, { type Redis as RedisType, type RedisOptions } from "ioredis";
+
+// ioredis 默认导出是类本身
+const Redis = RedisModule.default ?? RedisModule;
 
 import { getLogger } from "../../logging/logger.js";
 
@@ -38,7 +41,7 @@ export interface RedisConfig {
 }
 
 // 模块级变量，用于存储单例连接
-let redisInstance: Redis | null = null;
+let redisInstance: RedisType | null = null;
 
 /**
  * 从环境变量获取 Redis 配置
@@ -67,7 +70,7 @@ export function getRedisConfigFromEnv(): RedisConfig {
  * @param config Redis 配置
  * @returns Redis 实例
  */
-export function createRedisConnection(config: RedisConfig): Redis {
+export function createRedisConnection(config: RedisConfig): RedisType {
   logger.info("[redis] Creating Redis connection", {
     host: config.host,
     port: config.port,
@@ -128,7 +131,7 @@ export function createRedisConnection(config: RedisConfig): Redis {
 /**
  * 设置 Redis 事件处理器
  */
-function setupEventHandlers(redis: Redis): void {
+function setupEventHandlers(redis: RedisType): void {
   redis.on("connect", () => {
     logger.info("[redis] Connected to Redis server");
   });
@@ -137,7 +140,7 @@ function setupEventHandlers(redis: Redis): void {
     logger.info("[redis] Redis connection ready");
   });
 
-  redis.on("error", (error) => {
+  redis.on("error", (error: Error) => {
     logger.error("[redis] Redis connection error", {
       error: error.message,
     });
@@ -164,11 +167,11 @@ function setupEventHandlers(redis: Redis): void {
  *
  * @returns Redis 实例
  */
-export function getRedis(): Redis {
+export function getRedis(): RedisType {
   // 检查是否处于 Mock 模式（用于单元测试）
   const g = globalThis as Record<string, unknown>;
   if (g.__OPENCLAW_MOCK_ENABLED__ && g.__OPENCLAW_MOCK_REDIS__) {
-    return g.__OPENCLAW_MOCK_REDIS__ as Redis;
+    return g.__OPENCLAW_MOCK_REDIS__ as RedisType;
   }
 
   if (!redisInstance) {
