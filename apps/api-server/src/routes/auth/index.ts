@@ -143,9 +143,8 @@ export function registerAuthRoutes(server: FastifyInstance): void {
       );
 
       const result = await login({
-        username: body.username,
-        email: body.email,
-        password: body.password,
+        identifier: body.username || body.email || "",
+        password: body.password || "",
         ipAddress,
         userAgent,
       });

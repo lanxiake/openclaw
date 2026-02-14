@@ -6,7 +6,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
-import { getDb } from "../../../../../src/db/connection.js";
+import { getDatabase } from "../../../../../src/db/connection.js";
 import { getCustomSkillRepository } from "../../../../../src/db/repositories/custom-skills.js";
 
 /**
@@ -43,7 +43,7 @@ export function registerSkillsRoutes(server: FastifyInstance): void {
 
       request.log.info({ userId: user.userId }, "[skills] 查询技能列表");
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getCustomSkillRepository(db, user.userId);
       const result = await repo.findAll({
         limit: query.limit ? parseInt(query.limit, 10) : 20,
@@ -91,7 +91,7 @@ export function registerSkillsRoutes(server: FastifyInstance): void {
         "[skills] 查询技能详情",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getCustomSkillRepository(db, user.userId);
       const skill = await repo.findById(id);
 
@@ -138,7 +138,7 @@ export function registerSkillsRoutes(server: FastifyInstance): void {
         "[skills] 创建技能",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getCustomSkillRepository(db, user.userId);
       const skill = await repo.create({
         name: body.name,
@@ -188,7 +188,7 @@ export function registerSkillsRoutes(server: FastifyInstance): void {
         "[skills] 更新技能",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getCustomSkillRepository(db, user.userId);
       const skill = await repo.update(id, body);
 
@@ -226,7 +226,7 @@ export function registerSkillsRoutes(server: FastifyInstance): void {
         "[skills] 测试技能",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getCustomSkillRepository(db, user.userId);
 
       // 更新状态为 testing
@@ -273,7 +273,7 @@ export function registerSkillsRoutes(server: FastifyInstance): void {
         "[skills] 删除技能",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getCustomSkillRepository(db, user.userId);
       await repo.delete(id);
 

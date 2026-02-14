@@ -1,13 +1,13 @@
 /**
  * 文件管理 API 路由
  *
- * 提供用户文件的 CRUD 操作，包括实际文件上传/下载
+ * 提供用户文件的 CRUD 操作，包括实际文件上传、下载
  * 所有操作自动限定在当前用户范围内
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
-import { getDb } from "../../../../../src/db/connection.js";
+import { getDatabase } from "../../../../../src/db/connection.js";
 import { getFileRepository } from "../../../../../src/db/repositories/files.js";
 import {
   BUCKETS,
@@ -54,7 +54,7 @@ export function registerFilesRoutes(server: FastifyInstance): void {
 
       request.log.info({ userId: user.userId }, "[files] 查询文件列表");
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getFileRepository(db, user.userId);
       const result = await repo.findAll({
         limit: query.limit ? parseInt(query.limit, 10) : 20,
@@ -101,7 +101,7 @@ export function registerFilesRoutes(server: FastifyInstance): void {
         "[files] 查询文件详情",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getFileRepository(db, user.userId);
       const file = await repo.findById(id);
 
@@ -156,7 +156,7 @@ export function registerFilesRoutes(server: FastifyInstance): void {
         "[files] 创建文件记录",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getFileRepository(db, user.userId);
       const file = await repo.create({
         fileName: body.fileName,
@@ -202,11 +202,10 @@ export function registerFilesRoutes(server: FastifyInstance): void {
         "[files] 删除文件",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getFileRepository(db, user.userId);
 
-      // 先获取文件信息
-      const file = await repo.findById(id);
+      // 先获取文件信息      const file = await repo.findById(id);
       if (!file) {
         return reply.code(404).send({
           success: false,
@@ -231,8 +230,7 @@ export function registerFilesRoutes(server: FastifyInstance): void {
         );
       }
 
-      // 删除数据库记录
-      await repo.delete(id);
+      // 删除数据库记录      await repo.delete(id);
 
       return { success: true, data: { message: "File deleted" } };
     },
@@ -255,8 +253,7 @@ export function registerFilesRoutes(server: FastifyInstance): void {
         });
       }
 
-      // 获取上传的文件数据
-      const data = await request.file();
+      // 获取上传的文件数据      const data = await request.file();
       if (!data) {
         return reply.code(400).send({
           success: false,
@@ -299,8 +296,7 @@ export function registerFilesRoutes(server: FastifyInstance): void {
       // 上传到 MinIO
       const uploadResult = await uploadFile(bucket, storageKey, fileBuffer, metadata);
 
-      // 创建数据库记录
-      const db = getDb();
+      // 创建数据库记录      const db = getDatabase();
       const repo = getFileRepository(db, user.userId);
       const file = await repo.create({
         fileName: filename,
@@ -347,7 +343,7 @@ export function registerFilesRoutes(server: FastifyInstance): void {
         "[files] 下载文件",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getFileRepository(db, user.userId);
       const file = await repo.findById(id);
 

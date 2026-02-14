@@ -6,7 +6,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
-import { getDb } from "../../../../../src/db/connection.js";
+import { getDatabase } from "../../../../../src/db/connection.js";
 import {
   getConversationRepository,
   getMessageRepository,
@@ -51,7 +51,7 @@ export function registerConversationsRoutes(server: FastifyInstance): void {
         "[conversations] 查询对话列表",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getConversationRepository(db, user.userId);
       const result = await repo.findAll({
         limit: query.limit ? parseInt(query.limit, 10) : 20,
@@ -93,7 +93,7 @@ export function registerConversationsRoutes(server: FastifyInstance): void {
         "[conversations] 查询对话详情",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getConversationRepository(db, user.userId);
       const conversation = await repo.findById(id);
 
@@ -137,7 +137,7 @@ export function registerConversationsRoutes(server: FastifyInstance): void {
         "[conversations] 创建对话",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getConversationRepository(db, user.userId);
       const conversation = await repo.create({
         title: body.title ?? "New Conversation",
@@ -178,7 +178,7 @@ export function registerConversationsRoutes(server: FastifyInstance): void {
         "[conversations] 更新对话",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getConversationRepository(db, user.userId);
       const conversation = await repo.update(id, body);
 
@@ -216,7 +216,7 @@ export function registerConversationsRoutes(server: FastifyInstance): void {
         "[conversations] 归档对话",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getConversationRepository(db, user.userId);
       const conversation = await repo.updateStatus(id, "archived");
 
@@ -254,7 +254,7 @@ export function registerConversationsRoutes(server: FastifyInstance): void {
         "[conversations] 删除对话",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getConversationRepository(db, user.userId);
       await repo.softDelete(id);
 
@@ -288,7 +288,7 @@ export function registerConversationsRoutes(server: FastifyInstance): void {
         "[conversations] 查询对话消息",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const msgRepo = getMessageRepository(db, user.userId);
       const result = await msgRepo.findByConversation(id, {
         limit: query.limit ? parseInt(query.limit, 10) : 50,
@@ -340,7 +340,7 @@ export function registerConversationsRoutes(server: FastifyInstance): void {
         "[conversations] 添加消息",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const convRepo = getConversationRepository(db, user.userId);
       const msgRepo = getMessageRepository(db, user.userId);
 

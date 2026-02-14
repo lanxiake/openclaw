@@ -6,7 +6,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
-import { getDb } from "../../../../../src/db/connection.js";
+import { getDatabase } from "../../../../../src/db/connection.js";
 import { getAssistantConfigRepository } from "../../../../../src/db/repositories/assistant-configs.js";
 
 /**
@@ -45,7 +45,7 @@ export function registerAssistantConfigRoutes(server: FastifyInstance): void {
         "[assistant-config] 查询配置列表",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getAssistantConfigRepository(db, user.userId);
       const result = await repo.findAll({
         limit: query.limit ? parseInt(query.limit, 10) : 20,
@@ -84,7 +84,7 @@ export function registerAssistantConfigRoutes(server: FastifyInstance): void {
         "[assistant-config] 查询默认配置",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getAssistantConfigRepository(db, user.userId);
       const config = await repo.findDefault();
 
@@ -122,7 +122,7 @@ export function registerAssistantConfigRoutes(server: FastifyInstance): void {
         "[assistant-config] 查询配置详情",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getAssistantConfigRepository(db, user.userId);
       const config = await repo.findById(id);
 
@@ -169,7 +169,7 @@ export function registerAssistantConfigRoutes(server: FastifyInstance): void {
         "[assistant-config] 创建配置",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getAssistantConfigRepository(db, user.userId);
       const config = await repo.create({
         name: body.name,
@@ -218,7 +218,7 @@ export function registerAssistantConfigRoutes(server: FastifyInstance): void {
         "[assistant-config] 更新配置",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getAssistantConfigRepository(db, user.userId);
       const config = await repo.update(id, body);
 
@@ -256,11 +256,10 @@ export function registerAssistantConfigRoutes(server: FastifyInstance): void {
         "[assistant-config] 设为默认配置",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getAssistantConfigRepository(db, user.userId);
 
-      // 先取消当前默认配置
-      const currentDefault = await repo.findDefault();
+      // 先取消当前默认配置      const currentDefault = await repo.findDefault();
       if (currentDefault && currentDefault.id !== id) {
         await repo.update(currentDefault.id, { isDefault: false });
       }
@@ -302,7 +301,7 @@ export function registerAssistantConfigRoutes(server: FastifyInstance): void {
         "[assistant-config] 删除配置",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getAssistantConfigRepository(db, user.userId);
       await repo.delete(id);
 

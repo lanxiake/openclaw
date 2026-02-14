@@ -4,8 +4,13 @@
  * 加载配置 → 创建 Fastify 实例 → 启动 HTTP 服务
  */
 
+import { config } from "dotenv";
+import { resolve } from "node:path";
 import { loadConfig } from "./config.js";
 import { createServer } from "./server.js";
+
+// 加载 .env 文件
+config({ path: resolve(process.cwd(), ".env") });
 
 /**
  * 启动 App Server

@@ -6,7 +6,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
-import { getDb } from "../../../../../src/db/connection.js";
+import { getDatabase } from "../../../../../src/db/connection.js";
 import { getMemoryRepository } from "../../../../../src/db/repositories/memories.js";
 
 /**
@@ -46,7 +46,7 @@ export function registerMemoriesRoutes(server: FastifyInstance): void {
 
       request.log.info({ userId: user.userId }, "[memories] 查询记忆列表");
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getMemoryRepository(db, user.userId);
       const result = await repo.findAll({
         limit: query.limit ? parseInt(query.limit, 10) : 20,
@@ -91,7 +91,7 @@ export function registerMemoriesRoutes(server: FastifyInstance): void {
         "[memories] 查询记忆详情",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getMemoryRepository(db, user.userId);
       const memory = await repo.findById(id);
 
@@ -139,7 +139,7 @@ export function registerMemoriesRoutes(server: FastifyInstance): void {
         "[memories] 创建记忆",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getMemoryRepository(db, user.userId);
       const memory = await repo.create({
         type: body.type as "episodic" | "profile" | "preference" | "fact",
@@ -186,7 +186,7 @@ export function registerMemoriesRoutes(server: FastifyInstance): void {
         "[memories] 更新记忆",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getMemoryRepository(db, user.userId);
       const memory = await repo.update(id, body);
 
@@ -224,7 +224,7 @@ export function registerMemoriesRoutes(server: FastifyInstance): void {
         "[memories] 停用记忆",
       );
 
-      const db = getDb();
+      const db = getDatabase();
       const repo = getMemoryRepository(db, user.userId);
       await repo.deactivate(id);
 
