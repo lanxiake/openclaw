@@ -171,6 +171,16 @@ async function initGatewayClient(): Promise<void> {
     log.info('收到命令执行请求:', request)
     await handleCommandExecute(request)
   })
+
+  // 自动连接到 Gateway
+  log.info('尝试连接到 Gateway...')
+  try {
+    await gatewayClient.connect()
+    log.info('Gateway 连接成功')
+  } catch (error) {
+    log.warn('初始 Gateway 连接失败，将自动重试:', error)
+    // 不阻塞启动流程，让重连机制处理
+  }
 }
 
 /**

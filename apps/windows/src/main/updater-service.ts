@@ -78,7 +78,7 @@ export interface UpdaterConfig {
  * 默认更新配置
  */
 const DEFAULT_CONFIG: UpdaterConfig = {
-  autoCheck: true,
+  autoCheck: false, // 开发阶段禁用自动检查
   checkInterval: 4 * 60 * 60 * 1000, // 4小时
   autoDownload: false,
   autoInstall: false,

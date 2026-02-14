@@ -25,9 +25,81 @@ OpenClaw Windows 桌面客户端是基于 Electron 的跨平台桌面应用，�
 - **安全沙箱**: VM2 技能隔离执行
 - **自动更新**: electron-updater
 
-## 快速开始
+## 快速测试
 
-### 环境要求
+### 1. 启动 Gateway
+
+在项目根目录：
+
+```bash
+cd d:\AI-workspace\openclaw
+pnpm gateway:watch
+```
+
+等待看到 `Gateway listening on ws://127.0.0.1:18789`
+
+### 2. 测试开发版本
+
+在新的终端窗口：
+
+```bash
+cd d:\AI-workspace\openclaw\apps\windows
+pnpm dev
+```
+
+应用会：
+1. ✅ 启动并显示主窗口
+2. ✅ 创建系统托盘图标
+3. ✅ 自动连接到 Gateway
+4. ✅ 显示连接状态
+
+**查看日志**：
+- 主窗口日志：终端输出
+- 文件日志：`%APPDATA%\openclaw-assistant-windows\logs\`
+
+### 3. 测试打包版本
+
+先构建：
+
+```bash
+pnpm build
+```
+
+运行打包版：
+
+```bash
+# 运行 out 目录中的版本
+pnpm preview
+
+# 或直接运行 electron
+electron .
+```
+
+### 4. 常见问题
+
+**问题 1：Gateway 连接失败**
+
+错误日志：
+```
+Error occurred in handler for 'gateway:call': Not connected to Gateway
+```
+
+**解决**：
+1. 确认 Gateway 正在运行：`http://127.0.0.1:18789/health`
+2. 检查防火墙是否阻止了连接
+3. 查看 Gateway 日志是否有错误
+
+**问题 2：自动更新 404 错误**
+
+错误日志：
+```
+Cannot find latest.yml in the latest release artifacts
+```
+
+**解决**：
+这是正常现象，开发阶段已禁用自动更新。如果仍然出现，说明打包版本使用了旧代码，请重新构建。
+
+## 环境要求
 
 - Node.js 20+
 - pnpm 8+
@@ -41,41 +113,56 @@ pnpm install
 
 ### 开发模式
 
+**前置条件**：确保 Gateway 服务已启动
+
+```bash
+# 在项目根目录启动 Gateway
+pnpm gateway:watch
+```
+
+**启动 Windows 应用**：
+
 ```bash
 pnpm dev
 ```
 
-应用将自动启动，支持热重载。
+应用将自动启动，支持热重载。默认连接到 `ws://127.0.0.1:18789`。
 
 ### 构建应用
 
+**重要：Windows 打包需要管理员权限！**
+
+原因：`electron-builder` 使用的 `7-Zip` 需要创建符号链接权限来解压 `rcedit` 工具。
+
 ```bash
-# 构建代码
-pnpm build
+# 方法 1：使用自动管理员批处理（推荐）
+# 双击运行，会自动请求管理员权限
+scripts\package-as-admin.bat
 
-# 打包应用（所有格式）
-pnpm package
-
-# 仅打包 Windows 版本
+# 方法 2：以管理员身份打开 PowerShell，然后执行
 pnpm package:win
 
-# 打包 NSIS 安装包（x64 + ia32）
-pnpm package:nsis
-
-# 打包 NSIS 安装包（仅 x64）
-pnpm package:nsis:x64
-
-# 打包便携版
-pnpm package:portable
-
-# 打包 ZIP 压缩包
-pnpm package:zip
-
-# 打包到目录（不压缩）
-pnpm package:dir
+# 其他打包命令（需要管理员权限）
+pnpm build              # 仅构建代码
+pnpm package            # 所有格式
+pnpm package:nsis      # NSIS 安装包 (x64 + ia32)
+pnpm package:nsis:x64  # NSIS 安装包 (仅 x64)
+pnpm package:portable  # 便携版
+pnpm package:zip       # ZIP 压缩包
+pnpm package:dir       # 打包到目录（调试用）
 ```
 
 构建产物输出到 `release/` 目录。
+
+**快速修复工具**：如果打包遇到问题，可以运行：
+
+```bash
+# Windows 批处理脚本（双击或命令行运行）
+scripts\fix-package-error.bat
+
+# 或使用 Node.js 脚本
+node scripts/clean-build.js
+```
 
 ### 代码检查
 
@@ -92,7 +179,109 @@ pnpm typecheck
 ### 清理构建产物
 
 ```bash
+# 清理输出目录和终止相关进程
 pnpm clean
+
+# 深度清理（包括缓存）
+pnpm clean:deep
+```
+
+## 故障排除
+
+### 打包错误："rcedit-x64.exe: Fatal error: Unable to commit changes"
+
+**问题原因**：
+- exe 文件被占用或正在运行
+- 权限不足
+- 杀毒软件干扰
+
+**解决方案**：
+
+1. **自动清理**（推荐）
+   ```bash
+   # 使用集成了清理功能的打包命令
+   pnpm package:win
+   ```
+
+2. **手动清理**
+   ```bash
+   # 手动终止进程
+   taskkill /F /IM "OpenClaw Assistant.exe"
+   taskkill /F /IM electron.exe
+   
+   # 清理旧文件
+   pnpm clean
+   
+   # 重新打包
+   pnpm package:win
+   ```
+
+3. **以管理员权限运行**
+   - 右键点击 PowerShell/命令提示符
+   - 选择"以管理员身份运行"
+   - 再次执行打包命令
+
+4. **临时禁用杀毒软件**
+   - Windows Defender：设置 -> 更新和安全 -> Windows 安全中心 -> 病毒和威胁防护 -> 管理设置 -> 实时保护（关闭）
+   - 完成打包后记得重新启用
+
+5. **手动删除锁定目录**
+   ```bash
+   # 删除输出目录
+   rmdir /s /q release
+   rmdir /s /q out
+   
+   # 重新打包
+   pnpm package:win
+   ```
+
+### 打包慢或下载失败
+
+**使用国内镜像加速**：
+
+```bash
+# 设置 npm 镜像
+npm config set registry https://registry.npmmirror.com
+
+# 设置 Electron 镜像
+npm config set electron_mirror https://npmmirror.com/mirrors/electron/
+
+# 设置 Electron Builder 镜像
+npm config set electron_builder_binaries_mirror https://npmmirror.com/mirrors/electron-builder-binaries/
+```
+
+### 打包后文件过大
+
+**优化体积**：
+
+1. 使用生产模式构建
+2. 启用压缩：在 `electron-builder.json` 中设置 `"compression": "maximum"`
+3. 移除开发依赖：`npm prune --production`
+
+### 其他常见问题
+
+**Q: 打包后的应用无法启动？**
+A: 
+- 检查是否缺少 VC++ 运行库
+- 查看应用日志：`%APPDATA%\openclaw-assistant\logs`
+- 尝试以管理员权限运行
+
+**Q: 如何调试打包后的应用？**
+A:
+```bash
+# 先打包到目录（不压缩）
+pnpm package:dir
+
+# 运行未打包的版本
+.\release\win-unpacked\"OpenClaw Assistant.exe" --inspect
+```
+
+**Q: 如何跳过代码签名？**
+A:
+```bash
+# 设置环境变量
+$env:CSC_IDENTITY_AUTO_DISCOVERY="false"
+pnpm package:win
 ```
 
 ## 项目结构
