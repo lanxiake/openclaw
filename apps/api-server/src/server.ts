@@ -26,6 +26,7 @@ import {
 } from "./routes/admin/index.js";
 import { registerAuthRoutes } from "./routes/auth/index.js";
 import { registerUsersRoutes } from "./routes/users/index.js";
+import { registerDeviceManagementRoutes } from "./routes/devices/index.js";
 import { registerConversationsRoutes } from "./routes/conversations/index.js";
 import { registerMemoriesRoutes } from "./routes/memories/index.js";
 import { registerAssistantConfigRoutes } from "./routes/assistant-config/index.js";
@@ -97,6 +98,7 @@ export async function createServer(
   // 7. 用户 API 路由（公开 + 认证）
   registerAuthRoutes(server);
   registerUsersRoutes(server);
+  registerDeviceManagementRoutes(server);
 
   // 8. 用户功能 API 路由（需认证）
   registerConversationsRoutes(server);

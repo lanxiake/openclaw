@@ -283,6 +283,31 @@ export class UserDeviceRepository {
 
     logger.info("[user-device-repo] Primary device set", { userId, deviceId });
   }
+
+  /**
+   * 更新设备信息
+   */
+  async update(
+    deviceId: string,
+    data: Partial<Pick<UserDevice, "alias" | "isPrimary">>
+  ): Promise<UserDevice> {
+    const [updated] = await this.db
+      .update(userDevices)
+      .set(data)
+      .where(eq(userDevices.deviceId, deviceId))
+      .returning();
+
+    logger.info("[user-device-repo] Device updated", { deviceId, data });
+    return updated;
+  }
+
+  /**
+   * 删除设备关联
+   */
+  async delete(deviceId: string): Promise<void> {
+    await this.db.delete(userDevices).where(eq(userDevices.deviceId, deviceId));
+    logger.info("[user-device-repo] Device deleted", { deviceId });
+  }
 }
 
 /**
