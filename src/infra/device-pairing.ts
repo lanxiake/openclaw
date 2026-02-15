@@ -7,6 +7,7 @@ export type DevicePairingPendingRequest = {
   requestId: string;
   deviceId: string;
   publicKey: string;
+  userId?: string;
   displayName?: string;
   platform?: string;
   clientId?: string;
@@ -42,6 +43,7 @@ export type DeviceAuthTokenSummary = {
 export type PairedDevice = {
   deviceId: string;
   publicKey: string;
+  userId?: string;
   displayName?: string;
   platform?: string;
   clientId?: string;
@@ -554,5 +556,58 @@ export async function revokeDeviceToken(params: {
     state.pairedByDeviceId[device.deviceId] = device;
     await persistState(state, params.baseDir);
     return entry;
+  });
+}
+
+/**
+ * 根据用户 ID 查询设备列表
+ *
+ * @param userId 用户 ID
+ * @param baseDir 可选的基础目录
+ * @returns 该用户的所有已配对设备
+ */
+export async function listDevicesByUserId(
+  userId: string,
+  baseDir?: string,
+): Promise<PairedDevice[]> {
+  const state = await loadState(baseDir);
+  return Object.values(state.pairedByDeviceId).filter((device) => device.userId === userId);
+}
+
+/**
+ * 根据设备 ID 查询所属用户
+ *
+ * @param deviceId 设备 ID
+ * @param baseDir 可选的基础目录
+ * @returns 用户 ID,如果设备未关联用户则返回 null
+ */
+export async function getUserIdByDeviceId(
+  deviceId: string,
+  baseDir?: string,
+): Promise<string | null> {
+  const state = await loadState(baseDir);
+  const device = state.pairedByDeviceId[normalizeDeviceId(deviceId)];
+  return device?.userId ?? null;
+}
+
+/**
+ * 更新设备的用户关联
+ *
+ * @param deviceId 设备 ID
+ * @param userId 用户 ID
+ * @param baseDir 可选的基础目录
+ */
+export async function updateDeviceUserId(
+  deviceId: string,
+  userId: string,
+  baseDir?: string,
+): Promise<void> {
+  await withLock(async () => {
+    const state = await loadState(baseDir);
+    const device = state.pairedByDeviceId[normalizeDeviceId(deviceId)];
+    if (device) {
+      device.userId = userId;
+      await persistState(state, baseDir);
+    }
   });
 }
