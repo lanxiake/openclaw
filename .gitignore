@@ -81,3 +81,22 @@ nul
 # Windows app build artifacts
 apps/windows/out/
 apps/windows/release/
+
+# Temporary output files
+gateway-output.log
+test-login-manual.md
+test-login-summary.md
+test-results/
+gateway-connection-test-results.md
+device-user-registration-analysis.md
+docs/device-user-registration-implementation-plan.md
+Microsoft/
+
+# Test drafts (not colocated)
+tests/
+src/gateway/gateway-connection.test.ts
+
+# Stray lint output
+*lint-err.txt
+*lint-out.txt
+*lint-output.txt
