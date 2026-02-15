@@ -17,6 +17,7 @@ import {
   logout,
 } from "../../../../../src/assistant/auth/auth-service.js";
 import { getRequestUser } from "../../plugins/auth.js";
+import { registerUserRegistrationRoutes } from "./registration.js";
 
 /**
  * 从请求中提取客户端信息
@@ -37,8 +38,11 @@ function getClientInfo(request: FastifyRequest): {
  * 注册用户认证路由
  */
 export function registerAuthRoutes(server: FastifyInstance): void {
+  // 注册新版用户注册路由
+  registerUserRegistrationRoutes(server);
+
   /**
-   * POST /api/auth/register - 用户注册
+   * POST /api/auth/register - 用户注册（旧版，保留兼容性）
    */
   server.post(
     "/api/auth/register",
