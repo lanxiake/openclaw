@@ -80,7 +80,10 @@ export function createMinioClient(config: MinioConfig): Minio.Client {
     useSSL: config.useSSL,
     accessKey: config.accessKey,
     secretKey: config.secretKey,
-    region: config.region,
+    region: config.region || "us-east-1",
+    // 强制使用路径样式（path-style）而非虚拟主机样式
+    // 这对于自托管的 MinIO 服务器很重要
+    pathStyle: true,
   });
 
   logger.info("[minio] MinIO client created successfully");

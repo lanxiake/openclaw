@@ -24,6 +24,7 @@ import {
   publishSkill,
 } from "../../assistant/skills/skill-review-service.js";
 import { uploadSkillFile, deleteAllSkillFiles } from "../../assistant/skills/skill-storage-service.js";
+import { resetMinioConnection } from "../../infrastructure/minio/connection.js";
 
 describe("技能上传和审核流程", () => {
   let testUserId: string;
@@ -32,6 +33,9 @@ describe("技能上传和审核流程", () => {
   let testSkillId: string;
 
   beforeAll(async () => {
+    // 重置 MinIO 连接，确保使用最新配置（包括 pathStyle: true）
+    resetMinioConnection();
+
     const db = getDatabase();
 
     // 创建测试用户
@@ -131,34 +135,30 @@ describe("技能上传和审核流程", () => {
     expect(uploadResult.url).toBeDefined();
     console.log(`[E2E Test] 文件上传成功，URL: ${uploadResult.url}`);
 
-    // 步骤 3: 管理员审核通过
+    // 步骤 3: 管理员审核通过（审核通过后自动发布）
     console.log("[E2E Test] 步骤 3: 管理员审核");
     await approveSkill(testSkillId, testAdminId);
 
     const approvedSkill = await getSkill(testSkillId);
-    expect(approvedSkill?.status).toBe("unpublished");
+    expect(approvedSkill?.status).toBe("published"); // 审核通过后自动发布
     expect(approvedSkill?.reviewedBy).toBe(testAdminId);
     expect(approvedSkill?.reviewedAt).toBeDefined();
-    console.log("[E2E Test] 技能审核通过");
+    expect(approvedSkill?.publishedAt).toBeDefined();
+    console.log("[E2E Test] 技能审核通过并自动发布");
 
-    // 步骤 4: 发布技能
-    console.log("[E2E Test] 步骤 4: 发布技能");
-    await publishSkill(testSkillId, testAdminId);
-
-    const publishedSkill = await getSkill(testSkillId);
-    expect(publishedSkill?.status).toBe("published");
-    expect(publishedSkill?.publishedAt).toBeDefined();
-    console.log("[E2E Test] 技能发布成功");
-
-    // 步骤 5: 验证技能列表
-    console.log("[E2E Test] 步骤 5: 验证技能列表");
+    // 步骤 4: 验证技能列表
+    console.log("[E2E Test] 步骤 4: 验证技能列表");
     const skillList = await getSkillList({
       status: "published",
       page: 1,
       pageSize: 10,
     });
 
-    const foundSkill = skillList.skills.find((s) => s.id === testSkillId);
+    expect(skillList).toBeDefined();
+    expect(skillList.items).toBeDefined();
+    expect(Array.isArray(skillList.items)).toBe(true);
+
+    const foundSkill = skillList.items.find((s) => s.id === testSkillId);
     expect(foundSkill).toBeDefined();
     expect(foundSkill?.status).toBe("published");
     console.log("[E2E Test] 技能在列表中可见");
