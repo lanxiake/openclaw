@@ -42,6 +42,7 @@ export interface AdminPermissions {
     edit?: boolean;
     publish?: boolean;
     delete?: boolean;
+    review?: boolean;
   };
   /** 系统配置权限 */
   system?: {

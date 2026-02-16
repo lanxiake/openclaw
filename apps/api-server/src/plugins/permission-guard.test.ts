@@ -89,6 +89,7 @@ describe("permission-guard", () => {
       expect(adminPerms.subscriptions?.edit).toBe(true);
       expect(adminPerms.skills?.create).toBe(true);
       expect(adminPerms.skills?.publish).toBe(true);
+      expect(adminPerms.skills?.review).toBe(true);
       expect(adminPerms.system?.editConfig).toBe(true);
     });
 

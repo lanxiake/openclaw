@@ -182,7 +182,7 @@ export function registerAdminSkillsRoutes(server: FastifyInstance): void {
    */
   server.post(
     "/api/admin/skills/:id/review",
-    { preHandler: requirePermission("skills", "create") },
+    { preHandler: requirePermission("skills", "review") },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const admin = getRequiredAdmin(request);
 

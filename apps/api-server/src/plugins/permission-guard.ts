@@ -15,6 +15,16 @@ import type { AdminRole, AdminPermissions } from "../../../../src/db/schema/admi
 import { getRequestAdmin, type RequestAdmin } from "./admin-auth.js";
 
 /**
+ * 资源-操作类型映射
+ *
+ * 从 AdminPermissions 自动推导每个资源的合法操作名称，
+ * 在编译期捕获拼写错误和非法操作。
+ */
+export type PermissionActionMap = {
+  [K in keyof Required<AdminPermissions>]: keyof Required<Required<AdminPermissions>[K]> & string;
+};
+
+/**
  * 角色默认权限映射
  *
  * 定义每个角色的基础权限，可被数据库中的自定义权限覆盖
@@ -31,7 +41,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<AdminRole, AdminPermissions> = {
   admin: {
     users: { view: true, edit: true, suspend: true },
     subscriptions: { view: true, edit: true },
-    skills: { view: true, create: true, edit: true, publish: true, delete: true },
+    skills: { view: true, create: true, edit: true, publish: true, delete: true, review: true },
     system: { viewConfig: true, editConfig: true, viewLogs: true /* resetConfig: 仅 super_admin */ },
     admins: { view: true },
   },
@@ -52,7 +62,7 @@ export const ROLE_PERMISSION_CEILING: Record<AdminRole, AdminPermissions> = {
   operator: {
     users: { view: true, edit: true, suspend: true },
     subscriptions: { view: true, edit: true },
-    skills: { view: true, create: true, edit: true, publish: true, delete: true },
+    skills: { view: true, create: true, edit: true, publish: true, delete: true, review: true },
     system: { viewConfig: true, editConfig: true, viewLogs: true },
     admins: { view: true },
   },
@@ -60,7 +70,7 @@ export const ROLE_PERMISSION_CEILING: Record<AdminRole, AdminPermissions> = {
   admin: {
     users: { view: true, edit: true, suspend: true, delete: true },
     subscriptions: { view: true, edit: true, refund: true },
-    skills: { view: true, create: true, edit: true, publish: true, delete: true },
+    skills: { view: true, create: true, edit: true, publish: true, delete: true, review: true },
     system: { viewConfig: true, editConfig: true, viewLogs: true },
     admins: { view: true, create: true, edit: true, delete: true },
   },
@@ -76,10 +86,10 @@ export const ROLE_PERMISSION_CEILING: Record<AdminRole, AdminPermissions> = {
  * @param action - 操作类型
  * @returns 操作是否在天花板允许范围内
  */
-function isWithinCeiling(
+function isWithinCeiling<R extends keyof AdminPermissions>(
   role: AdminRole,
-  resource: keyof AdminPermissions,
-  action: string,
+  resource: R,
+  action: PermissionActionMap[R],
 ): boolean {
   // super_admin 不受限制
   if (role === "super_admin") {
@@ -113,10 +123,10 @@ function isWithinCeiling(
  * @param action - 操作类型
  * @returns 是否有权限
  */
-export function hasPermission(
+export function hasPermission<R extends keyof AdminPermissions>(
   admin: RequestAdmin,
-  resource: keyof AdminPermissions,
-  action: string,
+  resource: R,
+  action: PermissionActionMap[R],
 ): boolean {
   // 1. super_admin 拥有所有权限
   if (admin.role === "super_admin") {
@@ -165,7 +175,10 @@ export function hasPermission(
  * );
  * ```
  */
-export function requirePermission(resource: keyof AdminPermissions, action: string) {
+export function requirePermission<R extends keyof AdminPermissions>(
+  resource: R,
+  action: PermissionActionMap[R],
+) {
   return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const admin = getRequestAdmin(request);
 

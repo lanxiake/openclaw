@@ -146,6 +146,16 @@ export function generateAdminAccessToken(
 
   const accessToken = jwt.sign(payload, secret, signOptions);
 
+  // JWT 体积监控：超过 2KB 时发出警告
+  const tokenBytes = Buffer.byteLength(accessToken, "utf8");
+  if (tokenBytes > 2048) {
+    logger.warn("[admin-jwt] JWT token 体积过大，可能影响请求性能", {
+      adminId,
+      tokenBytes,
+      hasPermissions: !!options?.permissions,
+    });
+  }
+
   // 计算过期秒数
   const expiresInSeconds = parseExpiresIn(expiresIn);
 
