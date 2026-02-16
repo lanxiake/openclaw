@@ -35,6 +35,8 @@ export const BUCKETS = {
   MEDIA: "openclaw-media",
   /** 临时文件存储桶 */
   TEMP: "openclaw-temp",
+  /** 技能包存储桶 */
+  SKILLS: "openclaw-skills",
 } as const;
 
 export type BucketName = (typeof BUCKETS)[keyof typeof BUCKETS];
