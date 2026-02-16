@@ -44,6 +44,16 @@ export class DeviceRepository {
   constructor(private db: Database = getDatabase()) {}
 
   /**
+   * 查找所有设备
+   */
+  async findAll(): Promise<Device[]> {
+    return this.db
+      .select()
+      .from(devices)
+      .orderBy(desc(devices.createdAt));
+  }
+
+  /**
    * 根据设备 ID 查找设备
    */
   async findByDeviceId(deviceId: string): Promise<Device | null> {
@@ -342,6 +352,23 @@ export class DevicePairingRequestRepository {
         )
       );
     return request ?? null;
+  }
+
+  /**
+   * 查找所有待处理请求 (未过期)
+   */
+  async findAllPending(): Promise<DevicePairingRequest[]> {
+    const now = new Date();
+    return this.db
+      .select()
+      .from(devicePairingRequests)
+      .where(
+        and(
+          eq(devicePairingRequests.status, "pending"),
+          gt(devicePairingRequests.expiresAt, now)
+        )
+      )
+      .orderBy(desc(devicePairingRequests.createdAt));
   }
 
   /**
