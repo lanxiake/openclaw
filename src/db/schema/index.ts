@@ -298,3 +298,27 @@ export type {
   ConfigGroup,
   ConfigKey,
 } from "./system-config.js";
+
+// 设备相关表
+export {
+  devices,
+  devicePairingRequests,
+  devicesRelations,
+  devicePairingRequestsRelations,
+  // Zod schemas
+  insertDeviceSchema,
+  selectDeviceSchema,
+  insertDevicePairingRequestSchema,
+  selectDevicePairingRequestSchema,
+} from "./devices.js";
+
+// 设备相关类型
+export type {
+  Device,
+  NewDevice,
+  DevicePairingRequest,
+  NewDevicePairingRequest,
+  DeviceAuthToken,
+  DevicePlatform,
+  PairingRequestStatus,
+} from "./devices.js";
