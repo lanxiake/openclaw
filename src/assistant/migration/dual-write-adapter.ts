@@ -8,7 +8,7 @@
  */
 
 import { getLogger } from "../../logging/logger.js";
-import type { PairedDevice } from "../../infra/device-pairing.js";
+import type { PairedDeviceCompat as PairedDevice } from "../../infra/device-pairing-db.js";
 import type { NewUserDevice, UserDevice } from "../../db/schema/users.js";
 import { getMigrationService } from "./device-migration.js";
 

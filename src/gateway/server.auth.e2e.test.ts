@@ -418,7 +418,7 @@ describe("gateway server auth/connect", () => {
   test("accepts device token auth for paired device", async () => {
     const { loadOrCreateDeviceIdentity } = await import("../infra/device-identity.js");
     const { approveDevicePairing, getPairedDevice, listDevicePairing } =
-      await import("../infra/device-pairing.js");
+      await import("../infra/device-pairing-db.js");
     const { server, ws, port, prevToken } = await startServerWithClient("secret");
     const res = await connectReq(ws, { token: "secret" });
     if (!res.ok) {
@@ -459,7 +459,7 @@ describe("gateway server auth/connect", () => {
     const { loadOrCreateDeviceIdentity, publicKeyRawBase64UrlFromPem, signDevicePayload } =
       await import("../infra/device-identity.js");
     const { approveDevicePairing, getPairedDevice, listDevicePairing } =
-      await import("../infra/device-pairing.js");
+      await import("../infra/device-pairing-db.js");
     const { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } =
       await import("../utils/message-channel.js");
     const { server, ws, port, prevToken } = await startServerWithClient("secret");
@@ -533,7 +533,7 @@ describe("gateway server auth/connect", () => {
   test("rejects revoked device token", async () => {
     const { loadOrCreateDeviceIdentity } = await import("../infra/device-identity.js");
     const { approveDevicePairing, getPairedDevice, listDevicePairing, revokeDeviceToken } =
-      await import("../infra/device-pairing.js");
+      await import("../infra/device-pairing-db.js");
     const { server, ws, port, prevToken } = await startServerWithClient("secret");
     const res = await connectReq(ws, { token: "secret" });
     if (!res.ok) {
