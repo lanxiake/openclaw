@@ -21,21 +21,7 @@ import {
 } from "../../../../../src/assistant/config/config-service.js";
 import { getRequiredAdmin } from "../../plugins/admin-auth.js";
 import { requirePermission } from "../../plugins/permission-guard.js";
-
-/**
- * 从请求中提取客户端信息
- */
-function getClientInfo(request: FastifyRequest): {
-  ipAddress: string;
-  userAgent: string;
-} {
-  const ipAddress =
-    (request.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
-    request.ip ||
-    "unknown";
-  const userAgent = (request.headers["user-agent"] as string) || "unknown";
-  return { ipAddress, userAgent };
-}
+import { getClientInfo } from "../../plugins/request-utils.js";
 
 /**
  * 注册系统配置路由
