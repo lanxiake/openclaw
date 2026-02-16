@@ -79,3 +79,11 @@ export {
   getAdminLoginAttemptRepository,
   adminAudit,
 } from "./admins.js";
+
+// 设备仓库
+export {
+  DeviceRepository,
+  DevicePairingRequestRepository,
+  getDeviceRepository,
+  getDevicePairingRequestRepository,
+} from "./devices.js";
