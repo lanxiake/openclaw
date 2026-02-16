@@ -30,42 +30,42 @@
 
 ```typescript
 // 新设备发起配对
-const pairResponse = await fetch('/api/devices/pair-request', {
-  method: 'POST',
+const pairResponse = await fetch("/api/devices/pair-request", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${accessToken}`
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${accessToken}`,
   },
   body: JSON.stringify({
-    deviceId: 'my-device-001',
-    publicKey: '-----BEGIN PUBLIC KEY-----...',
-    displayName: '我的手机',
-    platform: 'iOS'
-  })
+    deviceId: "my-device-001",
+    publicKey: "-----BEGIN PUBLIC KEY-----...",
+    displayName: "我的手机",
+    platform: "iOS",
+  }),
 });
 
 const { data } = await pairResponse.json();
-console.log('配对请求 ID:', data.requestId);
+console.log("配对请求 ID:", data.requestId);
 // 等待用户在其他设备上批准...
 ```
 
 ```typescript
 // 用户批准配对
-const approveResponse = await fetch('/api/devices/pair-approve', {
-  method: 'POST',
+const approveResponse = await fetch("/api/devices/pair-approve", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${accessToken}`
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${accessToken}`,
   },
   body: JSON.stringify({
-    requestId: 'req_xyz789',
-    role: 'user',
-    scopes: ['read', 'write', 'chat']
-  })
+    requestId: "req_xyz789",
+    role: "user",
+    scopes: ["read", "write", "chat"],
+  }),
 });
 
 const { data } = await approveResponse.json();
-console.log('设备令牌:', data.deviceToken);
+console.log("设备令牌:", data.deviceToken);
 ```
 
 ### 2. 查看设备列表
@@ -73,29 +73,29 @@ console.log('设备令牌:', data.deviceToken);
 用户可以查看所有已关联的设备。
 
 ```typescript
-const response = await fetch('/api/devices', {
+const response = await fetch("/api/devices", {
   headers: {
-    'Authorization': `Bearer ${accessToken}`
-  }
+    Authorization: `Bearer ${accessToken}`,
+  },
 });
 
 const { data } = await response.json();
-console.log('我的设备:', data.devices);
+console.log("我的设备:", data.devices);
 ```
 
 #### 设备信息字段
 
-| 字段 | 说明 |
-|------|------|
-| deviceId | 设备唯一标识 |
-| alias | 用户自定义别名 |
-| displayName | 设备名称 |
-| platform | 平台（iOS/Android/macOS/Windows/Web） |
-| isPrimary | 是否为主设备 |
-| linkedAt | 关联时间 |
-| lastActiveAt | 最后活跃时间 |
-| role | 设备角色 |
-| scopes | 权限范围 |
+| 字段         | 说明                                  |
+| ------------ | ------------------------------------- |
+| deviceId     | 设备唯一标识                          |
+| alias        | 用户自定义别名                        |
+| displayName  | 设备名称                              |
+| platform     | 平台（iOS/Android/macOS/Windows/Web） |
+| isPrimary    | 是否为主设备                          |
+| linkedAt     | 关联时间                              |
+| lastActiveAt | 最后活跃时间                          |
+| role         | 设备角色                              |
+| scopes       | 权限范围                              |
 
 ### 3. 更新设备信息
 
@@ -103,27 +103,27 @@ console.log('我的设备:', data.devices);
 
 ```typescript
 // 设置设备别名
-await fetch('/api/devices/device-001', {
-  method: 'PATCH',
+await fetch("/api/devices/device-001", {
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${accessToken}`
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${accessToken}`,
   },
   body: JSON.stringify({
-    alias: '工作手机'
-  })
+    alias: "工作手机",
+  }),
 });
 
 // 设置为主设备
-await fetch('/api/devices/device-001', {
-  method: 'PATCH',
+await fetch("/api/devices/device-001", {
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${accessToken}`
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${accessToken}`,
   },
   body: JSON.stringify({
-    isPrimary: true
-  })
+    isPrimary: true,
+  }),
 });
 ```
 
@@ -132,11 +132,11 @@ await fetch('/api/devices/device-001', {
 用户可以撤销不再使用的设备。
 
 ```typescript
-await fetch('/api/devices/device-001', {
-  method: 'DELETE',
+await fetch("/api/devices/device-001", {
+  method: "DELETE",
   headers: {
-    'Authorization': `Bearer ${accessToken}`
-  }
+    Authorization: `Bearer ${accessToken}`,
+  },
 });
 ```
 
@@ -154,20 +154,20 @@ await fetch('/api/devices/device-001', {
 
 ```typescript
 // 方式 1: 更新设备时设置
-await fetch('/api/devices/device-001', {
-  method: 'PATCH',
+await fetch("/api/devices/device-001", {
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${accessToken}`
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${accessToken}`,
   },
   body: JSON.stringify({
-    isPrimary: true
-  })
+    isPrimary: true,
+  }),
 });
 
 // 方式 2: 使用 UserDeviceRepository
 const deviceRepo = getUserDeviceRepository();
-await deviceRepo.setPrimaryDevice(userId, 'device-001');
+await deviceRepo.setPrimaryDevice(userId, "device-001");
 ```
 
 ## 数据一致性
@@ -198,11 +198,11 @@ pnpm tsx scripts/check-device-user-consistency.ts --fix
 
 ### 常见不一致问题
 
-| 问题类型 | 说明 | 修复方式 |
-|----------|------|----------|
-| missing_in_pairing | 数据库有记录但文件没有 | 删除数据库记录 |
-| missing_in_db | 文件有记录但数据库没有 | 创建数据库记录 |
-| user_id_mismatch | 用户 ID 不匹配 | 以数据库为准更新文件 |
+| 问题类型           | 说明                   | 修复方式             |
+| ------------------ | ---------------------- | -------------------- |
+| missing_in_pairing | 数据库有记录但文件没有 | 删除数据库记录       |
+| missing_in_db      | 文件有记录但数据库没有 | 创建数据库记录       |
+| user_id_mismatch   | 用户 ID 不匹配         | 以数据库为准更新文件 |
 
 ## 安全建议
 
@@ -243,14 +243,14 @@ pnpm tsx scripts/check-device-user-consistency.ts --fix
 
 ## 相关 API
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| /api/devices | GET | 获取设备列表 |
-| /api/devices/:deviceId | PATCH | 更新设备信息 |
-| /api/devices/:deviceId | DELETE | 撤销设备 |
-| /api/devices/pair-request | POST | 发起配对请求 |
-| /api/devices/pair-approve | POST | 批准配对 |
-| /api/devices/pair-reject | POST | 拒绝配对 |
+| 端点                      | 方法   | 说明         |
+| ------------------------- | ------ | ------------ |
+| /api/devices              | GET    | 获取设备列表 |
+| /api/devices/:deviceId    | PATCH  | 更新设备信息 |
+| /api/devices/:deviceId    | DELETE | 撤销设备     |
+| /api/devices/pair-request | POST   | 发起配对请求 |
+| /api/devices/pair-approve | POST   | 批准配对     |
+| /api/devices/pair-reject  | POST   | 拒绝配对     |
 
 ## 相关文档
 

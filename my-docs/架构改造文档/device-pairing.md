@@ -27,16 +27,16 @@ Authorization: Bearer <accessToken>
 
 #### 请求参数
 
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| deviceId | string | 是 | 设备唯一标识 |
-| publicKey | string | 是 | 设备公钥 |
-| displayName | string | 否 | 设备名称 |
-| platform | string | 否 | 平台：iOS / Android / macOS / Windows / Web |
-| clientId | string | 否 | 客户端 ID |
-| clientMode | string | 否 | 客户端模式 |
-| role | string | 否 | 请求角色：user / admin / guest |
-| scopes | string[] | 否 | 请求权限范围 |
+| 参数        | 类型     | 必填 | 说明                                        |
+| ----------- | -------- | ---- | ------------------------------------------- |
+| deviceId    | string   | 是   | 设备唯一标识                                |
+| publicKey   | string   | 是   | 设备公钥                                    |
+| displayName | string   | 否   | 设备名称                                    |
+| platform    | string   | 否   | 平台：iOS / Android / macOS / Windows / Web |
+| clientId    | string   | 否   | 客户端 ID                                   |
+| clientMode  | string   | 否   | 客户端模式                                  |
+| role        | string   | 否   | 请求角色：user / admin / guest              |
+| scopes      | string[] | 否   | 请求权限范围                                |
 
 #### 请求示例
 
@@ -80,11 +80,11 @@ Authorization: Bearer <accessToken>
 
 #### 请求参数
 
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| requestId | string | 是 | 配对请求 ID |
-| role | string | 否 | 分配角色（覆盖请求中的角色） |
-| scopes | string[] | 否 | 分配权限（覆盖请求中的权限） |
+| 参数      | 类型     | 必填 | 说明                         |
+| --------- | -------- | ---- | ---------------------------- |
+| requestId | string   | 是   | 配对请求 ID                  |
+| role      | string   | 否   | 分配角色（覆盖请求中的角色） |
+| scopes    | string[] | 否   | 分配权限（覆盖请求中的权限） |
 
 #### 请求示例
 
@@ -133,10 +133,10 @@ Authorization: Bearer <accessToken>
 
 #### 请求参数
 
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| requestId | string | 是 | 配对请求 ID |
-| reason | string | 否 | 拒绝原因 |
+| 参数      | 类型   | 必填 | 说明        |
+| --------- | ------ | ---- | ----------- |
+| requestId | string | 是   | 配对请求 ID |
+| reason    | string | 否   | 拒绝原因    |
 
 #### 请求示例
 
@@ -209,10 +209,10 @@ Authorization: Bearer <accessToken>
 
 #### 请求参数
 
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| alias | string | 否 | 设备别名 |
-| isPrimary | boolean | 否 | 是否设为主设备 |
+| 参数      | 类型    | 必填 | 说明           |
+| --------- | ------- | ---- | -------------- |
+| alias     | string  | 否   | 设备别名       |
+| isPrimary | boolean | 否   | 是否设为主设备 |
 
 #### 请求示例
 
@@ -267,15 +267,15 @@ Authorization: Bearer <accessToken>
 
 ## 错误码
 
-| 错误码 | 说明 |
-|--------|------|
-| UNAUTHORIZED | 未授权（需要登录） |
-| FORBIDDEN | 无权操作此设备 |
-| VALIDATION_ERROR | 参数校验失败 |
-| REQUEST_NOT_FOUND | 配对请求不存在或已过期 |
-| PAIR_REQUEST_ERROR | 配对请求失败 |
-| PAIR_APPROVE_ERROR | 配对批准失败 |
-| PAIR_REJECT_ERROR | 配对拒绝失败 |
+| 错误码             | 说明                   |
+| ------------------ | ---------------------- |
+| UNAUTHORIZED       | 未授权（需要登录）     |
+| FORBIDDEN          | 无权操作此设备         |
+| VALIDATION_ERROR   | 参数校验失败           |
+| REQUEST_NOT_FOUND  | 配对请求不存在或已过期 |
+| PAIR_REQUEST_ERROR | 配对请求失败           |
+| PAIR_APPROVE_ERROR | 配对批准失败           |
+| PAIR_REJECT_ERROR  | 配对拒绝失败           |
 
 ---
 
