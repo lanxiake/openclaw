@@ -92,8 +92,8 @@ export interface UserPreferences {
 /**
  * 用户设备关联表
  *
- * 纯关联表，不复制 device-pairing.ts 的数据
- * 权限 (role, scopes) 保留在 device-pairing.ts
+ * 纯关联表，关联 users 和 devices
+ * 权限 (role, scopes) 保留在 devices 表
  */
 export const userDevices = pgTable(
   "user_devices",
@@ -104,7 +104,7 @@ export const userDevices = pgTable(
     userId: text("user_id")
       .references(() => users.id, { onDelete: "cascade" })
       .notNull(),
-    /** 设备 ID (对应 device-pairing.ts 中的 deviceId) */
+    /** 设备 ID (对应 devices 表中的 deviceId) */
     deviceId: text("device_id").notNull(),
     /** 设备别名 (用户可自定义) */
     alias: text("alias"),

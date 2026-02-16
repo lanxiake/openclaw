@@ -1,7 +1,7 @@
 /**
  * 设备数据访问层
  *
- * 提供设备 CRUD 操作，替代文件存储的 device-pairing.ts
+ * 提供设备 CRUD 操作 (PostgreSQL)
  */
 
 import { eq, and, desc, gt, lt } from "drizzle-orm";
@@ -47,20 +47,14 @@ export class DeviceRepository {
    * 查找所有设备
    */
   async findAll(): Promise<Device[]> {
-    return this.db
-      .select()
-      .from(devices)
-      .orderBy(desc(devices.createdAt));
+    return this.db.select().from(devices).orderBy(desc(devices.createdAt));
   }
 
   /**
    * 根据设备 ID 查找设备
    */
   async findByDeviceId(deviceId: string): Promise<Device | null> {
-    const [device] = await this.db
-      .select()
-      .from(devices)
-      .where(eq(devices.deviceId, deviceId));
+    const [device] = await this.db.select().from(devices).where(eq(devices.deviceId, deviceId));
     return device ?? null;
   }
 
@@ -79,10 +73,7 @@ export class DeviceRepository {
    * 根据 ID 查找设备
    */
   async findById(id: string): Promise<Device | null> {
-    const [device] = await this.db
-      .select()
-      .from(devices)
-      .where(eq(devices.id, id));
+    const [device] = await this.db.select().from(devices).where(eq(devices.id, id));
     return device ?? null;
   }
 
@@ -116,7 +107,19 @@ export class DeviceRepository {
    */
   async update(
     deviceId: string,
-    data: Partial<Pick<Device, "displayName" | "role" | "roles" | "scopes" | "tokens" | "lastActiveAt" | "isActive" | "revokedAt">>
+    data: Partial<
+      Pick<
+        Device,
+        | "displayName"
+        | "role"
+        | "roles"
+        | "scopes"
+        | "tokens"
+        | "lastActiveAt"
+        | "isActive"
+        | "revokedAt"
+      >
+    >,
   ): Promise<Device | null> {
     const [updated] = await this.db
       .update(devices)
@@ -170,7 +173,7 @@ export class DeviceRepository {
   async verifyToken(
     deviceId: string,
     token: string,
-    role?: string
+    role?: string,
   ): Promise<{ valid: boolean; device?: Device; tokenInfo?: DeviceAuthToken }> {
     const device = await this.findByDeviceId(deviceId);
 
@@ -214,7 +217,7 @@ export class DeviceRepository {
   async ensureToken(
     deviceId: string,
     role: string,
-    scopes: string[]
+    scopes: string[],
   ): Promise<{ token: string; isNew: boolean }> {
     const device = await this.findByDeviceId(deviceId);
 
@@ -285,7 +288,7 @@ export class DevicePairingRequestRepository {
    * 创建配对请求
    */
   async create(
-    data: Omit<NewDevicePairingRequest, "id" | "requestId" | "createdAt" | "expiresAt" | "status">
+    data: Omit<NewDevicePairingRequest, "id" | "requestId" | "createdAt" | "expiresAt" | "status">,
   ): Promise<DevicePairingRequest> {
     const id = generateId();
     const requestId = generateId();
@@ -348,8 +351,8 @@ export class DevicePairingRequestRepository {
         and(
           eq(devicePairingRequests.deviceId, deviceId),
           eq(devicePairingRequests.status, "pending"),
-          gt(devicePairingRequests.expiresAt, now)
-        )
+          gt(devicePairingRequests.expiresAt, now),
+        ),
       );
     return request ?? null;
   }
@@ -363,10 +366,7 @@ export class DevicePairingRequestRepository {
       .select()
       .from(devicePairingRequests)
       .where(
-        and(
-          eq(devicePairingRequests.status, "pending"),
-          gt(devicePairingRequests.expiresAt, now)
-        )
+        and(eq(devicePairingRequests.status, "pending"), gt(devicePairingRequests.expiresAt, now)),
       )
       .orderBy(desc(devicePairingRequests.createdAt));
   }
@@ -378,7 +378,7 @@ export class DevicePairingRequestRepository {
     requestId: string,
     approvedBy: string,
     role?: string,
-    scopes?: string[]
+    scopes?: string[],
   ): Promise<Device | null> {
     const request = await this.findByRequestId(requestId);
 
@@ -524,10 +524,7 @@ export class DevicePairingRequestRepository {
       .update(devicePairingRequests)
       .set({ status: "expired", processedAt: now })
       .where(
-        and(
-          eq(devicePairingRequests.status, "pending"),
-          lt(devicePairingRequests.expiresAt, now)
-        )
+        and(eq(devicePairingRequests.status, "pending"), lt(devicePairingRequests.expiresAt, now)),
       )
       .returning();
 
@@ -546,8 +543,6 @@ export function getDeviceRepository(db?: Database): DeviceRepository {
   return new DeviceRepository(db);
 }
 
-export function getDevicePairingRequestRepository(
-  db?: Database
-): DevicePairingRequestRepository {
+export function getDevicePairingRequestRepository(db?: Database): DevicePairingRequestRepository {
   return new DevicePairingRequestRepository(db);
 }

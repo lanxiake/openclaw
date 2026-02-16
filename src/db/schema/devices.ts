@@ -1,18 +1,10 @@
 /**
  * 设备表 Schema
  *
- * 统一存储设备信息，替代文件存储的 device-pairing.ts
+ * 统一存储设备信息 (PostgreSQL)
  */
 
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  jsonb,
-  index,
-  uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { users } from "./users.js";
@@ -40,13 +32,7 @@ export interface DeviceAuthToken {
 /**
  * 设备平台枚举
  */
-export type DevicePlatform =
-  | "iOS"
-  | "Android"
-  | "macOS"
-  | "Windows"
-  | "Web"
-  | "Linux";
+export type DevicePlatform = "iOS" | "Android" | "macOS" | "Windows" | "Web" | "Linux";
 
 /**
  * 配对请求状态枚举
@@ -109,7 +95,7 @@ export const devices = pgTable(
     index("devices_is_active_idx").on(table.isActive),
     // 索引: 创建时间
     index("devices_created_at_idx").on(table.createdAt),
-  ]
+  ],
 );
 
 /**
@@ -170,7 +156,7 @@ export const devicePairingRequests = pgTable(
     index("device_pairing_requests_expires_at_idx").on(table.expiresAt),
     // 索引: deviceId
     index("device_pairing_requests_device_id_idx").on(table.deviceId),
-  ]
+  ],
 );
 
 /**
@@ -186,15 +172,12 @@ export const devicesRelations = relations(devices, ({ one }) => ({
 /**
  * 设备配对请求表关系定义
  */
-export const devicePairingRequestsRelations = relations(
-  devicePairingRequests,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [devicePairingRequests.userId],
-      references: [users.id],
-    }),
-  })
-);
+export const devicePairingRequestsRelations = relations(devicePairingRequests, ({ one }) => ({
+  user: one(users, {
+    fields: [devicePairingRequests.userId],
+    references: [users.id],
+  }),
+}));
 
 // Zod schemas for validation
 export const insertDeviceSchema = createInsertSchema(devices);

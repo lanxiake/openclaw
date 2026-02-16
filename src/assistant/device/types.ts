@@ -1,11 +1,11 @@
 /**
  * 设备服务类型定义
  *
- * 整合用户设备关联和现有 device-pairing 系统
+ * 整合用户设备关联和设备配对系统
  */
 
 /**
- * 设备信息 (来自 device-pairing.ts)
+ * 设备信息
  */
 export interface DeviceInfo {
   /** 设备 ID */

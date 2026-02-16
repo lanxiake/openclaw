@@ -26,7 +26,7 @@ import type { NewDevice, NewDevicePairingRequest } from "../src/db/schema/device
 import { resolveStateDir } from "../src/config/paths.js";
 
 // ============================================================================
-// 类型定义 (从 device-pairing.ts 复制)
+// 类型定义 (JSON 文件格式，用于读取旧数据)
 // ============================================================================
 
 interface DeviceAuthToken {
@@ -141,9 +141,7 @@ function convertPairedDeviceToNewDevice(device: PairedDevice): NewDevice {
     approvedAt: new Date(device.approvedAtMs),
     lastActiveAt: device.tokens
       ? new Date(
-          Math.max(
-            ...Object.values(device.tokens).map((t) => t.lastUsedAtMs || t.createdAtMs)
-          )
+          Math.max(...Object.values(device.tokens).map((t) => t.lastUsedAtMs || t.createdAtMs)),
         )
       : null,
     revokedAt: null,
@@ -154,7 +152,7 @@ function convertPairedDeviceToNewDevice(device: PairedDevice): NewDevice {
  * 将 DevicePairingPendingRequest 转换为 NewDevicePairingRequest
  */
 function convertPendingRequestToNewRequest(
-  request: DevicePairingPendingRequest
+  request: DevicePairingPendingRequest,
 ): NewDevicePairingRequest {
   const PENDING_TTL_MS = 5 * 60 * 1000; // 5 分钟过期
   return {
@@ -216,9 +214,7 @@ async function migrate(options: {
   const pairedByDeviceId = await readJSON<Record<string, PairedDevice>>(pairedPath);
 
   log(`读取待处理请求文件: ${pendingPath}`);
-  const pendingById = await readJSON<Record<string, DevicePairingPendingRequest>>(
-    pendingPath
-  );
+  const pendingById = await readJSON<Record<string, DevicePairingPendingRequest>>(pendingPath);
 
   const pairedDevices = pairedByDeviceId ? Object.values(pairedByDeviceId) : [];
   const pendingRequests = pendingById ? Object.values(pendingById) : [];

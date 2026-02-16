@@ -1,12 +1,8 @@
 /**
  * 设备配对数据库适配层
  *
- * 提供与旧 device-pairing.ts 兼容的函数接口，
- * 但内部使用 DeviceRepository (PostgreSQL) 进行数据存储。
- *
- * 迁移路径:
- *   1. 调用方从 device-pairing.ts 切换到 device-pairing-db.ts
- *   2. 验证功能正常后，删除 device-pairing.ts
+ * 使用 DeviceRepository (PostgreSQL) 进行设备数据存储。
+ * 提供与原文件系统实现兼容的函数接口，供上层调用方使用。
  */
 
 import { getLogger } from "../logging/logger.js";
@@ -24,7 +20,7 @@ import type {
 const logger = getLogger();
 
 // ============================================================================
-// 兼容类型定义 (与旧 device-pairing.ts 保持一致)
+// 兼容类型定义
 // ============================================================================
 
 /**
@@ -144,7 +140,7 @@ function pairingRequestToCompat(request: DevicePairingRequest): PendingRequestCo
 }
 
 // ============================================================================
-// 公共 API (与旧 device-pairing.ts 签名兼容)
+// 公共 API
 // ============================================================================
 
 /**
@@ -354,12 +350,14 @@ export async function ensureDeviceToken(params: {
     const device = await deviceRepo.findByDeviceId(params.deviceId);
     const tokenInfo = device?.tokens?.[params.role];
 
-    return tokenInfo || {
-      token: result.token,
-      role: params.role,
-      scopes: params.scopes,
-      createdAtMs: Date.now(),
-    };
+    return (
+      tokenInfo || {
+        token: result.token,
+        role: params.role,
+        scopes: params.scopes,
+        createdAtMs: Date.now(),
+      }
+    );
   } catch (error) {
     logger.warn("[device-pairing-db] ensureDeviceToken 失败", {
       deviceId: params.deviceId,
@@ -395,13 +393,15 @@ export async function rotateDeviceToken(params: {
     const result = await deviceRepo.ensureToken(params.deviceId, params.role, scopes);
 
     const updated = await deviceRepo.findByDeviceId(params.deviceId);
-    return updated?.tokens?.[params.role] || {
-      token: result.token,
-      role: params.role,
-      scopes,
-      createdAtMs: Date.now(),
-      rotatedAtMs: Date.now(),
-    };
+    return (
+      updated?.tokens?.[params.role] || {
+        token: result.token,
+        role: params.role,
+        scopes,
+        createdAtMs: Date.now(),
+        rotatedAtMs: Date.now(),
+      }
+    );
   } catch {
     return null;
   }
@@ -473,10 +473,7 @@ export async function getUserIdByDeviceId(deviceId: string): Promise<string | nu
 /**
  * 更新设备的用户关联
  */
-export async function updateDeviceUserId(
-  deviceId: string,
-  userId: string,
-): Promise<void> {
+export async function updateDeviceUserId(deviceId: string, userId: string): Promise<void> {
   const deviceRepo = getDeviceRepository();
   const device = await deviceRepo.findByDeviceId(deviceId);
 
