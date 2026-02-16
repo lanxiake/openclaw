@@ -56,7 +56,7 @@ function generateCode(): string {
 export async function sendVerificationCode(
   target: string,
   targetType: TargetType,
-  purpose: VerificationPurpose
+  purpose: VerificationPurpose,
 ): Promise<{
   id: string;
   expiresAt: Date;
@@ -68,7 +68,7 @@ export async function sendVerificationCode(
       eq(verificationCodes.target, target),
       eq(verificationCodes.targetType, targetType),
       eq(verificationCodes.purpose, purpose),
-      eq(verificationCodes.used, false)
+      eq(verificationCodes.used, false),
     ),
     orderBy: (codes, { desc }) => [desc(codes.createdAt)],
   });
@@ -77,7 +77,7 @@ export async function sendVerificationCode(
     const timeSinceLastSend = Date.now() - recentCode.createdAt.getTime();
     if (timeSinceLastSend < VERIFICATION_CODE_CONFIG.minSendInterval * 1000) {
       const remainingSeconds = Math.ceil(
-        (VERIFICATION_CODE_CONFIG.minSendInterval * 1000 - timeSinceLastSend) / 1000
+        (VERIFICATION_CODE_CONFIG.minSendInterval * 1000 - timeSinceLastSend) / 1000,
       );
       throw new Error(`请等待 ${remainingSeconds} 秒后再试`);
     }
@@ -124,7 +124,7 @@ export async function verifyCode(
   target: string,
   targetType: TargetType,
   code: string,
-  purpose: VerificationPurpose
+  purpose: VerificationPurpose,
 ): Promise<boolean> {
   // 1. 查询最新的未使用验证码
   const db = getDatabase();
@@ -133,7 +133,7 @@ export async function verifyCode(
       eq(verificationCodes.target, target),
       eq(verificationCodes.targetType, targetType),
       eq(verificationCodes.purpose, purpose),
-      eq(verificationCodes.used, false)
+      eq(verificationCodes.used, false),
     ),
     orderBy: (codes, { desc }) => [desc(codes.createdAt)],
   });
@@ -202,7 +202,7 @@ async function sendCodeToTarget(
   target: string,
   targetType: TargetType,
   code: string,
-  purpose: VerificationPurpose
+  purpose: VerificationPurpose,
 ): Promise<void> {
   // 根据目标类型发送验证码
   if (targetType === "phone") {

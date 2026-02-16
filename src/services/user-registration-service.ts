@@ -59,7 +59,11 @@ export interface RegisterResult {
 /**
  * 检查用户是否已存在
  */
-async function checkUserExists(phone?: string, email?: string, wechatOpenId?: string): Promise<boolean> {
+async function checkUserExists(
+  phone?: string,
+  email?: string,
+  wechatOpenId?: string,
+): Promise<boolean> {
   const conditions = [];
 
   if (phone) {

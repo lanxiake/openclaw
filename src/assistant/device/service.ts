@@ -13,7 +13,10 @@ import {
   getPlanRepository,
   type UserDevice,
 } from "../../db/index.js";
-import { getPairedDevice, type PairedDeviceCompat as PairedDevice } from "../../infra/device-pairing-db.js";
+import {
+  getPairedDevice,
+  type PairedDeviceCompat as PairedDevice,
+} from "../../infra/device-pairing-db.js";
 import { audit } from "../../db/index.js";
 import type {
   DeviceInfo,

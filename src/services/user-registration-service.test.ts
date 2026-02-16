@@ -29,7 +29,7 @@ vi.mock("../db/connection.js", () => ({
               emailVerified: true,
               isActive: true,
             },
-          ])
+          ]),
         ),
       })),
     })),
@@ -93,12 +93,7 @@ describe("user-registration-service", () => {
       expect(result.user?.id).toBe("usr_test123");
       expect(result.user?.phone).toBe("+8613800138000");
       expect(result.user?.displayName).toBe("测试用户");
-      expect(mockVerifyCode).toHaveBeenCalledWith(
-        "+8613800138000",
-        "phone",
-        "123456",
-        "register"
-      );
+      expect(mockVerifyCode).toHaveBeenCalledWith("+8613800138000", "phone", "123456", "register");
     });
 
     it("应该成功注册手机号用户(无密码)", async () => {
@@ -178,7 +173,7 @@ describe("user-registration-service", () => {
         "test@example.com",
         "email",
         "123456",
-        "register"
+        "register",
       );
     });
 
@@ -238,7 +233,7 @@ describe("user-registration-service", () => {
                 emailVerified: true,
                 isActive: true,
               },
-            ])
+            ]),
           ),
         })),
       });
@@ -295,7 +290,7 @@ describe("user-registration-service", () => {
                 createdAt: new Date(),
                 isActive: true,
               },
-            ])
+            ]),
           ),
         })),
       });

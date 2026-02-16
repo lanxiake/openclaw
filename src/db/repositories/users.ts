@@ -289,7 +289,7 @@ export class UserDeviceRepository {
    */
   async update(
     deviceId: string,
-    data: Partial<Pick<UserDevice, "alias" | "isPrimary">>
+    data: Partial<Pick<UserDevice, "alias" | "isPrimary">>,
   ): Promise<UserDevice> {
     const [updated] = await this.db
       .update(userDevices)

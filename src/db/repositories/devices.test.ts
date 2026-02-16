@@ -443,12 +443,10 @@ describe("DevicePairingRequestRepository", () => {
         requestedScopes: ["read"],
       });
 
-      const device = await pairingRepo.approve(
-        request.requestId,
-        testUserId,
-        "user",
-        ["read", "write"]
-      );
+      const device = await pairingRepo.approve(request.requestId, testUserId, "user", [
+        "read",
+        "write",
+      ]);
 
       console.log("[TEST] 创建的设备ID:", device?.deviceId);
 
