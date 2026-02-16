@@ -17,6 +17,7 @@ import { SystemService } from './system-service'
 import { DevicePairingService } from './device-pairing-service'
 import { UpdaterService, setupUpdaterIpcHandlers } from './updater-service'
 import { ClientSkillRuntime } from './skill-runtime'
+import { ApiClient } from './api-client'
 import {
   validateUrl,
   validatePid,
@@ -36,6 +37,7 @@ const log = {
 let mainWindow: BrowserWindow | null = null
 let trayManager: TrayManager | null = null
 let gatewayClient: GatewayClient | null = null
+let apiClient: ApiClient | null = null
 let systemService: SystemService | null = null
 let devicePairingService: DevicePairingService | null = null
 let updaterService: UpdaterService | null = null
@@ -129,16 +131,18 @@ function initTray(): void {
 }
 
 /**
- * 初始化 Gateway 客户端
+ * 初始化 Gateway 客户端（懒加载模式）
+ *
+ * 创建 Gateway 客户端实例并设置事件监听器，但不自动连接。
+ * 等待用户通过 API Server 登录后，再由渲染进程触发连接。
  */
-async function initGatewayClient(): Promise<void> {
-  log.info('初始化 Gateway 客户端')
+function initGatewayClientLazy(): void {
+  log.info('初始化 Gateway 客户端（懒加载模式）')
 
-  // TODO: 从配置文件读取 Gateway 地址和认证信息
   // 使用 127.0.0.1 而不是 localhost，避免 IPv6 解析问题
   const config = {
     url: 'ws://127.0.0.1:18789',
-    token: '', // 将通过设备配对获取
+    token: '', // 将通过登录流程获取
   }
 
   gatewayClient = new GatewayClient(config)
@@ -186,15 +190,7 @@ async function initGatewayClient(): Promise<void> {
     await handleCommandExecute(request)
   })
 
-  // 自动连接到 Gateway
-  log.info('尝试连接到 Gateway...')
-  try {
-    await gatewayClient.connect()
-    log.info('Gateway 连接成功')
-  } catch (error) {
-    log.warn('初始 Gateway 连接失败，将自动重试:', error)
-    // 不阻塞启动流程，让重连机制处理
-  }
+  log.info('Gateway 客户端已初始化，等待用户登录后连接')
 }
 
 /**
@@ -817,6 +813,179 @@ function setupIpcHandlers(): void {
 }
 
 /**
+ * 初始化 API Server 客户端
+ */
+function initApiClient(): void {
+  log.info('初始化 API Server 客户端')
+
+  // 从设置中读取 API Server URL，默认使用 localhost:3000
+  apiClient = new ApiClient({
+    baseUrl: 'http://localhost:3000',
+    timeout: 30000,
+  })
+
+  log.info('API Server 客户端初始化完成')
+}
+
+/**
+ * 设置 API Server IPC 处理器
+ *
+ * 提供认证、设备配对、用户自服务等 HTTP API 调用
+ */
+function setupApiIpcHandlers(): void {
+  log.info('设置 API Server IPC 处理器')
+
+  // === 认证接口 ===
+  ipcMain.handle('api:login', async (_event, params: { identifier: string; password: string }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    // 参数验证
+    if (typeof params.identifier !== 'string' || params.identifier.length > 200) {
+      throw new Error('无效的用户标识')
+    }
+    if (typeof params.password !== 'string' || params.password.length > 200) {
+      throw new Error('无效的密码')
+    }
+    return apiClient.login(params)
+  })
+
+  ipcMain.handle('api:register', async (_event, params: {
+    username?: string
+    phone?: string
+    email?: string
+    password: string
+    displayName?: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    // 参数验证
+    if (typeof params.password !== 'string' || params.password.length < 6 || params.password.length > 200) {
+      throw new Error('密码长度必须在 6-200 字符之间')
+    }
+    return apiClient.register(params)
+  })
+
+  ipcMain.handle('api:refreshToken', async (_event, refreshToken: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof refreshToken !== 'string' || refreshToken.length > 2000) {
+      throw new Error('无效的刷新令牌')
+    }
+    return apiClient.refreshToken(refreshToken)
+  })
+
+  ipcMain.handle('api:logout', async (_event, refreshToken: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof refreshToken !== 'string') {
+      throw new Error('无效的刷新令牌')
+    }
+    return apiClient.logout(refreshToken)
+  })
+
+  ipcMain.handle('api:sendCode', async (_event, params: {
+    phone?: string
+    email?: string
+    type?: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    return apiClient.sendVerificationCode(params)
+  })
+
+  // === 设备配对接口 ===
+  ipcMain.handle('api:requestPairing', async (_event, params: {
+    deviceId: string
+    publicKey: string
+    displayName?: string
+    platform?: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    // 参数验证
+    if (typeof params.deviceId !== 'string' || params.deviceId.length > 200) {
+      throw new Error('无效的设备 ID')
+    }
+    if (typeof params.publicKey !== 'string' || params.publicKey.length > 5000) {
+      throw new Error('无效的公钥')
+    }
+    return apiClient.requestDevicePairing(params)
+  })
+
+  ipcMain.handle('api:checkPairingStatus', async (_event, requestId: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof requestId !== 'string' || requestId.length > 200) {
+      throw new Error('无效的请求 ID')
+    }
+    return apiClient.checkPairingStatus(requestId)
+  })
+
+  // === 用户自服务接口 ===
+  ipcMain.handle('api:getCurrentUser', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    return apiClient.getCurrentUser()
+  })
+
+  ipcMain.handle('api:getUserDevices', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    return apiClient.getUserDevices()
+  })
+
+  ipcMain.handle('api:updateUser', async (_event, params: {
+    displayName?: string
+    avatar?: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    return apiClient.updateUser(params)
+  })
+
+  // === 配置接口 ===
+  ipcMain.handle('api:setBaseUrl', async (_event, url: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    // 验证 URL 格式
+    if (typeof url !== 'string' || !url.startsWith('http')) {
+      throw new Error('无效的 API Server URL')
+    }
+    apiClient.setBaseUrl(url)
+  })
+
+  ipcMain.handle('api:getBaseUrl', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    return apiClient.getBaseUrl()
+  })
+
+  ipcMain.handle('api:setAccessToken', async (_event, token: string | null) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (token !== null && (typeof token !== 'string' || token.length > 2000)) {
+      throw new Error('无效的访问令牌')
+    }
+    apiClient.setAccessToken(token)
+  })
+
+  log.info('API Server IPC 处理器设置完成')
+}
+
+/**
  * 应用初始化
  */
 async function initialize(): Promise<void> {
@@ -852,7 +1021,15 @@ async function initialize(): Promise<void> {
   initTray()
   initSystemService()
   setupIpcHandlers()
-  await initGatewayClient()
+
+  // 初始化 API 客户端（不需要网络连接，立即可用）
+  initApiClient()
+  setupApiIpcHandlers()
+
+  // Gateway 客户端懒加载：只创建实例和事件监听，不自动连接
+  // 等待用户通过 API Server 登录后，由渲染进程触发连接
+  initGatewayClientLazy()
+
   await initDevicePairingService()
   await initSkillRuntime()  // 初始化技能运行时
   initUpdaterService()

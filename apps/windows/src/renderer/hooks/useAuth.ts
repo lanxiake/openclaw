@@ -59,16 +59,18 @@ export interface LoginParams {
 }
 
 /**
- * 认证响应
+ * 认证响应（来自 API Server HTTP 接口）
  */
 interface AuthResponse {
   success: boolean
-  user?: User
-  accessToken?: string
-  refreshToken?: string
-  expiresIn?: number
+  data?: {
+    user: User
+    accessToken: string
+    refreshToken?: string
+    expiresIn?: number
+  }
   error?: string
-  errorCode?: string
+  code?: string
 }
 
 // localStorage keys
@@ -161,7 +163,7 @@ export function useAuth() {
   })
 
   /**
-   * 用户注册
+   * 用户注册 - 通过 API Server HTTP 接口
    */
   const register = useCallback(async (params: RegisterParams): Promise<{ success: boolean; error?: string }> => {
     console.log('[useAuth] 用户注册:', { ...params, password: '***' })
@@ -169,18 +171,23 @@ export function useAuth() {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
-      const response = await window.electronAPI.gateway.call<AuthResponse>('auth.register', params)
+      const response = await window.electronAPI.api.register(params) as AuthResponse
 
-      console.log('[useAuth] 注册响应:', { ...response, accessToken: response.accessToken ? '***' : undefined })
+      console.log('[useAuth] 注册响应:', { success: response.success, hasToken: !!response.data?.accessToken })
 
-      if (response.success && response.user && response.accessToken) {
+      if (response.success && response.data?.user && response.data?.accessToken) {
+        const { user, accessToken, refreshToken } = response.data
+
         // 保存认证状态
-        saveAuthState(response.user, response.accessToken, response.refreshToken || null)
+        saveAuthState(user, accessToken, refreshToken || null)
+
+        // 同步访问令牌到主进程的 API 客户端
+        await window.electronAPI.api.setAccessToken(accessToken)
 
         setState({
-          user: response.user,
-          accessToken: response.accessToken,
-          refreshToken: response.refreshToken || null,
+          user,
+          accessToken,
+          refreshToken: refreshToken || null,
           isAuthenticated: true,
           isLoading: false,
           error: null,
@@ -201,7 +208,7 @@ export function useAuth() {
   }, [])
 
   /**
-   * 用户登录
+   * 用户登录 - 通过 API Server HTTP 接口
    */
   const login = useCallback(async (params: LoginParams): Promise<{ success: boolean; error?: string }> => {
     console.log('[useAuth] 用户登录:', { identifier: params.identifier })
@@ -209,18 +216,23 @@ export function useAuth() {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
-      const response = await window.electronAPI.gateway.call<AuthResponse>('auth.login', params)
+      const response = await window.electronAPI.api.login(params) as AuthResponse
 
-      console.log('[useAuth] 登录响应:', { ...response, accessToken: response.accessToken ? '***' : undefined })
+      console.log('[useAuth] 登录响应:', { success: response.success, hasToken: !!response.data?.accessToken })
 
-      if (response.success && response.user && response.accessToken) {
+      if (response.success && response.data?.user && response.data?.accessToken) {
+        const { user, accessToken, refreshToken } = response.data
+
         // 保存认证状态
-        saveAuthState(response.user, response.accessToken, response.refreshToken || null)
+        saveAuthState(user, accessToken, refreshToken || null)
+
+        // 同步访问令牌到主进程的 API 客户端
+        await window.electronAPI.api.setAccessToken(accessToken)
 
         setState({
-          user: response.user,
-          accessToken: response.accessToken,
-          refreshToken: response.refreshToken || null,
+          user,
+          accessToken,
+          refreshToken: refreshToken || null,
           isAuthenticated: true,
           isLoading: false,
           error: null,
@@ -241,20 +253,25 @@ export function useAuth() {
   }, [])
 
   /**
-   * 用户登出
+   * 用户登出 - 通过 API Server HTTP 接口
    */
   const logout = useCallback(async (): Promise<void> => {
     console.log('[useAuth] 用户登出')
 
     try {
       if (state.refreshToken) {
-        await window.electronAPI.gateway.call('auth.logout', {
-          refreshToken: state.refreshToken,
-        })
+        await window.electronAPI.api.logout(state.refreshToken)
       }
     } catch (error) {
       console.error('[useAuth] 登出请求失败:', error)
       // 即使请求失败也要清除本地状态
+    }
+
+    // 清除主进程中的访问令牌
+    try {
+      await window.electronAPI.api.setAccessToken(null)
+    } catch (error) {
+      console.error('[useAuth] 清除主进程令牌失败:', error)
     }
 
     // 清除本地状态
@@ -271,7 +288,7 @@ export function useAuth() {
   }, [state.refreshToken])
 
   /**
-   * 刷新访问令牌
+   * 刷新访问令牌 - 通过 API Server HTTP 接口
    */
   const refreshAccessToken = useCallback(async (): Promise<boolean> => {
     console.log('[useAuth] 刷新访问令牌')
@@ -282,18 +299,22 @@ export function useAuth() {
     }
 
     try {
-      const response = await window.electronAPI.gateway.call<AuthResponse>('auth.refreshToken', {
-        refreshToken: state.refreshToken,
-      })
+      const response = await window.electronAPI.api.refreshToken(state.refreshToken) as AuthResponse
 
-      if (response.success && response.accessToken) {
+      if (response.success && response.data?.accessToken) {
+        const newAccessToken = response.data.accessToken
+        const newRefreshToken = response.data.refreshToken || state.refreshToken
+
         // 更新令牌
-        saveAuthState(state.user, response.accessToken, response.refreshToken || state.refreshToken)
+        saveAuthState(state.user, newAccessToken, newRefreshToken)
+
+        // 同步访问令牌到主进程的 API 客户端
+        await window.electronAPI.api.setAccessToken(newAccessToken)
 
         setState(prev => ({
           ...prev,
-          accessToken: response.accessToken!,
-          refreshToken: response.refreshToken || prev.refreshToken,
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
         }))
 
         return true

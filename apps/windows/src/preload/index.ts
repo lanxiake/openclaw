@@ -292,6 +292,47 @@ export interface ElectronAPI {
     /** 监听状态变化 */
     onStateChange: (callback: (state: UpdateState) => void) => () => void
   }
+
+  // API Server HTTP 调用
+  api: {
+    /** 用户登录 */
+    login: (params: { identifier: string; password: string }) => Promise<unknown>
+    /** 用户注册 */
+    register: (params: {
+      username?: string
+      phone?: string
+      email?: string
+      password: string
+      displayName?: string
+    }) => Promise<unknown>
+    /** 刷新访问令牌 */
+    refreshToken: (refreshToken: string) => Promise<unknown>
+    /** 用户登出 */
+    logout: (refreshToken: string) => Promise<void>
+    /** 发送验证码 */
+    sendCode: (params: { phone?: string; email?: string; type?: string }) => Promise<unknown>
+    /** 发起设备配对请求 */
+    requestPairing: (params: {
+      deviceId: string
+      publicKey: string
+      displayName?: string
+      platform?: string
+    }) => Promise<unknown>
+    /** 查询配对请求状态 */
+    checkPairingStatus: (requestId: string) => Promise<unknown>
+    /** 获取当前用户信息 */
+    getCurrentUser: () => Promise<unknown>
+    /** 获取用户设备列表 */
+    getUserDevices: () => Promise<unknown>
+    /** 更新用户信息 */
+    updateUser: (params: { displayName?: string; avatar?: string }) => Promise<unknown>
+    /** 设置 API Server URL */
+    setBaseUrl: (url: string) => Promise<void>
+    /** 获取 API Server URL */
+    getBaseUrl: () => Promise<string>
+    /** 设置访问令牌（登录成功后同步到主进程） */
+    setAccessToken: (token: string | null) => Promise<void>
+  }
 }
 
 /**
@@ -420,6 +461,41 @@ const electronAPI: ElectronAPI = {
     stopAutoCheck: () => ipcRenderer.invoke('updater:stopAutoCheck'),
     onStateChange: (callback: (state: UpdateState) => void) =>
       createEventListener('updater:state-change', callback as (...args: unknown[]) => void),
+  },
+
+  // API Server HTTP 调用
+  api: {
+    login: (params: { identifier: string; password: string }) =>
+      ipcRenderer.invoke('api:login', params),
+    register: (params: {
+      username?: string
+      phone?: string
+      email?: string
+      password: string
+      displayName?: string
+    }) => ipcRenderer.invoke('api:register', params),
+    refreshToken: (refreshToken: string) =>
+      ipcRenderer.invoke('api:refreshToken', refreshToken),
+    logout: (refreshToken: string) =>
+      ipcRenderer.invoke('api:logout', refreshToken),
+    sendCode: (params: { phone?: string; email?: string; type?: string }) =>
+      ipcRenderer.invoke('api:sendCode', params),
+    requestPairing: (params: {
+      deviceId: string
+      publicKey: string
+      displayName?: string
+      platform?: string
+    }) => ipcRenderer.invoke('api:requestPairing', params),
+    checkPairingStatus: (requestId: string) =>
+      ipcRenderer.invoke('api:checkPairingStatus', requestId),
+    getCurrentUser: () => ipcRenderer.invoke('api:getCurrentUser'),
+    getUserDevices: () => ipcRenderer.invoke('api:getUserDevices'),
+    updateUser: (params: { displayName?: string; avatar?: string }) =>
+      ipcRenderer.invoke('api:updateUser', params),
+    setBaseUrl: (url: string) => ipcRenderer.invoke('api:setBaseUrl', url),
+    getBaseUrl: () => ipcRenderer.invoke('api:getBaseUrl'),
+    setAccessToken: (token: string | null) =>
+      ipcRenderer.invoke('api:setAccessToken', token),
   },
 }
 

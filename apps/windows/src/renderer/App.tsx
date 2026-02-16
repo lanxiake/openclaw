@@ -47,14 +47,18 @@ const App: React.FC = () => {
 
   /**
    * 认证成功后自动连接 Gateway
-   * 从用户设置中读取网关地址，而非使用硬编码值
+   *
+   * 新流程：
+   * 1. 用户通过 API Server 登录成功
+   * 2. 使用 accessToken 连接 Gateway（Gateway 使用相同的 JWT 密钥）
+   * 3. 如果 Gateway 不可用，聊天功能不可用但不影响已登录状态
    */
   useEffect(() => {
     if (isAuthenticated && accessToken && !isConnected) {
       const gatewayUrl = settings.gateway.url || 'ws://localhost:18789'
-      console.log('[App] 用户已认证，自动连接 Gateway:', gatewayUrl)
+      console.log('[App] 用户已认证，连接 Gateway:', gatewayUrl)
       connect(gatewayUrl, { token: accessToken }).catch(err => {
-        console.error('[App] 自动连接 Gateway 失败:', err)
+        console.error('[App] 连接 Gateway 失败（聊天功能暂不可用）:', err)
       })
     }
   }, [isAuthenticated, accessToken, isConnected, connect, settings.gateway.url])
