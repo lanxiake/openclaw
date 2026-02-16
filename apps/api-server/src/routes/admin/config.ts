@@ -19,7 +19,8 @@ import {
   getConfigGroups,
   resetConfigToDefault,
 } from "../../../../../src/assistant/config/config-service.js";
-import { getRequestAdmin } from "../../plugins/admin-auth.js";
+import { getRequiredAdmin } from "../../plugins/admin-auth.js";
+import { requirePermission } from "../../plugins/permission-guard.js";
 
 /**
  * 从请求中提取客户端信息
@@ -45,15 +46,9 @@ export function registerAdminConfigRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/config",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("system", "viewConfig") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       const query = request.query as {
         page?: string;
@@ -98,15 +93,9 @@ export function registerAdminConfigRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/config/groups",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("system", "viewConfig") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       request.log.info(
         { adminId: admin.adminId },
@@ -124,15 +113,9 @@ export function registerAdminConfigRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/config/:key",
+    { preHandler: requirePermission("system", "viewConfig") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { key } = request.params as { key: string };
 
@@ -162,24 +145,9 @@ export function registerAdminConfigRoutes(server: FastifyInstance): void {
    */
   server.put(
     "/api/admin/config/:key",
+    { preHandler: requirePermission("system", "editConfig") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      // 需要 admin 或 super_admin 角色
-      if (admin.role === "operator") {
-        return reply.code(403).send({
-          success: false,
-          error: "Insufficient permissions",
-          code: "FORBIDDEN",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { key } = request.params as { key: string };
       const { value } = request.body as { value: unknown };
@@ -222,15 +190,9 @@ export function registerAdminConfigRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/config/:key/history",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("system", "viewConfig") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       const { key } = request.params as { key: string };
       const query = request.query as {
@@ -266,27 +228,14 @@ export function registerAdminConfigRoutes(server: FastifyInstance): void {
 
   /**
    * POST /api/admin/config/:key/reset - 重置配置为默认值
+   *
+   * 注意：此操作仅 super_admin 可执行（通过 system.resetConfig 权限控制）
    */
   server.post(
     "/api/admin/config/:key/reset",
+    { preHandler: requirePermission("system", "resetConfig") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      // 需要 super_admin 角色
-      if (admin.role !== "super_admin") {
-        return reply.code(403).send({
-          success: false,
-          error: "Super admin permission required",
-          code: "FORBIDDEN",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { key } = request.params as { key: string };
       const { ipAddress, userAgent } = getClientInfo(request);

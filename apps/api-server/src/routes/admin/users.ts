@@ -11,7 +11,8 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
 import { getAdminUserService } from "../../../../../src/assistant/admin-console/admin-user-service.js";
-import { getRequestAdmin } from "../../plugins/admin-auth.js";
+import { getRequiredAdmin } from "../../plugins/admin-auth.js";
+import { requirePermission } from "../../plugins/permission-guard.js";
 
 /**
  * 从请求中提取客户端信息
@@ -39,15 +40,9 @@ export function registerAdminUsersRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/users",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("users", "view") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       const query = request.query as {
         page?: string;
@@ -101,15 +96,9 @@ export function registerAdminUsersRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/users/stats",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("users", "view") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       request.log.info(
         { adminId: admin.adminId },
@@ -128,15 +117,9 @@ export function registerAdminUsersRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/users/:id",
+    { preHandler: requirePermission("users", "view") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { id } = request.params as { id: string };
 
@@ -164,24 +147,9 @@ export function registerAdminUsersRoutes(server: FastifyInstance): void {
    */
   server.post(
     "/api/admin/users/:id/suspend",
+    { preHandler: requirePermission("users", "suspend") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      // 需要 admin 或 super_admin 角色
-      if (admin.role === "operator") {
-        return reply.code(403).send({
-          success: false,
-          error: "Insufficient permissions",
-          code: "FORBIDDEN",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { id } = request.params as { id: string };
       const { reason } = request.body as { reason?: string };
@@ -222,24 +190,9 @@ export function registerAdminUsersRoutes(server: FastifyInstance): void {
    */
   server.post(
     "/api/admin/users/:id/activate",
+    { preHandler: requirePermission("users", "suspend") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      // 需要 admin 或 super_admin 角色
-      if (admin.role === "operator") {
-        return reply.code(403).send({
-          success: false,
-          error: "Insufficient permissions",
-          code: "FORBIDDEN",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { id } = request.params as { id: string };
       const { ipAddress, userAgent } = getClientInfo(request);

@@ -10,7 +10,8 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
 import { getAdminDashboardService } from "../../../../../src/assistant/admin-console/admin-dashboard-service.js";
-import { getRequestAdmin } from "../../plugins/admin-auth.js";
+import { getRequiredAdmin } from "../../plugins/admin-auth.js";
+import { requirePermission } from "../../plugins/permission-guard.js";
 
 /**
  * 注册仪表盘路由
@@ -21,15 +22,9 @@ export function registerAdminDashboardRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/dashboard/stats",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("system", "viewLogs") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       request.log.info(
         { adminId: admin.adminId },
@@ -48,15 +43,9 @@ export function registerAdminDashboardRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/dashboard/trends",
+    { preHandler: requirePermission("system", "viewLogs") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const query = request.query as {
         type?: string;
@@ -99,15 +88,9 @@ export function registerAdminDashboardRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/dashboard/distribution",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("system", "viewLogs") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       request.log.info(
         { adminId: admin.adminId },
@@ -126,15 +109,9 @@ export function registerAdminDashboardRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/dashboard/activities",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("system", "viewLogs") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       const query = request.query as { limit?: string };
       const limit = Math.min(50, Math.max(1, parseInt(query.limit || "10", 10)));

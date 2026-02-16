@@ -12,7 +12,8 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
 import { getAdminAuditService } from "../../../../../src/assistant/admin-console/admin-audit-service.js";
-import { getRequestAdmin } from "../../plugins/admin-auth.js";
+import { getRequiredAdmin } from "../../plugins/admin-auth.js";
+import { requirePermission } from "../../plugins/permission-guard.js";
 
 /**
  * 注册审计日志路由
@@ -23,15 +24,9 @@ export function registerAdminAuditRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/audit-logs",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("system", "viewLogs") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       const query = request.query as {
         page?: string;
@@ -87,15 +82,9 @@ export function registerAdminAuditRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/audit-logs/stats",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("system", "viewLogs") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       request.log.info(
         { adminId: admin.adminId },
@@ -114,15 +103,9 @@ export function registerAdminAuditRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/audit-logs/actions",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("system", "viewLogs") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       request.log.info(
         { adminId: admin.adminId },
@@ -141,15 +124,9 @@ export function registerAdminAuditRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/audit-logs/admins",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("system", "viewLogs") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       request.log.info(
         { adminId: admin.adminId },
@@ -168,15 +145,9 @@ export function registerAdminAuditRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/audit-logs/export",
+    { preHandler: requirePermission("system", "viewLogs") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const query = request.query as {
         format?: string;
@@ -224,15 +195,9 @@ export function registerAdminAuditRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/audit-logs/:id",
+    { preHandler: requirePermission("system", "viewLogs") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { id } = request.params as { id: string };
 

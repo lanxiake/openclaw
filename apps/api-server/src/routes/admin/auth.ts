@@ -19,7 +19,7 @@ import {
   changeAdminPassword,
   updateAdminProfile,
 } from "../../../../../src/assistant/admin-auth/admin-auth-service.js";
-import { getRequestAdmin } from "../../plugins/admin-auth.js";
+import { getRequiredAdmin } from "../../plugins/admin-auth.js";
 
 /**
  * 从请求中提取客户端信息
@@ -151,15 +151,8 @@ export function registerAdminAuthRoutes(server: FastifyInstance): void {
    */
   server.post(
     "/api/admin/auth/logout",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       const { refreshToken } = request.body as { refreshToken?: string };
       const { ipAddress, userAgent } = getClientInfo(request);
@@ -185,14 +178,7 @@ export function registerAdminAuthRoutes(server: FastifyInstance): void {
   server.post(
     "/api/admin/auth/password",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { currentPassword, newPassword } = request.body as {
         currentPassword?: string;
@@ -252,14 +238,7 @@ export function registerAdminAuthRoutes(server: FastifyInstance): void {
   server.get(
     "/api/admin/auth/profile",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const profile = await getAdminProfile(admin.adminId);
       if (!profile) {
@@ -280,14 +259,7 @@ export function registerAdminAuthRoutes(server: FastifyInstance): void {
   server.put(
     "/api/admin/auth/profile",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { displayName, email } = request.body as {
         displayName?: string;

@@ -28,7 +28,8 @@ import {
   publishSkill,
   unpublishSkill,
 } from "../../../../../src/assistant/skills/skill-review-service.js";
-import { getRequestAdmin } from "../../plugins/admin-auth.js";
+import { getRequiredAdmin } from "../../plugins/admin-auth.js";
+import { requirePermission } from "../../plugins/permission-guard.js";
 
 /**
  * 注册技能管理路由
@@ -39,15 +40,9 @@ export function registerAdminSkillsRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/skills",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("skills", "view") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       const query = request.query as {
         page?: string;
@@ -98,15 +93,9 @@ export function registerAdminSkillsRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/skills/stats",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("skills", "view") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       request.log.info(
         { adminId: admin.adminId },
@@ -124,15 +113,9 @@ export function registerAdminSkillsRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/skills/featured",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("skills", "view") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       request.log.info(
         { adminId: admin.adminId },
@@ -150,15 +133,9 @@ export function registerAdminSkillsRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/skills/categories",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("skills", "view") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       request.log.info(
         { adminId: admin.adminId },
@@ -176,15 +153,9 @@ export function registerAdminSkillsRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/skills/:id",
+    { preHandler: requirePermission("skills", "view") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { id } = request.params as { id: string };
 
@@ -211,23 +182,9 @@ export function registerAdminSkillsRoutes(server: FastifyInstance): void {
    */
   server.post(
     "/api/admin/skills/:id/review",
+    { preHandler: requirePermission("skills", "create") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      if (admin.role === "operator") {
-        return reply.code(403).send({
-          success: false,
-          error: "Insufficient permissions",
-          code: "FORBIDDEN",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { id } = request.params as { id: string };
       const { action, note, reason } = request.body as {
@@ -280,23 +237,9 @@ export function registerAdminSkillsRoutes(server: FastifyInstance): void {
    */
   server.post(
     "/api/admin/skills/:id/publish",
+    { preHandler: requirePermission("skills", "publish") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      if (admin.role === "operator") {
-        return reply.code(403).send({
-          success: false,
-          error: "Insufficient permissions",
-          code: "FORBIDDEN",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { id } = request.params as { id: string };
 
@@ -324,23 +267,9 @@ export function registerAdminSkillsRoutes(server: FastifyInstance): void {
    */
   server.post(
     "/api/admin/skills/:id/unpublish",
+    { preHandler: requirePermission("skills", "publish") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      if (admin.role === "operator") {
-        return reply.code(403).send({
-          success: false,
-          error: "Insufficient permissions",
-          code: "FORBIDDEN",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { id } = request.params as { id: string };
 
@@ -368,23 +297,9 @@ export function registerAdminSkillsRoutes(server: FastifyInstance): void {
    */
   server.post(
     "/api/admin/skills/:id/featured",
+    { preHandler: requirePermission("skills", "edit") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      if (admin.role === "operator") {
-        return reply.code(403).send({
-          success: false,
-          error: "Insufficient permissions",
-          code: "FORBIDDEN",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { id } = request.params as { id: string };
       const { featured, order } = request.body as {

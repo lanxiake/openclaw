@@ -10,7 +10,8 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
 import { getAdminSubscriptionService } from "../../../../../src/assistant/admin-console/admin-subscription-service.js";
-import { getRequestAdmin } from "../../plugins/admin-auth.js";
+import { getRequiredAdmin } from "../../plugins/admin-auth.js";
+import { requirePermission } from "../../plugins/permission-guard.js";
 
 /**
  * 从请求中提取客户端信息
@@ -38,15 +39,9 @@ export function registerAdminPlansRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/plans",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+    { preHandler: requirePermission("subscriptions", "view") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
 
       request.log.info(
         { adminId: admin.adminId },
@@ -65,15 +60,9 @@ export function registerAdminPlansRoutes(server: FastifyInstance): void {
    */
   server.get(
     "/api/admin/plans/:id",
+    { preHandler: requirePermission("subscriptions", "view") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { id } = request.params as { id: string };
 
@@ -101,24 +90,9 @@ export function registerAdminPlansRoutes(server: FastifyInstance): void {
    */
   server.post(
     "/api/admin/plans",
+    { preHandler: requirePermission("subscriptions", "edit") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      // 需要 admin 或 super_admin 角色
-      if (admin.role === "operator") {
-        return reply.code(403).send({
-          success: false,
-          error: "Insufficient permissions",
-          code: "FORBIDDEN",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const body = request.body as {
         code?: string;
@@ -197,24 +171,9 @@ export function registerAdminPlansRoutes(server: FastifyInstance): void {
    */
   server.put(
     "/api/admin/plans/:id",
+    { preHandler: requirePermission("subscriptions", "edit") },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const admin = getRequestAdmin(request);
-      if (!admin) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      // 需要 admin 或 super_admin 角色
-      if (admin.role === "operator") {
-        return reply.code(403).send({
-          success: false,
-          error: "Insufficient permissions",
-          code: "FORBIDDEN",
-        });
-      }
+      const admin = getRequiredAdmin(request);
 
       const { id } = request.params as { id: string };
       const body = request.body as {
