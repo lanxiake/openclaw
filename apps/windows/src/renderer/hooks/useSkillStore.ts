@@ -299,11 +299,21 @@ export function useSkillStore(): UseSkillStoreReturn {
   const loadCategories = useCallback(async () => {
     console.log('[useSkillStore] 加载分类列表')
     try {
-      const result = await window.electronAPI.gateway.call<{ categories: SkillCategory[]; total: number }>(
-        'assistant.store.categories',
+      // 使用新的 admin.skills.categories.list RPC 方法
+      const result = await window.electronAPI.gateway.call<{ items: Array<{ id: string; name: string; icon: string; skillCount: number }>; total: number }>(
+        'admin.skills.categories.list',
         {}
       )
-      setCategories(result.categories || [])
+
+      // 转换为 SkillCategory 格式
+      const categories: SkillCategory[] = (result.items || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        icon: item.icon || '📦',
+        count: item.skillCount || 0
+      }))
+
+      setCategories(categories)
     } catch (err) {
       console.error('[useSkillStore] 加载分类失败:', err)
     }
@@ -367,21 +377,30 @@ export function useSkillStore(): UseSkillStoreReturn {
     setError(null)
 
     try {
-      const result = await window.electronAPI.gateway.call<{ success: boolean; skillId?: string; skill?: unknown; error?: string }>(
-        'assistant.store.submit',
-        data
+      // 使用新的 user.skills.create RPC 方法
+      const result = await window.electronAPI.gateway.call<{ id: string; name: string; status: string }>(
+        'user.skills.create',
+        {
+          name: data.name,
+          description: data.description,
+          readme: data.readme,
+          version: data.version,
+          categoryId: data.categoryId,
+          tags: data.tags || []
+        }
       )
 
-      if (result.success) {
-        console.log('[useSkillStore] 上传成功, skillId:', result.skillId)
+      if (result && result.id) {
+        console.log('[useSkillStore] 技能创建成功, skillId:', result.id)
         // 刷新商店列表
         await loadStoreSkills()
+        return { success: true, skillId: result.id }
       } else {
-        console.error('[useSkillStore] 上传失败:', result.error)
-        setError(result.error || '上传失败')
+        const errorMessage = '创建技能失败'
+        console.error('[useSkillStore] 创建失败')
+        setError(errorMessage)
+        return { success: false, error: errorMessage }
       }
-
-      return { success: result.success, skillId: result.skillId, error: result.error }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '上传失败'
       console.error('[useSkillStore] 上传异常:', errorMessage)
