@@ -2,11 +2,12 @@ import {
   approveDevicePairing,
   listDevicePairing,
   type DeviceAuthToken,
+  type PairedDeviceCompat,
   rejectDevicePairing,
   revokeDeviceToken,
   rotateDeviceToken,
   summarizeDeviceTokens,
-} from "../../infra/device-pairing.js";
+} from "../../infra/device-pairing-db.js";
 import {
   ErrorCodes,
   errorShape,
@@ -19,9 +20,7 @@ import {
 } from "../protocol/index.js";
 import type { GatewayRequestHandlers } from "./types.js";
 
-function redactPairedDevice(
-  device: { tokens?: Record<string, DeviceAuthToken> } & Record<string, unknown>,
-) {
+function redactPairedDevice(device: PairedDeviceCompat) {
   const { tokens, ...rest } = device;
   return {
     ...rest,

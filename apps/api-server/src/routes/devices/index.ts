@@ -13,8 +13,8 @@ import {
   approveDevicePairing,
   rejectDevicePairing,
   updateDeviceUserId,
-  type DevicePairingPendingRequest,
-} from "../../../../../src/infra/device-pairing.js";
+  type PendingRequestCompat as DevicePairingPendingRequest,
+} from "../../../../../src/infra/device-pairing-db.js";
 
 /**
  * 从请求中提取用户 ID

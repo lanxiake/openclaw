@@ -6,7 +6,7 @@ import {
   requestNodePairing,
   verifyNodeToken,
 } from "../../infra/node-pairing.js";
-import { listDevicePairing } from "../../infra/device-pairing.js";
+import { listDevicePairing } from "../../infra/device-pairing-db.js";
 import {
   ErrorCodes,
   errorShape,

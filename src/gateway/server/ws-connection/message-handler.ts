@@ -14,7 +14,7 @@ import {
   requestDevicePairing,
   updatePairedDeviceMetadata,
   verifyDeviceToken,
-} from "../../../infra/device-pairing.js";
+} from "../../../infra/device-pairing-db.js";
 import { updatePairedNodeMetadata } from "../../../infra/node-pairing.js";
 import { recordRemoteNodeInfo, refreshRemoteNodeBins } from "../../../infra/skills-remote.js";
 import { loadVoiceWakeConfig } from "../../../infra/voicewake.js";

@@ -18,6 +18,7 @@ import type {
   Device,
   DeviceAuthToken,
   DevicePairingRequest,
+  DevicePlatform,
 } from "../db/schema/devices.js";
 
 const logger = getLogger();
@@ -32,16 +33,16 @@ const logger = getLogger();
 export interface PairedDeviceCompat {
   deviceId: string;
   publicKey: string;
-  userId?: string | null;
-  displayName?: string | null;
-  platform?: string | null;
-  clientId?: string | null;
-  clientMode?: string | null;
-  role?: string | null;
-  roles?: string[] | null;
-  scopes?: string[] | null;
-  remoteIp?: string | null;
-  tokens?: Record<string, DeviceAuthToken> | null;
+  userId?: string;
+  displayName?: string;
+  platform?: string;
+  clientId?: string;
+  clientMode?: string;
+  role?: string;
+  roles?: string[];
+  scopes?: string[];
+  remoteIp?: string;
+  tokens?: Record<string, DeviceAuthToken>;
   createdAtMs: number;
   approvedAtMs: number;
 }
@@ -53,17 +54,17 @@ export interface PendingRequestCompat {
   requestId: string;
   deviceId: string;
   publicKey: string;
-  userId?: string | null;
-  displayName?: string | null;
-  platform?: string | null;
-  clientId?: string | null;
-  clientMode?: string | null;
-  role?: string | null;
-  roles?: string[] | null;
-  scopes?: string[] | null;
-  remoteIp?: string | null;
-  silent?: boolean | null;
-  isRepair?: boolean | null;
+  userId?: string;
+  displayName?: string;
+  platform?: string;
+  clientId?: string;
+  clientMode?: string;
+  role?: string;
+  roles?: string[];
+  scopes?: string[];
+  remoteIp?: string;
+  silent?: boolean;
+  isRepair?: boolean;
   ts: number;
 }
 
@@ -92,22 +93,29 @@ export interface DevicePairingList {
 // ============================================================================
 
 /**
+ * 将 null 转为 undefined (数据库字段可为 null，旧接口使用 undefined)
+ */
+function nullToUndef<T>(value: T | null | undefined): T | undefined {
+  return value ?? undefined;
+}
+
+/**
  * 将 Device (数据库) 转换为 PairedDeviceCompat (兼容旧接口)
  */
 function deviceToCompat(device: Device): PairedDeviceCompat {
   return {
     deviceId: device.deviceId,
     publicKey: device.publicKey,
-    userId: device.userId,
-    displayName: device.displayName,
-    platform: device.platform,
-    clientId: device.clientId,
-    clientMode: device.clientMode,
-    role: device.role,
-    roles: device.roles,
-    scopes: device.scopes,
-    remoteIp: device.remoteIp,
-    tokens: device.tokens,
+    userId: nullToUndef(device.userId),
+    displayName: nullToUndef(device.displayName),
+    platform: nullToUndef(device.platform),
+    clientId: nullToUndef(device.clientId),
+    clientMode: nullToUndef(device.clientMode),
+    role: nullToUndef(device.role),
+    roles: nullToUndef(device.roles),
+    scopes: nullToUndef(device.scopes),
+    remoteIp: nullToUndef(device.remoteIp),
+    tokens: nullToUndef(device.tokens),
     createdAtMs: device.createdAt.getTime(),
     approvedAtMs: device.approvedAt.getTime(),
   };
@@ -121,16 +129,16 @@ function pairingRequestToCompat(request: DevicePairingRequest): PendingRequestCo
     requestId: request.requestId,
     deviceId: request.deviceId,
     publicKey: request.publicKey,
-    userId: request.userId,
-    displayName: request.displayName,
-    platform: request.platform,
-    clientId: request.clientId,
-    clientMode: request.clientMode,
-    role: request.requestedRole,
-    scopes: request.requestedScopes,
-    remoteIp: request.remoteIp,
-    silent: request.silent,
-    isRepair: request.isRepair,
+    userId: nullToUndef(request.userId),
+    displayName: nullToUndef(request.displayName),
+    platform: nullToUndef(request.platform),
+    clientId: nullToUndef(request.clientId),
+    clientMode: nullToUndef(request.clientMode),
+    role: nullToUndef(request.requestedRole),
+    scopes: nullToUndef(request.requestedScopes),
+    remoteIp: nullToUndef(request.remoteIp),
+    silent: nullToUndef(request.silent),
+    isRepair: nullToUndef(request.isRepair),
     ts: request.createdAt.getTime(),
   };
 }
@@ -189,7 +197,7 @@ export async function requestDevicePairing(
     publicKey: req.publicKey,
     userId: req.userId || undefined,
     displayName: req.displayName || undefined,
-    platform: req.platform || undefined,
+    platform: (req.platform as DevicePlatform) || undefined,
     clientId: req.clientId || undefined,
     clientMode: req.clientMode || undefined,
     requestedRole: req.role || undefined,
