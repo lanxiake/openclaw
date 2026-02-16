@@ -28,7 +28,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "bufferutil": "^4.1.0",
     "electron-updater": "^6.1.7",
+    "utf-8-validate": "^6.0.6",
     "ws": "^8.16.0"
   },
   "devDependencies": {

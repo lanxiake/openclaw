@@ -81,8 +81,22 @@ function createWindow(): void {
   })
 
   // 加载渲染进程页面
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:5173')
+  if (process.env.ELECTRON_RENDERER_URL) {
+    const rendererUrl = process.env.ELECTRON_RENDERER_URL
+
+    // dev 模式：renderer dev server 可能还没完全 ready，加载失败时自动重试
+    let retryCount = 0
+    const maxRetries = 10
+    mainWindow.webContents.on('did-fail-load', (_event, errorCode, _errorDesc) => {
+      if (retryCount < maxRetries && errorCode === -102) { // ERR_CONNECTION_REFUSED
+        retryCount++
+        log.info(`等待 renderer dev server 就绪... (${retryCount}/${maxRetries})`)
+        setTimeout(() => {
+          mainWindow?.loadURL(rendererUrl)
+        }, 1000)
+      }
+    })
+    mainWindow.loadURL(rendererUrl)
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
