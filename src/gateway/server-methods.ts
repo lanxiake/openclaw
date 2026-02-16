@@ -15,6 +15,7 @@ import { adminSubscriptionMethods } from "./server-methods/admin-subscriptions.j
 import { adminAuditMethods } from "./server-methods/admin-audit.js";
 import { adminDashboardMethods } from "./server-methods/admin-dashboard.js";
 import { adminSkillHandlers } from "./server-methods/admin-skills.js";
+import { userSkillHandlers } from "./server-methods/user-skills.js";
 import { adminMonitorHandlers } from "./server-methods/admin-monitor.js";
 import { adminConfigHandlers } from "./server-methods/admin-config.js";
 import { adminAnalyticsHandlers } from "./server-methods/admin-analytics.js";
@@ -330,6 +331,7 @@ export const coreGatewayHandlers: GatewayRequestHandlers = {
   ...adminAuditMethods,
   ...adminDashboardMethods,
   ...adminSkillHandlers,
+  ...userSkillHandlers,
   ...adminMonitorHandlers,
   ...adminConfigHandlers,
   ...adminAnalyticsHandlers,
