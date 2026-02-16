@@ -9,6 +9,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
+import type { AdminPermissions, AdminRole } from "../../../../src/db/schema/admins.js";
 import {
   verifyAdminAccessToken,
   hasAdminRole,
@@ -25,8 +26,10 @@ const ADMIN_PUBLIC_ROUTES = new Set([
 /** request.admin 类型 */
 export interface RequestAdmin {
   adminId: string;
-  role: string;
+  role: AdminRole;
   type: "admin";
+  /** 自定义权限（从 JWT 解析，覆盖角色默认权限） */
+  permissions?: AdminPermissions;
 }
 
 /**
@@ -74,8 +77,9 @@ export function registerAdminAuthPlugin(
       // 注入管理员信息到 request
       (request as FastifyRequest & { admin: RequestAdmin }).admin = {
         adminId: payload.sub,
-        role: payload.role,
+        role: payload.role as AdminRole,
         type: "admin",
+        permissions: payload.permissions,
       };
     },
   );
@@ -86,6 +90,24 @@ export function registerAdminAuthPlugin(
  */
 export function getRequestAdmin(request: FastifyRequest): RequestAdmin | null {
   return (request as FastifyRequest & { admin: RequestAdmin | null }).admin;
+}
+
+/**
+ * 从 request 中获取已认证的管理员信息（非空版本）
+ *
+ * 用于已通过 requirePermission / requireAdmin 守卫的路由处理函数中，
+ * 保证返回非空 admin，避免使用非空断言操作符。
+ *
+ * @throws 如果 admin 不存在（说明缺少前置权限守卫）
+ */
+export function getRequiredAdmin(request: FastifyRequest): RequestAdmin {
+  const admin = getRequestAdmin(request);
+  if (!admin) {
+    throw new Error(
+      "[admin-auth] Admin not found in request — requirePermission preHandler missing",
+    );
+  }
+  return admin;
 }
 
 /**

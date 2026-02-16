@@ -268,8 +268,10 @@ export async function adminLogin(request: AdminLoginRequest): Promise<AdminAuthR
     // 8. 登录成功
     await adminRepo.updateLastLogin(admin.id, request.ipAddress);
 
-    // 9. 生成 Token
-    const { accessToken, expiresIn } = generateAdminAccessToken(admin.id, admin.role);
+    // 9. 生成 Token（包含自定义权限）
+    const { accessToken, expiresIn } = generateAdminAccessToken(admin.id, admin.role, {
+      permissions: admin.permissions ?? undefined,
+    });
     const { refreshToken } = await sessionRepo.create(admin.id, {
       ipAddress: request.ipAddress,
       userAgent: request.userAgent,
@@ -380,8 +382,10 @@ export async function adminRefreshToken(
       await sessionRepo.updateLastActive(session.id);
     }
 
-    // 4. 生成新的 Access Token
-    const { accessToken, expiresIn } = generateAdminAccessToken(admin.id, admin.role);
+    // 4. 生成新的 Access Token（包含自定义权限）
+    const { accessToken, expiresIn } = generateAdminAccessToken(admin.id, admin.role, {
+      permissions: admin.permissions ?? undefined,
+    });
 
     logger.debug("[admin-auth] Token refreshed successfully", { adminId: admin.id });
 

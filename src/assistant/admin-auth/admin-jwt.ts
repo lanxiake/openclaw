@@ -5,10 +5,45 @@
  */
 
 import jwt, { type JwtPayload, type SignOptions, type VerifyOptions } from "jsonwebtoken";
+import { z } from "zod";
 
+import type { AdminPermissions } from "../../db/schema/admins.js";
 import { getLogger } from "../../logging/logger.js";
 
 const logger = getLogger();
+
+/**
+ * JWT 中嵌入的 AdminPermissions 运行时验证 Schema
+ *
+ * 防止 JWT 被篡改时注入非法权限字段
+ */
+const boolRecord = z.record(z.string(), z.boolean()).optional();
+const adminPermissionsSchema = z
+  .object({
+    users: boolRecord,
+    subscriptions: boolRecord,
+    skills: boolRecord,
+    system: boolRecord,
+    admins: boolRecord,
+  })
+  .strict()
+  .optional();
+
+/**
+ * 验证并提取 JWT 中的 permissions 字段
+ *
+ * @returns 经过 schema 验证的 permissions，验证失败返回 undefined
+ */
+function parsePermissions(raw: unknown): AdminPermissions | undefined {
+  const result = adminPermissionsSchema.safeParse(raw);
+  if (!result.success) {
+    logger.warn("[admin-jwt] Invalid permissions in JWT, ignoring", {
+      errors: result.error.issues,
+    });
+    return undefined;
+  }
+  return result.data as AdminPermissions | undefined;
+}
 
 // 管理员 Token 配置
 export const ADMIN_TOKEN_CONFIG = {
@@ -36,6 +71,8 @@ export interface AdminAccessTokenPayload {
   type: "admin";
   /** 管理员角色 */
   role: string;
+  /** 自定义权限（覆盖角色默认权限） */
+  permissions?: AdminPermissions;
   /** 受众 */
   aud: string;
   /** 签发时间 (Unix 时间戳) */
@@ -85,7 +122,7 @@ export function getAdminJwtSecret(): string {
 export function generateAdminAccessToken(
   adminId: string,
   role: string,
-  options?: { expiresIn?: string },
+  options?: { expiresIn?: string; permissions?: AdminPermissions },
 ): AdminTokenPair {
   const secret = getAdminJwtSecret();
   const expiresIn = options?.expiresIn || ADMIN_TOKEN_CONFIG.accessTokenExpiresIn;
@@ -96,11 +133,16 @@ export function generateAdminAccessToken(
     audience: ADMIN_TOKEN_CONFIG.audience,
   };
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     sub: adminId,
     type: "admin" as const,
     role,
   };
+
+  // 仅当有自定义权限时才添加到 JWT（减少 token 大小）
+  if (options?.permissions && Object.keys(options.permissions).length > 0) {
+    payload.permissions = options.permissions;
+  }
 
   const accessToken = jwt.sign(payload, secret, signOptions);
 
@@ -142,6 +184,7 @@ export function verifyAdminAccessToken(token: string): AdminAccessTokenPayload |
       sub: decoded.sub as string,
       type: "admin",
       role: decoded.role as string,
+      permissions: parsePermissions(decoded.permissions),
       aud: decoded.aud as string,
       iat: decoded.iat as number,
       exp: decoded.exp as number,
@@ -178,6 +221,7 @@ export function decodeAdminToken(token: string): AdminAccessTokenPayload | null 
       sub: decoded.sub as string,
       type: decoded.type as "admin",
       role: decoded.role as string,
+      permissions: parsePermissions(decoded.permissions),
       aud: decoded.aud as string,
       iat: decoded.iat as number,
       exp: decoded.exp as number,
