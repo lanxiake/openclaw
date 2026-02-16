@@ -173,11 +173,14 @@ describe("设备配对端到端集成测试", () => {
       expect(token).toBeTruthy();
 
       // 验证令牌
-      const verifyResult = await verifyDeviceToken(token!);
+      const verifyResult = await verifyDeviceToken({
+        deviceId: "verify-test-device",
+        token: token!,
+        role: "operator",
+        scopes: [],
+      });
 
-      expect(verifyResult).not.toBeNull();
-      expect(verifyResult!.deviceId).toBe("verify-test-device");
-      expect(verifyResult!.role).toBe("operator");
+      expect(verifyResult.ok).toBe(true);
     });
 
     it("INT-TOKEN-003: 撤销设备令牌", async () => {
@@ -196,11 +199,19 @@ describe("设备配对端到端集成测试", () => {
         role: "user",
       });
 
-      expect(revokeResult).toBe(true);
+      // 返回被撤销的令牌信息（带 revokedAtMs）
+      expect(revokeResult).not.toBeNull();
+      expect(revokeResult!.revokedAtMs).toBeTruthy();
 
       // 验证令牌应该失败
-      const verifyResult = await verifyDeviceToken(token!);
-      expect(verifyResult).toBeNull();
+      const verifyResult = await verifyDeviceToken({
+        deviceId: "revoke-test-device",
+        token: token!,
+        role: "user",
+        scopes: [],
+      });
+      expect(verifyResult.ok).toBe(false);
+      expect(verifyResult.reason).toBe("token-invalid");
     });
   });
 
