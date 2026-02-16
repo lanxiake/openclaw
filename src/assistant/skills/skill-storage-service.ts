@@ -10,6 +10,7 @@ import { getLogger } from "../../logging/logger.js";
 import {
   uploadFile,
   downloadFile,
+  downloadFileAsStream,
   deleteFile,
   getFileInfo,
   generateStorageKey,
@@ -143,7 +144,7 @@ export async function uploadSkillFile(
 export async function downloadSkillFile(key: string): Promise<Readable> {
   logger.info(`${LOG_TAG} 下载技能文件`, { key });
 
-  const stream = await downloadFile(BUCKETS.SKILLS, key);
+  const stream = await downloadFileAsStream(BUCKETS.SKILLS, key);
 
   logger.info(`${LOG_TAG} 技能文件下载成功`, { key });
 
@@ -209,6 +210,11 @@ export async function getSkillFileInfo(key: string): Promise<SkillFileInfo | nul
 
   try {
     const info = await getFileInfo(BUCKETS.SKILLS, key);
+
+    if (!info) {
+      logger.warn(`${LOG_TAG} 文件信息不存在`, { key });
+      return null;
+    }
 
     return {
       bucket: BUCKETS.SKILLS,

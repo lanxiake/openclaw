@@ -19,7 +19,7 @@ import {
   deleteAllSkillFiles,
   type SkillFileUploadParams,
 } from "../../assistant/skills/skill-storage-service.js";
-import { extractUserAuthContext } from "../auth-context.js";
+import { extractUserContext } from "../auth-context.js";
 import type { SkillStatus, SubscriptionLevel } from "../../db/schema/index.js";
 
 // 日志标签
@@ -61,12 +61,12 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       context.logGateway.info(`[${LOG_TAG}] 获取我的技能列表`);
 
       // 提取用户认证上下文
-      const authContext = extractUserAuthContext(params);
+      const authContext = extractUserContext(params);
       if (!authContext) {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.UNAUTHORIZED, "未授权：需要用户登录"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"),
         );
         return;
       }
@@ -107,12 +107,12 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       context.logGateway.info(`[${LOG_TAG}] 创建技能`);
 
       // 提取用户认证上下文
-      const authContext = extractUserAuthContext(params);
+      const authContext = extractUserContext(params);
       if (!authContext) {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.UNAUTHORIZED, "未授权：需要用户登录"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"),
         );
         return;
       }
@@ -175,12 +175,12 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       context.logGateway.info(`[${LOG_TAG}] 更新技能`);
 
       // 提取用户认证上下文
-      const authContext = extractUserAuthContext(params);
+      const authContext = extractUserContext(params);
       if (!authContext) {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.UNAUTHORIZED, "未授权：需要用户登录"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"),
         );
         return;
       }
@@ -205,7 +205,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.NOT_FOUND, "技能不存在"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "技能不存在"),
         );
         return;
       }
@@ -214,7 +214,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.FORBIDDEN, "无权限修改此技能"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "无权限修改此技能"),
         );
         return;
       }
@@ -271,12 +271,12 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       context.logGateway.info(`[${LOG_TAG}] 删除技能`);
 
       // 提取用户认证上下文
-      const authContext = extractUserAuthContext(params);
+      const authContext = extractUserContext(params);
       if (!authContext) {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.UNAUTHORIZED, "未授权：需要用户登录"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"),
         );
         return;
       }
@@ -301,7 +301,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.NOT_FOUND, "技能不存在"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "技能不存在"),
         );
         return;
       }
@@ -310,7 +310,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.FORBIDDEN, "无权限删除此技能"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "无权限删除此技能"),
         );
         return;
       }
@@ -348,12 +348,12 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       context.logGateway.info(`[${LOG_TAG}] 上传技能文件`);
 
       // 提取用户认证上下文
-      const authContext = extractUserAuthContext(params);
+      const authContext = extractUserContext(params);
       if (!authContext) {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.UNAUTHORIZED, "未授权：需要用户登录"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"),
         );
         return;
       }
@@ -392,7 +392,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.NOT_FOUND, "技能不存在"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "技能不存在"),
         );
         return;
       }
@@ -401,7 +401,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.FORBIDDEN, "无权限上传此技能的文件"),
+          errorShape(ErrorCodes.INVALID_REQUEST, "无权限上传此技能的文件"),
         );
         return;
       }
