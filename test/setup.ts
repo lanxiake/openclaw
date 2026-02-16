@@ -1,4 +1,8 @@
 import { afterAll, afterEach, beforeEach, vi } from "vitest";
+import { config } from "dotenv";
+
+// Load environment variables from .env file
+config();
 
 // Ensure Vitest environment is properly set
 process.env.VITEST = "true";

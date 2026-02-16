@@ -10,7 +10,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { getDatabase } from "../../db/connection.js";
-import { users, admins, skillStoreItems, skillStoreCategories } from "../../db/schema/index.js";
+import { users, admins, skillStoreItems, skillCategories } from "../../db/schema/index.js";
 import { eq } from "drizzle-orm";
 import {
   createSkill,
@@ -64,7 +64,7 @@ describe("技能上传和审核流程", () => {
 
     // 创建测试分类
     const [category] = await db
-      .insert(skillStoreCategories)
+      .insert(skillCategories)
       .values({
         id: `test-category-${Date.now()}`,
         name: "测试分类",
@@ -85,7 +85,7 @@ describe("技能上传和审核流程", () => {
       await db.delete(skillStoreItems).where(eq(skillStoreItems.id, testSkillId));
     }
     if (testCategoryId) {
-      await db.delete(skillStoreCategories).where(eq(skillStoreCategories.id, testCategoryId));
+      await db.delete(skillCategories).where(eq(skillCategories.id, testCategoryId));
     }
     if (testUserId) {
       await db.delete(users).where(eq(users.id, testUserId));
@@ -118,17 +118,16 @@ describe("技能上传和审核流程", () => {
     // 步骤 2: 用户上传文件
     console.log("[E2E Test] 步骤 2: 上传文件");
     const testFileContent = Buffer.from("test file content");
-    const testFileBase64 = testFileContent.toString("base64");
 
     const uploadResult = await uploadSkillFile({
       skillId: testSkillId,
       fileType: "package",
-      fileName: "test-skill.zip",
-      fileContent: testFileBase64,
+      data: testFileContent,
+      originalName: "test-skill.zip",
       contentType: "application/zip",
     });
 
-    expect(uploadResult.success).toBe(true);
+    expect(uploadResult).toBeDefined();
     expect(uploadResult.url).toBeDefined();
     console.log(`[E2E Test] 文件上传成功，URL: ${uploadResult.url}`);
 
