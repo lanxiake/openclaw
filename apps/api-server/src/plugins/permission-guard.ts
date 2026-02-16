@@ -40,11 +40,71 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<AdminRole, AdminPermissions> = {
 };
 
 /**
+ * 角色权限天花板映射
+ *
+ * 定义每个角色**最多能拥有**的权限集合，自定义权限不能超越此边界。
+ * - operator 天花板 = admin 的默认权限（可被提升到 admin 级别，但不能更高）
+ * - admin 天花板 = 所有权限（可被提升到接近 super_admin 级别）
+ * - super_admin 不受限制（空对象，权限检查直接跳过）
+ */
+export const ROLE_PERMISSION_CEILING: Record<AdminRole, AdminPermissions> = {
+  /** operator 最多可拥有 admin 级别的权限 */
+  operator: {
+    users: { view: true, edit: true, suspend: true },
+    subscriptions: { view: true, edit: true },
+    skills: { view: true, create: true, edit: true, publish: true, delete: true },
+    system: { viewConfig: true, editConfig: true, viewLogs: true },
+    admins: { view: true },
+  },
+  /** admin 最多可拥有所有权限 */
+  admin: {
+    users: { view: true, edit: true, suspend: true, delete: true },
+    subscriptions: { view: true, edit: true, refund: true },
+    skills: { view: true, create: true, edit: true, publish: true, delete: true },
+    system: { viewConfig: true, editConfig: true, viewLogs: true },
+    admins: { view: true, create: true, edit: true, delete: true },
+  },
+  /** super_admin 不受天花板限制 */
+  super_admin: {},
+};
+
+/**
+ * 检查操作是否在角色权限天花板内
+ *
+ * @param role - 管理员角色
+ * @param resource - 资源类型
+ * @param action - 操作类型
+ * @returns 操作是否在天花板允许范围内
+ */
+function isWithinCeiling(
+  role: AdminRole,
+  resource: keyof AdminPermissions,
+  action: string,
+): boolean {
+  // super_admin 不受限制
+  if (role === "super_admin") {
+    return true;
+  }
+
+  const ceiling = ROLE_PERMISSION_CEILING[role];
+  if (!ceiling) {
+    return false;
+  }
+
+  const ceilingResource = ceiling[resource];
+  if (!ceilingResource) {
+    return false;
+  }
+
+  return ceilingResource[action as keyof typeof ceilingResource] === true;
+}
+
+/**
  * 检查管理员是否拥有指定权限
  *
  * 权限检查优先级：
  * 1. super_admin → 拥有所有权限
- * 2. admin.permissions[resource][action] → 数据库覆盖（JWT 内嵌）
+ * 2. admin.permissions[resource][action] → 数据库覆盖（JWT 内嵌），受天花板限制
  * 3. ROLE_DEFAULT_PERMISSIONS[role][resource][action] → 角色默认
  * 4. 拒绝访问
  *
@@ -63,10 +123,15 @@ export function hasPermission(
     return true;
   }
 
-  // 2. 检查 JWT 内嵌的自定义权限
+  // 2. 检查 JWT 内嵌的自定义权限（受天花板限制）
   const customPerms = admin.permissions?.[resource];
   if (customPerms && action in customPerms) {
-    return customPerms[action as keyof typeof customPerms] === true;
+    const granted = customPerms[action as keyof typeof customPerms] === true;
+    // 即使自定义权限授予，也必须在天花板范围内
+    if (granted && !isWithinCeiling(admin.role, resource, action)) {
+      return false;
+    }
+    return granted;
   }
 
   // 3. 检查角色默认权限

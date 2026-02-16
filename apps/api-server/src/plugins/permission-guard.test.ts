@@ -17,6 +17,7 @@ import type { AdminPermissions, AdminRole } from "../../../../src/db/schema/admi
 import {
   requirePermission,
   ROLE_DEFAULT_PERMISSIONS,
+  ROLE_PERMISSION_CEILING,
   hasPermission,
 } from "./permission-guard.js";
 import type { RequestAdmin } from "./admin-auth.js";
@@ -181,6 +182,106 @@ describe("permission-guard", () => {
       };
       expect(hasPermission(admin, "users", "view")).toBe(false);
       expect(hasPermission(admin, "system", "viewLogs")).toBe(false);
+    });
+  });
+
+  describe("ROLE_PERMISSION_CEILING（角色权限天花板）", () => {
+    it("operator 的天花板应包含 admin 的默认权限", () => {
+      const ceiling = ROLE_PERMISSION_CEILING.operator;
+      // operator 天花板 = admin 的默认权限
+      expect(ceiling.users?.view).toBe(true);
+      expect(ceiling.users?.edit).toBe(true);
+      expect(ceiling.users?.suspend).toBe(true);
+      expect(ceiling.skills?.create).toBe(true);
+      expect(ceiling.skills?.publish).toBe(true);
+    });
+
+    it("operator 的天花板不应包含 super_admin 独占权限", () => {
+      const ceiling = ROLE_PERMISSION_CEILING.operator;
+      // admins.create/edit/delete 是 super_admin 独占
+      expect(ceiling.admins?.create).toBeUndefined();
+      expect(ceiling.admins?.edit).toBeUndefined();
+      expect(ceiling.admins?.delete).toBeUndefined();
+    });
+
+    it("admin 的天花板应包含所有权限", () => {
+      const ceiling = ROLE_PERMISSION_CEILING.admin;
+      expect(ceiling.users?.delete).toBe(true);
+      expect(ceiling.admins?.create).toBe(true);
+      expect(ceiling.admins?.delete).toBe(true);
+      expect(ceiling.subscriptions?.refund).toBe(true);
+    });
+
+    it("super_admin 不需要天花板（空对象）", () => {
+      const ceiling = ROLE_PERMISSION_CEILING.super_admin;
+      expect(Object.keys(ceiling)).toHaveLength(0);
+    });
+  });
+
+  describe("hasPermission 权限天花板检查", () => {
+    it("CEIL-001: operator 自定义权限在天花板内时应生效", () => {
+      const admin: RequestAdmin = {
+        adminId: "admin-1",
+        role: "operator",
+        type: "admin",
+        permissions: {
+          users: { suspend: true },
+        },
+      };
+      // users.suspend 在 operator 天花板内（admin 默认权限有此项）
+      expect(hasPermission(admin, "users", "suspend")).toBe(true);
+    });
+
+    it("CEIL-002: operator 自定义权限超出天花板时应被拒绝", () => {
+      const admin: RequestAdmin = {
+        adminId: "admin-1",
+        role: "operator",
+        type: "admin",
+        permissions: {
+          admins: { create: true, delete: true },
+        },
+      };
+      // admins.create/delete 超出 operator 天花板
+      expect(hasPermission(admin, "admins", "create")).toBe(false);
+      expect(hasPermission(admin, "admins", "delete")).toBe(false);
+    });
+
+    it("CEIL-003: admin 自定义权限在天花板内时应生效", () => {
+      const admin: RequestAdmin = {
+        adminId: "admin-1",
+        role: "admin",
+        type: "admin",
+        permissions: {
+          admins: { create: true },
+          users: { delete: true },
+        },
+      };
+      // admin 天花板包含所有权限
+      expect(hasPermission(admin, "admins", "create")).toBe(true);
+      expect(hasPermission(admin, "users", "delete")).toBe(true);
+    });
+
+    it("CEIL-004: operator 自定义权限中 users.delete 应被天花板拒绝", () => {
+      const admin: RequestAdmin = {
+        adminId: "admin-1",
+        role: "operator",
+        type: "admin",
+        permissions: {
+          users: { delete: true },
+        },
+      };
+      // users.delete 不在 operator 天花板内（admin 默认权限没有 users.delete）
+      expect(hasPermission(admin, "users", "delete")).toBe(false);
+    });
+
+    it("CEIL-005: super_admin 不受天花板限制", () => {
+      const admin: RequestAdmin = {
+        adminId: "admin-1",
+        role: "super_admin",
+        type: "admin",
+      };
+      expect(hasPermission(admin, "admins", "delete")).toBe(true);
+      expect(hasPermission(admin, "users", "delete")).toBe(true);
     });
   });
 
