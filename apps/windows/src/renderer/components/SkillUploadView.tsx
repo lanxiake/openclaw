@@ -10,6 +10,7 @@ import {
   type SkillUploadData,
   type SkillCategory
 } from '../hooks/useSkillStore'
+import { useFileUpload } from '../hooks/useFileUpload'
 import './SkillUploadView.css'
 
 interface SkillUploadViewProps {
@@ -34,6 +35,13 @@ export const SkillUploadView: React.FC<SkillUploadViewProps> = ({
     uploadSkill
   } = useSkillStore()
 
+  const {
+    uploadFile,
+    isUploading: isFileUploading,
+    progress,
+    error: fileError
+  } = useFileUpload()
+
   // 表单状态
   const [formData, setFormData] = useState<SkillUploadData>({
     name: '',
@@ -47,6 +55,27 @@ export const SkillUploadView: React.FC<SkillUploadViewProps> = ({
     manifestUrl: '',
     packageUrl: '',
     config: {}
+  })
+
+  // 文件状态
+  const [selectedFiles, setSelectedFiles] = useState<{
+    package: File | null
+    icon: File | null
+    manifest: File | null
+  }>({
+    package: null,
+    icon: null,
+    manifest: null
+  })
+
+  const [uploadedUrls, setUploadedUrls] = useState<{
+    package: string | null
+    icon: string | null
+    manifest: string | null
+  }>({
+    package: null,
+    icon: null,
+    manifest: null
   })
 
   const [tagInput, setTagInput] = useState('')
@@ -65,6 +94,52 @@ export const SkillUploadView: React.FC<SkillUploadViewProps> = ({
       loadCategories()
     }
   }, [isConnected, loadCategories])
+
+  /**
+   * 处理文件选择
+   */
+  const handleFileSelect = useCallback((
+    fileType: 'package' | 'icon' | 'manifest',
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      console.log(`[SkillUploadView] 选择${fileType}文件:`, file.name)
+      setSelectedFiles(prev => ({
+        ...prev,
+        [fileType]: file
+      }))
+    }
+  }, [])
+
+  /**
+   * 上传单个文件
+   */
+  const handleFileUpload = useCallback(async (
+    fileType: 'package' | 'icon' | 'manifest',
+    skillId: string
+  ) => {
+    const file = selectedFiles[fileType]
+    if (!file) {
+      console.log(`[SkillUploadView] 没有选择${fileType}文件`)
+      return null
+    }
+
+    console.log(`[SkillUploadView] 上传${fileType}文件:`, file.name)
+    const result = await uploadFile(file, skillId, fileType)
+
+    if (result.success && result.url) {
+      console.log(`[SkillUploadView] ${fileType}文件上传成功:`, result.url)
+      setUploadedUrls(prev => ({
+        ...prev,
+        [fileType]: result.url!
+      }))
+      return result.url
+    } else {
+      console.error(`[SkillUploadView] ${fileType}文件上传失败:`, result.error)
+      return null
+    }
+  }, [selectedFiles, uploadFile])
 
   /**
    * 处理输入变化
@@ -157,14 +232,37 @@ export const SkillUploadView: React.FC<SkillUploadViewProps> = ({
 
     console.log('[SkillUploadView] 提交技能:', formData)
 
+    // 第一步：创建技能记录
     const result = await uploadSkill(formData)
 
-    if (result.success) {
+    if (result.success && result.skillId) {
+      console.log('[SkillUploadView] 技能创建成功，ID:', result.skillId)
+
+      // 第二步：上传文件（如果有选择）
+      const uploadPromises: Promise<string | null>[] = []
+
+      if (selectedFiles.package) {
+        uploadPromises.push(handleFileUpload('package', result.skillId))
+      }
+      if (selectedFiles.icon) {
+        uploadPromises.push(handleFileUpload('icon', result.skillId))
+      }
+      if (selectedFiles.manifest) {
+        uploadPromises.push(handleFileUpload('manifest', result.skillId))
+      }
+
+      if (uploadPromises.length > 0) {
+        console.log('[SkillUploadView] 开始上传文件...')
+        await Promise.all(uploadPromises)
+        console.log('[SkillUploadView] 所有文件上传完成')
+      }
+
       setUploadResult({
         success: true,
         message: '技能上传成功！等待审核通过后将显示在商店中。',
         skillId: result.skillId
       })
+
       // 重置表单
       setFormData({
         name: '',
@@ -179,6 +277,17 @@ export const SkillUploadView: React.FC<SkillUploadViewProps> = ({
         packageUrl: '',
         config: {}
       })
+      setSelectedFiles({
+        package: null,
+        icon: null,
+        manifest: null
+      })
+      setUploadedUrls({
+        package: null,
+        icon: null,
+        manifest: null
+      })
+
       onUploadComplete?.()
     } else {
       setUploadResult({
@@ -186,7 +295,7 @@ export const SkillUploadView: React.FC<SkillUploadViewProps> = ({
         message: result.error || '上传失败，请稍后重试'
       })
     }
-  }, [formData, validateForm, uploadSkill, onUploadComplete])
+  }, [formData, validateForm, uploadSkill, selectedFiles, handleFileUpload, onUploadComplete])
 
   if (!isConnected) {
     return (
@@ -380,44 +489,31 @@ export const SkillUploadView: React.FC<SkillUploadViewProps> = ({
 
         {/* 资源链接 */}
         <section className="form-section">
-          <h3>资源链接</h3>
+          <h3>资源文件</h3>
+          <p className="section-hint">上传技能相关文件，或填写外部链接</p>
 
+          {/* 技能包文件 */}
           <div className="form-group">
-            <label className="form-label" htmlFor="iconUrl">
-              图标 URL
+            <label className="form-label">
+              技能包文件 (.zip, .tar.gz)
             </label>
-            <input
-              type="url"
-              id="iconUrl"
-              name="iconUrl"
-              className="form-input"
-              placeholder="https://example.com/icon.png"
-              value={formData.iconUrl}
-              onChange={handleInputChange}
-              disabled={isUploading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="manifestUrl">
-              配置文件 URL
-            </label>
-            <input
-              type="url"
-              id="manifestUrl"
-              name="manifestUrl"
-              className="form-input"
-              placeholder="https://example.com/skill.json"
-              value={formData.manifestUrl}
-              onChange={handleInputChange}
-              disabled={isUploading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="packageUrl">
-              技能包 URL
-            </label>
+            <div className="file-upload-group">
+              <input
+                type="file"
+                id="package-file"
+                accept=".zip,.tar.gz"
+                onChange={(e) => handleFileSelect('package', e)}
+                disabled={isUploading || isFileUploading}
+                className="file-input"
+              />
+              <label htmlFor="package-file" className="file-label">
+                {selectedFiles.package ? selectedFiles.package.name : '选择文件'}
+              </label>
+              {uploadedUrls.package && (
+                <span className="upload-success">✓ 已上传</span>
+              )}
+            </div>
+            <span className="form-hint">或填写外部链接：</span>
             <input
               type="url"
               id="packageUrl"
@@ -426,9 +522,97 @@ export const SkillUploadView: React.FC<SkillUploadViewProps> = ({
               placeholder="https://example.com/skill.zip"
               value={formData.packageUrl}
               onChange={handleInputChange}
-              disabled={isUploading}
+              disabled={isUploading || !!selectedFiles.package}
             />
           </div>
+
+          {/* 图标文件 */}
+          <div className="form-group">
+            <label className="form-label">
+              技能图标 (PNG, JPG, SVG)
+            </label>
+            <div className="file-upload-group">
+              <input
+                type="file"
+                id="icon-file"
+                accept="image/png,image/jpeg,image/svg+xml"
+                onChange={(e) => handleFileSelect('icon', e)}
+                disabled={isUploading || isFileUploading}
+                className="file-input"
+              />
+              <label htmlFor="icon-file" className="file-label">
+                {selectedFiles.icon ? selectedFiles.icon.name : '选择文件'}
+              </label>
+              {uploadedUrls.icon && (
+                <span className="upload-success">✓ 已上传</span>
+              )}
+            </div>
+            <span className="form-hint">或填写外部链接：</span>
+            <input
+              type="url"
+              id="iconUrl"
+              name="iconUrl"
+              className="form-input"
+              placeholder="https://example.com/icon.png"
+              value={formData.iconUrl}
+              onChange={handleInputChange}
+              disabled={isUploading || !!selectedFiles.icon}
+            />
+          </div>
+
+          {/* 配置文件 */}
+          <div className="form-group">
+            <label className="form-label">
+              配置文件 (JSON)
+            </label>
+            <div className="file-upload-group">
+              <input
+                type="file"
+                id="manifest-file"
+                accept=".json"
+                onChange={(e) => handleFileSelect('manifest', e)}
+                disabled={isUploading || isFileUploading}
+                className="file-input"
+              />
+              <label htmlFor="manifest-file" className="file-label">
+                {selectedFiles.manifest ? selectedFiles.manifest.name : '选择文件'}
+              </label>
+              {uploadedUrls.manifest && (
+                <span className="upload-success">✓ 已上传</span>
+              )}
+            </div>
+            <span className="form-hint">或填写外部链接：</span>
+            <input
+              type="url"
+              id="manifestUrl"
+              name="manifestUrl"
+              className="form-input"
+              placeholder="https://example.com/skill.json"
+              value={formData.manifestUrl}
+              onChange={handleInputChange}
+              disabled={isUploading || !!selectedFiles.manifest}
+            />
+          </div>
+
+          {/* 上传进度 */}
+          {isFileUploading && (
+            <div className="upload-progress">
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <span className="progress-text">{progress}%</span>
+            </div>
+          )}
+
+          {/* 文件上传错误 */}
+          {fileError && (
+            <div className="file-error">
+              {fileError}
+            </div>
+          )}
         </section>
 
         {/* 错误提示 */}
@@ -453,9 +637,9 @@ export const SkillUploadView: React.FC<SkillUploadViewProps> = ({
           <button
             type="submit"
             className="submit-button"
-            disabled={isUploading}
+            disabled={isUploading || isFileUploading}
           >
-            {isUploading ? '上传中...' : '提交审核'}
+            {isUploading ? '上传中...' : isFileUploading ? `上传文件中 ${progress}%` : '提交审核'}
           </button>
         </div>
       </form>
