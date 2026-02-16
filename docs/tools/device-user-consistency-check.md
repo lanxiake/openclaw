@@ -106,6 +106,7 @@ pnpm vitest run src/scripts/check-device-user-consistency.test.ts
 ```
 
 测试覆盖:
+
 - 报告打印功能
 - 各种问题类型的修复逻辑
 - 多问题批量处理

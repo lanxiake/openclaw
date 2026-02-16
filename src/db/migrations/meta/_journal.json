@@ -29,6 +29,13 @@
       "when": 1770918332541,
       "tag": "0003_lowly_tigra",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1771213272774,
+      "tag": "0004_dazzling_zombie",
+      "breakpoints": true
     }
   ]
 }
