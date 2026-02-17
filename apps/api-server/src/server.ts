@@ -23,6 +23,8 @@ import {
   registerAdminConfigRoutes,
   registerAdminMonitorRoutes,
   registerAdminDashboardRoutes,
+  registerModelProviderRoutes,
+  registerAgentConfigRoutes,
 } from "./routes/admin/index.js";
 import { registerAuthRoutes } from "./routes/auth/index.js";
 import { registerUsersRoutes } from "./routes/users/index.js";
@@ -94,6 +96,8 @@ export async function createServer(
   registerAdminConfigRoutes(server);
   registerAdminMonitorRoutes(server);
   registerAdminDashboardRoutes(server);
+  registerModelProviderRoutes(server);
+  registerAgentConfigRoutes(server);
 
   // 7. 用户 API 路由（公开 + 认证）
   registerAuthRoutes(server);
