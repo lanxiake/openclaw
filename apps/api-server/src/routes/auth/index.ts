@@ -42,18 +42,21 @@ export function registerAuthRoutes(server: FastifyInstance): void {
       };
 
       // 参数校验
-      if (!body.username || !body.password) {
+      // 如果没有 username，尝试使用 phone 或 email 作为 username
+      const username = body.username || body.phone || body.email;
+
+      if (!username || !body.password) {
         return reply.code(400).send({
           success: false,
-          error: "Username and password are required",
+          error: "用户名/手机号/邮箱和密码不能为空",
           code: "VALIDATION_ERROR",
         });
       }
 
-      if (body.password.length < 8) {
+      if (body.password.length < 6) {
         return reply.code(400).send({
           success: false,
-          error: "Password must be at least 8 characters",
+          error: "密码长度至少 6 位",
           code: "VALIDATION_ERROR",
         });
       }
@@ -66,10 +69,11 @@ export function registerAuthRoutes(server: FastifyInstance): void {
       );
 
       const result = await register({
-        username: body.username,
+        username,
         email: body.email,
         password: body.password,
         phone: body.phone,
+        displayName: body.displayName,
         verificationCode: body.verificationCode,
         ipAddress,
         userAgent,

@@ -21,9 +21,9 @@ import {
  */
 function getUserIdFromRequest(request: FastifyRequest): string | null {
   // 从 JWT token 中提取用户 ID
-  // 假设 JWT 已经在中间件中验证并解析到 request.user
+  // JWT 已经在中间件中验证并解析到 request.user
   const user = (request as any).user;
-  return user?.id || null;
+  return user?.userId || null;
 }
 
 /**
