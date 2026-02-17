@@ -17,6 +17,7 @@ export default defineConfig({
   },
 
   server: {
+    host: '0.0.0.0', // 监听所有网络接口
     port: 5176,
     proxy: {
       // 代理 API 请求到 Gateway

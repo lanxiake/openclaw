@@ -1,10 +1,10 @@
 /**
  * 管理员认证服务
  *
- * 封装管理员认证相关的 Gateway RPC 调用
+ * 封装管理员认证相关的 API Server REST 调用
  */
 
-import { gateway } from '../lib/gateway-client'
+import { apiClient } from '../lib/api-client'
 
 /**
  * 管理员信息
@@ -53,13 +53,32 @@ export const adminAuthService = {
     console.log('[admin-auth] 管理员登录', { username })
 
     try {
-      const result = await gateway.call<AdminLoginResponse>('admin.login', {
+      const response = await apiClient.post<{
+        admin: Admin
+        accessToken: string
+        refreshToken: string
+        expiresIn: number
+      }>('/api/admin/auth/login', {
         username,
         password,
         mfaCode,
       })
 
-      return result
+      if (!response.success || !response.data) {
+        return {
+          success: false,
+          error: response.error || '登录失败',
+          errorCode: response.code,
+        }
+      }
+
+      return {
+        success: true,
+        admin: response.data.admin,
+        accessToken: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+        expiresIn: response.data.expiresIn,
+      }
     } catch (error) {
       console.error('[admin-auth] 登录失败', error)
       return {
@@ -78,11 +97,30 @@ export const adminAuthService = {
     console.log('[admin-auth] 刷新令牌')
 
     try {
-      const result = await gateway.call<AdminLoginResponse>('admin.refreshToken', {
+      const response = await apiClient.post<{
+        admin: Admin
+        accessToken: string
+        refreshToken: string
+        expiresIn: number
+      }>('/api/admin/auth/refresh', {
         refreshToken,
       })
 
-      return result
+      if (!response.success || !response.data) {
+        return {
+          success: false,
+          error: response.error || '刷新令牌失败',
+          errorCode: response.code,
+        }
+      }
+
+      return {
+        success: true,
+        admin: response.data.admin,
+        accessToken: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+        expiresIn: response.data.expiresIn,
+      }
     } catch (error) {
       console.error('[admin-auth] 刷新令牌失败', error)
       return {
@@ -101,8 +139,11 @@ export const adminAuthService = {
     console.log('[admin-auth] 登出')
 
     try {
-      await gateway.call('admin.logout', { refreshToken })
-      return { success: true }
+      const response = await apiClient.post('/api/admin/auth/logout', {
+        refreshToken,
+      })
+
+      return { success: response.success }
     } catch (error) {
       console.error('[admin-auth] 登出失败', error)
       // 即使失败也返回成功，因为客户端会清除本地状态
@@ -119,11 +160,21 @@ export const adminAuthService = {
     console.log('[admin-auth] 获取管理员信息')
 
     try {
-      const result = await gateway.call<{ success: boolean; admin: Admin }>('admin.profile', {
-        authorization: `Bearer ${accessToken}`,
+      const response = await apiClient.get<Admin>('/api/admin/auth/profile', {
+        Authorization: `Bearer ${accessToken}`,
       })
 
-      return result
+      if (!response.success || !response.data) {
+        return {
+          success: false,
+          error: response.error || '获取管理员信息失败',
+        }
+      }
+
+      return {
+        success: true,
+        admin: response.data,
+      }
     } catch (error) {
       console.error('[admin-auth] 获取管理员信息失败', error)
       return {

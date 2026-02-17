@@ -1,10 +1,19 @@
 /**
  * 审计日志服务
  *
- * 封装审计日志相关的 Gateway RPC 调用
+ * 封装审计日志相关的 API Server REST 调用
  */
 
-import { gateway } from '../lib/gateway-client'
+import { apiClient } from '../lib/api-client'
+import { STORAGE_KEYS } from '../lib/constants'
+
+/**
+ * 获取认证头
+ */
+function getAuthHeaders(): Record<string, string> {
+  const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
+  return accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+}
 
 /**
  * 审计日志操作类型
@@ -95,19 +104,38 @@ export const auditService = {
    * 查询审计日志
    */
   async query(params: AuditLogQuery = {}): Promise<{
-    logs: AuditLog[]
-    total: number
+    logs: AuditLog[]\n    total: number
     hasMore: boolean
   }> {
     console.log('[audit] 查询审计日志', params)
 
     try {
-      const result = await gateway.call<{
+      // 构建查询参数
+      const queryParams = new URLSearchParams()
+      if (params.userId) queryParams.append('userId', params.userId)
+      if (params.action) queryParams.append('action', params.action)
+      if (params.resource) queryParams.append('resource', params.resource)
+      if (params.success !== undefined) queryParams.append('success', String(params.success))
+      if (params.startTime) queryParams.append('startDate', params.startTime)
+      if (params.endTime) queryParams.append('endDate', params.endTime)
+      if (params.offset) queryParams.append('page', String(Math.floor(params.offset / (params.limit || 20)) + 1))
+      if (params.limit) queryParams.append('pageSize', String(params.limit))
+
+      const response = await apiClient.get<{
         logs: AuditLog[]
         total: number
-        hasMore: boolean
-      }>('assistant.audit.query', params)
-      return result
+        page: number
+        pageSize: number
+      }>(`/api/admin/audit-logs?${queryParams.toString()}`, getAuthHeaders())
+
+      if (!response.success || !response.data) {
+        return { logs: [], total: 0, hasMore: false }
+      }
+
+      const { logs, total, page, pageSize } = response.data
+      const hasMore = page * pageSize < total
+
+      return { logs, total, hasMore }
     } catch (error) {
       console.error('[audit] 查询审计日志失败', error)
       return { logs: [], total: 0, hasMore: false }
@@ -121,8 +149,16 @@ export const auditService = {
     console.log('[audit] 获取最近审计日志')
 
     try {
-      const result = await gateway.call<{ logs: AuditLog[] }>('assistant.audit.recent', { limit })
-      return result.logs
+      const response = await apiClient.get<{
+        logs: AuditLog[]
+        total: number
+      }>(`/api/admin/audit-logs?pageSize=${limit}&sortBy=createdAt&sortOrder=desc`, getAuthHeaders())
+
+      if (!response.success || !response.data) {
+        return []
+      }
+
+      return response.data.logs
     } catch (error) {
       console.error('[audit] 获取最近审计日志失败', error)
       return []
@@ -136,8 +172,13 @@ export const auditService = {
     console.log('[audit] 获取审计统计')
 
     try {
-      const result = await gateway.call<AuditStats>('assistant.audit.stats')
-      return result
+      const response = await apiClient.get<AuditStats>('/api/admin/audit-logs/stats', getAuthHeaders())
+
+      if (!response.success || !response.data) {
+        return null
+      }
+
+      return response.data
     } catch (error) {
       console.error('[audit] 获取审计统计失败', error)
       return null
@@ -156,8 +197,29 @@ export const auditService = {
     console.log('[audit] 导出审计日志', params)
 
     try {
-      const result = await gateway.call<{ success: boolean; downloadUrl?: string }>('assistant.audit.export', params)
-      return result
+      // 构建查询参数
+      const queryParams = new URLSearchParams()
+      queryParams.append('format', params.format)
+      if (params.startTime) queryParams.append('startDate', params.startTime)
+      if (params.endTime) queryParams.append('endDate', params.endTime)
+      if (params.actions) queryParams.append('actions', params.actions.join(','))
+
+      const response = await apiClient.get<{ downloadUrl: string }>(
+        `/api/admin/audit-logs/export?${queryParams.toString()}`,
+        getAuthHeaders()
+      )
+
+      if (!response.success || !response.data) {
+        return {
+          success: false,
+          error: response.error || '导出失败',
+        }
+      }
+
+      return {
+        success: true,
+        downloadUrl: response.data.downloadUrl,
+      }
     } catch (error) {
       console.error('[audit] 导出审计日志失败', error)
       return {
@@ -169,55 +231,37 @@ export const auditService = {
 
   /**
    * 清理审计日志
+   * TODO: API Server 暂未实现此接口
    */
   async clear(params: {
     beforeDate?: string
     retainDays?: number
   }): Promise<{ success: boolean; deletedCount?: number; error?: string }> {
-    console.log('[audit] 清理审计日志', params)
-
-    try {
-      const result = await gateway.call<{ success: boolean; deletedCount?: number }>('assistant.audit.clear', params)
-      return result
-    } catch (error) {
-      console.error('[audit] 清理审计日志失败', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : '清理失败',
-      }
+    console.log('[audit] 清理审计日志 (暂未实现)', params)
+    return {
+      success: false,
+      error: 'API Server 暂未实现此接口',
     }
   },
 
   /**
    * 获取审计配置
+   * TODO: API Server 暂未实现此接口
    */
   async getConfig(): Promise<AuditConfig | null> {
-    console.log('[audit] 获取审计配置')
-
-    try {
-      const result = await gateway.call<AuditConfig>('assistant.audit.config.get')
-      return result
-    } catch (error) {
-      console.error('[audit] 获取审计配置失败', error)
-      return null
-    }
+    console.log('[audit] 获取审计配置 (暂未实现)')
+    return null
   },
 
   /**
    * 设置审计配置
+   * TODO: API Server 暂未实现此接口
    */
   async setConfig(config: Partial<AuditConfig>): Promise<{ success: boolean; error?: string }> {
-    console.log('[audit] 设置审计配置', config)
-
-    try {
-      const result = await gateway.call<{ success: boolean }>('assistant.audit.config.set', config)
-      return result
-    } catch (error) {
-      console.error('[audit] 设置审计配置失败', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : '设置失败',
-      }
+    console.log('[audit] 设置审计配置 (暂未实现)', config)
+    return {
+      success: false,
+      error: 'API Server 暂未实现此接口',
     }
   },
 }
