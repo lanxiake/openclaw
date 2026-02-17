@@ -7,6 +7,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
+import { AuthProvider } from './contexts/AuthContext'
 import './styles/global.css'
 
 // 日志输出
@@ -18,7 +19,9 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 // 渲染应用
 root.render(
   <React.StrictMode>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </React.StrictMode>
 )
 

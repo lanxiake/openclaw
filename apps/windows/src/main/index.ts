@@ -51,10 +51,10 @@ function createWindow(): void {
   log.info('创建主窗口')
 
   mainWindow = new BrowserWindow({
-    width: 400,
-    height: 600,
-    minWidth: 350,
-    minHeight: 400,
+    width: 800,
+    height: 700,
+    minWidth: 700,
+    minHeight: 600,
     frame: false, // 无边框窗口
     transparent: false,
     resizable: true,
@@ -818,9 +818,9 @@ function setupIpcHandlers(): void {
 function initApiClient(): void {
   log.info('初始化 API Server 客户端')
 
-  // 从设置中读取 API Server URL，默认使用 localhost:3000
+  // 从设置中读取 API Server URL，默认使用 127.0.0.1:3000（强制 IPv4）
   apiClient = new ApiClient({
-    baseUrl: 'http://localhost:3000',
+    baseUrl: 'http://127.0.0.1:3000',
     timeout: 30000,
   })
 

@@ -1,10 +1,10 @@
 /**
- * useAuth Hook - 用户认证状态管理
+ * AuthContext - 认证状态上下文
  *
- * 管理用户注册、登录、登出等认证操作
+ * 提供全局的认证状态管理
  */
 
-import { useState, useCallback } from 'react'
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 
 /**
  * 用户信息
@@ -38,8 +38,6 @@ export interface AuthState {
 
 /**
  * 注册参数
- *
- * 手机号或邮箱至少填一个，昵称和密码必填
  */
 export interface RegisterParams {
   phone?: string
@@ -50,8 +48,6 @@ export interface RegisterParams {
 
 /**
  * 登录参数
- *
- * identifier 为手机号或邮箱，password 必填
  */
 export interface LoginParams {
   identifier: string  // 手机号或邮箱
@@ -71,6 +67,17 @@ interface AuthResponse {
   }
   error?: string
   code?: string
+}
+
+/**
+ * 认证上下文类型
+ */
+interface AuthContextType extends AuthState {
+  register: (params: RegisterParams) => Promise<{ success: boolean; error?: string }>
+  login: (params: LoginParams) => Promise<{ success: boolean; error?: string }>
+  logout: () => Promise<void>
+  refreshAccessToken: () => Promise<boolean>
+  clearError: () => void
 }
 
 // localStorage keys
@@ -96,7 +103,7 @@ function loadAuthState(): Partial<AuthState> {
       isAuthenticated: !!(userStr && accessToken),
     }
   } catch (error) {
-    console.error('[useAuth] 加载认证状态失败:', error)
+    console.error('[AuthContext] 加载认证状态失败:', error)
     return {
       user: null,
       accessToken: null,
@@ -129,7 +136,7 @@ function saveAuthState(user: User | null, accessToken: string | null, refreshTok
       localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
     }
   } catch (error) {
-    console.error('[useAuth] 保存认证状态失败:', error)
+    console.error('[AuthContext] 保存认证状态失败:', error)
   }
 }
 
@@ -142,16 +149,27 @@ function clearAuthState(): void {
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
     localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
   } catch (error) {
-    console.error('[useAuth] 清除认证状态失败:', error)
+    console.error('[AuthContext] 清除认证状态失败:', error)
   }
 }
 
+// 创建上下文
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
 /**
- * useAuth Hook
+ * AuthProvider Props
  */
-export function useAuth() {
+interface AuthProviderProps {
+  children: ReactNode
+}
+
+/**
+ * AuthProvider - 认证状态提供者
+ */
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, setState] = useState<AuthState>(() => {
     const loaded = loadAuthState()
+    console.log('[AuthContext] 初始化认证状态:', { isAuthenticated: loaded.isAuthenticated })
     return {
       user: loaded.user ?? null,
       accessToken: loaded.accessToken ?? null,
@@ -162,18 +180,21 @@ export function useAuth() {
     }
   })
 
+  // 添加登出标志，防止重复调用
+  const isLoggingOutRef = React.useRef(false)
+
   /**
-   * 用户注册 - 通过 API Server HTTP 接口
+   * 用户注册
    */
   const register = useCallback(async (params: RegisterParams): Promise<{ success: boolean; error?: string }> => {
-    console.log('[useAuth] 用户注册:', { ...params, password: '***' })
+    console.log('[AuthContext] 用户注册:', { ...params, password: '***' })
 
     setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
       const response = await window.electronAPI.api.register(params) as AuthResponse
 
-      console.log('[useAuth] 注册响应:', { success: response.success, hasToken: !!response.data?.accessToken })
+      console.log('[AuthContext] 注册响应:', { success: response.success, hasToken: !!response.data?.accessToken })
 
       if (response.success && response.data?.user && response.data?.accessToken) {
         const { user, accessToken, refreshToken } = response.data
@@ -193,7 +214,7 @@ export function useAuth() {
           error: null,
         })
 
-        console.log('[useAuth] 认证状态已更新:', { isAuthenticated: true, hasUser: !!user, hasToken: !!accessToken })
+        console.log('[AuthContext] 认证状态已更新:', { isAuthenticated: true, hasUser: !!user, hasToken: !!accessToken })
 
         return { success: true }
       } else {
@@ -202,7 +223,7 @@ export function useAuth() {
         return { success: false, error: errorMessage }
       }
     } catch (error) {
-      console.error('[useAuth] 注册失败:', error)
+      console.error('[AuthContext] 注册失败:', error)
       const errorMessage = error instanceof Error ? error.message : '注册失败'
       setState(prev => ({ ...prev, isLoading: false, error: errorMessage }))
       return { success: false, error: errorMessage }
@@ -210,17 +231,17 @@ export function useAuth() {
   }, [])
 
   /**
-   * 用户登录 - 通过 API Server HTTP 接口
+   * 用户登录
    */
   const login = useCallback(async (params: LoginParams): Promise<{ success: boolean; error?: string }> => {
-    console.log('[useAuth] 用户登录:', { identifier: params.identifier })
+    console.log('[AuthContext] 用户登录:', { identifier: params.identifier })
 
     setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
       const response = await window.electronAPI.api.login(params) as AuthResponse
 
-      console.log('[useAuth] 登录响应:', { success: response.success, hasToken: !!response.data?.accessToken })
+      console.log('[AuthContext] 登录响应:', { success: response.success, hasToken: !!response.data?.accessToken })
 
       if (response.success && response.data?.user && response.data?.accessToken) {
         const { user, accessToken, refreshToken } = response.data
@@ -233,7 +254,7 @@ export function useAuth() {
 
         // 使用函数式更新确保状态正确更新
         setState(prev => {
-          console.log('[useAuth] setState 调用前:', { prevAuth: prev.isAuthenticated })
+          console.log('[AuthContext] setState 调用前:', { prevAuth: prev.isAuthenticated })
           const newState = {
             user,
             accessToken,
@@ -242,11 +263,11 @@ export function useAuth() {
             isLoading: false,
             error: null,
           }
-          console.log('[useAuth] setState 调用后:', { newAuth: newState.isAuthenticated })
+          console.log('[AuthContext] setState 调用后:', { newAuth: newState.isAuthenticated })
           return newState
         })
 
-        console.log('[useAuth] 认证状态已更新:', { isAuthenticated: true, hasUser: !!user, hasToken: !!accessToken })
+        console.log('[AuthContext] 认证状态已更新:', { isAuthenticated: true, hasUser: !!user, hasToken: !!accessToken })
 
         return { success: true }
       } else {
@@ -255,7 +276,7 @@ export function useAuth() {
         return { success: false, error: errorMessage }
       }
     } catch (error) {
-      console.error('[useAuth] 登录失败:', error)
+      console.error('[AuthContext] 登录失败:', error)
       const errorMessage = error instanceof Error ? error.message : '登录失败'
       setState(prev => ({ ...prev, isLoading: false, error: errorMessage }))
       return { success: false, error: errorMessage }
@@ -263,28 +284,32 @@ export function useAuth() {
   }, [])
 
   /**
-   * 用户登出 - 通过 API Server HTTP 接口
+   * 用户登出
    */
   const logout = useCallback(async (): Promise<void> => {
-    console.log('[useAuth] 用户登出')
+    // 防止重复调用
+    if (isLoggingOutRef.current) {
+      console.log('[AuthContext] 登出已在进行中，跳过重复调用')
+      return
+    }
+
+    isLoggingOutRef.current = true
+    console.log('[AuthContext] 用户登出')
 
     try {
       if (state.refreshToken) {
         await window.electronAPI.api.logout(state.refreshToken)
       }
     } catch (error) {
-      console.error('[useAuth] 登出请求失败:', error)
-      // 即使请求失败也要清除本地状态
+      console.error('[AuthContext] 登出请求失败:', error)
     }
 
-    // 清除主进程中的访问令牌
     try {
       await window.electronAPI.api.setAccessToken(null)
     } catch (error) {
-      console.error('[useAuth] 清除主进程令牌失败:', error)
+      console.error('[AuthContext] 清除主进程令牌失败:', error)
     }
 
-    // 清除本地状态
     clearAuthState()
 
     setState({
@@ -295,16 +320,19 @@ export function useAuth() {
       isLoading: false,
       error: null,
     })
+
+    // 重置标志
+    isLoggingOutRef.current = false
   }, [state.refreshToken])
 
   /**
-   * 刷新访问令牌 - 通过 API Server HTTP 接口
+   * 刷新访问令牌
    */
   const refreshAccessToken = useCallback(async (): Promise<boolean> => {
-    console.log('[useAuth] 刷新访问令牌')
+    console.log('[AuthContext] 刷新访问令牌')
 
     if (!state.refreshToken) {
-      console.warn('[useAuth] 没有刷新令牌')
+      console.warn('[AuthContext] 没有刷新令牌')
       return false
     }
 
@@ -315,10 +343,8 @@ export function useAuth() {
         const newAccessToken = response.data.accessToken
         const newRefreshToken = response.data.refreshToken || state.refreshToken
 
-        // 更新令牌
         saveAuthState(state.user, newAccessToken, newRefreshToken)
 
-        // 同步访问令牌到主进程的 API 客户端
         await window.electronAPI.api.setAccessToken(newAccessToken)
 
         setState(prev => ({
@@ -329,13 +355,12 @@ export function useAuth() {
 
         return true
       } else {
-        console.error('[useAuth] 刷新令牌失败:', response.error)
-        // 刷新失败，需要重新登录
+        console.error('[AuthContext] 刷新令牌失败:', response.error)
         await logout()
         return false
       }
     } catch (error) {
-      console.error('[useAuth] 刷新令牌请求失败:', error)
+      console.error('[AuthContext] 刷新令牌请求失败:', error)
       await logout()
       return false
     }
@@ -348,7 +373,7 @@ export function useAuth() {
     setState(prev => ({ ...prev, error: null }))
   }, [])
 
-  return {
+  const value: AuthContextType = {
     ...state,
     register,
     login,
@@ -356,4 +381,17 @@ export function useAuth() {
     refreshAccessToken,
     clearError,
   }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+/**
+ * useAuth Hook - 使用认证上下文
+ */
+export function useAuth(): AuthContextType {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
 }

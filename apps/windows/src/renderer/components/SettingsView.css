@@ -226,11 +226,53 @@
 .connection-status-card {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  justify-content: space-between;
+  gap: var(--spacing-md);
   padding: var(--spacing-md);
   background-color: var(--bg-secondary);
   border-radius: var(--border-radius);
-  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  border: 1px solid var(--border-color);
+}
+
+.connection-status-card .status-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.connection-status-card .status-text {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.connection-toggle-btn {
+  padding: 8px 16px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: none;
+}
+
+.connection-toggle-btn.connect {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.connection-toggle-btn.connect:hover {
+  opacity: 0.9;
+}
+
+.connection-toggle-btn.disconnect {
+  background-color: var(--color-danger, #ef4444);
+  color: white;
+}
+
+.connection-toggle-btn.disconnect:hover {
+  opacity: 0.9;
 }
 
 /* 快捷键 */

@@ -168,6 +168,10 @@ export interface UpdaterConfig {
  * 定义暴露给渲染进程的 API 类型
  */
 export interface ElectronAPI {
+  // 通用事件监听
+  on: (channel: string, callback: (...args: unknown[]) => void) => void
+  off: (channel: string, callback: (...args: unknown[]) => void) => void
+
   // Gateway 相关
   gateway: {
     connect: (url: string, options?: { token?: string }) => Promise<void>
@@ -350,6 +354,15 @@ function createEventListener(channel: string, callback: (...args: unknown[]) => 
  * 暴露给渲染进程的 API
  */
 const electronAPI: ElectronAPI = {
+  // 通用事件监听
+  on: (channel: string, callback: (...args: unknown[]) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, ...args: unknown[]) => callback(...args)
+    ipcRenderer.on(channel, listener)
+  },
+  off: (channel: string, callback: (...args: unknown[]) => void) => {
+    ipcRenderer.removeListener(channel, callback as (...args: unknown[]) => void)
+  },
+
   // Gateway 相关 API
   gateway: {
     connect: (url: string, options?: { token?: string }) =>

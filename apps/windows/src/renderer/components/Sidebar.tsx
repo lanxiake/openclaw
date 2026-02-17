@@ -12,7 +12,7 @@ import './Sidebar.css'
 /**
  * 视图类型
  */
-type ViewType = 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'settings'
+type ViewType = 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'settings' | 'devices'
 
 /**
  * 连接选项
@@ -46,37 +46,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   user,
   onLogout,
 }) => {
-  const { settings, isLoading } = useSettings()
-  // 本地状态用于输入框编辑
-  const [gatewayUrl, setGatewayUrl] = useState('')
-  const [gatewayToken, setGatewayToken] = useState('')
-  // 标记是否已经从设置初始化
-  const [initialized, setInitialized] = useState(false)
-
-  /**
-   * 当设置加载完成后初始化，或设置变化时同步
-   */
-  useEffect(() => {
-    if (!isLoading) {
-      console.log('[Sidebar] 设置同步:', settings.gateway.url)
-      setGatewayUrl(settings.gateway.url)
-      setGatewayToken(settings.gateway.token || '')
-      setInitialized(true)
-    }
-  }, [isLoading, settings.gateway.url, settings.gateway.token])
-
-  /**
-   * 处理连接/断开
-   */
-  const handleToggleConnection = () => {
-    if (isConnected) {
-      onDisconnect()
-    } else {
-      console.log('[Sidebar] 连接 Gateway:', gatewayUrl, gatewayToken ? '(带 Token)' : '(无 Token)')
-      onConnect(gatewayUrl, gatewayToken ? { token: gatewayToken } : undefined)
-    }
-  }
-
   /**
    * 处理视图切换
    */
@@ -87,32 +56,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div className="sidebar">
-      {/* 连接状态区域 */}
-      <div className="sidebar-section">
-        <h3 className="sidebar-section-title">Gateway 连接</h3>
-
-        <div className="connection-status">
-          <span className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`} />
-          <span className="status-text">{isConnected ? '已连接' : '未连接'}</span>
-        </div>
-
-        <input
-          type="text"
-          className="gateway-url-input"
-          value={gatewayUrl}
-          onChange={(e) => setGatewayUrl(e.target.value)}
-          placeholder="Gateway URL"
-          disabled={isConnected}
-        />
-
-        <button
-          className={`connection-button ${isConnected ? 'disconnect' : 'connect'}`}
-          onClick={handleToggleConnection}
-        >
-          {isConnected ? '断开连接' : '连接'}
-        </button>
-      </div>
-
       {/* 功能菜单 */}
       <div className="sidebar-section">
         <h3 className="sidebar-section-title">功能</h3>
@@ -184,6 +127,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <path d="M8 15A7 7 0 118 1a7 7 0 010 14zm0 1A8 8 0 108 0a8 8 0 000 16z"/>
             </svg>
             <span>订阅管理</span>
+          </button>
+
+          <button
+            className={`nav-item ${activeView === 'devices' ? 'active' : ''}`}
+            onClick={() => handleViewChange('devices')}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M11 1a1 1 0 011 1v12a1 1 0 01-1 1H5a1 1 0 01-1-1V2a1 1 0 011-1h6zM5 0a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V2a2 2 0 00-2-2H5z"/>
+              <path d="M8 14a1 1 0 100-2 1 1 0 000 2z"/>
+            </svg>
+            <span>设备管理</span>
           </button>
         </nav>
       </div>

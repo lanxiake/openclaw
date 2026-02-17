@@ -11,6 +11,8 @@ import './SettingsView.css'
 
 interface SettingsViewProps {
   isConnected: boolean
+  onConnect?: (url: string, options?: { token?: string }) => void
+  onDisconnect?: () => void
   onClose?: () => void
 }
 
@@ -50,7 +52,7 @@ const PRIMARY_COLORS = [
 /**
  * 设置视图组件
  */
-export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, onClose }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, onConnect, onDisconnect, onClose }) => {
   const {
     settings,
     isLoading,
@@ -132,11 +134,36 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, onClose
   }
 
   /**
+   * 处理连接/断开 Gateway
+   */
+  const handleToggleConnection = () => {
+    if (isConnected) {
+      onDisconnect?.()
+    } else {
+      const token = settings.gateway.token || undefined
+      onConnect?.(settings.gateway.url, token ? { token } : undefined)
+    }
+  }
+
+  /**
    * 渲染 Gateway 设置
    */
   const renderGatewaySettings = () => (
     <div className="settings-section">
       <h3 className="settings-section-title">Gateway 连接配置</h3>
+
+      <div className="connection-status-card">
+        <div className="status-info">
+          <span className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`} />
+          <span className="status-text">{isConnected ? '已连接到 Gateway' : '未连接'}</span>
+        </div>
+        <button
+          className={`connection-toggle-btn ${isConnected ? 'disconnect' : 'connect'}`}
+          onClick={handleToggleConnection}
+        >
+          {isConnected ? '断开连接' : '连接'}
+        </button>
+      </div>
 
       <div className="settings-group">
         <div className="setting-item">
@@ -208,11 +235,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, onClose
             max={100}
           />
         </div>
-      </div>
-
-      <div className="connection-status-card">
-        <span className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`} />
-        <span>{isConnected ? '已连接到 Gateway' : '未连接'}</span>
       </div>
     </div>
   )

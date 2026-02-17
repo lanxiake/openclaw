@@ -12,6 +12,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react'
+import { subscriptionService } from '../services/subscription-service'
 
 /**
  * 订阅计划 ID
@@ -232,12 +233,20 @@ export function useSubscription(): UseSubscriptionReturn {
     setError(null)
 
     try {
-      const result = await window.electronAPI.gateway.call<{ plans: SubscriptionPlan[] }>(
-        'assistant.subscription.plans',
-        {}
-      )
-      setPlans(result.plans)
-      console.log('[useSubscription] 获取到', result.plans.length, '个计划')
+      const accessToken = localStorage.getItem('openclaw_access_token')
+      if (!accessToken) {
+        throw new Error('未登录')
+      }
+
+      subscriptionService.setAccessToken(accessToken)
+      const result = await subscriptionService.getAvailablePlans()
+
+      if (result.success && result.plans) {
+        setPlans(result.plans as any) // 类型转换,因为 API 返回的结构可能略有不同
+        console.log('[useSubscription] 获取到', result.plans.length, '个计划')
+      } else {
+        throw new Error(result.error || '获取计划列表失败')
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取计划列表失败'
       console.error('[useSubscription] 获取计划失败:', errorMessage)
@@ -256,21 +265,27 @@ export function useSubscription(): UseSubscriptionReturn {
     setError(null)
 
     try {
-      const result = await window.electronAPI.gateway.call<{
-        subscription: UserSubscription | null
-        plan: { id: SubscriptionPlanId; name: string; quotas: PlanQuotas }
-        hasActiveSubscription: boolean
-      }>('assistant.subscription.get', {})
-
-      setSubscription(result.subscription)
-
-      // 查找当前计划的完整信息
-      if (plans.length > 0) {
-        const plan = plans.find((p) => p.id === result.plan.id)
-        setCurrentPlan(plan || null)
+      const accessToken = localStorage.getItem('openclaw_access_token')
+      if (!accessToken) {
+        throw new Error('未登录')
       }
 
-      console.log('[useSubscription] 订阅状态:', result.hasActiveSubscription ? '活跃' : '无')
+      subscriptionService.setAccessToken(accessToken)
+      const result = await subscriptionService.getSubscription()
+
+      if (result.success) {
+        setSubscription(result.subscription as any || null)
+
+        // 查找当前计划的完整信息
+        if (plans.length > 0 && result.plan) {
+          const plan = plans.find((p) => p.id === result.plan?.id)
+          setCurrentPlan(plan || null)
+        }
+
+        console.log('[useSubscription] 订阅状态:', result.subscription ? '活跃' : '无')
+      } else {
+        throw new Error(result.error || '获取订阅状态失败')
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取订阅状态失败'
       console.error('[useSubscription] 获取订阅失败:', errorMessage)

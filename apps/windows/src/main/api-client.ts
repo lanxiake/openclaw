@@ -243,7 +243,7 @@ export class ApiClient {
    */
   constructor(config: Partial<ApiClientConfig> = {}) {
     this.config = {
-      baseUrl: config.baseUrl || 'http://localhost:3000',
+      baseUrl: config.baseUrl || 'http://127.0.0.1:3000',  // 使用 IPv4 地址而不是 localhost
       timeout: config.timeout || 30000,
     }
     log.info('API 客户端初始化完成', { baseUrl: this.config.baseUrl })
@@ -330,6 +330,8 @@ export class ApiClient {
       hasPhone: !!params.phone,
       hasEmail: !!params.email,
       hasUsername: !!params.username,
+      passwordLength: params.password?.length,
+      passwordFirst3: params.password?.substring(0, 3),
     })
 
     return this.request<AuthResponse>('POST', '/api/auth/register', params)
@@ -505,6 +507,18 @@ export class ApiClient {
           error: data.error,
           code: data.code,
         })
+
+        // 检测 401 未授权错误（token 过期）
+        // 但排除 logout 接口，避免循环调用
+        if (response.status === 401 && !path.includes('/logout')) {
+          log.warn('检测到 401 错误，token 可能已过期')
+          // 通过 IPC 通知渲染进程 token 过期
+          const { BrowserWindow } = require('electron')
+          const mainWindow = BrowserWindow.getAllWindows()[0]
+          if (mainWindow) {
+            mainWindow.webContents.send('auth:token-expired')
+          }
+        }
 
         // 返回错误响应格式
         return {

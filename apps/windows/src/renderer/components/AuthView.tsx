@@ -5,11 +5,18 @@
  * 使用前端 SVG 图形验证码替代手机/邮箱验证码。
  */
 
-import React, { useState, useCallback } from 'react'
-import { useAuth } from '../hooks/useAuth'
+import React, { useState, useCallback, useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 import { useCaptcha } from '../hooks/useCaptcha'
 import { useSettings } from '../hooks/useSettings'
 import './AuthView.css'
+
+// localStorage keys for remember password
+const STORAGE_KEYS = {
+  REMEMBER_PASSWORD: 'openclaw_remember_password',
+  SAVED_IDENTIFIER: 'openclaw_saved_identifier',
+  SAVED_PASSWORD: 'openclaw_saved_password',
+}
 
 /**
  * 认证模式
@@ -50,10 +57,34 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
   const [displayName, setDisplayName] = useState('')
   const [captchaInput, setCaptchaInput] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
+  const [rememberPassword, setRememberPassword] = useState(false)
   const [showGatewayConfig, setShowGatewayConfig] = useState(false)
   const [gatewayUrl, setGatewayUrl] = useState(settings.gateway.url || 'ws://localhost:18789')
   const [gatewayTesting, setGatewayTesting] = useState(false)
   const [gatewayTestResult, setGatewayTestResult] = useState<'success' | 'error' | null>(null)
+
+  /**
+   * 从 localStorage 加载保存的账号密码
+   */
+  useEffect(() => {
+    const rememberPasswordEnabled = localStorage.getItem(STORAGE_KEYS.REMEMBER_PASSWORD) === 'true'
+    if (rememberPasswordEnabled) {
+      const savedIdentifier = localStorage.getItem(STORAGE_KEYS.SAVED_IDENTIFIER)
+      const savedPassword = localStorage.getItem(STORAGE_KEYS.SAVED_PASSWORD)
+      if (savedIdentifier) {
+        setIdentifier(savedIdentifier)
+      }
+      if (savedPassword) {
+        // 简单的 base64 解码（注意：这不是加密，只是混淆）
+        try {
+          setPassword(atob(savedPassword))
+        } catch (error) {
+          console.error('[AuthView] 解码保存的密码失败:', error)
+        }
+      }
+      setRememberPassword(true)
+    }
+  }, [])
 
   /**
    * 判断输入是手机号还是邮箱
@@ -127,6 +158,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
       }
 
       console.log('[AuthView] 提交注册:', { identifier: trimmedIdentifier, identifierType })
+      console.log('[DEBUG] 密码长度:', password.length, '密码前3位:', password.substring(0, 3))
 
       const params = {
         [identifierType]: trimmedIdentifier,
@@ -134,12 +166,18 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
         displayName: displayName.trim(),
       }
 
+      console.log('[DEBUG] 注册参数:', JSON.stringify({ ...params, password: `${password.substring(0, 3)}...` }))
+
       const result = await register(params)
       if (result.success) {
         console.log('[AuthView] 注册成功')
+        setFormError(null)
+        // 显示成功提示
+        alert('注册成功！正在登录...')
         onAuthSuccess?.()
       } else {
         console.log('[AuthView] 注册失败:', result.error)
+        setFormError(result.error || '注册失败，请重试')
       }
     } else {
       // 登录验证
@@ -155,11 +193,32 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
         password,
       })
 
+      console.log('[AuthView] 登录结果:', { success: result.success, error: result.error })
+
       if (result.success) {
-        console.log('[AuthView] 登录成功')
+        console.log('[AuthView] 登录成功，准备跳转')
+        setFormError(null)
+
+        // 保存或清除记住的密码
+        if (rememberPassword) {
+          localStorage.setItem(STORAGE_KEYS.REMEMBER_PASSWORD, 'true')
+          localStorage.setItem(STORAGE_KEYS.SAVED_IDENTIFIER, trimmedIdentifier)
+          // 简单的 base64 编码（注意：这不是加密，只是混淆）
+          localStorage.setItem(STORAGE_KEYS.SAVED_PASSWORD, btoa(password))
+          console.log('[AuthView] 已保存账号密码')
+        } else {
+          localStorage.removeItem(STORAGE_KEYS.REMEMBER_PASSWORD)
+          localStorage.removeItem(STORAGE_KEYS.SAVED_IDENTIFIER)
+          localStorage.removeItem(STORAGE_KEYS.SAVED_PASSWORD)
+          console.log('[AuthView] 已清除保存的账号密码')
+        }
+
+        // 显示成功提示
+        alert('登录成功！')
         onAuthSuccess?.()
       } else {
         console.log('[AuthView] 登录失败:', result.error)
+        setFormError(result.error || '登录失败，请检查用户名和密码')
       }
     }
   }, [identifier, password, displayName, captchaInput, mode, getIdentifierType, validateCaptcha, register, login, clearError, onAuthSuccess])
@@ -381,6 +440,21 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
               disabled={authLoading}
             />
           </div>
+
+          {/* 记住密码（仅登录模式） */}
+          {mode === 'login' && (
+            <div className="form-group remember-password-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={rememberPassword}
+                  onChange={(e) => setRememberPassword(e.target.checked)}
+                  disabled={authLoading}
+                />
+                <span>记住密码</span>
+              </label>
+            </div>
+          )}
 
           {/* 图形验证码 */}
           <div className="form-group">
