@@ -322,3 +322,20 @@ export type {
   DevicePlatform,
   PairingRequestStatus,
 } from "./devices.js";
+
+// Gateway 配置相关表
+export { gatewayConfigs } from "./gateway-configs.js";
+
+// Gateway 配置相关类型
+export type { GatewayConfig, NewGatewayConfig } from "./gateway-configs.js";
+
+// 模型配置相关表
+export { modelProviders, agentConfigs } from "./model-configs.js";
+
+// 模型配置相关类型
+export type {
+  ModelProvider,
+  NewModelProvider,
+  AgentDefaultConfig,
+  NewAgentDefaultConfig,
+} from "./model-configs.js";

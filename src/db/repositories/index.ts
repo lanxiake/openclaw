@@ -87,3 +87,9 @@ export {
   getDeviceRepository,
   getDevicePairingRequestRepository,
 } from "./devices.js";
+
+// Gateway 配置仓库
+export { GatewayConfigRepository } from "./gateway-configs.js";
+
+// 模型配置仓库
+export { ModelProviderRepository, AgentDefaultConfigRepository } from "./model-configs.js";
