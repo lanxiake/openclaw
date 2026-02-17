@@ -92,6 +92,18 @@ device-user-registration-analysis.md
 docs/device-user-registration-implementation-plan.md
 Microsoft/
 
+# Temporary test and fix scripts
+test-*.mjs
+fix-*.mjs
+fix-*.py
+fix-*.cjs
+*.pid
+gateway.log
+api-server-output.log
+TESTING_SUMMARY.md
+scripts/migrate-gateway-config.mjs
+scripts/parse-config.py
+
 # Test drafts (not colocated)
 tests/
 src/gateway/gateway-connection.test.ts
