@@ -172,22 +172,21 @@ export function registerModelProviderRoutes(server: FastifyInstance): void {
             );
 
         // 记录审计日志
-        await adminAudit(
-          admin.adminId,
-          "model_provider.create",
-          {
-            targetType: "model_provider",
-            targetId: provider.id,
-            targetName: provider.providerKey,
-            details: {
-              providerKey: body.providerKey,
-              configType: body.userId ? "tenant" : "system",
-            },
-            ipAddress,
-            userAgent,
+        await adminAudit({
+          adminId: admin.adminId,
+          adminUsername: admin.adminId, // 临时使用 adminId,后续优化为真实 username
+          action: "model_provider.create",
+          targetType: "model_provider",
+          targetId: provider.id,
+          targetName: provider.providerKey,
+          details: {
+            providerKey: body.providerKey,
+            configType: body.userId ? "tenant" : "system",
           },
-          db
-        );
+          ipAddress,
+          userAgent,
+          riskLevel: "low",
+        });
 
         return { success: true, data: provider };
       } catch (error) {
@@ -270,21 +269,20 @@ export function registerModelProviderRoutes(server: FastifyInstance): void {
             : await repo.upsertSystemProvider(key, config, admin.adminId);
 
         // 记录审计日志
-        await adminAudit(
-          admin.adminId,
-          "model_provider.update",
-          {
-            targetType: "model_provider",
-            targetId: provider.id,
-            targetName: provider.providerKey,
-            details: {
-              changes: body,
-            },
-            ipAddress,
-            userAgent,
+        await adminAudit({
+          adminId: admin.adminId,
+          adminUsername: admin.adminId,
+          action: "model_provider.update",
+          targetType: "model_provider",
+          targetId: provider.id,
+          targetName: provider.providerKey,
+          details: {
+            changes: body,
           },
-          db
-        );
+          ipAddress,
+          userAgent,
+          riskLevel: "low",
+        });
 
         return { success: true, data: provider };
       } catch (error) {
@@ -340,18 +338,17 @@ export function registerModelProviderRoutes(server: FastifyInstance): void {
           );
 
         // 记录审计日志
-        await adminAudit(
-          admin.adminId,
-          "model_provider.delete",
-          {
-            targetType: "model_provider",
-            targetId: existing.id,
-            targetName: existing.providerKey,
-            ipAddress,
-            userAgent,
-          },
-          db
-        );
+        await adminAudit({
+          adminId: admin.adminId,
+          adminUsername: admin.adminId,
+          action: "model_provider.delete",
+          targetType: "model_provider",
+          targetId: existing.id,
+          targetName: existing.providerKey,
+          ipAddress,
+          userAgent,
+          riskLevel: "medium",
+        });
 
         return { success: true };
       } catch (error) {

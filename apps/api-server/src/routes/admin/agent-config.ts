@@ -104,21 +104,20 @@ export function registerAgentConfigRoutes(server: FastifyInstance): void {
             );
 
         // 记录审计日志
-        await adminAudit(
-          admin.adminId,
-          "agent_config.update",
-          {
-            targetType: "agent_config",
-            targetId: config.id,
-            targetName: body.userId ? `tenant:${body.userId}` : "system",
-            details: {
-              changes: body,
-            },
-            ipAddress,
-            userAgent,
+        await adminAudit({
+          adminId: admin.adminId,
+          adminUsername: admin.adminId,
+          action: "agent_config.update",
+          targetType: "agent_config",
+          targetId: config.id,
+          targetName: body.userId ? `tenant:${body.userId}` : "system",
+          details: {
+            changes: body,
           },
-          db
-        );
+          ipAddress,
+          userAgent,
+          riskLevel: "low",
+        });
 
         return { success: true, data: config };
       } catch (error) {
@@ -137,7 +136,7 @@ export function registerAgentConfigRoutes(server: FastifyInstance): void {
    */
   server.post(
     "/api/admin/agent-config/reset",
-    { preHandler: requirePermission("system", "resetConfig") },
+    { preHandler: requirePermission("system", "editConfig") },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const admin = getRequiredAdmin(request);
       const body = request.body as { userId?: string };
@@ -174,17 +173,16 @@ export function registerAgentConfigRoutes(server: FastifyInstance): void {
         }
 
         // 记录审计日志
-        await adminAudit(
-          admin.adminId,
-          "agent_config.reset",
-          {
-            targetType: "agent_config",
-            targetName: body.userId ? `tenant:${body.userId}` : "system",
-            ipAddress,
-            userAgent,
-          },
-          db
-        );
+        await adminAudit({
+          adminId: admin.adminId,
+          adminUsername: admin.adminId,
+          action: "agent_config.reset",
+          targetType: "agent_config",
+          targetName: body.userId ? `tenant:${body.userId}` : "system",
+          ipAddress,
+          userAgent,
+          riskLevel: "medium",
+        });
 
         // 返回重置后的配置
         const config = await repo.getEffectiveConfig(body.userId);
