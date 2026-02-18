@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useAuthStore, useUIStore } from '@/stores'
-import { gateway } from '@/lib/gateway-client'
+import { apiClient } from '@/lib/api-client'
 import { ROUTES } from '@/lib/constants'
 
 /**
@@ -148,27 +148,17 @@ export function Header() {
     setIsSubmitting(true)
     try {
       console.log('[Header] 提交密码修改请求')
-      const response = await gateway.call<{
-        success: boolean
-        message?: string
-        error?: { code: string; message: string }
-      }>('admin.changePassword', {
+      await apiClient.instance.changePassword({
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       })
 
-      if (response.success) {
-        console.log('[Header] 密码修改成功，准备登出')
-        setPasswordDialogOpen(false)
-        // 密码修改成功后服务端已吊销所有会话，自动登出
-        alert('密码修改成功，请重新登录')
-        await logout()
-        navigate(ROUTES.LOGIN)
-      } else {
-        const errorMsg = response.error?.message || '密码修改失败'
-        console.warn('[Header] 密码修改失败:', errorMsg)
-        setPasswordError(errorMsg)
-      }
+      console.log('[Header] 密码修改成功，准备登出')
+      setPasswordDialogOpen(false)
+      // 密码修改成功后服务端已吊销所有会话，自动登出
+      alert('密码修改成功，请重新登录')
+      await logout()
+      navigate(ROUTES.LOGIN)
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : '密码修改失败，请稍后重试'
       console.error('[Header] 密码修改异常:', error)

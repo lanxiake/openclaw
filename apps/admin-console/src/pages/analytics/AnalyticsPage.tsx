@@ -156,8 +156,8 @@ export default function AnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">总用户</p>
-                  <p className="text-2xl font-bold">{formatNumber(overview.users.total)}</p>
-                  <p className="text-xs text-green-500">+{overview.users.new} 新增</p>
+                  <p className="text-2xl font-bold">{formatNumber(overview.totalUsers)}</p>
+                  <p className="text-xs text-green-500">+{overview.newUsersToday} 新增</p>
                 </div>
               </div>
             </CardContent>
@@ -170,8 +170,9 @@ export default function AnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">总收入</p>
-                  <p className="text-2xl font-bold">{formatCurrency(overview.revenue.total, true)}</p>
-                  <p className="text-xs text-muted-foreground">今日 {formatCurrency(overview.revenue.today)}</p>
+                  <p className="text-2xl font-bold">{formatCurrency(overview.totalRevenue, true)}</p>
+                  {/* TODO: revenue.today 在新扁平类型中不存在，使用 0 占位 */}
+                  <p className="text-xs text-muted-foreground">今日 {formatCurrency(0)}</p>
                 </div>
               </div>
             </CardContent>
@@ -184,8 +185,10 @@ export default function AnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">技能调用</p>
-                  <p className="text-2xl font-bold">{formatNumber(overview.skills.executions)}</p>
-                  <p className="text-xs text-muted-foreground">{overview.skills.active} 个活跃技能</p>
+                  {/* TODO: skills.executions 在新扁平类型中不存在，使用 0 占位 */}
+                  <p className="text-2xl font-bold">{formatNumber(0)}</p>
+                  {/* TODO: skills.active 在新扁平类型中不存在，使用 0 占位 */}
+                  <p className="text-xs text-muted-foreground">{0} 个活跃技能</p>
                 </div>
               </div>
             </CardContent>
@@ -198,9 +201,11 @@ export default function AnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">日活用户</p>
-                  <p className="text-2xl font-bold">{formatNumber(overview.engagement.dau)}</p>
+                  {/* TODO: engagement.dau 在新扁平类型中不存在，使用 0 占位 */}
+                  <p className="text-2xl font-bold">{formatNumber(0)}</p>
                   <p className="text-xs text-muted-foreground">
-                    MAU: {formatNumber(overview.engagement.mau)}
+                    {/* TODO: engagement.mau 在新扁平类型中不存在，使用 0 占位 */}
+                    MAU: {formatNumber(0)}
                   </p>
                 </div>
               </div>
@@ -323,8 +328,8 @@ export default function AnalyticsPage() {
             metrics={
               overview
                 ? [
-                    { label: '总用户', value: formatNumber(overview.users.total) },
-                    { label: '活跃率', value: `${((overview.users.active / overview.users.total) * 100).toFixed(1)}%` },
+                    { label: '总用户', value: formatNumber(overview.totalUsers) },
+                    { label: '活跃率', value: `${overview.totalUsers > 0 ? ((overview.activeUsers / overview.totalUsers) * 100).toFixed(1) : '0.0'}%` },
                   ]
                 : undefined
             }
@@ -337,8 +342,10 @@ export default function AnalyticsPage() {
             metrics={
               overview
                 ? [
-                    { label: '月收入', value: formatCurrency(overview.revenue.mtd, true) },
-                    { label: '年收入', value: formatCurrency(overview.revenue.ytd, true) },
+                    // TODO: revenue.mtd 在新扁平类型中不存在，使用 0 占位
+                    { label: '月收入', value: formatCurrency(0, true) },
+                    // TODO: revenue.ytd 在新扁平类型中不存在，使用 0 占位
+                    { label: '年收入', value: formatCurrency(0, true) },
                   ]
                 : undefined
             }
@@ -351,8 +358,10 @@ export default function AnalyticsPage() {
             metrics={
               overview
                 ? [
-                    { label: '调用次数', value: formatNumber(overview.skills.executions) },
-                    { label: '平均评分', value: overview.skills.averageRating.toFixed(1) },
+                    // TODO: skills.executions 在新扁平类型中不存在，使用 0 占位
+                    { label: '调用次数', value: formatNumber(0) },
+                    // TODO: skills.averageRating 在新扁平类型中不存在，使用 0 占位
+                    { label: '平均评分', value: (0).toFixed(1) },
                   ]
                 : undefined
             }

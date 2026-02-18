@@ -98,7 +98,7 @@ export default function FunnelsAnalyticsPage() {
       {/* 漏斗可视化 */}
       <Card>
         <CardHeader>
-          <CardTitle>{funnel?.name || '加载中...'}</CardTitle>
+          <CardTitle>{selectedFunnel || '加载中...'}</CardTitle>
           <CardDescription>
             {funnels?.find((f) => f.id === selectedFunnel)?.description}
           </CardDescription>
@@ -114,7 +114,7 @@ export default function FunnelsAnalyticsPage() {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">整体转化率</p>
                 <p className="text-4xl font-bold text-primary">
-                  {funnel.overallConversionRate}%
+                  {funnel.overallConversion}%
                 </p>
               </div>
 

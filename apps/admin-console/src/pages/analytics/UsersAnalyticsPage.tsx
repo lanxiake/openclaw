@@ -99,8 +99,9 @@ export default function UsersAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">总用户数</p>
+                  {/* total: 新类型直接提供总用户数 */}
                   <p className="text-2xl font-bold">
-                    {formatNumber(growth.data[growth.data.length - 1]?.totalUsers || 0)}
+                    {formatNumber(growth.total)}
                   </p>
                 </div>
               </div>
@@ -114,7 +115,8 @@ export default function UsersAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">新增用户</p>
-                  <p className="text-2xl font-bold">{formatNumber(growth.summary.totalNewUsers)}</p>
+                  {/* 新类型无 summary.totalNewUsers，用 data 数组求和 */}
+                  <p className="text-2xl font-bold">{formatNumber(growth.data.reduce((a, b) => a + b, 0))}</p>
                 </div>
               </div>
             </CardContent>
@@ -127,7 +129,8 @@ export default function UsersAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">日均活跃</p>
-                  <p className="text-2xl font-bold">{formatNumber(growth.summary.averageDailyActive)}</p>
+                  {/* 新类型无 summary.averageDailyActive，暂用 0 占位 */}
+                  <p className="text-2xl font-bold">{formatNumber(0)}</p>
                 </div>
               </div>
             </CardContent>
@@ -140,7 +143,8 @@ export default function UsersAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">增长率</p>
-                  <p className="text-2xl font-bold">{growth.summary.growthRate}%</p>
+                  {/* growth 字段对应旧 summary.growthRate */}
+                  <p className="text-2xl font-bold">{growth.growth}%</p>
                 </div>
               </div>
             </CardContent>
@@ -162,11 +166,11 @@ export default function UsersAnalyticsPage() {
           ) : growth ? (
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={growth.data}>
+                {/* 将 labels + data 组合为图表数据点数组 */}
+                <AreaChart data={growth.labels.map((label, i) => ({ label, value: growth.data[i] ?? 0 }))}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="date" tickFormatter={formatDateLabel} className="text-xs" />
-                  <YAxis yAxisId="left" className="text-xs" />
-                  <YAxis yAxisId="right" orientation="right" className="text-xs" />
+                  <XAxis dataKey="label" tickFormatter={formatDateLabel} className="text-xs" />
+                  <YAxis className="text-xs" />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'hsl(var(--background))',
@@ -175,22 +179,12 @@ export default function UsersAnalyticsPage() {
                     }}
                   />
                   <Area
-                    yAxisId="right"
                     type="monotone"
-                    dataKey="totalUsers"
-                    name="累计用户"
+                    dataKey="value"
+                    name="用户数"
                     stroke="#3b82f6"
                     fill="#3b82f6"
                     fillOpacity={0.1}
-                  />
-                  <Area
-                    yAxisId="left"
-                    type="monotone"
-                    dataKey="newUsers"
-                    name="新增用户"
-                    stroke="#10b981"
-                    fill="#10b981"
-                    fillOpacity={0.3}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -270,11 +264,11 @@ export default function UsersAnalyticsPage() {
 
       {/* 用户画像 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 订阅计划分布 */}
+        {/* 平台分布（替代旧的订阅计划分布） */}
         <Card>
           <CardHeader>
-            <CardTitle>订阅计划分布</CardTitle>
-            <CardDescription>用户按订阅计划的分布情况</CardDescription>
+            <CardTitle>平台分布</CardTitle>
+            <CardDescription>用户按平台的分布情况</CardDescription>
           </CardHeader>
           <CardContent>
             {demographicsLoading ? (
@@ -287,15 +281,15 @@ export default function UsersAnalyticsPage() {
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie
-                        data={demographics.byPlan}
+                        data={demographics.byPlatform}
                         dataKey="count"
-                        nameKey="plan"
+                        nameKey="platform"
                         cx="50%"
                         cy="50%"
                         innerRadius={40}
                         outerRadius={80}
                       >
-                        {demographics.byPlan.map((_, index) => (
+                        {demographics.byPlatform.map((_, index) => (
                           <Cell key={index} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -304,14 +298,14 @@ export default function UsersAnalyticsPage() {
                   </ResponsiveContainer>
                 </div>
                 <div className="w-1/2 space-y-2">
-                  {demographics.byPlan.map((item, index) => (
+                  {demographics.byPlatform.map((item, index) => (
                     <div key={index} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <div
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: COLORS[index % COLORS.length] }}
                         />
-                        <span>{item.plan}</span>
+                        <span>{item.platform}</span>
                       </div>
                       <span className="text-muted-foreground">{item.percentage}%</span>
                     </div>
@@ -350,11 +344,11 @@ export default function UsersAnalyticsPage() {
         </Card>
       </div>
 
-      {/* 活跃时段分布 */}
+      {/* 年龄分布（替代旧的活跃时段分布） */}
       <Card>
         <CardHeader>
-          <CardTitle>活跃时段分布</CardTitle>
-          <CardDescription>用户 24 小时活跃情况</CardDescription>
+          <CardTitle>年龄分布</CardTitle>
+          <CardDescription>用户年龄段分布情况</CardDescription>
         </CardHeader>
         <CardContent>
           {demographicsLoading ? (
@@ -364,12 +358,12 @@ export default function UsersAnalyticsPage() {
           ) : demographics ? (
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={demographics.byActiveHour}>
+                <BarChart data={demographics.byAge}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="hour" className="text-xs" tickFormatter={(h) => `${h}:00`} />
+                  <XAxis dataKey="range" className="text-xs" />
                   <YAxis className="text-xs" />
-                  <Tooltip labelFormatter={(h) => `${h}:00 - ${h}:59`} />
-                  <Bar dataKey="count" name="活跃用户" fill="#8b5cf6" radius={2} />
+                  <Tooltip />
+                  <Bar dataKey="count" name="用户数" fill="#8b5cf6" radius={2} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

@@ -38,7 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { cn, formatBytes, formatDuration } from '@/lib/utils'
+import { cn, formatBytes } from '@/lib/utils'
 import {
   useMonitorStats,
   useSystemHealth,
@@ -47,18 +47,18 @@ import {
   useResourceHistory,
   useAlerts,
 } from '@/hooks/useMonitor'
-import type { ServiceStatus } from '@/types/monitor'
 
 /**
  * 获取服务状态图标和颜色
+ * 支持 SystemHealth.services 中的 'up' | 'down' | 'degraded' 状态
  */
-function getServiceStatusConfig(status: ServiceStatus) {
+function getServiceStatusConfig(status: 'up' | 'down' | 'degraded') {
   switch (status) {
-    case 'healthy':
+    case 'up':
       return { icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10' }
     case 'degraded':
       return { icon: AlertTriangle, color: 'text-yellow-500', bg: 'bg-yellow-500/10' }
-    case 'unhealthy':
+    case 'down':
       return { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10' }
     default:
       return { icon: Clock, color: 'text-gray-500', bg: 'bg-gray-500/10' }
@@ -146,11 +146,11 @@ export default function MonitorPage() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
               <Server className="h-5 w-5 text-muted-foreground" />
-              {statsLoading ? (
+              {statsLoading || healthLoading ? (
                 <div className="h-8 w-20 bg-muted animate-pulse rounded" />
               ) : (
                 <div className="text-2xl font-bold">
-                  {stats?.servicesHealthy}/{stats?.servicesTotal}
+                  {health?.services.filter((s) => s.status === 'up').length ?? 0}/{health?.services.length ?? 0}
                 </div>
               )}
             </div>
@@ -165,11 +165,11 @@ export default function MonitorPage() {
                 <div className="h-8 w-24 bg-muted animate-pulse rounded" />
               ) : (
                 <div className="text-2xl font-bold">
-                  {stats?.apiRequestsToday?.toLocaleString()}
+                  {stats?.requestsPerMinute?.toLocaleString()}
                 </div>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">今日 API 请求</p>
+            <p className="text-sm text-muted-foreground">每分钟请求数</p>
           </CardContent>
         </Card>
         <Card>
@@ -213,15 +213,15 @@ export default function MonitorPage() {
               {health && (
                 <Badge
                   variant={
-                    health.overall === 'healthy'
+                    health.status === 'healthy'
                       ? 'success'
-                      : health.overall === 'degraded'
+                      : health.status === 'degraded'
                         ? 'default'
                         : 'destructive'
                   }
                   className="ml-2"
                 >
-                  {health.overall === 'healthy' ? '正常' : health.overall === 'degraded' ? '降级' : '异常'}
+                  {health.status === 'healthy' ? '正常' : health.status === 'degraded' ? '降级' : '异常'}
                 </Badge>
               )}
             </CardDescription>
@@ -248,16 +248,14 @@ export default function MonitorPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{service.name}</span>
-                          {service.version && (
-                            <span className="text-xs text-muted-foreground">v{service.version}</span>
-                          )}
                         </div>
-                        <p className="text-sm text-muted-foreground">{service.message}</p>
+                        {service.message && (
+                          <p className="text-sm text-muted-foreground">{service.message}</p>
+                        )}
                       </div>
                       <div className="text-right text-sm">
-                        <p className="font-medium">{service.responseTime}ms</p>
-                        {service.uptime && (
-                          <p className="text-muted-foreground">{formatDuration(service.uptime)}</p>
+                        {service.latency != null && (
+                          <p className="font-medium">{service.latency}ms</p>
                         )}
                       </div>
                     </div>
@@ -321,7 +319,7 @@ export default function MonitorPage() {
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-green-500 transition-all"
-                      style={{ width: `${resources.memory.usagePercent}%` }}
+                      style={{ width: `${resources.memory.percentage}%` }}
                     />
                   </div>
                 </div>
@@ -337,16 +335,20 @@ export default function MonitorPage() {
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-yellow-500 transition-all"
-                      style={{ width: `${resources.disk.usagePercent}%` }}
+                      style={{ width: `${resources.disk.percentage}%` }}
                     />
                   </div>
                 </div>
 
                 {/* 资源历史图表 */}
-                {resourceHistory && (
+                {resourceHistory && resourceHistory.labels.length > 0 && (
                   <div className="h-32 mt-4">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={resourceHistory.timeline}>
+                      <AreaChart data={resourceHistory.labels.map((label, i) => ({
+                        timestamp: label,
+                        cpu: resourceHistory.cpu[i] ?? 0,
+                        memory: resourceHistory.memory[i] ?? 0,
+                      }))}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                         <XAxis
                           dataKey="timestamp"
@@ -406,16 +408,16 @@ export default function MonitorPage() {
                   <p className="text-2xl font-bold">{apiData.summary.totalRequests.toLocaleString()}</p>
                 </div>
                 <div className="p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground">错误率</p>
-                  <p className="text-2xl font-bold">{apiData.summary.errorRate.toFixed(2)}%</p>
+                  <p className="text-sm text-muted-foreground">成功率</p>
+                  <p className="text-2xl font-bold">{apiData.summary.successRate.toFixed(2)}%</p>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <p className="text-sm text-muted-foreground">平均响应时间</p>
                   <p className="text-2xl font-bold">{apiData.summary.avgResponseTime}ms</p>
                 </div>
                 <div className="p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground">P95 响应时间</p>
-                  <p className="text-2xl font-bold">{apiData.summary.p95ResponseTime}ms</p>
+                  <p className="text-sm text-muted-foreground">每秒请求数</p>
+                  <p className="text-2xl font-bold">{apiData.summary.requestsPerSecond.toFixed(1)}</p>
                 </div>
               </div>
 
@@ -452,7 +454,10 @@ export default function MonitorPage() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={apiData.byStatusCode}
+                          data={Object.entries(apiData.byStatusCode).map(([code, count]) => ({
+                            code: Number(code),
+                            count,
+                          }))}
                           dataKey="count"
                           nameKey="code"
                           cx="50%"
@@ -461,10 +466,10 @@ export default function MonitorPage() {
                           outerRadius={70}
                           paddingAngle={2}
                         >
-                          {apiData.byStatusCode.map((entry) => (
+                          {Object.entries(apiData.byStatusCode).map(([code]) => (
                             <Cell
-                              key={entry.code}
-                              fill={STATUS_CODE_COLORS[entry.code] || '#6b7280'}
+                              key={code}
+                              fill={STATUS_CODE_COLORS[Number(code)] || '#6b7280'}
                             />
                           ))}
                         </Pie>
@@ -475,13 +480,13 @@ export default function MonitorPage() {
                     </ResponsiveContainer>
                   </div>
                   <div className="flex flex-wrap justify-center gap-4 mt-2">
-                    {apiData.byStatusCode.map((entry) => (
-                      <div key={entry.code} className="flex items-center gap-2 text-xs">
+                    {Object.entries(apiData.byStatusCode).map(([code, count]) => (
+                      <div key={code} className="flex items-center gap-2 text-xs">
                         <div
                           className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: STATUS_CODE_COLORS[entry.code] || '#6b7280' }}
+                          style={{ backgroundColor: STATUS_CODE_COLORS[Number(code)] || '#6b7280' }}
                         />
-                        <span>{entry.code}: {entry.count.toLocaleString()}</span>
+                        <span>{code}: {count.toLocaleString()}</span>
                       </div>
                     ))}
                   </div>
@@ -503,17 +508,17 @@ export default function MonitorPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {apiData.byEndpoint.map((endpoint) => (
-                        <tr key={`${endpoint.method}-${endpoint.path}`}>
+                      {apiData.byEndpoint.map((ep) => (
+                        <tr key={`${ep.method}-${ep.endpoint}`}>
                           <td>
-                            <Badge variant="outline">{endpoint.method}</Badge>
+                            <Badge variant="outline">{ep.method}</Badge>
                           </td>
-                          <td className="font-mono text-sm">{endpoint.path}</td>
-                          <td className="text-right">{endpoint.count.toLocaleString()}</td>
-                          <td className="text-right">{endpoint.avgTime}ms</td>
+                          <td className="font-mono text-sm">{ep.endpoint}</td>
+                          <td className="text-right">{ep.count.toLocaleString()}</td>
+                          <td className="text-right">{ep.avgTime}ms</td>
                           <td className="text-right">
-                            <span className={cn(endpoint.errorRate > 1 ? 'text-red-500' : 'text-muted-foreground')}>
-                              {endpoint.errorRate.toFixed(1)}%
+                            <span className={cn(ep.errorRate > 1 ? 'text-red-500' : 'text-muted-foreground')}>
+                              {ep.errorRate.toFixed(1)}%
                             </span>
                           </td>
                         </tr>

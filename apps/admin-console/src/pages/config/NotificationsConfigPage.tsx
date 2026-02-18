@@ -152,13 +152,11 @@ export default function NotificationsConfigPage() {
   const handleTest = async () => {
     if (!selectedTemplate) return
     try {
-      const result = await testTemplate.mutateAsync({
+      await testTemplate.mutateAsync({
         templateId: selectedTemplate.id,
         testData,
       })
-      if (result.preview) {
-        setPreviewContent(result.preview)
-      }
+      // TODO: 模板测试 API 尚未实现，暂时不处理预览
     } catch (error) {
       console.error('测试模板失败:', error)
     }
