@@ -2,10 +2,11 @@
  * 系统配置 Hooks
  *
  * 提供系统配置相关的 React Query Hooks
+ * 使用 API Server REST API
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { gateway } from '@/lib/gateway-client'
+import { apiClient } from '@/lib/api-client'
 import type {
   SiteConfig,
   FeatureFlags,
@@ -21,17 +22,15 @@ export function useSiteConfig() {
   return useQuery({
     queryKey: ['admin', 'config', 'site'],
     queryFn: async (): Promise<SiteConfig> => {
-      const response = await gateway.call<{
-        success: boolean
-        config?: SiteConfig
-        error?: string
-      }>('admin.config.site.get', {})
-
-      if (!response.success || !response.config) {
-        throw new Error(response.error || '获取站点配置失败')
+      console.log('[useConfig] 获取站点配置')
+      const configs = await apiClient.instance.getConfigs('site')
+      // 将配置数组转换为 SiteConfig 对象
+      const siteConfig: SiteConfig = {} as SiteConfig
+      for (const config of configs) {
+        const key = config.key.replace('site.', '') as keyof SiteConfig
+        siteConfig[key] = config.value as never
       }
-
-      return response.config
+      return siteConfig
     },
     staleTime: 5 * 60 * 1000, // 5 分钟后过期
   })
@@ -45,18 +44,11 @@ export function useUpdateSiteConfig() {
 
   return useMutation({
     mutationFn: async (config: Partial<SiteConfig>) => {
-      const response = await gateway.call<{
-        success: boolean
-        config?: SiteConfig
-        message?: string
-        error?: string
-      }>('admin.config.site.set', { config })
-
-      if (!response.success) {
-        throw new Error(response.error || '更新站点配置失败')
+      console.log('[useConfig] 更新站点配置:', config)
+      // 逐个更新配置项
+      for (const [key, value] of Object.entries(config)) {
+        await apiClient.instance.updateConfig(`site.${key}`, value)
       }
-
-      return response
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'config', 'site'] })
@@ -72,17 +64,14 @@ export function useFeatureFlags() {
   return useQuery({
     queryKey: ['admin', 'config', 'features'],
     queryFn: async (): Promise<FeatureFlags> => {
-      const response = await gateway.call<{
-        success: boolean
-        config?: FeatureFlags
-        error?: string
-      }>('admin.config.features.get', {})
-
-      if (!response.success || !response.config) {
-        throw new Error(response.error || '获取功能开关失败')
+      console.log('[useConfig] 获取功能开关')
+      const configs = await apiClient.instance.getConfigs('features')
+      const featureFlags: FeatureFlags = {} as FeatureFlags
+      for (const config of configs) {
+        const key = config.key.replace('features.', '') as keyof FeatureFlags
+        featureFlags[key] = config.value as never
       }
-
-      return response.config
+      return featureFlags
     },
     staleTime: 5 * 60 * 1000,
   })
@@ -96,18 +85,10 @@ export function useUpdateFeatureFlags() {
 
   return useMutation({
     mutationFn: async (config: Partial<FeatureFlags>) => {
-      const response = await gateway.call<{
-        success: boolean
-        config?: FeatureFlags
-        message?: string
-        error?: string
-      }>('admin.config.features.set', { config })
-
-      if (!response.success) {
-        throw new Error(response.error || '更新功能开关失败')
+      console.log('[useConfig] 更新功能开关:', config)
+      for (const [key, value] of Object.entries(config)) {
+        await apiClient.instance.updateConfig(`features.${key}`, value)
       }
-
-      return response
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'config', 'features'] })
@@ -123,17 +104,14 @@ export function useSecurityConfig() {
   return useQuery({
     queryKey: ['admin', 'config', 'security'],
     queryFn: async (): Promise<SecurityConfig> => {
-      const response = await gateway.call<{
-        success: boolean
-        config?: SecurityConfig
-        error?: string
-      }>('admin.config.security.get', {})
-
-      if (!response.success || !response.config) {
-        throw new Error(response.error || '获取安全配置失败')
+      console.log('[useConfig] 获取安全配置')
+      const configs = await apiClient.instance.getConfigs('security')
+      const securityConfig: SecurityConfig = {} as SecurityConfig
+      for (const config of configs) {
+        const key = config.key.replace('security.', '') as keyof SecurityConfig
+        securityConfig[key] = config.value as never
       }
-
-      return response.config
+      return securityConfig
     },
     staleTime: 5 * 60 * 1000,
   })
@@ -147,18 +125,10 @@ export function useUpdateSecurityConfig() {
 
   return useMutation({
     mutationFn: async (config: Partial<SecurityConfig>) => {
-      const response = await gateway.call<{
-        success: boolean
-        config?: SecurityConfig
-        message?: string
-        error?: string
-      }>('admin.config.security.set', { config })
-
-      if (!response.success) {
-        throw new Error(response.error || '更新安全配置失败')
+      console.log('[useConfig] 更新安全配置:', config)
+      for (const [key, value] of Object.entries(config)) {
+        await apiClient.instance.updateConfig(`security.${key}`, value)
       }
-
-      return response
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'config', 'security'] })
@@ -169,26 +139,16 @@ export function useUpdateSecurityConfig() {
 
 /**
  * 获取通知模板列表
+ * 注意：通知模板功能需要在 API Server 中实现对应的路由
  */
 export function useNotificationTemplates(channel?: 'email' | 'sms' | 'push' | 'all') {
   return useQuery({
     queryKey: ['admin', 'config', 'notifications', channel],
     queryFn: async (): Promise<{ templates: NotificationTemplate[]; total: number }> => {
-      const response = await gateway.call<{
-        success: boolean
-        templates?: NotificationTemplate[]
-        total?: number
-        error?: string
-      }>('admin.config.notifications.list', { channel: channel || 'all' })
-
-      if (!response.success) {
-        throw new Error(response.error || '获取通知模板列表失败')
-      }
-
-      return {
-        templates: response.templates ?? [],
-        total: response.total ?? 0,
-      }
+      console.log('[useConfig] 获取通知模板列表:', channel)
+      // TODO: 需要在 API Server 中实现通知模板 API
+      // 暂时返回空数组
+      return { templates: [], total: 0 }
     },
     staleTime: 5 * 60 * 1000,
   })
@@ -201,17 +161,9 @@ export function useNotificationTemplate(templateId: string) {
   return useQuery({
     queryKey: ['admin', 'config', 'notifications', 'detail', templateId],
     queryFn: async (): Promise<NotificationTemplate> => {
-      const response = await gateway.call<{
-        success: boolean
-        template?: NotificationTemplate
-        error?: string
-      }>('admin.config.notifications.get', { templateId })
-
-      if (!response.success || !response.template) {
-        throw new Error(response.error || '获取通知模板失败')
-      }
-
-      return response.template
+      console.log('[useConfig] 获取通知模板:', templateId)
+      // TODO: 需要在 API Server 中实现通知模板 API
+      throw new Error('通知模板 API 尚未实现')
     },
     enabled: !!templateId,
   })
@@ -230,18 +182,9 @@ export function useUpdateNotificationTemplate() {
       content: string
       enabled?: boolean
     }) => {
-      const response = await gateway.call<{
-        success: boolean
-        template?: NotificationTemplate
-        message?: string
-        error?: string
-      }>('admin.config.notifications.update', params)
-
-      if (!response.success) {
-        throw new Error(response.error || '更新通知模板失败')
-      }
-
-      return response
+      console.log('[useConfig] 更新通知模板:', params.templateId)
+      // TODO: 需要在 API Server 中实现通知模板 API
+      throw new Error('通知模板 API 尚未实现')
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'config', 'notifications'] })
@@ -261,22 +204,9 @@ export function useTestNotificationTemplate() {
       templateId: string
       testData: Record<string, string>
     }) => {
-      const response = await gateway.call<{
-        success: boolean
-        preview?: {
-          subject?: string
-          content: string
-          channel: string
-        }
-        message?: string
-        error?: string
-      }>('admin.config.notifications.test', params)
-
-      if (!response.success) {
-        throw new Error(response.error || '测试通知模板失败')
-      }
-
-      return response
+      console.log('[useConfig] 测试通知模板:', params.templateId)
+      // TODO: 需要在 API Server 中实现通知模板 API
+      throw new Error('通知模板 API 尚未实现')
     },
   })
 }
@@ -288,17 +218,25 @@ export function useAllConfig() {
   return useQuery({
     queryKey: ['admin', 'config', 'all'],
     queryFn: async (): Promise<SystemConfig> => {
-      const response = await gateway.call<{
-        success: boolean
-        config?: SystemConfig
-        error?: string
-      }>('admin.config.all', {})
-
-      if (!response.success || !response.config) {
-        throw new Error(response.error || '获取所有配置失败')
+      console.log('[useConfig] 获取所有配置')
+      const configs = await apiClient.instance.getConfigs()
+      // 将配置数组转换为 SystemConfig 对象
+      const systemConfig: SystemConfig = {
+        site: {} as SiteConfig,
+        features: {} as FeatureFlags,
+        security: {} as SecurityConfig,
       }
-
-      return response.config
+      for (const config of configs) {
+        const [category, key] = config.key.split('.')
+        if (category === 'site') {
+          ;(systemConfig.site as unknown as Record<string, unknown>)[key] = config.value
+        } else if (category === 'features') {
+          ;(systemConfig.features as unknown as Record<string, unknown>)[key] = config.value
+        } else if (category === 'security') {
+          ;(systemConfig.security as unknown as Record<string, unknown>)[key] = config.value
+        }
+      }
+      return systemConfig
     },
     staleTime: 5 * 60 * 1000,
   })

@@ -2,41 +2,12 @@
  * 审计日志 Hooks
  *
  * 提供审计日志列表、详情、统计的 React Query Hooks
+ * 使用 API Server REST API
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { gateway } from '@/lib/gateway-client'
+import { apiClient } from '@/lib/api-client'
 import type { AuditLog, AuditLogQuery, AuditLogListResponse, AuditLogStats } from '@/types/audit'
-
-/**
- * 转换后端审计日志数据
- */
-function transformAuditLog(backendLog: Record<string, unknown>): AuditLog {
-  return {
-    id: backendLog.id as string,
-    adminId: backendLog.adminId as string | undefined,
-    adminName: (backendLog.adminUsername as string) || '未知管理员',
-    action: backendLog.action as string,
-    targetType: backendLog.targetType as string | undefined,
-    targetId: backendLog.targetId as string | undefined,
-    targetName: backendLog.targetName as string | undefined,
-    details: backendLog.details as Record<string, unknown> | undefined,
-    ip: backendLog.ipAddress as string | undefined,
-    userAgent: backendLog.userAgent as string | undefined,
-    riskLevel: backendLog.riskLevel as 'low' | 'medium' | 'high' | 'critical',
-    createdAt: formatDate(backendLog.createdAt),
-  }
-}
-
-/**
- * 格式化日期
- */
-function formatDate(value: unknown): string {
-  if (!value) return ''
-  if (typeof value === 'string') return value
-  if (value instanceof Date) return value.toISOString()
-  return ''
-}
 
 /**
  * 获取审计日志统计
@@ -45,19 +16,19 @@ export function useAuditLogStats() {
   return useQuery({
     queryKey: ['admin', 'auditLogs', 'stats'],
     queryFn: async (): Promise<AuditLogStats> => {
-      const response = await gateway.call<{
-        success: boolean
-        data?: AuditLogStats
-        error?: string
-      }>('admin.auditLogs.stats', {})
-
-      if (!response.success || !response.data) {
-        throw new Error(response.error || '获取审计统计失败')
+      console.log('[useAuditLogs] 获取审计统计')
+      // TODO: API Server 需要实现 /api/admin/audit/stats 路由
+      return {
+        totalActions: 0,
+        todayActions: 0,
+        weekActions: 0,
+        highRiskActions: 0,
+        actionDistribution: [],
+        adminDistribution: [],
+        riskDistribution: [],
       }
-
-      return response.data
     },
-    staleTime: 5 * 60 * 1000, // 5 分钟后过期
+    staleTime: 5 * 60 * 1000,
   })
 }
 
@@ -68,15 +39,9 @@ export function useAuditLogList(query: AuditLogQuery = {}) {
   return useQuery({
     queryKey: ['admin', 'auditLogs', 'list', query],
     queryFn: async (): Promise<AuditLogListResponse> => {
-      const response = await gateway.call<{
-        success: boolean
-        logs?: Array<Record<string, unknown>>
-        total?: number
-        page?: number
-        pageSize?: number
-        error?: string
-      }>('admin.auditLogs.list', {
-        search: query.search,
+      console.log('[useAuditLogs] 获取审计日志列表:', query)
+
+      const response = await apiClient.instance.getAuditLogs({
         adminId: query.adminId,
         action: query.action,
         targetType: query.targetType,
@@ -87,15 +52,27 @@ export function useAuditLogList(query: AuditLogQuery = {}) {
         pageSize: query.pageSize ?? 20,
       })
 
-      if (!response.success) {
-        throw new Error(response.error || '获取审计日志列表失败')
-      }
+      // 转换 API 返回的数据格式为本地 AuditLog 类型
+      const logs: AuditLog[] = response.data.map((item) => ({
+        id: item.id,
+        adminId: item.adminId,
+        adminName: item.adminUsername || '未知管理员',
+        action: item.action,
+        targetType: item.targetType,
+        targetId: item.targetId,
+        targetName: item.targetName,
+        details: item.details as Record<string, unknown> | undefined,
+        ip: item.ipAddress,
+        userAgent: item.userAgent,
+        riskLevel: item.riskLevel as 'low' | 'medium' | 'high' | 'critical',
+        createdAt: item.createdAt,
+      }))
 
       return {
-        logs: (response.logs ?? []).map(transformAuditLog),
-        total: response.total ?? 0,
-        page: response.page ?? 1,
-        pageSize: response.pageSize ?? 20,
+        logs,
+        total: response.meta.total,
+        page: response.meta.page,
+        pageSize: response.meta.pageSize,
       }
     },
     staleTime: 30 * 1000,
@@ -109,17 +86,9 @@ export function useAuditLogDetail(logId: string) {
   return useQuery({
     queryKey: ['admin', 'auditLogs', 'detail', logId],
     queryFn: async (): Promise<AuditLog> => {
-      const response = await gateway.call<{
-        success: boolean
-        log?: Record<string, unknown>
-        error?: string
-      }>('admin.auditLogs.get', { logId })
-
-      if (!response.success || !response.log) {
-        throw new Error(response.error || '获取审计日志详情失败')
-      }
-
-      return transformAuditLog(response.log)
+      console.log('[useAuditLogs] 获取审计日志详情:', logId)
+      // TODO: API Server 需要实现 /api/admin/audit/:id 路由
+      throw new Error('审计日志详情 API 尚未实现')
     },
     enabled: !!logId,
     staleTime: 60 * 1000,

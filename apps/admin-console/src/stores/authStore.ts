@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { STORAGE_KEYS } from '@/lib/constants'
 import { isTokenExpired } from '@/lib/jwt'
-import { gateway } from '@/lib/gateway-client'
+import { apiClient } from '@/lib/api-client'
 import type { Admin } from '@/types'
 
 /**
@@ -107,30 +107,12 @@ export const useAuthStore = create<AuthState>()(
             return
           }
 
-          // 调用 Gateway RPC
-          const response = await gateway.call<{
-            success: boolean
-            admin?: Admin
-            accessToken?: string
-            refreshToken?: string
-            mfaRequired?: boolean
-            error?: string
-          }>('admin.login', {
+          // 调用 API Server REST API
+          const response = await apiClient.instance.login({
             username,
             password,
             mfaCode,
           })
-
-          if (!response.success) {
-            if (response.mfaRequired) {
-              throw new Error('REQUIRE_MFA')
-            }
-            throw new Error(response.error || '登录失败')
-          }
-
-          if (!response.admin || !response.accessToken || !response.refreshToken) {
-            throw new Error('登录响应数据不完整')
-          }
 
           const { admin, accessToken, refreshToken } = response
 
@@ -159,13 +141,10 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         console.log('[authStore] 登出')
 
-        const { refreshToken: token } = get()
-        if (token) {
-          try {
-            await gateway.call('admin.logout', { refreshToken: token })
-          } catch {
-            // 忽略登出请求失败
-          }
+        try {
+          await apiClient.instance.logout()
+        } catch {
+          // 忽略登出请求失败
         }
 
         // 清除存储
@@ -191,16 +170,7 @@ export const useAuthStore = create<AuthState>()(
 
         console.log('[authStore] 刷新 Token')
 
-        const response = await gateway.call<{
-          success: boolean
-          accessToken?: string
-          refreshToken?: string
-          error?: string
-        }>('admin.refreshToken', { refreshToken: token })
-
-        if (!response.success || !response.accessToken || !response.refreshToken) {
-          throw new Error(response.error || '刷新 Token 失败')
-        }
+        const response = await apiClient.instance.refreshToken({ refreshToken: token })
 
         const { accessToken, refreshToken: newRefreshToken } = response
 

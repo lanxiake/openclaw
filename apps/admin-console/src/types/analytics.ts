@@ -21,13 +21,10 @@ export interface UserGrowthDataPoint {
  * 用户增长趋势
  */
 export interface UserGrowthTrend {
-  period: AnalyticsPeriod
-  data: UserGrowthDataPoint[]
-  summary: {
-    totalNewUsers: number
-    averageDailyActive: number
-    growthRate: number
-  }
+  labels: string[]
+  data: number[]
+  total: number
+  growth: number
 }
 
 /**
@@ -46,7 +43,6 @@ export interface RetentionData {
  * 用户留存分析
  */
 export interface RetentionAnalysis {
-  period: AnalyticsPeriod
   cohorts: RetentionData[]
   averageRetention: {
     day1: number
@@ -61,9 +57,9 @@ export interface RetentionAnalysis {
  * 用户画像分布
  */
 export interface UserDemographics {
-  /** 订阅计划分布 */
-  byPlan: Array<{
-    plan: string
+  /** 地区分布 */
+  byRegion: Array<{
+    region: string
     count: number
     percentage: number
   }>
@@ -73,16 +69,17 @@ export interface UserDemographics {
     count: number
     percentage: number
   }>
-  /** 地区分布 */
-  byRegion: Array<{
-    region: string
+  /** 平台分布 */
+  byPlatform: Array<{
+    platform: string
     count: number
     percentage: number
   }>
-  /** 活跃时段分布 */
-  byActiveHour: Array<{
-    hour: number
+  /** 年龄分布 */
+  byAge: Array<{
+    range: string
     count: number
+    percentage: number
   }>
 }
 
@@ -101,36 +98,23 @@ export interface RevenueDataPoint {
  * 收入趋势
  */
 export interface RevenueTrend {
-  period: AnalyticsPeriod
-  data: RevenueDataPoint[]
-  summary: {
-    totalRevenue: number
-    totalOrders: number
-    totalRefunds: number
-    netRevenue: number
-    averageOrderValue: number
-    growthRate: number
-  }
+  labels: string[]
+  data: number[]
+  total: number
+  growth: number
 }
 
 /**
  * 收入来源分布
  */
 export interface RevenueBySource {
-  /** 按计划分布 */
-  byPlan: Array<{
-    plan: string
+  sources: Array<{
+    name: string
     revenue: number
     percentage: number
     orders: number
   }>
-  /** 按支付渠道分布 */
-  byPaymentMethod: Array<{
-    method: string
-    revenue: number
-    percentage: number
-    orders: number
-  }>
+  total: number
 }
 
 /**
@@ -139,18 +123,12 @@ export interface RevenueBySource {
 export interface UserValueMetrics {
   /** 每用户平均收入 (月) */
   arpu: number
+  /** 付费用户 ARPU */
+  arppu: number
   /** 用户生命周期价值 */
   ltv: number
   /** 付费用户占比 */
   payingUserRate: number
-  /** 付费用户 ARPU */
-  payingArpu: number
-  /** 趋势数据 */
-  trend: Array<{
-    date: string
-    arpu: number
-    ltv: number
-  }>
 }
 
 /**
@@ -172,17 +150,16 @@ export interface SkillUsageStats {
  * 技能分析
  */
 export interface SkillAnalytics {
-  period: AnalyticsPeriod
   topSkills: SkillUsageStats[]
-  categoryDistribution: Array<{
-    category: string
-    executions: number
-    percentage: number
-  }>
   usageTrend: Array<{
     date: string
     executions: number
     uniqueUsers: number
+  }>
+  categoryDistribution: Array<{
+    category: string
+    executions: number
+    percentage: number
   }>
   summary: {
     totalExecutions: number
@@ -206,10 +183,8 @@ export interface FunnelStep {
  * 漏斗分析
  */
 export interface FunnelAnalysis {
-  name: string
-  period: AnalyticsPeriod
   steps: FunnelStep[]
-  overallConversionRate: number
+  overallConversion: number
 }
 
 /**
@@ -257,28 +232,11 @@ export interface CustomReportResult {
  * 分析概览统计
  */
 export interface AnalyticsOverview {
-  users: {
-    total: number
-    active: number
-    new: number
-    churnRate: number
-  }
-  revenue: {
-    total: number
-    today: number
-    mtd: number
-    ytd: number
-  }
-  skills: {
-    total: number
-    active: number
-    executions: number
-    averageRating: number
-  }
-  engagement: {
-    dau: number
-    wau: number
-    mau: number
-    avgSessionDuration: number
-  }
+  totalUsers: number
+  activeUsers: number
+  newUsersToday: number
+  totalRevenue: number
+  revenueGrowth: number
+  avgSessionDuration: number
+  conversionRate: number
 }

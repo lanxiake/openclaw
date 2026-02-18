@@ -8,7 +8,8 @@ export interface Admin {
   email?: string
   avatar?: string
   role: 'super_admin' | 'admin' | 'operator'
-  status: 'active' | 'inactive'
+  status: 'active' | 'suspended' | 'locked'
+  isActive?: boolean
   mfaEnabled: boolean
   lastLoginAt?: string
   createdAt: string

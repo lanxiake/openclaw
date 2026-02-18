@@ -25,9 +25,13 @@ export interface ServiceInfo {
  * 系统健康状态
  */
 export interface SystemHealth {
-  overall: ServiceStatus
-  services: ServiceInfo[]
-  timestamp: string
+  status: 'healthy' | 'degraded' | 'unhealthy'
+  services: Array<{
+    name: string
+    status: 'up' | 'down' | 'degraded'
+    latency?: number
+    message?: string
+  }>
 }
 
 /**
@@ -60,12 +64,20 @@ export interface ApiEndpointStats {
  * API 监控数据
  */
 export interface ApiMonitorData {
-  summary: ApiMetrics
-  byEndpoint: ApiEndpointStats[]
-  byStatusCode: Array<{
-    code: number
+  summary: {
+    totalRequests: number
+    successRate: number
+    avgResponseTime: number
+    requestsPerSecond: number
+  }
+  byEndpoint: Array<{
+    endpoint: string
+    method: string
     count: number
+    avgTime: number
+    errorRate: number
   }>
+  byStatusCode: Record<string, number>
   timeline: Array<{
     timestamp: string
     requests: number
@@ -81,32 +93,16 @@ export interface ResourceUsage {
   cpu: {
     usage: number
     cores: number
-    model: string
   }
   memory: {
-    total: number
     used: number
-    free: number
-    usagePercent: number
+    total: number
+    percentage: number
   }
   disk: {
-    total: number
     used: number
-    free: number
-    usagePercent: number
-    path: string
-  }
-  network: {
-    bytesIn: number
-    bytesOut: number
-    packetsIn: number
-    packetsOut: number
-  }
-  process: {
-    pid: number
-    uptime: number
-    memoryUsage: number
-    cpuUsage: number
+    total: number
+    percentage: number
   }
 }
 
@@ -114,13 +110,10 @@ export interface ResourceUsage {
  * 资源使用历史
  */
 export interface ResourceHistory {
-  timeline: Array<{
-    timestamp: string
-    cpu: number
-    memory: number
-    disk: number
-  }>
-  period: 'hour' | 'day' | 'week'
+  labels: string[]
+  cpu: number[]
+  memory: number[]
+  disk: number[]
 }
 
 /**
@@ -166,14 +159,12 @@ export interface LogQueryResponse {
  * 系统监控统计
  */
 export interface MonitorStats {
-  servicesHealthy: number
-  servicesTotal: number
-  apiRequestsToday: number
-  apiErrorsToday: number
+  uptime: number
   cpuUsage: number
   memoryUsage: number
   diskUsage: number
   activeConnections: number
+  requestsPerMinute: number
 }
 
 /**

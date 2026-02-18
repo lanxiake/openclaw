@@ -2,20 +2,19 @@
  * 系统监控 Hooks
  *
  * 提供系统监控相关的 React Query Hooks
+ * 使用 API Server REST API
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { gateway } from '@/lib/gateway-client'
+import { apiClient } from '@/lib/api-client'
 import type {
   MonitorStats,
   SystemHealth,
   ApiMonitorData,
   ResourceUsage,
   ResourceHistory,
-  LogEntry,
   LogQuery,
   LogQueryResponse,
-  Alert,
   AlertListResponse,
 } from '@/types/monitor'
 
@@ -26,17 +25,8 @@ export function useMonitorStats() {
   return useQuery({
     queryKey: ['admin', 'monitor', 'stats'],
     queryFn: async (): Promise<MonitorStats> => {
-      const response = await gateway.call<{
-        success: boolean
-        data?: MonitorStats
-        error?: string
-      }>('admin.monitor.stats', {})
-
-      if (!response.success || !response.data) {
-        throw new Error(response.error || '获取监控统计失败')
-      }
-
-      return response.data
+      console.log('[useMonitor] 获取监控统计')
+      return apiClient.instance.getMonitorStats()
     },
     staleTime: 10 * 1000, // 10 秒后过期
     refetchInterval: 30 * 1000, // 30 秒自动刷新
@@ -50,17 +40,8 @@ export function useSystemHealth() {
   return useQuery({
     queryKey: ['admin', 'monitor', 'health'],
     queryFn: async (): Promise<SystemHealth> => {
-      const response = await gateway.call<{
-        success: boolean
-        data?: SystemHealth
-        error?: string
-      }>('admin.monitor.health', {})
-
-      if (!response.success || !response.data) {
-        throw new Error(response.error || '获取系统健康状态失败')
-      }
-
-      return response.data
+      console.log('[useMonitor] 获取系统健康状态')
+      return apiClient.instance.getSystemHealth()
     },
     staleTime: 15 * 1000,
     refetchInterval: 30 * 1000,
@@ -71,20 +52,13 @@ export function useSystemHealth() {
  * 获取 API 监控数据
  */
 export function useApiMonitor(period: 'hour' | 'day' | 'week' = 'day') {
+  const hoursMap = { hour: 1, day: 24, week: 168 }
+
   return useQuery({
     queryKey: ['admin', 'monitor', 'api', period],
     queryFn: async (): Promise<ApiMonitorData> => {
-      const response = await gateway.call<{
-        success: boolean
-        data?: ApiMonitorData
-        error?: string
-      }>('admin.monitor.api', { period })
-
-      if (!response.success || !response.data) {
-        throw new Error(response.error || '获取 API 监控数据失败')
-      }
-
-      return response.data
+      console.log('[useMonitor] 获取 API 监控数据:', period)
+      return apiClient.instance.getApiMonitor(hoursMap[period])
     },
     staleTime: 30 * 1000,
     refetchInterval: 60 * 1000,
@@ -98,17 +72,8 @@ export function useResourceUsage() {
   return useQuery({
     queryKey: ['admin', 'monitor', 'resources'],
     queryFn: async (): Promise<ResourceUsage> => {
-      const response = await gateway.call<{
-        success: boolean
-        data?: ResourceUsage
-        error?: string
-      }>('admin.monitor.resources', {})
-
-      if (!response.success || !response.data) {
-        throw new Error(response.error || '获取资源使用情况失败')
-      }
-
-      return response.data
+      console.log('[useMonitor] 获取资源使用情况')
+      return apiClient.instance.getResourceUsage()
     },
     staleTime: 10 * 1000,
     refetchInterval: 15 * 1000,
@@ -117,22 +82,20 @@ export function useResourceUsage() {
 
 /**
  * 获取资源使用历史
+ * TODO: 需要在 API Server 中实现 /api/admin/monitor/resources/history
  */
 export function useResourceHistory(period: 'hour' | 'day' | 'week' = 'hour') {
   return useQuery({
     queryKey: ['admin', 'monitor', 'resources', 'history', period],
     queryFn: async (): Promise<ResourceHistory> => {
-      const response = await gateway.call<{
-        success: boolean
-        data?: ResourceHistory
-        error?: string
-      }>('admin.monitor.resources.history', { period })
-
-      if (!response.success || !response.data) {
-        throw new Error(response.error || '获取资源使用历史失败')
+      console.log('[useMonitor] 获取资源使用历史:', period)
+      // 返回空数据，等待 API 实现
+      return {
+        labels: [],
+        cpu: [],
+        memory: [],
+        disk: [],
       }
-
-      return response.data
     },
     staleTime: 60 * 1000,
   })
@@ -140,35 +103,18 @@ export function useResourceHistory(period: 'hour' | 'day' | 'week' = 'hour') {
 
 /**
  * 获取日志列表
+ * TODO: 需要在 API Server 中实现 /api/admin/monitor/logs
  */
 export function useLogs(query: LogQuery = {}) {
   return useQuery({
     queryKey: ['admin', 'monitor', 'logs', query],
     queryFn: async (): Promise<LogQueryResponse> => {
-      const response = await gateway.call<{
-        success: boolean
-        logs?: LogEntry[]
-        total?: number
-        hasMore?: boolean
-        error?: string
-      }>('admin.monitor.logs', {
-        level: query.level,
-        source: query.source,
-        search: query.search,
-        startTime: query.startTime,
-        endTime: query.endTime,
-        limit: query.limit ?? 50,
-        offset: query.offset ?? 0,
-      })
-
-      if (!response.success) {
-        throw new Error(response.error || '获取日志列表失败')
-      }
-
+      console.log('[useMonitor] 获取日志列表:', query)
+      // 返回空数据，等待 API 实现
       return {
-        logs: response.logs ?? [],
-        total: response.total ?? 0,
-        hasMore: response.hasMore ?? false,
+        logs: [],
+        total: 0,
+        hasMore: false,
       }
     },
     staleTime: 10 * 1000,
@@ -177,22 +123,15 @@ export function useLogs(query: LogQuery = {}) {
 
 /**
  * 获取日志来源列表
+ * TODO: 需要在 API Server 中实现 /api/admin/monitor/logs/sources
  */
 export function useLogSources() {
   return useQuery({
     queryKey: ['admin', 'monitor', 'logs', 'sources'],
     queryFn: async (): Promise<string[]> => {
-      const response = await gateway.call<{
-        success: boolean
-        sources?: string[]
-        error?: string
-      }>('admin.monitor.logs.sources', {})
-
-      if (!response.success) {
-        throw new Error(response.error || '获取日志来源列表失败')
-      }
-
-      return response.sources ?? []
+      console.log('[useMonitor] 获取日志来源列表')
+      // 返回空数据，等待 API 实现
+      return []
     },
     staleTime: 5 * 60 * 1000,
   })
@@ -200,27 +139,18 @@ export function useLogSources() {
 
 /**
  * 获取告警列表
+ * TODO: 需要在 API Server 中实现 /api/admin/monitor/alerts
  */
 export function useAlerts(filters: { acknowledged?: boolean; resolved?: boolean } = {}) {
   return useQuery({
     queryKey: ['admin', 'monitor', 'alerts', filters],
     queryFn: async (): Promise<AlertListResponse> => {
-      const response = await gateway.call<{
-        success: boolean
-        alerts?: Alert[]
-        total?: number
-        unacknowledged?: number
-        error?: string
-      }>('admin.monitor.alerts', filters)
-
-      if (!response.success) {
-        throw new Error(response.error || '获取告警列表失败')
-      }
-
+      console.log('[useMonitor] 获取告警列表:', filters)
+      // 返回空数据，等待 API 实现
       return {
-        alerts: response.alerts ?? [],
-        total: response.total ?? 0,
-        unacknowledged: response.unacknowledged ?? 0,
+        alerts: [],
+        total: 0,
+        unacknowledged: 0,
       }
     },
     staleTime: 15 * 1000,
@@ -230,24 +160,16 @@ export function useAlerts(filters: { acknowledged?: boolean; resolved?: boolean 
 
 /**
  * 确认告警
+ * TODO: 需要在 API Server 中实现 /api/admin/monitor/alerts/:id/acknowledge
  */
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (alertId: string) => {
-      const response = await gateway.call<{
-        success: boolean
-        alertId?: string
-        message?: string
-        error?: string
-      }>('admin.monitor.alerts.acknowledge', { alertId })
-
-      if (!response.success) {
-        throw new Error(response.error || '确认告警失败')
-      }
-
-      return response
+      console.log('[useMonitor] 确认告警:', alertId)
+      // TODO: 等待 API 实现
+      throw new Error('告警 API 尚未实现')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'monitor', 'alerts'] })
@@ -257,24 +179,16 @@ export function useAcknowledgeAlert() {
 
 /**
  * 解决告警
+ * TODO: 需要在 API Server 中实现 /api/admin/monitor/alerts/:id/resolve
  */
 export function useResolveAlert() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (alertId: string) => {
-      const response = await gateway.call<{
-        success: boolean
-        alertId?: string
-        message?: string
-        error?: string
-      }>('admin.monitor.alerts.resolve', { alertId })
-
-      if (!response.success) {
-        throw new Error(response.error || '解决告警失败')
-      }
-
-      return response
+      console.log('[useMonitor] 解决告警:', alertId)
+      // TODO: 等待 API 实现
+      throw new Error('告警 API 尚未实现')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'monitor', 'alerts'] })

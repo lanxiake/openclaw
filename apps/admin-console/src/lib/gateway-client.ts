@@ -5,7 +5,7 @@
  * 管理员后台专用版本 - 使用 OpenClaw Protocol v3 握手流程
  */
 
-import { GATEWAY_WS_URL, STORAGE_KEYS } from './constants'
+import { GATEWAY_WS_URL } from './constants'
 
 // Gateway 认证 Token (用于开发环境)
 const GATEWAY_AUTH_TOKEN = import.meta.env.VITE_GATEWAY_AUTH_TOKEN || ''

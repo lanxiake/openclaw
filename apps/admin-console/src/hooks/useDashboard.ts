@@ -5,7 +5,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { gateway } from '@/lib/gateway-client'
+import { apiClient } from '@/lib/api-client'
 import type { DashboardStats, TrendData, SubscriptionDistribution, Activity } from '@/types/dashboard'
 
 /**
@@ -15,17 +15,10 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ['admin', 'dashboard', 'stats'],
     queryFn: async (): Promise<DashboardStats> => {
-      const response = await gateway.call<{
-        success: boolean
-        data?: DashboardStats
-        error?: string
-      }>('admin.dashboard.stats', {})
-
-      if (!response.success || !response.data) {
-        throw new Error(response.error || '获取统计数据失败')
-      }
-
-      return response.data
+      console.log('[useDashboard] 获取仪表盘统计数据')
+      // API 返回的类型与本地类型可能不完全匹配，使用类型断言
+      const data = await apiClient.instance.getDashboardStats()
+      return data as unknown as DashboardStats
     },
     staleTime: 30 * 1000, // 30 秒后过期
     refetchInterval: 60 * 1000, // 每分钟自动刷新
@@ -39,23 +32,19 @@ export function useDashboardStats() {
  * @param period - 时间周期 (7d | 30d | 90d)
  */
 export function useTrends(
-  type: 'users' | 'revenue' | 'subscriptions',
+  _type: 'users' | 'revenue' | 'subscriptions',
   period: '7d' | '30d' | '90d' = '30d'
 ) {
   return useQuery({
-    queryKey: ['admin', 'dashboard', 'trends', type, period],
+    queryKey: ['admin', 'dashboard', 'trends', _type, period],
     queryFn: async (): Promise<TrendData> => {
-      const response = await gateway.call<{
-        success: boolean
-        data?: TrendData
-        error?: string
-      }>('admin.dashboard.trends', { type, period })
-
-      if (!response.success || !response.data) {
-        throw new Error(response.error || '获取趋势数据失败')
+      console.log('[useDashboard] 获取趋势数据:', _type, period)
+      // TODO: API Server 需要实现 /api/admin/dashboard/trends 路由
+      // 暂时返回空数据
+      return {
+        labels: [],
+        values: [],
       }
-
-      return response.data
     },
     staleTime: 5 * 60 * 1000, // 5 分钟后过期
   })
@@ -68,17 +57,10 @@ export function useSubscriptionDistribution() {
   return useQuery({
     queryKey: ['admin', 'dashboard', 'subscriptionDistribution'],
     queryFn: async (): Promise<SubscriptionDistribution[]> => {
-      const response = await gateway.call<{
-        success: boolean
-        data?: SubscriptionDistribution[]
-        error?: string
-      }>('admin.dashboard.subscriptionDistribution', {})
-
-      if (!response.success || !response.data) {
-        throw new Error(response.error || '获取订阅分布失败')
-      }
-
-      return response.data
+      console.log('[useDashboard] 获取订阅分布数据')
+      // TODO: API Server 需要实现 /api/admin/dashboard/distribution 路由
+      // 暂时返回空数据
+      return []
     },
     staleTime: 5 * 60 * 1000, // 5 分钟后过期
   })
@@ -93,17 +75,10 @@ export function useActivities(limit = 10) {
   return useQuery({
     queryKey: ['admin', 'dashboard', 'activities', limit],
     queryFn: async (): Promise<Activity[]> => {
-      const response = await gateway.call<{
-        success: boolean
-        data?: Activity[]
-        error?: string
-      }>('admin.dashboard.activities', { limit })
-
-      if (!response.success || !response.data) {
-        throw new Error(response.error || '获取活动数据失败')
-      }
-
-      return response.data
+      console.log('[useDashboard] 获取最近活动:', limit)
+      // TODO: API Server 需要实现 /api/admin/dashboard/activities 路由
+      // 暂时返回空数据
+      return []
     },
     staleTime: 30 * 1000, // 30 秒后过期
     refetchInterval: 60 * 1000, // 每分钟自动刷新
