@@ -104,7 +104,8 @@ export const auditService = {
    * 查询审计日志
    */
   async query(params: AuditLogQuery = {}): Promise<{
-    logs: AuditLog[]\n    total: number
+    logs: AuditLog[]
+    total: number
     hasMore: boolean
   }> {
     console.log('[audit] 查询审计日志', params)
