@@ -17,9 +17,12 @@ export interface Admin {
   displayName: string;
   email?: string;
   role: "super_admin" | "admin" | "operator";
+  status: "active" | "suspended" | "locked";
   isActive: boolean;
+  mfaEnabled: boolean;
   lastLoginAt?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 /**
@@ -295,10 +298,14 @@ export interface AuditLog {
   adminUsername?: string;
   userId?: string;
   action: string;
-  resource: string;
+  resource?: string;
   resourceId?: string;
+  targetType?: string;
+  targetId?: string;
+  targetName?: string;
   details?: Record<string, unknown>;
-  result: "success" | "failure";
+  result?: "success" | "failure";
+  riskLevel?: "low" | "medium" | "high" | "critical";
   ipAddress?: string;
   userAgent?: string;
   createdAt: string;
@@ -312,6 +319,8 @@ export interface AuditLogListParams extends PaginationParams {
   userId?: string;
   action?: string;
   resource?: string;
+  targetType?: string;
+  riskLevel?: string;
   result?: string;
   startDate?: string;
   endDate?: string;
@@ -337,6 +346,248 @@ export interface SystemConfig {
   category: string;
   updatedAt: string;
   updatedBy?: string;
+}
+
+// ============ 管理员管理 ============
+
+/**
+ * 管理员列表项
+ */
+export interface AdminItem {
+  id: string;
+  username: string;
+  displayName: string;
+  email?: string;
+  phone?: string;
+  avatarUrl?: string;
+  role: "super_admin" | "admin" | "operator";
+  status: "active" | "suspended" | "locked";
+  mfaEnabled: boolean;
+  lastLoginAt?: string;
+  lastLoginIp?: string;
+  createdAt: string;
+}
+
+/**
+ * 管理员列表查询参数
+ */
+export interface AdminListParams extends PaginationParams, SortParams {
+  search?: string;
+  role?: string;
+  status?: string;
+}
+
+/**
+ * 管理员列表响应
+ */
+export interface AdminListResponse {
+  data: AdminItem[];
+  meta: PaginationMeta;
+}
+
+/**
+ * 创建管理员请求
+ */
+export interface CreateAdminRequest {
+  username: string;
+  password: string;
+  displayName: string;
+  email?: string;
+  phone?: string;
+  role: "admin" | "operator";
+}
+
+/**
+ * 更新管理员请求
+ */
+export interface UpdateAdminRequest {
+  displayName?: string;
+  email?: string;
+  phone?: string;
+  role?: "admin" | "operator";
+}
+
+// ============ 订阅统计 ============
+
+/**
+ * 订阅统计
+ */
+export interface SubscriptionStats {
+  total: number;
+  active: number;
+  expired: number;
+  cancelled: number;
+  revenue: number;
+}
+
+// ============ 审计日志扩展 ============
+
+/**
+ * 审计日志统计
+ */
+export interface AuditLogStats {
+  total: number;
+  today: number;
+  highRisk: number;
+  byAction: Record<string, number>;
+}
+
+// ============ 系统配置扩展 ============
+
+/**
+ * 配置分组
+ */
+export interface ConfigGroup {
+  key: string;
+  name: string;
+  description?: string;
+  configCount: number;
+}
+
+/**
+ * 配置变更历史
+ */
+export interface ConfigHistory {
+  id: string;
+  key: string;
+  oldValue: unknown;
+  newValue: unknown;
+  changedBy: string;
+  changedAt: string;
+}
+
+// ============ 仪表盘扩展 ============
+
+/**
+ * 趋势数据
+ */
+export interface TrendData {
+  labels: string[];
+  datasets: Array<{
+    label: string;
+    data: number[];
+  }>;
+}
+
+/**
+ * 订阅分布
+ */
+export interface SubscriptionDistribution {
+  planName: string;
+  count: number;
+  percentage: number;
+}
+
+/**
+ * 最近活动
+ */
+export interface Activity {
+  id: string;
+  type: string;
+  description: string;
+  adminName?: string;
+  createdAt: string;
+}
+
+// ============ 监控扩展 ============
+
+/**
+ * 监控统计
+ */
+export interface MonitorStats {
+  uptime: number;
+  cpuUsage: number;
+  memoryUsage: number;
+  diskUsage: number;
+  activeConnections: number;
+  requestsPerMinute: number;
+}
+
+/**
+ * 系统健康状态
+ */
+export interface SystemHealth {
+  status: "healthy" | "degraded" | "unhealthy";
+  services: Array<{
+    name: string;
+    status: "up" | "down" | "degraded";
+    latency?: number;
+    message?: string;
+  }>;
+}
+
+/**
+ * 资源使用情况
+ */
+export interface ResourceUsage {
+  cpu: { usage: number; cores: number };
+  memory: { used: number; total: number; percentage: number };
+  disk: { used: number; total: number; percentage: number };
+}
+
+// ============ 模型提供商 ============
+
+/**
+ * 模型提供商
+ */
+export interface ModelProvider {
+  id: string;
+  configType: string;
+  userId?: string;
+  providerKey: string;
+  providerName?: string;
+  baseUrl: string;
+  apiKey: string;
+  apiType?: string;
+  models: string[];
+  enabled: boolean;
+  priority: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 创建/更新模型提供商请求
+ */
+export interface UpsertModelProviderRequest {
+  providerKey: string;
+  providerName?: string;
+  baseUrl: string;
+  apiKey: string;
+  apiType?: string;
+  models: string[];
+  enabled?: boolean;
+  priority?: number;
+  userId?: string;
+}
+
+// ============ Agent 配置 ============
+
+/**
+ * Agent 配置
+ */
+export interface AgentConfig {
+  id?: string;
+  configType: string;
+  primaryModel?: string;
+  workspacePath?: string;
+  compactionMode?: string;
+  maxConcurrent?: number;
+  subagentsMaxConcurrent?: number;
+  extraConfig?: Record<string, unknown>;
+}
+
+/**
+ * 更新 Agent 配置请求
+ */
+export interface UpdateAgentConfigRequest {
+  primaryModel?: string;
+  workspacePath?: string;
+  compactionMode?: string;
+  maxConcurrent?: number;
+  subagentsMaxConcurrent?: number;
+  extraConfig?: Record<string, unknown>;
+  userId?: string;
 }
 
 // ============ 监控数据 ============

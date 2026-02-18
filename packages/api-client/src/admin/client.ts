@@ -24,6 +24,7 @@ import type {
   Subscription,
   SubscriptionListParams,
   SubscriptionListResponse,
+  SubscriptionStats,
   Skill,
   SkillListParams,
   SkillListResponse,
@@ -31,9 +32,27 @@ import type {
   AuditLog,
   AuditLogListParams,
   AuditLogListResponse,
+  AuditLogStats,
   SystemConfig,
+  ConfigGroup,
+  ConfigHistory,
   DashboardStats,
+  TrendData,
+  SubscriptionDistribution,
+  Activity,
   ApiMonitorData,
+  MonitorStats,
+  SystemHealth,
+  ResourceUsage,
+  AdminItem,
+  AdminListParams,
+  AdminListResponse,
+  CreateAdminRequest,
+  UpdateAdminRequest,
+  ModelProvider,
+  UpsertModelProviderRequest,
+  AgentConfig,
+  UpdateAgentConfigRequest,
 } from "./types.js";
 
 /**
@@ -339,6 +358,246 @@ export class AdminApiClient {
    */
   async getApiMonitor(hours?: number): Promise<ApiMonitorData> {
     return this.http.get<ApiMonitorData>("/api/admin/monitor/api", { hours });
+  }
+
+  // ============ 管理员管理 API ============
+
+  /**
+   * 获取管理员列表
+   */
+  async getAdmins(params?: AdminListParams): Promise<AdminListResponse> {
+    const response = await this.http.get<{ data: AdminItem[]; meta: unknown }>(
+      "/api/admin/admins",
+      params as Record<string, string | number | boolean | undefined>,
+    );
+    return {
+      data: response.data,
+      meta: response.meta as AdminListResponse["meta"],
+    };
+  }
+
+  /**
+   * 获取管理员详情
+   */
+  async getAdmin(adminId: string): Promise<AdminItem> {
+    return this.http.get<AdminItem>(`/api/admin/admins/${adminId}`);
+  }
+
+  /**
+   * 创建管理员
+   */
+  async createAdmin(request: CreateAdminRequest): Promise<AdminItem> {
+    return this.http.post<AdminItem>("/api/admin/admins", request);
+  }
+
+  /**
+   * 更新管理员
+   */
+  async updateAdmin(adminId: string, request: UpdateAdminRequest): Promise<AdminItem> {
+    return this.http.put<AdminItem>(`/api/admin/admins/${adminId}`, request);
+  }
+
+  /**
+   * 重置管理员密码
+   */
+  async resetAdminPassword(adminId: string): Promise<{ tempPassword: string }> {
+    return this.http.post<{ tempPassword: string }>(`/api/admin/admins/${adminId}/reset-password`);
+  }
+
+  /**
+   * 更新管理员状态
+   */
+  async updateAdminStatus(adminId: string, status: "active" | "suspended"): Promise<void> {
+    await this.http.put(`/api/admin/admins/${adminId}/status`, { status });
+  }
+
+  /**
+   * 强制管理员登出
+   */
+  async forceAdminLogout(adminId: string): Promise<void> {
+    await this.http.post(`/api/admin/admins/${adminId}/force-logout`);
+  }
+
+  // ============ 订阅扩展 API ============
+
+  /**
+   * 获取订阅统计
+   */
+  async getSubscriptionStats(): Promise<SubscriptionStats> {
+    return this.http.get<SubscriptionStats>("/api/admin/subscriptions/stats");
+  }
+
+  /**
+   * 取消订阅
+   */
+  async cancelSubscription(subscriptionId: string, reason?: string): Promise<void> {
+    await this.http.post(`/api/admin/subscriptions/${subscriptionId}/cancel`, { reason });
+  }
+
+  /**
+   * 延长订阅
+   */
+  async extendSubscription(subscriptionId: string, days: number): Promise<void> {
+    await this.http.post(`/api/admin/subscriptions/${subscriptionId}/extend`, { days });
+  }
+
+  // ============ 审计日志扩展 API ============
+
+  /**
+   * 获取审计日志统计
+   */
+  async getAuditLogStats(): Promise<AuditLogStats> {
+    return this.http.get<AuditLogStats>("/api/admin/audit/stats");
+  }
+
+  /**
+   * 获取单条审计日志详情
+   */
+  async getAuditLog(logId: string): Promise<AuditLog> {
+    return this.http.get<AuditLog>(`/api/admin/audit/${logId}`);
+  }
+
+  /**
+   * 获取审计日志操作类型列表
+   */
+  async getAuditActions(): Promise<string[]> {
+    return this.http.get<string[]>("/api/admin/audit/actions");
+  }
+
+  /**
+   * 获取审计日志管理员列表
+   */
+  async getAuditAdmins(): Promise<Array<{ id: string; username: string }>> {
+    return this.http.get<Array<{ id: string; username: string }>>("/api/admin/audit/admins");
+  }
+
+  // ============ 配置扩展 API ============
+
+  /**
+   * 获取单个配置项
+   */
+  async getConfig(key: string): Promise<SystemConfig> {
+    return this.http.get<SystemConfig>(`/api/admin/config/${key}`);
+  }
+
+  /**
+   * 获取配置分组列表
+   */
+  async getConfigGroups(): Promise<ConfigGroup[]> {
+    return this.http.get<ConfigGroup[]>("/api/admin/config/groups");
+  }
+
+  /**
+   * 获取配置变更历史
+   */
+  async getConfigHistory(key: string): Promise<ConfigHistory[]> {
+    return this.http.get<ConfigHistory[]>(`/api/admin/config/${key}/history`);
+  }
+
+  /**
+   * 重置配置为默认值
+   */
+  async resetConfig(key: string): Promise<void> {
+    await this.http.post(`/api/admin/config/${key}/reset`);
+  }
+
+  // ============ 仪表盘扩展 API ============
+
+  /**
+   * 获取仪表盘趋势数据
+   */
+  async getDashboardTrends(days?: number): Promise<TrendData> {
+    return this.http.get<TrendData>("/api/admin/dashboard/trends", { days });
+  }
+
+  /**
+   * 获取订阅分布数据
+   */
+  async getDashboardDistribution(): Promise<SubscriptionDistribution[]> {
+    return this.http.get<SubscriptionDistribution[]>("/api/admin/dashboard/distribution");
+  }
+
+  /**
+   * 获取最近活动
+   */
+  async getDashboardActivities(limit?: number): Promise<Activity[]> {
+    return this.http.get<Activity[]>("/api/admin/dashboard/activities", { limit });
+  }
+
+  // ============ 监控扩展 API ============
+
+  /**
+   * 获取监控统计数据
+   */
+  async getMonitorStats(): Promise<MonitorStats> {
+    return this.http.get<MonitorStats>("/api/admin/monitor/stats");
+  }
+
+  /**
+   * 获取系统健康状态
+   */
+  async getSystemHealth(): Promise<SystemHealth> {
+    return this.http.get<SystemHealth>("/api/admin/monitor/health");
+  }
+
+  /**
+   * 获取资源使用情况
+   */
+  async getResourceUsage(): Promise<ResourceUsage> {
+    return this.http.get<ResourceUsage>("/api/admin/monitor/resources");
+  }
+
+  // ============ 模型提供商 API ============
+
+  /**
+   * 获取模型提供商列表
+   */
+  async getModelProviders(): Promise<ModelProvider[]> {
+    return this.http.get<ModelProvider[]>("/api/admin/model-providers");
+  }
+
+  /**
+   * 获取模型提供商详情
+   */
+  async getModelProvider(providerId: string): Promise<ModelProvider> {
+    return this.http.get<ModelProvider>(`/api/admin/model-providers/${providerId}`);
+  }
+
+  /**
+   * 创建或更新模型提供商
+   */
+  async upsertModelProvider(request: UpsertModelProviderRequest): Promise<ModelProvider> {
+    return this.http.post<ModelProvider>("/api/admin/model-providers", request);
+  }
+
+  /**
+   * 删除模型提供商
+   */
+  async deleteModelProvider(providerId: string): Promise<void> {
+    await this.http.delete(`/api/admin/model-providers/${providerId}`);
+  }
+
+  // ============ Agent 配置 API ============
+
+  /**
+   * 获取 Agent 配置
+   */
+  async getAgentConfig(): Promise<AgentConfig> {
+    return this.http.get<AgentConfig>("/api/admin/agent-config");
+  }
+
+  /**
+   * 更新 Agent 配置
+   */
+  async updateAgentConfig(request: UpdateAgentConfigRequest): Promise<AgentConfig> {
+    return this.http.put<AgentConfig>("/api/admin/agent-config", request);
+  }
+
+  /**
+   * 重置 Agent 配置为默认值
+   */
+  async resetAgentConfig(): Promise<AgentConfig> {
+    return this.http.post<AgentConfig>("/api/admin/agent-config/reset");
   }
 }
 

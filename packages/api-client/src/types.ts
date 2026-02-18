@@ -35,6 +35,8 @@ export interface PaginationMeta {
   total: number;
   page: number;
   pageSize: number;
+  /** Alias for pageSize (backward compatibility) */
+  limit: number;
   totalPages: number;
 }
 
