@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSettings, type AppSettings } from '../hooks/useSettings'
+import { useAuth } from '../contexts/AuthContext'
 import { UpdaterView } from './UpdaterView'
 import './SettingsView.css'
 
@@ -21,12 +22,13 @@ interface SettingsViewProps {
 /**
  * 设置分类
  */
-type SettingsCategory = 'gateway' | 'theme' | 'notification' | 'privacy' | 'shortcuts' | 'update' | 'about'
+type SettingsCategory = 'account' | 'gateway' | 'theme' | 'notification' | 'privacy' | 'shortcuts' | 'update' | 'about'
 
 /**
  * 分类配置
  */
 const CATEGORIES: Array<{ id: SettingsCategory; label: string; icon: string }> = [
+  { id: 'account', label: '账户设置', icon: '👤' },
   { id: 'gateway', label: 'Gateway 连接', icon: '🔗' },
   { id: 'theme', label: '外观主题', icon: '🎨' },
   { id: 'notification', label: '通知设置', icon: '🔔' },
@@ -71,7 +73,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
     importSettings,
   } = useSettings()
 
-  const [activeCategory, setActiveCategory] = useState<SettingsCategory>('gateway')
+  const { user, updateUserProfile, changePassword } = useAuth()
+
+  const [activeCategory, setActiveCategory] = useState<SettingsCategory>('account')
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [appVersion, setAppVersion] = useState<string>('0.1.0')
 
@@ -83,12 +87,42 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
   /** 设备 Token 加载状态 */
   const [deviceTokenLoading, setDeviceTokenLoading] = useState(false)
 
+  /** 账户设置状态 */
+  const [displayNameEdit, setDisplayNameEdit] = useState(user?.displayName || '')
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  /** 修改密码状态 */
+  const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' })
+  const [pwdSaving, setPwdSaving] = useState(false)
+  const [pwdMsg, setPwdMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  /** 开机启动状态 */
+  const [openAtLogin, setOpenAtLogin] = useState(false)
+  const [openAtLoginLoading, setOpenAtLoginLoading] = useState(false)
+
   /**
    * 获取应用版本
    */
   useEffect(() => {
     window.electronAPI.app.getVersion().then(setAppVersion)
   }, [])
+
+  /**
+   * 初始化开机启动状态
+   */
+  useEffect(() => {
+    window.electronAPI.app.getOpenAtLogin().then(setOpenAtLogin).catch(() => {
+      console.warn('[SettingsView] 获取开机启动状态失败')
+    })
+  }, [])
+
+  /**
+   * 当用户信息更新时，同步显示名称输入框
+   */
+  useEffect(() => {
+    setDisplayNameEdit(user?.displayName || '')
+  }, [user?.displayName])
 
   /**
    * 保存设置
@@ -211,6 +245,203 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
       setDeviceTokenLoading(false)
     }
   }, [updateGateway])
+
+  /**
+   * 保存用户显示名称
+   */
+  const handleSaveProfile = useCallback(async () => {
+    if (!displayNameEdit.trim()) {
+      setProfileMsg({ type: 'error', text: '显示名称不能为空' })
+      return
+    }
+    console.log('[SettingsView] 保存用户资料:', displayNameEdit)
+    setProfileSaving(true)
+    setProfileMsg(null)
+    try {
+      const result = await updateUserProfile({ displayName: displayNameEdit.trim() })
+      if (result.success) {
+        setProfileMsg({ type: 'success', text: '保存成功' })
+        console.log('[SettingsView] 用户资料保存成功')
+      } else {
+        setProfileMsg({ type: 'error', text: result.error || '保存失败' })
+        console.error('[SettingsView] 用户资料保存失败:', result.error)
+      }
+    } catch (err) {
+      setProfileMsg({ type: 'error', text: err instanceof Error ? err.message : '保存失败' })
+    } finally {
+      setProfileSaving(false)
+      setTimeout(() => setProfileMsg(null), 3000)
+    }
+  }, [displayNameEdit, updateUserProfile])
+
+  /**
+   * 修改密码提交
+   */
+  const handleChangePassword = useCallback(async () => {
+    if (!pwdForm.current || !pwdForm.next || !pwdForm.confirm) {
+      setPwdMsg({ type: 'error', text: '请填写所有密码字段' })
+      return
+    }
+    if (pwdForm.next !== pwdForm.confirm) {
+      setPwdMsg({ type: 'error', text: '两次输入的新密码不一致' })
+      return
+    }
+    if (pwdForm.next.length < 6) {
+      setPwdMsg({ type: 'error', text: '新密码至少 6 位' })
+      return
+    }
+    console.log('[SettingsView] 提交修改密码')
+    setPwdSaving(true)
+    setPwdMsg(null)
+    try {
+      const result = await changePassword({ currentPassword: pwdForm.current, newPassword: pwdForm.next })
+      if (result.success) {
+        setPwdMsg({ type: 'success', text: '密码修改成功' })
+        setPwdForm({ current: '', next: '', confirm: '' })
+        console.log('[SettingsView] 密码修改成功')
+      } else {
+        setPwdMsg({ type: 'error', text: result.error || '修改失败' })
+        console.error('[SettingsView] 密码修改失败:', result.error)
+      }
+    } catch (err) {
+      setPwdMsg({ type: 'error', text: err instanceof Error ? err.message : '修改失败' })
+    } finally {
+      setPwdSaving(false)
+      setTimeout(() => setPwdMsg(null), 4000)
+    }
+  }, [pwdForm, changePassword])
+
+  /**
+   * 切换开机启动
+   */
+  const handleToggleOpenAtLogin = useCallback(async (enable: boolean) => {
+    console.log('[SettingsView] 切换开机启动:', enable)
+    setOpenAtLoginLoading(true)
+    try {
+      const actual = await window.electronAPI.app.setOpenAtLogin(enable)
+      setOpenAtLogin(actual)
+      console.log('[SettingsView] 开机启动设置完成:', actual)
+    } catch (err) {
+      console.error('[SettingsView] 设置开机启动失败:', err)
+      alert('设置开机启动失败')
+    } finally {
+      setOpenAtLoginLoading(false)
+    }
+  }, [])
+
+  /**
+   * 渲染账户设置
+   */
+  const renderAccountSettings = () => (
+    <div className="settings-section">
+      <h3 className="settings-section-title">账户设置</h3>
+
+      {/* 用户信息 */}
+      <div className="settings-group">
+        <div className="setting-item">
+          <label className="setting-label">账号</label>
+          <div className="account-info">
+            <span className="account-identifier">{user?.phone || user?.email || '—'}</span>
+          </div>
+        </div>
+
+        <div className="setting-item">
+          <label className="setting-label">显示名称</label>
+          <div className="profile-edit-row">
+            <input
+              type="text"
+              className="setting-input"
+              value={displayNameEdit}
+              onChange={(e) => setDisplayNameEdit(e.target.value)}
+              placeholder="设置你的显示名称"
+              maxLength={30}
+            />
+            <button
+              className="profile-save-btn"
+              onClick={handleSaveProfile}
+              disabled={profileSaving || displayNameEdit === user?.displayName}
+            >
+              {profileSaving ? '保存中...' : '保存'}
+            </button>
+          </div>
+          {profileMsg && (
+            <span className={`field-msg ${profileMsg.type}`}>{profileMsg.text}</span>
+          )}
+        </div>
+      </div>
+
+      <h4 className="settings-subsection-title">修改密码</h4>
+
+      <div className="settings-group">
+        <div className="setting-item">
+          <label className="setting-label">当前密码</label>
+          <input
+            type="password"
+            className="setting-input"
+            value={pwdForm.current}
+            onChange={(e) => setPwdForm(prev => ({ ...prev, current: e.target.value }))}
+            placeholder="输入当前密码"
+            autoComplete="current-password"
+          />
+        </div>
+
+        <div className="setting-item">
+          <label className="setting-label">新密码</label>
+          <input
+            type="password"
+            className="setting-input"
+            value={pwdForm.next}
+            onChange={(e) => setPwdForm(prev => ({ ...prev, next: e.target.value }))}
+            placeholder="至少 6 位"
+            autoComplete="new-password"
+          />
+        </div>
+
+        <div className="setting-item">
+          <label className="setting-label">确认新密码</label>
+          <input
+            type="password"
+            className="setting-input"
+            value={pwdForm.confirm}
+            onChange={(e) => setPwdForm(prev => ({ ...prev, confirm: e.target.value }))}
+            placeholder="再次输入新密码"
+            autoComplete="new-password"
+          />
+        </div>
+
+        {pwdMsg && (
+          <div className={`field-msg ${pwdMsg.type}`}>{pwdMsg.text}</div>
+        )}
+
+        <div className="setting-actions">
+          <button
+            className="setting-action-btn primary"
+            onClick={handleChangePassword}
+            disabled={pwdSaving}
+          >
+            {pwdSaving ? '修改中...' : '修改密码'}
+          </button>
+        </div>
+      </div>
+
+      <h4 className="settings-subsection-title">系统偏好</h4>
+
+      <div className="settings-group">
+        <div className="setting-item">
+          <label className="setting-label">
+            <input
+              type="checkbox"
+              checked={openAtLogin}
+              disabled={openAtLoginLoading}
+              onChange={(e) => handleToggleOpenAtLogin(e.target.checked)}
+            />
+            <span>开机时自动启动</span>
+          </label>
+          <span className="setting-hint">登录系统后自动启动 OpenClaw Assistant</span>
+        </div>
+      </div>
+    </div>
+  )
 
   /**
    * 渲染 Gateway 设置
@@ -673,6 +904,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
    */
   const renderCategoryContent = () => {
     switch (activeCategory) {
+      case 'account':
+        return renderAccountSettings()
       case 'gateway':
         return renderGatewaySettings()
       case 'theme':

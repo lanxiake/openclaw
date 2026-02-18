@@ -214,6 +214,16 @@ export interface UpdateUserParams {
   avatar?: string
 }
 
+/**
+ * 修改密码参数
+ */
+export interface ChangePasswordParams {
+  /** 当前密码 */
+  currentPassword: string
+  /** 新密码 */
+  newPassword: string
+}
+
 // ============================================================================
 // 日志工具
 // ============================================================================
@@ -449,6 +459,18 @@ export class ApiClient {
     log.info('更新用户信息', { fields: Object.keys(params) })
 
     return this.request<UserResponse>('PUT', '/api/users/me', params)
+  }
+
+  /**
+   * 修改密码
+   *
+   * @param params - 修改密码参数（当前密码 + 新密码）
+   * @returns 通用响应
+   */
+  async changePassword(params: ChangePasswordParams): Promise<{ success: boolean; error?: string }> {
+    log.info('修改密码')
+
+    return this.request<{ success: boolean; error?: string }>('POST', '/api/users/me/change-password', params)
   }
 
   // ==========================================================================

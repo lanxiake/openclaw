@@ -234,6 +234,10 @@ export interface ElectronAPI {
     getVersion: () => Promise<string>
     quit: () => void
     openExternal: (url: string) => Promise<void>
+    /** 获取开机自启状态 */
+    getOpenAtLogin: () => Promise<boolean>
+    /** 设置开机自启 */
+    setOpenAtLogin: (enable: boolean) => Promise<boolean>
   }
 
   // 对话框
@@ -330,6 +334,8 @@ export interface ElectronAPI {
     getUserDevices: () => Promise<unknown>
     /** 更新用户信息 */
     updateUser: (params: { displayName?: string; avatar?: string }) => Promise<unknown>
+    /** 修改密码 */
+    changePassword: (params: { currentPassword: string; newPassword: string }) => Promise<unknown>
     /** 设置 API Server URL */
     setBaseUrl: (url: string) => Promise<void>
     /** 获取 API Server URL */
@@ -426,6 +432,8 @@ const electronAPI: ElectronAPI = {
     getVersion: () => ipcRenderer.invoke('app:getVersion'),
     quit: () => ipcRenderer.send('app:quit'),
     openExternal: (url: string) => ipcRenderer.invoke('app:openExternal', url),
+    getOpenAtLogin: () => ipcRenderer.invoke('app:getOpenAtLogin'),
+    setOpenAtLogin: (enable: boolean) => ipcRenderer.invoke('app:setOpenAtLogin', enable),
   },
 
   // 对话框 API
@@ -505,6 +513,8 @@ const electronAPI: ElectronAPI = {
     getUserDevices: () => ipcRenderer.invoke('api:getUserDevices'),
     updateUser: (params: { displayName?: string; avatar?: string }) =>
       ipcRenderer.invoke('api:updateUser', params),
+    changePassword: (params: { currentPassword: string; newPassword: string }) =>
+      ipcRenderer.invoke('api:changePassword', params),
     setBaseUrl: (url: string) => ipcRenderer.invoke('api:setBaseUrl', url),
     getBaseUrl: () => ipcRenderer.invoke('api:getBaseUrl'),
     setAccessToken: (token: string | null) =>

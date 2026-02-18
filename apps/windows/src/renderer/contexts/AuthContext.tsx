@@ -78,6 +78,8 @@ interface AuthContextType extends AuthState {
   logout: () => Promise<void>
   refreshAccessToken: () => Promise<boolean>
   clearError: () => void
+  updateUserProfile: (params: { displayName?: string }) => Promise<{ success: boolean; error?: string }>
+  changePassword: (params: { currentPassword: string; newPassword: string }) => Promise<{ success: boolean; error?: string }>
 }
 
 // localStorage keys
@@ -373,6 +375,68 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setState(prev => ({ ...prev, error: null }))
   }, [])
 
+  /**
+   * 更新用户个人资料（显示名称）
+   */
+  const updateUserProfile = useCallback(async (
+    params: { displayName?: string }
+  ): Promise<{ success: boolean; error?: string }> => {
+    console.log('[AuthContext] 更新用户资料:', params)
+
+    try {
+      const response = await window.electronAPI.api.updateUser(params) as {
+        success: boolean
+        data?: User
+        error?: string
+      }
+
+      if (response.success && response.data) {
+        const updatedUser = { ...state.user, ...response.data } as User
+        saveAuthState(updatedUser, state.accessToken, state.refreshToken)
+        setState(prev => ({ ...prev, user: updatedUser }))
+        console.log('[AuthContext] 用户资料更新成功')
+        return { success: true }
+      } else {
+        const errMsg = response.error || '更新失败'
+        console.error('[AuthContext] 用户资料更新失败:', errMsg)
+        return { success: false, error: errMsg }
+      }
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : '更新失败'
+      console.error('[AuthContext] 更新用户资料异常:', error)
+      return { success: false, error: errMsg }
+    }
+  }, [state.user, state.accessToken, state.refreshToken])
+
+  /**
+   * 修改密码
+   */
+  const changePassword = useCallback(async (
+    params: { currentPassword: string; newPassword: string }
+  ): Promise<{ success: boolean; error?: string }> => {
+    console.log('[AuthContext] 修改密码')
+
+    try {
+      const response = await window.electronAPI.api.changePassword(params) as {
+        success: boolean
+        error?: string
+      }
+
+      if (response.success) {
+        console.log('[AuthContext] 密码修改成功')
+        return { success: true }
+      } else {
+        const errMsg = response.error || '修改密码失败'
+        console.error('[AuthContext] 修改密码失败:', errMsg)
+        return { success: false, error: errMsg }
+      }
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : '修改密码失败'
+      console.error('[AuthContext] 修改密码异常:', error)
+      return { success: false, error: errMsg }
+    }
+  }, [])
+
   const value: AuthContextType = {
     ...state,
     register,
@@ -380,6 +444,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     refreshAccessToken,
     clearError,
+    updateUserProfile,
+    changePassword,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

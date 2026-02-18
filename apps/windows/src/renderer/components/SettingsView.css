@@ -449,6 +449,84 @@
   background-color: rgba(239, 68, 68, 0.2);
 }
 
+.setting-action-btn.primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.setting-action-btn.primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.setting-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 账户设置 */
+.account-info {
+  padding: 8px 12px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.account-identifier {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+/* 显示名称编辑行 */
+.profile-edit-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.profile-edit-row .setting-input {
+  flex: 1;
+}
+
+.profile-save-btn {
+  padding: 8px 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  border: none;
+  background-color: var(--color-primary);
+  color: white;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.profile-save-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.profile-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 字段级消息（成功/错误） */
+.field-msg {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+}
+
+.field-msg.success {
+  color: #16a34a;
+}
+
+.field-msg.error {
+  color: var(--color-danger, #ef4444);
+}
+
 .settings-note {
   font-size: var(--font-size-xs);
   color: var(--text-muted);

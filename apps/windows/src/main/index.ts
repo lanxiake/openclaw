@@ -953,6 +953,33 @@ function setupApiIpcHandlers(): void {
     return apiClient.updateUser(params)
   })
 
+  ipcMain.handle('api:changePassword', async (_event, params: {
+    currentPassword: string
+    newPassword: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('修改密码请求')
+    return apiClient.changePassword(params)
+  })
+
+  // === 开机启动 ===
+  ipcMain.handle('app:getOpenAtLogin', async () => {
+    const loginItemSettings = app.getLoginItemSettings()
+    log.info('获取开机启动状态:', loginItemSettings.openAtLogin)
+    return loginItemSettings.openAtLogin
+  })
+
+  ipcMain.handle('app:setOpenAtLogin', async (_event, enable: boolean) => {
+    if (typeof enable !== 'boolean') {
+      throw new Error('参数必须为布尔值')
+    }
+    log.info('设置开机启动:', enable)
+    app.setLoginItemSettings({ openAtLogin: enable })
+    return app.getLoginItemSettings().openAtLogin
+  })
+
   // === 配置接口 ===
   ipcMain.handle('api:setBaseUrl', async (_event, url: string) => {
     if (!apiClient) {
