@@ -42,7 +42,7 @@ const App: React.FC = () => {
   console.log('[App] useAuth 返回:', { isAuthenticated, hasUser: !!user, hasAccessToken: !!accessToken })
 
   // 连接状态
-  const { isConnected, connect, disconnect } = useConnectionStatus()
+  const { isConnected, isConnecting, error: connectionError, connect, disconnect } = useConnectionStatus()
   const { currentRequest, handleResponse } = useConfirmRequests()
 
   // 用户设置
@@ -198,7 +198,7 @@ const App: React.FC = () => {
       case 'subscription':
         return <SubscriptionView isConnected={isConnected} />
       case 'settings':
-        return <SettingsView isConnected={isConnected} onConnect={connect} onDisconnect={disconnect} />
+        return <SettingsView isConnected={isConnected} isConnecting={isConnecting} connectionError={connectionError} onConnect={connect} onDisconnect={disconnect} />
       case 'devices':
         return <DeviceManagementView accessToken={accessToken} onDevicePaired={handleDevicePaired} />
       case 'chat':

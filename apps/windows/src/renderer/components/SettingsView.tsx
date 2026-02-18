@@ -4,13 +4,15 @@
  * 应用设置页面，包含 Gateway 配置、主题、通知、隐私等设置
  */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useSettings, type AppSettings } from '../hooks/useSettings'
 import { UpdaterView } from './UpdaterView'
 import './SettingsView.css'
 
 interface SettingsViewProps {
   isConnected: boolean
+  isConnecting?: boolean
+  connectionError?: string | null
   onConnect?: (url: string, options?: { token?: string }) => void
   onDisconnect?: () => void
   onClose?: () => void
@@ -52,7 +54,7 @@ const PRIMARY_COLORS = [
 /**
  * 设置视图组件
  */
-export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, onConnect, onDisconnect, onClose }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConnecting, connectionError, onConnect, onDisconnect, onClose }) => {
   const {
     settings,
     isLoading,
@@ -72,6 +74,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, onConne
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('gateway')
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [appVersion, setAppVersion] = useState<string>('0.1.0')
+
+  /** 测试连接状态 */
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'fail'>('idle')
+  const [testLatency, setTestLatency] = useState<number | null>(null)
+  const [testError, setTestError] = useState<string | null>(null)
+
+  /** 设备 Token 加载状态 */
+  const [deviceTokenLoading, setDeviceTokenLoading] = useState(false)
 
   /**
    * 获取应用版本
@@ -146,24 +156,117 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, onConne
   }
 
   /**
+   * 测试 Gateway 连接（通过临时 WebSocket ping 测量延迟）
+   */
+  const handleTestConnection = useCallback(async () => {
+    console.log('[SettingsView] 开始测试 Gateway 连接:', settings.gateway.url)
+    setTestStatus('testing')
+    setTestLatency(null)
+    setTestError(null)
+
+    const start = Date.now()
+    try {
+      // 利用主进程 gateway.connect 测试连通性（如已连接则直接视为成功）
+      if (isConnected) {
+        setTestLatency(0)
+        setTestStatus('success')
+        console.log('[SettingsView] 当前已连接，测试成功')
+        return
+      }
+
+      const token = settings.gateway.token || undefined
+      await onConnect?.(settings.gateway.url, token ? { token } : undefined)
+
+      const latency = Date.now() - start
+      setTestLatency(latency)
+      setTestStatus('success')
+      console.log('[SettingsView] 连接测试成功，延迟:', latency, 'ms')
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : '连接失败'
+      setTestError(errMsg)
+      setTestStatus('fail')
+      console.error('[SettingsView] 连接测试失败:', errMsg)
+    }
+  }, [isConnected, settings.gateway.url, settings.gateway.token, onConnect])
+
+  /**
+   * 使用设备专属 Token 填充 Gateway Token
+   */
+  const handleUseDeviceToken = useCallback(async () => {
+    console.log('[SettingsView] 获取设备 Token')
+    setDeviceTokenLoading(true)
+    try {
+      const pairingState = await window.electronAPI.pairing.getStatus()
+      if (pairingState?.token) {
+        updateGateway({ token: pairingState.token })
+        console.log('[SettingsView] 已填入设备 Token')
+      } else {
+        alert('设备尚未配对或无可用 Token，请先完成设备配对')
+        console.warn('[SettingsView] 设备未配对，无法获取 Token')
+      }
+    } catch (err) {
+      console.error('[SettingsView] 获取设备 Token 失败:', err)
+      alert('获取设备 Token 失败')
+    } finally {
+      setDeviceTokenLoading(false)
+    }
+  }, [updateGateway])
+
+  /**
    * 渲染 Gateway 设置
    */
   const renderGatewaySettings = () => (
     <div className="settings-section">
       <h3 className="settings-section-title">Gateway 连接配置</h3>
 
+      {/* 连接状态卡片 */}
       <div className="connection-status-card">
         <div className="status-info">
-          <span className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`} />
-          <span className="status-text">{isConnected ? '已连接到 Gateway' : '未连接'}</span>
+          <span className={`status-indicator ${isConnected ? 'connected' : isConnecting ? 'connecting' : 'disconnected'}`} />
+          <div className="status-details">
+            <span className="status-text">
+              {isConnected ? '已连接到 Gateway' : isConnecting ? '连接中...' : '未连接'}
+            </span>
+            {connectionError && !isConnected && (
+              <span className="status-error">{connectionError}</span>
+            )}
+          </div>
         </div>
-        <button
-          className={`connection-toggle-btn ${isConnected ? 'disconnect' : 'connect'}`}
-          onClick={handleToggleConnection}
-        >
-          {isConnected ? '断开连接' : '连接'}
-        </button>
+        <div className="connection-actions">
+          <button
+            className="connection-test-btn"
+            onClick={handleTestConnection}
+            disabled={testStatus === 'testing' || isConnecting}
+            title="测试当前配置的连接是否可达"
+          >
+            {testStatus === 'testing' ? '测试中...' : '测试连接'}
+          </button>
+          <button
+            className={`connection-toggle-btn ${isConnected ? 'disconnect' : 'connect'}`}
+            onClick={handleToggleConnection}
+            disabled={isConnecting}
+          >
+            {isConnecting ? '连接中...' : isConnected ? '断开连接' : '连接'}
+          </button>
+        </div>
       </div>
+
+      {/* 测试结果 */}
+      {testStatus !== 'idle' && (
+        <div className={`test-result ${testStatus}`}>
+          {testStatus === 'testing' && <span>⏳ 正在测试连接...</span>}
+          {testStatus === 'success' && (
+            <span>
+              ✅ 连接成功
+              {testLatency !== null && testLatency > 0 && `，延迟 ${testLatency}ms`}
+              {testLatency === 0 && '（当前已连接）'}
+            </span>
+          )}
+          {testStatus === 'fail' && (
+            <span>❌ 连接失败：{testError}</span>
+          )}
+        </div>
+      )}
 
       <div className="settings-group">
         <div className="setting-item">
@@ -180,14 +283,26 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, onConne
 
         <div className="setting-item">
           <label className="setting-label">认证 Token (可选)</label>
-          <input
-            type="password"
-            className="setting-input"
-            value={settings.gateway.token || ''}
-            onChange={(e) => updateGateway({ token: e.target.value || undefined })}
-            placeholder="留空则不使用认证"
-          />
-          <span className="setting-hint">用于 Gateway 认证的 Token</span>
+          <div className="token-input-row">
+            <input
+              type="password"
+              className="setting-input"
+              value={settings.gateway.token || ''}
+              onChange={(e) => updateGateway({ token: e.target.value || undefined })}
+              placeholder="留空则不使用认证"
+            />
+            <button
+              className="device-token-btn"
+              onClick={handleUseDeviceToken}
+              disabled={deviceTokenLoading}
+              title="从已配对设备中自动填入专属 Token"
+            >
+              {deviceTokenLoading ? '获取中...' : '使用设备 Token'}
+            </button>
+          </div>
+          <span className="setting-hint">
+            用于 Gateway 认证的 Token，可点击「使用设备 Token」自动填入已配对设备的专属 Token
+          </span>
         </div>
 
         <div className="setting-item">

@@ -275,6 +275,125 @@
   opacity: 0.9;
 }
 
+/* 连接动作按钮组 */
+.connection-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+/* 测试连接按钮 */
+.connection-test-btn {
+  padding: 8px 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.connection-test-btn:hover:not(:disabled) {
+  background-color: var(--bg-secondary);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.connection-test-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 连接状态详情（错误信息） */
+.connection-status-card .status-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.connection-status-card .status-error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger, #ef4444);
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 连接状态指示器：连接中动画 */
+.status-indicator.connecting {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* 测试结果提示 */
+.test-result {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.test-result.testing {
+  background-color: rgba(234, 179, 8, 0.1);
+  color: #ca8a04;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.test-result.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.test-result.fail {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Token 输入行（输入框 + 设备 Token 按钮） */
+.token-input-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.token-input-row .setting-input {
+  flex: 1;
+}
+
+/* 使用设备 Token 按钮 */
+.device-token-btn {
+  padding: 8px 12px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-primary);
+  background-color: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.device-token-btn:hover:not(:disabled) {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.device-token-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* 快捷键 */
 .shortcut-item {
   display: flex;
