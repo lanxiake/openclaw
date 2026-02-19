@@ -62,11 +62,11 @@
 ### 硬件要求
 
 | 配置项 | 最小配置 | 推荐配置 | 生产环境 |
-|--------|---------|---------|---------|
-| CPU | 2 核 | 4 核 | 8 核+ |
-| 内存 | 4 GB | 8 GB | 16 GB+ |
-| 磁盘 | 20 GB | 50 GB | 100 GB+ |
-| 网络 | 10 Mbps | 100 Mbps | 1 Gbps |
+| ------ | -------- | -------- | -------- |
+| CPU    | 2 核     | 4 核     | 8 核+    |
+| 内存   | 4 GB     | 8 GB     | 16 GB+   |
+| 磁盘   | 20 GB    | 50 GB    | 100 GB+  |
+| 网络   | 10 Mbps  | 100 Mbps | 1 Gbps   |
 
 ### 软件要求
 
@@ -81,14 +81,14 @@
 
 确保以下端口未被占用：
 
-| 服务 | 端口 | 说明 |
-|------|------|------|
-| API Server | 3000 | HTTP API 服务 |
-| Web Admin | 3001 | 管理后台 |
-| Gateway | 18789 | WebSocket 网关 |
-| PostgreSQL | 22001 | 数据库 |
-| Redis | 22002 | 缓存 |
-| MinIO API | 22003 | 对象存储 API |
+| 服务          | 端口  | 说明           |
+| ------------- | ----- | -------------- |
+| API Server    | 3000  | HTTP API 服务  |
+| Web Admin     | 3001  | 管理后台       |
+| Gateway       | 18789 | WebSocket 网关 |
+| PostgreSQL    | 22001 | 数据库         |
+| Redis         | 22002 | 缓存           |
+| MinIO API     | 22003 | 对象存储 API   |
 | MinIO Console | 22004 | MinIO 管理界面 |
 
 ---
@@ -751,21 +751,21 @@ docker exec openclaw-minio mc mirror ./backups/minio-skills myminio/openclaw-ski
 
 ### A. 完整端口列表
 
-| 服务 | 端口 | 协议 | 说明 |
-|------|------|------|------|
-| API Server | 3000 | HTTP | REST API |
-| Web Admin | 3001 | HTTP | 管理后台 |
-| Gateway | 18789 | WebSocket | 实时通信 |
-| PostgreSQL | 22001 | TCP | 数据库 |
-| Redis | 22002 | TCP | 缓存 |
-| MinIO API | 22003 | HTTP | 对象存储 |
-| MinIO Console | 22004 | HTTP | MinIO 管理 |
-| Milvus | 22005 | gRPC | 向量数据库 |
-| Neo4j HTTP | 22007 | HTTP | 图数据库 |
-| Neo4j Bolt | 22008 | TCP | 图数据库协议 |
-| Prometheus | 22011 | HTTP | 监控 |
-| Grafana | 22012 | HTTP | 仪表盘 |
-| pgAdmin | 22014 | HTTP | 数据库管理 |
+| 服务          | 端口  | 协议      | 说明         |
+| ------------- | ----- | --------- | ------------ |
+| API Server    | 3000  | HTTP      | REST API     |
+| Web Admin     | 3001  | HTTP      | 管理后台     |
+| Gateway       | 18789 | WebSocket | 实时通信     |
+| PostgreSQL    | 22001 | TCP       | 数据库       |
+| Redis         | 22002 | TCP       | 缓存         |
+| MinIO API     | 22003 | HTTP      | 对象存储     |
+| MinIO Console | 22004 | HTTP      | MinIO 管理   |
+| Milvus        | 22005 | gRPC      | 向量数据库   |
+| Neo4j HTTP    | 22007 | HTTP      | 图数据库     |
+| Neo4j Bolt    | 22008 | TCP       | 图数据库协议 |
+| Prometheus    | 22011 | HTTP      | 监控         |
+| Grafana       | 22012 | HTTP      | 仪表盘       |
+| pgAdmin       | 22014 | HTTP      | 数据库管理   |
 
 ### B. 环境变量完整列表
 

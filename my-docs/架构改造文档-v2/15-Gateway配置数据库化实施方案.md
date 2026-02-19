@@ -77,6 +77,7 @@ CREATE TABLE gateway_configs (
 ```
 
 **示例**:
+
 - 系统配置: `auth_mode = 'none'`
 - 租户 A 配置: `auth_mode = 'token'`
 - 租户 A 实际使用: `'token'` (租户配置优先)
@@ -88,18 +89,18 @@ CREATE TABLE gateway_configs (
 
 ### 3.1 文件清单
 
-| 文件 | 说明 | 状态 |
-|------|------|------|
-| `src/db/migrations/0007_add_gateway_configs.sql` | 数据库迁移文件 | ✅ 已创建 |
-| `src/db/schema/gateway-configs.ts` | Drizzle ORM Schema | ✅ 已创建 |
-| `src/db/repositories/gateway-configs.ts` | Repository 层 | ✅ 已创建 |
-| `src/gateway/config-loader.ts` | 配置加载器 | ⬜ 待创建 |
-| `apps/api-server/src/routes/gateway-config/` | 配置管理 API | ⬜ 待创建 |
+| 文件                                             | 说明               | 状态      |
+| ------------------------------------------------ | ------------------ | --------- |
+| `src/db/migrations/0007_add_gateway_configs.sql` | 数据库迁移文件     | ✅ 已创建 |
+| `src/db/schema/gateway-configs.ts`               | Drizzle ORM Schema | ✅ 已创建 |
+| `src/db/repositories/gateway-configs.ts`         | Repository 层      | ✅ 已创建 |
+| `src/gateway/config-loader.ts`                   | 配置加载器         | ⬜ 待创建 |
+| `apps/api-server/src/routes/gateway-config/`     | 配置管理 API       | ⬜ 待创建 |
 
 ### 3.2 Repository API
 
 ```typescript
-import { GatewayConfigRepository } from './db/repositories/gateway-configs.js';
+import { GatewayConfigRepository } from "./db/repositories/gateway-configs.js";
 
 const repo = new GatewayConfigRepository(db);
 
@@ -113,16 +114,23 @@ const tenantConfig = await repo.getTenantConfig(userId);
 const effectiveConfig = await repo.getEffectiveConfig(userId);
 
 // 更新系统配置
-await repo.upsertSystemConfig({
-  authMode: 'none',
-  gatewayMode: 'local',
-}, 'admin_id');
+await repo.upsertSystemConfig(
+  {
+    authMode: "none",
+    gatewayMode: "local",
+  },
+  "admin_id",
+);
 
 // 更新租户配置
-await repo.upsertTenantConfig(userId, {
-  authMode: 'token',
-  authToken: 'tenant_specific_token',
-}, 'admin_id');
+await repo.upsertTenantConfig(
+  userId,
+  {
+    authMode: "token",
+    authToken: "tenant_specific_token",
+  },
+  "admin_id",
+);
 ```
 
 ### 3.3 Gateway 配置加载器
@@ -130,8 +138,8 @@ await repo.upsertTenantConfig(userId, {
 ```typescript
 // src/gateway/config-loader.ts
 
-import { getDatabase } from '../db/connection.js';
-import { GatewayConfigRepository } from '../db/repositories/gateway-configs.js';
+import { getDatabase } from "../db/connection.js";
+import { GatewayConfigRepository } from "../db/repositories/gateway-configs.js";
 
 /**
  * 从数据库加载 Gateway 配置
@@ -146,29 +154,29 @@ export async function loadGatewayConfigFromDatabase(userId?: string): Promise<Ga
   if (!config) {
     // 使用默认配置
     return {
-      mode: 'local',
+      mode: "local",
       port: 18789,
-      bind: 'loopback',
+      bind: "loopback",
       auth: {
-        mode: 'none',
+        mode: "none",
       },
       controlUi: {
         enabled: true,
         allowInsecureAuth: true,
       },
       tailscale: {
-        mode: 'off',
+        mode: "off",
       },
     };
   }
 
   // 转换数据库配置为 Gateway 配置格式
   return {
-    mode: config.gatewayMode as 'local' | 'remote',
+    mode: config.gatewayMode as "local" | "remote",
     port: config.gatewayPort || 18789,
-    bind: config.gatewayBind as 'loopback' | 'tailnet' | '0.0.0.0',
+    bind: config.gatewayBind as "loopback" | "tailnet" | "0.0.0.0",
     auth: {
-      mode: config.authMode as 'none' | 'token' | 'password',
+      mode: config.authMode as "none" | "token" | "password",
       token: config.authToken || undefined,
       password: config.authPassword || undefined,
       allowTailscale: config.authAllowTailscale || false,
@@ -178,7 +186,7 @@ export async function loadGatewayConfigFromDatabase(userId?: string): Promise<Ga
       allowInsecureAuth: config.controlUiAllowInsecureAuth || false,
     },
     tailscale: {
-      mode: config.tailscaleMode as 'off' | 'serve',
+      mode: config.tailscaleMode as "off" | "serve",
       resetOnExit: config.tailscaleResetOnExit || false,
     },
   };
@@ -272,7 +280,7 @@ touch src/gateway/config-loader.ts
 ```typescript
 // src/commands/gateway.ts
 
-import { loadGatewayConfigFromDatabase } from '../gateway/config-loader.js';
+import { loadGatewayConfigFromDatabase } from "../gateway/config-loader.js";
 
 async function startGateway() {
   // 从数据库加载配置
@@ -328,14 +336,14 @@ curl http://localhost:3000/api/admin/gateway-config/tenant/user_123
 ```typescript
 // scripts/migrate-config-to-db.mjs
 
-import fs from 'fs';
-import { getDatabase } from '../src/db/connection.js';
-import { GatewayConfigRepository } from '../src/db/repositories/gateway-configs.js';
+import fs from "fs";
+import { getDatabase } from "../src/db/connection.js";
+import { GatewayConfigRepository } from "../src/db/repositories/gateway-configs.js";
 
 async function migrateConfigToDatabase() {
   // 1. 读取现有配置文件
-  const configPath = '~/.openclaw/openclaw.json';
-  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  const configPath = "~/.openclaw/openclaw.json";
+  const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 
   // 2. 提取 Gateway 配置
   const gatewayConfig = config.gateway;
@@ -344,18 +352,21 @@ async function migrateConfigToDatabase() {
   const db = getDatabase();
   const repo = new GatewayConfigRepository(db);
 
-  await repo.upsertSystemConfig({
-    gatewayMode: gatewayConfig.mode,
-    gatewayPort: gatewayConfig.port,
-    gatewayBind: gatewayConfig.bind,
-    authMode: gatewayConfig.auth.mode,
-    authToken: gatewayConfig.auth.token,
-    controlUiEnabled: gatewayConfig.controlUi.enabled,
-    controlUiAllowInsecureAuth: gatewayConfig.controlUi.allowInsecureAuth,
-    tailscaleMode: gatewayConfig.tailscale.mode,
-  }, 'system');
+  await repo.upsertSystemConfig(
+    {
+      gatewayMode: gatewayConfig.mode,
+      gatewayPort: gatewayConfig.port,
+      gatewayBind: gatewayConfig.bind,
+      authMode: gatewayConfig.auth.mode,
+      authToken: gatewayConfig.auth.token,
+      controlUiEnabled: gatewayConfig.controlUi.enabled,
+      controlUiAllowInsecureAuth: gatewayConfig.controlUi.allowInsecureAuth,
+      tailscaleMode: gatewayConfig.tailscale.mode,
+    },
+    "system",
+  );
 
-  console.log('✅ 配置已迁移到数据库');
+  console.log("✅ 配置已迁移到数据库");
 }
 ```
 
@@ -372,7 +383,7 @@ async function loadGatewayConfig(userId?: string): Promise<GatewayConfig> {
       return dbConfig;
     }
   } catch (error) {
-    console.warn('[Config] 数据库配置加载失败,回退到文件配置:', error);
+    console.warn("[Config] 数据库配置加载失败,回退到文件配置:", error);
   }
 
   // 2. 回退到文件配置
@@ -388,7 +399,7 @@ async function loadGatewayConfig(userId?: string): Promise<GatewayConfig> {
 
 ```typescript
 // 存储前加密
-import { encrypt, decrypt } from '../utils/crypto.js';
+import { encrypt, decrypt } from "../utils/crypto.js";
 
 async function upsertSystemConfig(config) {
   if (config.authToken) {
@@ -420,15 +431,15 @@ async function getSystemConfig() {
 
 ## 8. 优势总结
 
-| 方面 | 文件配置 | 数据库配置 |
-|------|---------|-----------|
-| **稳定性** | ❌ 易损坏 | ✅ 事务保证 |
-| **多租户** | ❌ 不支持 | ✅ 原生支持 |
-| **动态更新** | ❌ 需重启 | ✅ 运行时更新 |
-| **审计追踪** | ❌ 无 | ✅ 完整历史 |
+| 方面         | 文件配置    | 数据库配置    |
+| ------------ | ----------- | ------------- |
+| **稳定性**   | ❌ 易损坏   | ✅ 事务保证   |
+| **多租户**   | ❌ 不支持   | ✅ 原生支持   |
+| **动态更新** | ❌ 需重启   | ✅ 运行时更新 |
+| **审计追踪** | ❌ 无       | ✅ 完整历史   |
 | **权限控制** | ❌ 文件系统 | ✅ 数据库级别 |
-| **备份恢复** | ❌ 手动 | ✅ 数据库备份 |
-| **配置验证** | ❌ 运行时 | ✅ 数据库约束 |
+| **备份恢复** | ❌ 手动     | ✅ 数据库备份 |
+| **配置验证** | ❌ 运行时   | ✅ 数据库约束 |
 
 ---
 

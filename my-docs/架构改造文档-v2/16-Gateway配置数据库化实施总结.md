@@ -17,18 +17,18 @@
 
 ### 2. 代码实现
 
-| 组件 | 文件 | 状态 |
-|------|------|------|
-| Schema定义 | `src/db/schema/gateway-configs.ts` | ✅ 完成 |
+| 组件       | 文件                                     | 状态    |
+| ---------- | ---------------------------------------- | ------- |
+| Schema定义 | `src/db/schema/gateway-configs.ts`       | ✅ 完成 |
 | Repository | `src/db/repositories/gateway-configs.ts` | ✅ 完成 |
-| 配置加载器 | `src/gateway/config-loader.ts` | ✅ 完成 |
-| 迁移脚本 | `scripts/migrate-gateway-config.mjs` | ✅ 完成 |
-| 测试脚本 | `scripts/test-config-loader.mjs` | ✅ 完成 |
+| 配置加载器 | `src/gateway/config-loader.ts`           | ✅ 完成 |
+| 迁移脚本   | `scripts/migrate-gateway-config.mjs`     | ✅ 完成 |
+| 测试脚本   | `scripts/test-config-loader.mjs`         | ✅ 完成 |
 
 ### 3. 配置加载器功能
 
 ```typescript
-import { loadGatewayConfig } from './gateway/config-loader.js';
+import { loadGatewayConfig } from "./gateway/config-loader.js";
 
 // 加载配置 (自动选择最佳配置源)
 const config = await loadGatewayConfig(userId);
@@ -40,6 +40,7 @@ const config = await loadGatewayConfig(userId);
 ```
 
 **测试结果**:
+
 ```bash
 $ node scripts/test-config-loader.mjs
 
@@ -75,7 +76,7 @@ node scripts/migrate-gateway-config.mjs
 修改 `src/commands/gateway.ts`:
 
 ```typescript
-import { loadGatewayConfig } from '../gateway/config-loader.js';
+import { loadGatewayConfig } from "../gateway/config-loader.js";
 
 async function startGateway() {
   // 从数据库/环境变量/默认值加载配置
@@ -84,7 +85,7 @@ async function startGateway() {
   // 验证配置
   const validation = validateGatewayConfig(config);
   if (!validation.valid) {
-    throw new Error(`配置无效: ${validation.errors.join(', ')}`);
+    throw new Error(`配置无效: ${validation.errors.join(", ")}`);
   }
 
   // 启动Gateway
@@ -111,7 +112,7 @@ async function startGateway() {
 ```typescript
 // 从API Server获取配置,而不是本地存储
 async function fetchGatewayConfig() {
-  const response = await window.electronAPI.api.get('/users/me/gateway-config');
+  const response = await window.electronAPI.api.get("/users/me/gateway-config");
   return response.data;
 }
 ```
@@ -120,14 +121,14 @@ async function fetchGatewayConfig() {
 
 ## 🎯 核心优势
 
-| 方面 | 文件配置 | 数据库配置 |
-|------|---------|-----------|
-| **稳定性** | ❌ JSON易损坏 | ✅ 事务保证 |
-| **多租户** | ❌ 不支持 | ✅ 原生支持 |
-| **动态更新** | ❌ 需重启 | ✅ 运行时更新 |
-| **审计追踪** | ❌ 无 | ✅ 完整历史 |
-| **权限控制** | ❌ 文件系统 | ✅ 数据库级别 |
-| **配置验证** | ❌ 运行时 | ✅ 数据库约束 |
+| 方面         | 文件配置      | 数据库配置    |
+| ------------ | ------------- | ------------- |
+| **稳定性**   | ❌ JSON易损坏 | ✅ 事务保证   |
+| **多租户**   | ❌ 不支持     | ✅ 原生支持   |
+| **动态更新** | ❌ 需重启     | ✅ 运行时更新 |
+| **审计追踪** | ❌ 无         | ✅ 完整历史   |
+| **权限控制** | ❌ 文件系统   | ✅ 数据库级别 |
+| **配置验证** | ❌ 运行时     | ✅ 数据库约束 |
 
 ---
 

@@ -43,29 +43,31 @@ OpenClaw 采用多租户架构,每个用户的数据完全隔离。Gateway 需�
 ### 2.2 JWT Token 结构
 
 **用户 Token (accessToken)**:
+
 ```json
 {
-  "sub": "user_abc123",           // 用户 ID
-  "type": "user",                 // Token 类型
-  "email": "user@example.com",    // 用户邮箱
-  "phone": "+86138****1234",      // 用户手机
-  "planId": "plan_pro",           // 订阅套餐 ID
-  "planCode": "pro",              // 套餐代码
-  "iat": 1708156800,              // 签发时间
-  "exp": 1708243200               // 过期时间 (24小时)
+  "sub": "user_abc123", // 用户 ID
+  "type": "user", // Token 类型
+  "email": "user@example.com", // 用户邮箱
+  "phone": "+86138****1234", // 用户手机
+  "planId": "plan_pro", // 订阅套餐 ID
+  "planCode": "pro", // 套餐代码
+  "iat": 1708156800, // 签发时间
+  "exp": 1708243200 // 过期时间 (24小时)
 }
 ```
 
 **设备 Token (deviceToken)**:
+
 ```json
 {
-  "sub": "device_xyz789",         // 设备 ID
-  "type": "device",               // Token 类型
-  "userId": "user_abc123",        // 所属用户
-  "role": "user",                 // 设备角色
-  "scopes": ["chat", "files"],    // 权限范围
-  "iat": 1708156800,              // 签发时间
-  "exp": 1708761600               // 过期时间 (7天)
+  "sub": "device_xyz789", // 设备 ID
+  "type": "device", // Token 类型
+  "userId": "user_abc123", // 所属用户
+  "role": "user", // 设备角色
+  "scopes": ["chat", "files"], // 权限范围
+  "iat": 1708156800, // 签发时间
+  "exp": 1708761600 // 过期时间 (7天)
 }
 ```
 
@@ -82,7 +84,7 @@ OpenClaw 采用多租户架构,每个用户的数据完全隔离。Gateway 需�
   "gateway": {
     "port": 18789,
     "auth": {
-      "mode": "none"  // 开发环境不需要连接层认证
+      "mode": "none" // 开发环境不需要连接层认证
     }
   }
 }
@@ -94,13 +96,14 @@ OpenClaw 采用多租户架构,每个用户的数据完全隔离。Gateway 需�
 {
   "gateway": {
     "url": "ws://localhost:18789",
-    "token": null,  // 不配置 gateway token
+    "token": null, // 不配置 gateway token
     "autoConnect": true
   }
 }
 ```
 
 **认证流程**:
+
 1. 用户登录 → 获得 `accessToken`
 2. 连接 Gateway → 无需 token (mode: "none")
 3. RPC 调用 → Gateway 验证 `accessToken` 中的 JWT
@@ -115,7 +118,7 @@ OpenClaw 采用多租户架构,每个用户的数据完全隔离。Gateway 需�
     "port": 18789,
     "auth": {
       "mode": "token",
-      "token": "prod-gateway-secret-min-32-chars-xxxxx"  // 第一层防护
+      "token": "prod-gateway-secret-min-32-chars-xxxxx" // 第一层防护
     }
   }
 }
@@ -127,13 +130,14 @@ OpenClaw 采用多租户架构,每个用户的数据完全隔离。Gateway 需�
 {
   "gateway": {
     "url": "wss://gateway.example.com",
-    "token": "prod-gateway-secret-min-32-chars-xxxxx",  // 连接层 token
+    "token": "prod-gateway-secret-min-32-chars-xxxxx", // 连接层 token
     "autoConnect": true
   }
 }
 ```
 
 **认证流程**:
+
 1. 用户登录 → 获得 `accessToken`
 2. 连接 Gateway → 验证 `gateway.token` (第一层)
 3. RPC 调用 → 验证 `accessToken` JWT (第二层)
@@ -141,6 +145,7 @@ OpenClaw 采用多租户架构,每个用户的数据完全隔离。Gateway 需�
 ### 3.3 生产环境配置 (反向代理方案,推荐)
 
 **架构**:
+
 ```
 客户端 → Nginx/Caddy (TLS + 基础认证) → Gateway (mode: "none")
 ```
@@ -184,9 +189,9 @@ server {
 {
   "gateway": {
     "port": 18789,
-    "bind": "127.0.0.1",  // 只监听本地
+    "bind": "127.0.0.1", // 只监听本地
     "auth": {
-      "mode": "none"  // 由 Nginx 处理 TLS 和基础认证
+      "mode": "none" // 由 Nginx 处理 TLS 和基础认证
     }
   }
 }
@@ -203,25 +208,25 @@ server {
 ```typescript
 useEffect(() => {
   if (!isAuthenticated || !accessToken || isConnected) {
-    return
+    return;
   }
 
-  const gatewayUrl = settings.gateway.url || 'ws://localhost:18789'
-  const gatewayToken = settings.gateway.token
+  const gatewayUrl = settings.gateway.url || "ws://localhost:18789";
+  const gatewayToken = settings.gateway.token;
 
-  console.log('[App] 连接 Gateway:', {
+  console.log("[App] 连接 Gateway:", {
     url: gatewayUrl,
     hasGatewayToken: !!gatewayToken,
-    hasAccessToken: !!accessToken
-  })
+    hasAccessToken: !!accessToken,
+  });
 
   // 连接选项: 如果配置了 gateway.token,使用它作为连接层认证
-  const connectOptions = gatewayToken ? { token: gatewayToken } : undefined
+  const connectOptions = gatewayToken ? { token: gatewayToken } : undefined;
 
-  connect(gatewayUrl, connectOptions).catch(err => {
-    console.error('[App] 连接失败:', err)
-  })
-}, [isAuthenticated, accessToken, isConnected, settings.gateway])
+  connect(gatewayUrl, connectOptions).catch((err) => {
+    console.error("[App] 连接失败:", err);
+  });
+}, [isAuthenticated, accessToken, isConnected, settings.gateway]);
 ```
 
 ### 4.2 Gateway JWT 验证逻辑
@@ -234,26 +239,26 @@ useEffect(() => {
  */
 export function extractUserContext(params: Record<string, unknown>): UserAuthContext | null {
   // 优先从 Bearer Token 提取
-  const authHeader = params["authorization"] as string | undefined
-  const token = extractBearerToken(authHeader)
+  const authHeader = params["authorization"] as string | undefined;
+  const token = extractBearerToken(authHeader);
 
   if (token) {
-    const payload = verifyAccessToken(token)  // 验证 JWT 签名和有效期
+    const payload = verifyAccessToken(token); // 验证 JWT 签名和有效期
     if (payload) {
       return {
-        userId: payload.sub,  // 提取 userId 作为租户标识
+        userId: payload.sub, // 提取 userId 作为租户标识
         type: "user",
-      }
+      };
     }
   }
 
   // 向后兼容: 从 userId 参数提取
-  const userId = params["userId"] as string | undefined
+  const userId = params["userId"] as string | undefined;
   if (userId && typeof userId === "string") {
-    return { userId, type: "user" }
+    return { userId, type: "user" };
   }
 
-  return null
+  return null;
 }
 ```
 
@@ -264,18 +269,18 @@ export function extractUserContext(params: Record<string, unknown>): UserAuthCon
 ```typescript
 async function handleChatSend(params: ChatSendParams): Promise<ChatSendResponse> {
   // 1. 提取用户上下文
-  const userContext = extractUserContext(params)
+  const userContext = extractUserContext(params);
   if (!userContext) {
-    throw new Error("未授权: 缺少有效的用户 Token")
+    throw new Error("未授权: 缺少有效的用户 Token");
   }
 
   // 2. 创建租户隔离的 Repository
-  const conversationRepo = new ConversationRepository(db, userContext.userId)
+  const conversationRepo = new ConversationRepository(db, userContext.userId);
 
   // 3. 查询用户的对话 (自动过滤 userId)
-  const conversation = await conversationRepo.findById(params.conversationId)
+  const conversation = await conversationRepo.findById(params.conversationId);
   if (!conversation) {
-    throw new Error("对话不存在或无权访问")
+    throw new Error("对话不存在或无权访问");
   }
 
   // 4. 执行业务逻辑...
@@ -338,6 +343,7 @@ async function handleChatSend(params: ChatSendParams): Promise<ChatSendResponse>
 **解决方案**:
 
 1. **开发环境**: 修改 Gateway 配置为 `mode: "none"`
+
    ```json
    {
      "gateway": {
