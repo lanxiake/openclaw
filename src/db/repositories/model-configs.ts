@@ -44,8 +44,8 @@ export class ModelProviderRepository {
         and(
           eq(modelProviders.configType, "tenant"),
           eq(modelProviders.userId, userId),
-          eq(modelProviders.enabled, true)
-        )
+          eq(modelProviders.enabled, true),
+        ),
       )
       .orderBy(modelProviders.priority);
   }
@@ -74,7 +74,9 @@ export class ModelProviderRepository {
       }
     }
 
-    return Array.from(uniqueProviders.values()).sort((a, b) => (a.priority || 100) - (b.priority || 100));
+    return Array.from(uniqueProviders.values()).sort(
+      (a, b) => (a.priority || 100) - (b.priority || 100),
+    );
   }
 
   /**
@@ -90,8 +92,8 @@ export class ModelProviderRepository {
           and(
             eq(modelProviders.configType, "tenant"),
             eq(modelProviders.userId, userId),
-            eq(modelProviders.providerKey, providerKey)
-          )
+            eq(modelProviders.providerKey, providerKey),
+          ),
         )
         .limit(1);
 
@@ -104,7 +106,9 @@ export class ModelProviderRepository {
     const [systemProvider] = await this.db
       .select()
       .from(modelProviders)
-      .where(and(eq(modelProviders.configType, "system"), eq(modelProviders.providerKey, providerKey)))
+      .where(
+        and(eq(modelProviders.configType, "system"), eq(modelProviders.providerKey, providerKey)),
+      )
       .limit(1);
 
     return systemProvider || null;
@@ -124,7 +128,7 @@ export class ModelProviderRepository {
       enabled?: boolean;
       priority?: number;
     },
-    updatedBy: string
+    updatedBy: string,
   ): Promise<ModelProvider> {
     const existing = await this.getProviderByKey(providerKey);
 
@@ -186,7 +190,7 @@ export class ModelProviderRepository {
       enabled?: boolean;
       priority?: number;
     },
-    updatedBy: string
+    updatedBy: string,
   ): Promise<ModelProvider> {
     const existing = await this.getProviderByKey(providerKey, userId);
 
@@ -284,7 +288,10 @@ export class AgentDefaultConfigRepository {
   /**
    * 创建或更新系统配置
    */
-  async upsertSystemConfig(config: Partial<NewAgentDefaultConfig>, updatedBy: string): Promise<AgentDefaultConfig> {
+  async upsertSystemConfig(
+    config: Partial<NewAgentDefaultConfig>,
+    updatedBy: string,
+  ): Promise<AgentDefaultConfig> {
     const existing = await this.getSystemConfig();
 
     if (existing) {
@@ -321,7 +328,7 @@ export class AgentDefaultConfigRepository {
   async upsertTenantConfig(
     userId: string,
     config: Partial<NewAgentDefaultConfig>,
-    updatedBy: string
+    updatedBy: string,
   ): Promise<AgentDefaultConfig> {
     const existing = await this.getTenantConfig(userId);
 

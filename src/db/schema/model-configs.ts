@@ -2,19 +2,28 @@
  * 模型提供商配置表 Schema
  */
 
-import { pgTable, varchar, boolean, integer, jsonb, timestamp, unique } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  varchar,
+  text,
+  boolean,
+  integer,
+  jsonb,
+  timestamp,
+  unique,
+} from "drizzle-orm/pg-core";
 import { users } from "./users.js";
 
 export const modelProviders = pgTable(
   "model_providers",
   {
-    id: varchar("id", { length: 32 }).primaryKey(),
+    id: text("id").primaryKey(),
 
     // 配置类型
     configType: varchar("config_type", { length: 20 }).notNull().default("system"),
 
     // 租户 ID
-    userId: varchar("user_id", { length: 32 }).references(() => users.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
 
     // 提供商信息
     providerKey: varchar("provider_key", { length: 100 }).notNull(),
@@ -35,13 +44,17 @@ export const modelProviders = pgTable(
     // 元数据
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-    createdBy: varchar("created_by", { length: 32 }),
-    updatedBy: varchar("updated_by", { length: 32 }),
+    createdBy: text("created_by"),
+    updatedBy: text("updated_by"),
   },
   (table) => ({
     // 唯一约束
-    providerUnique: unique("model_providers_unique").on(table.configType, table.userId, table.providerKey),
-  })
+    providerUnique: unique("model_providers_unique").on(
+      table.configType,
+      table.userId,
+      table.providerKey,
+    ),
+  }),
 );
 
 export type ModelProvider = typeof modelProviders.$inferSelect;
@@ -53,13 +66,13 @@ export type NewModelProvider = typeof modelProviders.$inferInsert;
 export const agentConfigs = pgTable(
   "agent_configs",
   {
-    id: varchar("id", { length: 32 }).primaryKey(),
+    id: text("id").primaryKey(),
 
     // 配置类型
     configType: varchar("config_type", { length: 20 }).notNull().default("system"),
 
     // 租户 ID
-    userId: varchar("user_id", { length: 32 }).references(() => users.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
 
     // 默认模型
     primaryModel: varchar("primary_model", { length: 100 }).default("claude-opus-4-5-20251101"),
@@ -80,14 +93,14 @@ export const agentConfigs = pgTable(
     // 元数据
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-    createdBy: varchar("created_by", { length: 32 }),
-    updatedBy: varchar("updated_by", { length: 32 }),
+    createdBy: text("created_by"),
+    updatedBy: text("updated_by"),
   },
   (table) => ({
     // 唯一约束
     systemUnique: unique("agent_configs_system_unique").on(table.configType),
     tenantUnique: unique("agent_configs_tenant_unique").on(table.userId),
-  })
+  }),
 );
 
 export type AgentDefaultConfig = typeof agentConfigs.$inferSelect;

@@ -6,7 +6,11 @@
 
 import { eq, and } from "drizzle-orm";
 import type { Database } from "../connection.js";
-import { gatewayConfigs, type GatewayConfig, type NewGatewayConfig } from "../schema/gateway-configs.js";
+import {
+  gatewayConfigs,
+  type GatewayConfig,
+  type NewGatewayConfig,
+} from "../schema/gateway-configs.js";
 import { generateId } from "../utils/id.js";
 
 /**
@@ -62,7 +66,7 @@ export class GatewayConfigRepository {
    */
   async upsertSystemConfig(
     config: Partial<NewGatewayConfig>,
-    updatedBy: string
+    updatedBy: string,
   ): Promise<GatewayConfig> {
     const existingConfig = await this.getSystemConfig();
 
@@ -102,7 +106,7 @@ export class GatewayConfigRepository {
   async upsertTenantConfig(
     userId: string,
     config: Partial<NewGatewayConfig>,
-    updatedBy: string
+    updatedBy: string,
   ): Promise<GatewayConfig> {
     const existingConfig = await this.getTenantConfig(userId);
 

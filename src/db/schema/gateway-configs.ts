@@ -4,19 +4,28 @@
  * 用于存储 Gateway 的系统配置和多租户配置
  */
 
-import { pgTable, varchar, integer, boolean, jsonb, timestamp, unique } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  varchar,
+  text,
+  integer,
+  boolean,
+  jsonb,
+  timestamp,
+  unique,
+} from "drizzle-orm/pg-core";
 import { users } from "./users.js";
 
 export const gatewayConfigs = pgTable(
   "gateway_configs",
   {
-    id: varchar("id", { length: 32 }).primaryKey(),
+    id: text("id").primaryKey(),
 
     // 配置类型
     configType: varchar("config_type", { length: 20 }).notNull().default("system"),
 
     // 租户 ID (仅当 configType='tenant' 时有效)
-    userId: varchar("user_id", { length: 32 }).references(() => users.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
 
     // Gateway 基础配置
     gatewayMode: varchar("gateway_mode", { length: 20 }).notNull().default("local"),
@@ -43,8 +52,8 @@ export const gatewayConfigs = pgTable(
     // 元数据
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-    createdBy: varchar("created_by", { length: 32 }),
-    updatedBy: varchar("updated_by", { length: 32 }),
+    createdBy: text("created_by"),
+    updatedBy: text("updated_by"),
   },
   (table) => ({
     // 系统配置唯一约束
@@ -52,7 +61,7 @@ export const gatewayConfigs = pgTable(
 
     // 租户配置唯一约束
     tenantUnique: unique("gateway_configs_tenant_unique").on(table.userId),
-  })
+  }),
 );
 
 export type GatewayConfig = typeof gatewayConfigs.$inferSelect;
