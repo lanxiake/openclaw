@@ -23,7 +23,10 @@ import {
   rejectSkill,
   publishSkill,
 } from "../../assistant/skills/skill-review-service.js";
-import { uploadSkillFile, deleteAllSkillFiles } from "../../assistant/skills/skill-storage-service.js";
+import {
+  uploadSkillFile,
+  deleteAllSkillFiles,
+} from "../../assistant/skills/skill-storage-service.js";
 import { resetMinioConnection } from "../../infrastructure/minio/connection.js";
 
 describe("技能上传和审核流程", () => {
@@ -196,4 +199,3 @@ describe("技能上传和审核流程", () => {
     await db.delete(skillStoreItems).where(eq(skillStoreItems.id, rejectSkillId));
   });
 });
-

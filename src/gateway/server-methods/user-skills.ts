@@ -63,11 +63,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       // 提取用户认证上下文
       const authContext = extractUserContext(params);
       if (!authContext) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"));
         return;
       }
 
@@ -109,11 +105,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       // 提取用户认证上下文
       const authContext = extractUserContext(params);
       if (!authContext) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"));
         return;
       }
 
@@ -127,11 +119,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       const version = validateStringParam(params, "version") || "1.0.0";
 
       if (!name) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "技能名称不能为空"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "技能名称不能为空"));
         return;
       }
 
@@ -177,11 +165,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       // 提取用户认证上下文
       const authContext = extractUserContext(params);
       if (!authContext) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"));
         return;
       }
 
@@ -191,31 +175,19 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       const skillId = validateStringParam(params, "skillId", true);
 
       if (!skillId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "技能 ID 不能为空"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "技能 ID 不能为空"));
         return;
       }
 
       // 检查技能是否存在且属于当前用户
       const existingSkill = await getSkill(skillId);
       if (!existingSkill) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "技能不存在"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "技能不存在"));
         return;
       }
 
       if (existingSkill.authorId !== userId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "无权限修改此技能"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "无权限修改此技能"));
         return;
       }
 
@@ -273,11 +245,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       // 提取用户认证上下文
       const authContext = extractUserContext(params);
       if (!authContext) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"));
         return;
       }
 
@@ -287,31 +255,19 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       const skillId = validateStringParam(params, "skillId", true);
 
       if (!skillId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "技能 ID 不能为空"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "技能 ID 不能为空"));
         return;
       }
 
       // 检查技能是否存在且属于当前用户
       const existingSkill = await getSkill(skillId);
       if (!existingSkill) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "技能不存在"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "技能不存在"));
         return;
       }
 
       if (existingSkill.authorId !== userId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "无权限删除此技能"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "无权限删除此技能"));
         return;
       }
 
@@ -350,11 +306,7 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       // 提取用户认证上下文
       const authContext = extractUserContext(params);
       if (!authContext) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "未授权：需要用户登录"));
         return;
       }
 
@@ -368,41 +320,25 @@ export const userSkillHandlers: GatewayRequestHandlers = {
       const dataBase64 = validateStringParam(params, "data", true);
 
       if (!skillId || !fileType || !originalName || !contentType || !dataBase64) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "缺少必需参数"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "缺少必需参数"));
         return;
       }
 
       // 验证文件类型
       if (!["package", "icon", "manifest"].includes(fileType)) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "无效的文件类型"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "无效的文件类型"));
         return;
       }
 
       // 检查技能是否存在且属于当前用户
       const existingSkill = await getSkill(skillId);
       if (!existingSkill) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "技能不存在"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "技能不存在"));
         return;
       }
 
       if (existingSkill.authorId !== userId) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "无权限上传此技能的文件"),
-        );
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "无权限上传此技能的文件"));
         return;
       }
 

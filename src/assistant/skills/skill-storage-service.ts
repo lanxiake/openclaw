@@ -88,9 +88,7 @@ function generateSkillStorageKey(
  * @param params 上传参数
  * @returns 上传结果
  */
-export async function uploadSkillFile(
-  params: SkillFileUploadParams,
-): Promise<SkillFileInfo> {
+export async function uploadSkillFile(params: SkillFileUploadParams): Promise<SkillFileInfo> {
   const { skillId, fileType, data, originalName, contentType, userId } = params;
 
   logger.info(`${LOG_TAG} 上传技能文件`, {
