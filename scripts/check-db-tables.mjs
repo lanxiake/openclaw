@@ -3,10 +3,10 @@
  * 检查数据库表是否存在
  */
 
-import { getDatabase, getSqlClient } from '../dist/db/connection.js';
+import { getDatabase, getSqlClient } from "../dist/db/connection.js";
 
 async function checkTables() {
-  console.log('=== 检查数据库表 ===\n');
+  console.log("=== 检查数据库表 ===\n");
 
   try {
     const sql = getSqlClient();
@@ -19,9 +19,9 @@ async function checkTables() {
       ORDER BY table_name
     `;
 
-    console.log('找到的表:');
+    console.log("找到的表:");
     if (tables.length === 0) {
-      console.log('  (无)');
+      console.log("  (无)");
     } else {
       tables.forEach((t) => {
         console.log(`  - ${t.table_name}`);
@@ -29,8 +29,8 @@ async function checkTables() {
     }
 
     // 检查 model_providers 表结构
-    if (tables.some((t) => t.table_name === 'model_providers')) {
-      console.log('\nmodel_providers 表结构:');
+    if (tables.some((t) => t.table_name === "model_providers")) {
+      console.log("\nmodel_providers 表结构:");
       const columns = await sql`
         SELECT column_name, data_type, is_nullable, column_default
         FROM information_schema.columns
@@ -38,7 +38,9 @@ async function checkTables() {
         ORDER BY ordinal_position
       `;
       columns.forEach((c) => {
-        console.log(`  - ${c.column_name}: ${c.data_type} ${c.is_nullable === 'NO' ? 'NOT NULL' : ''}`);
+        console.log(
+          `  - ${c.column_name}: ${c.data_type} ${c.is_nullable === "NO" ? "NOT NULL" : ""}`,
+        );
       });
 
       // 检查是否有数据
@@ -47,9 +49,9 @@ async function checkTables() {
     }
 
     await sql.end();
-    console.log('\n✅ 检查完成');
+    console.log("\n✅ 检查完成");
   } catch (error) {
-    console.error('❌ 检查失败:', error.message);
+    console.error("❌ 检查失败:", error.message);
   }
 }
 

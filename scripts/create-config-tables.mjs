@@ -3,29 +3,29 @@
  * 手动创建配置表
  */
 
-import { getSqlClient } from '../dist/db/connection.js';
-import { readFileSync } from 'fs';
+import { getSqlClient } from "../dist/db/connection.js";
+import { readFileSync } from "fs";
 
 async function createConfigTables() {
-  console.log('=== 创建配置表 ===\n');
+  console.log("=== 创建配置表 ===\n");
 
   try {
     const sql = getSqlClient();
 
     // 读取迁移文件
-    const migrationSql = readFileSync('src/db/migrations/0005_bumpy_odin.sql', 'utf-8');
+    const migrationSql = readFileSync("src/db/migrations/0005_bumpy_odin.sql", "utf-8");
 
-    console.log('执行 SQL:');
+    console.log("执行 SQL:");
     console.log(migrationSql);
-    console.log('');
+    console.log("");
 
     // 执行 SQL
     await sql.unsafe(migrationSql);
 
-    console.log('✅ 表创建成功');
+    console.log("✅ 表创建成功");
 
     // 插入默认数据
-    console.log('\n插入默认数据...');
+    console.log("\n插入默认数据...");
 
     // 1. Gateway 配置
     await sql`
@@ -47,7 +47,7 @@ async function createConfigTables() {
       )
       ON CONFLICT (config_type) DO NOTHING
     `;
-    console.log('  ✓ Gateway 配置');
+    console.log("  ✓ Gateway 配置");
 
     // 2. 模型提供商配置
     await sql`
@@ -72,7 +72,7 @@ async function createConfigTables() {
       )
       ON CONFLICT (config_type, user_id, provider_key) DO NOTHING
     `;
-    console.log('  ✓ 模型提供商配置');
+    console.log("  ✓ 模型提供商配置");
 
     // 3. Agent 配置
     await sql`
@@ -92,14 +92,14 @@ async function createConfigTables() {
       )
       ON CONFLICT (config_type) DO NOTHING
     `;
-    console.log('  ✓ Agent 配置');
+    console.log("  ✓ Agent 配置");
 
     await sql.end();
-    console.log('\n✅ 完成');
+    console.log("\n✅ 完成");
   } catch (error) {
-    console.error('❌ 失败:', error.message);
+    console.error("❌ 失败:", error.message);
     if (error.cause) {
-      console.error('原因:', error.cause.message);
+      console.error("原因:", error.cause.message);
     }
   }
 }
