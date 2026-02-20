@@ -5,3 +5,4 @@
  */
 
 export { MemoryProfileMemoryProvider } from "./memory.js";
+export { PostgresProfileMemoryProvider } from "./postgres.js";
