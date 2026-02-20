@@ -1251,6 +1251,121 @@ function setupApiIpcHandlers(): void {
     return apiClient.createRefund(params)
   })
 
+  // ========== 技能商店 IPC 处理器 ==========
+
+  ipcMain.handle('api:getStoreSkills', async (_event, filters?: {
+    category?: string
+    tags?: string[]
+    subscription?: string
+    sortBy?: string
+    search?: string
+    offset?: number
+    limit?: number
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取商店技能列表', { filters })
+    return apiClient.getStoreSkills(filters)
+  })
+
+  ipcMain.handle('api:getStoreFeatured', async (_event, limit?: number) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取推荐技能', { limit })
+    return apiClient.getStoreFeatured(limit)
+  })
+
+  ipcMain.handle('api:getStorePopular', async (_event, limit?: number) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取热门技能', { limit })
+    return apiClient.getStorePopular(limit)
+  })
+
+  ipcMain.handle('api:getStoreRecent', async (_event, limit?: number) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取最新技能', { limit })
+    return apiClient.getStoreRecent(limit)
+  })
+
+  ipcMain.handle('api:getStoreStats', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取商店统计')
+    return apiClient.getStoreStats()
+  })
+
+  ipcMain.handle('api:getStoreCategories', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取商店分类列表')
+    return apiClient.getStoreCategories()
+  })
+
+  ipcMain.handle('api:getStoreSkillDetail', async (_event, skillId: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof skillId !== 'string' || skillId.length > 200) {
+      throw new Error('无效的技能 ID')
+    }
+    log.info('获取商店技能详情', { skillId })
+    return apiClient.getStoreSkillDetail(skillId)
+  })
+
+  ipcMain.handle('api:installStoreSkill', async (_event, skillId: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof skillId !== 'string' || skillId.length > 200) {
+      throw new Error('无效的技能 ID')
+    }
+    log.info('安装商店技能', { skillId })
+    return apiClient.installStoreSkill(skillId)
+  })
+
+  ipcMain.handle('api:createUserSkill', async (_event, data: {
+    name: string
+    description?: string
+    version?: string
+    code?: string
+    manifest?: Record<string, unknown>
+    status?: string
+    metadata?: Record<string, unknown>
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof data.name !== 'string' || data.name.length === 0 || data.name.length > 200) {
+      throw new Error('无效的技能名称')
+    }
+    log.info('创建用户自建技能', { name: data.name })
+    return apiClient.createUserSkill(data)
+  })
+
+  ipcMain.handle('api:checkStoreUpdates', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('检查技能更新')
+    return apiClient.checkStoreUpdates()
+  })
+
+  ipcMain.handle('api:refreshStore', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('刷新商店缓存')
+    return apiClient.refreshStore()
+  })
+
   log.info('API Server IPC 处理器设置完成')
 }
 

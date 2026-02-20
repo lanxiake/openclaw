@@ -239,6 +239,72 @@ export function registerStoreRoutes(server: FastifyInstance): void {
   );
 
   /**
+   * GET /api/store/skills/updates - 检查已安装技能的更新（需认证）
+   */
+  server.get(
+    "/api/store/skills/updates",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = getRequestUser(request);
+      if (!user) {
+        return reply.code(401).send({
+          success: false,
+          error: "Unauthorized",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      request.log.info(
+        { userId: user.userId },
+        "[store] 检查技能更新",
+      );
+
+      // 实际更新检查逻辑在 Sprint 11 实现
+      // 当前返回空列表
+      return {
+        success: true,
+        data: {
+          skills: [],
+          total: 0,
+        },
+      };
+    },
+  );
+
+  /**
+   * POST /api/store/refresh - 刷新商店缓存（需认证）
+   */
+  server.post(
+    "/api/store/refresh",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = getRequestUser(request);
+      if (!user) {
+        return reply.code(401).send({
+          success: false,
+          error: "Unauthorized",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      request.log.info(
+        { userId: user.userId },
+        "[store] 刷新商店缓存",
+      );
+
+      // 实际刷新逻辑在 Sprint 11 实现
+      // 当前返回统计信息
+      const stats = await getStoreStats();
+
+      return {
+        success: true,
+        data: {
+          refreshed: true,
+          stats,
+        },
+      };
+    },
+  );
+
+  /**
    * DELETE /api/store/skills/:id/install - 卸载技能（需认证）
    */
   server.delete(

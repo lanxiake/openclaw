@@ -2,88 +2,90 @@
  * useSkillStore Hook - 技能商店
  *
  * 管理技能商店的浏览、搜索、安装等功能
- * 通过 Gateway RPC 方法与后端交互
+ * 通过 API Server REST API 与后端交互
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback } from "react";
 
 /**
  * 商店技能信息
  */
 export interface StoreSkillInfo {
   /** 技能 ID */
-  id: string
+  id: string;
   /** 技能名称 */
-  name: string
+  name: string;
   /** 技能描述 */
-  description: string
+  description: string;
   /** 详细描述 */
-  longDescription?: string
+  longDescription?: string;
   /** 版本 */
-  version: string
+  version: string;
   /** 作者 */
-  author: string
+  author: string;
   /** 图标 */
-  icon?: string
+  icon?: string;
   /** 分类 */
-  category: string
+  category: string;
   /** 标签 */
-  tags: string[]
+  tags: string[];
   /** 运行模式 */
-  runMode: 'server' | 'local' | 'hybrid'
+  runMode: "server" | "local" | "hybrid";
   /** 订阅要求 */
   subscription: {
-    type: 'free' | 'premium' | 'enterprise'
-    price?: number
-    period?: 'monthly' | 'yearly' | 'once'
-  }
+    type: "free" | "premium" | "enterprise";
+    price?: number;
+    period?: "monthly" | "yearly" | "once";
+  };
   /** 下载次数 */
-  downloads: number
+  downloads: number;
   /** 评分 */
-  rating: number
+  rating: number;
   /** 评分人数 */
-  ratingCount: number
+  ratingCount: number;
   /** 更新时间 */
-  updatedAt: string
+  updatedAt: string;
   /** 截图 */
-  screenshots?: string[]
+  screenshots?: string[];
   /** 源 URL */
-  sourceUrl?: string
+  sourceUrl?: string;
   /** 是否已安装 */
-  installed?: boolean
+  installed?: boolean;
   /** 安装的版本 */
-  installedVersion?: string
+  installedVersion?: string;
+  /** 是否有可用更新 */
+  hasUpdate?: boolean;
 }
 
 /**
  * 技能分类信息
  */
 export interface SkillCategory {
-  id: string
-  name: string
-  icon: string
-  count: number
+  id: string;
+  name: string;
+  icon: string;
+  count: number;
 }
 
 /**
  * 商店筛选条件
  */
 export interface StoreFilters {
-  category?: string
-  tags?: string[]
-  subscription?: 'free' | 'premium' | 'enterprise' | 'all'
-  sortBy?: 'downloads' | 'rating' | 'updated' | 'name'
-  search?: string
+  category?: string;
+  tags?: string[];
+  subscription?: "free" | "premium" | "enterprise" | "all";
+  sortBy?: "downloads" | "rating" | "updated" | "name";
+  search?: string;
 }
 
 /**
  * 商店统计信息
  */
 export interface StoreStats {
-  totalSkills: number
-  totalDownloads: number
-  categories: SkillCategory[]
-  popularTags: string[]
+  totalSkills: number;
+  totalDownloads: number;
+  categories: SkillCategory[];
+  popularTags: string[];
 }
 
 /**
@@ -91,353 +93,458 @@ export interface StoreStats {
  */
 export interface SkillUploadData {
   /** 技能名称 */
-  name: string
+  name: string;
   /** 技能描述 */
-  description: string
+  description: string;
   /** 详细说明 (Markdown) */
-  readme?: string
+  readme?: string;
   /** 版本号 */
-  version: string
+  version: string;
   /** 分类 ID */
-  categoryId?: string
+  categoryId?: string;
   /** 标签列表 */
-  tags?: string[]
+  tags?: string[];
   /** 订阅级别要求 */
-  subscriptionLevel?: 'free' | 'pro' | 'team' | 'enterprise'
+  subscriptionLevel?: "free" | "pro" | "team" | "enterprise";
   /** 图标 URL */
-  iconUrl?: string
+  iconUrl?: string;
   /** 技能配置文件 URL */
-  manifestUrl?: string
+  manifestUrl?: string;
   /** 技能包下载 URL */
-  packageUrl?: string
+  packageUrl?: string;
   /** 技能配置 (JSON) */
-  config?: Record<string, unknown>
-}
-
-/**
- * 商店查询结果
- */
-interface StoreQueryResult {
-  skills: StoreSkillInfo[]
-  total: number
-  offset: number
-  limit: number
+  config?: Record<string, unknown>;
 }
 
 interface UseSkillStoreReturn {
   /** 商店技能列表 */
-  skills: StoreSkillInfo[]
+  skills: StoreSkillInfo[];
   /** 推荐技能 */
-  featured: StoreSkillInfo[]
+  featured: StoreSkillInfo[];
   /** 热门技能 */
-  popular: StoreSkillInfo[]
+  popular: StoreSkillInfo[];
   /** 最新技能 */
-  recent: StoreSkillInfo[]
+  recent: StoreSkillInfo[];
   /** 商店统计 */
-  stats: StoreStats | null
+  stats: StoreStats | null;
   /** 分类列表 */
-  categories: SkillCategory[]
+  categories: SkillCategory[];
   /** 是否正在加载 */
-  isLoading: boolean
+  isLoading: boolean;
   /** 是否正在上传 */
-  isUploading: boolean
+  isUploading: boolean;
   /** 错误信息 */
-  error: string | null
+  error: string | null;
   /** 当前筛选条件 */
-  filters: StoreFilters
+  filters: StoreFilters;
+  /** 是否有更多数据可加载 */
+  hasMore: boolean;
+  /** 是否正在刷新商店 */
+  isRefreshing: boolean;
 
   /** 加载商店技能列表 */
-  loadStoreSkills: (filters?: StoreFilters) => Promise<void>
+  loadStoreSkills: (filters?: StoreFilters) => Promise<void>;
+  /** 加载更多技能（分页） */
+  loadMore: () => Promise<void>;
   /** 加载推荐技能 */
-  loadFeatured: () => Promise<void>
+  loadFeatured: () => Promise<void>;
   /** 加载热门技能 */
-  loadPopular: () => Promise<void>
+  loadPopular: () => Promise<void>;
   /** 加载最新技能 */
-  loadRecent: () => Promise<void>
+  loadRecent: () => Promise<void>;
   /** 加载商店统计 */
-  loadStats: () => Promise<void>
+  loadStats: () => Promise<void>;
   /** 加载分类列表 */
-  loadCategories: () => Promise<void>
+  loadCategories: () => Promise<void>;
   /** 搜索技能 */
-  searchSkills: (query: string) => Promise<void>
+  searchSkills: (query: string) => Promise<void>;
   /** 设置筛选条件 */
-  setFilters: (filters: StoreFilters) => void
+  setFilters: (filters: StoreFilters) => void;
   /** 获取技能详情 */
-  getSkillDetail: (skillId: string) => Promise<StoreSkillInfo | null>
+  getSkillDetail: (skillId: string) => Promise<StoreSkillInfo | null>;
   /** 安装技能 */
-  installSkill: (skillId: string) => Promise<{ success: boolean; error?: string }>
+  installSkill: (skillId: string) => Promise<{ success: boolean; error?: string }>;
   /** 上传技能 */
-  uploadSkill: (data: SkillUploadData) => Promise<{ success: boolean; skillId?: string; error?: string }>
+  uploadSkill: (
+    data: SkillUploadData,
+  ) => Promise<{ success: boolean; skillId?: string; error?: string }>;
   /** 检查更新 */
-  checkUpdates: () => Promise<StoreSkillInfo[]>
+  checkUpdates: () => Promise<StoreSkillInfo[]>;
   /** 刷新商店 */
-  refreshStore: () => Promise<void>
+  refreshStore: () => Promise<void>;
 }
 
 /**
  * 技能商店 Hook
  */
 export function useSkillStore(): UseSkillStoreReturn {
-  const [skills, setSkills] = useState<StoreSkillInfo[]>([])
-  const [featured, setFeatured] = useState<StoreSkillInfo[]>([])
-  const [popular, setPopular] = useState<StoreSkillInfo[]>([])
-  const [recent, setRecent] = useState<StoreSkillInfo[]>([])
-  const [stats, setStats] = useState<StoreStats | null>(null)
-  const [categories, setCategories] = useState<SkillCategory[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [filters, setFilters] = useState<StoreFilters>({})
+  const [skills, setSkills] = useState<StoreSkillInfo[]>([]);
+  const [featured, setFeatured] = useState<StoreSkillInfo[]>([]);
+  const [popular, setPopular] = useState<StoreSkillInfo[]>([]);
+  const [recent, setRecent] = useState<StoreSkillInfo[]>([]);
+  const [stats, setStats] = useState<StoreStats | null>(null);
+  const [categories, setCategories] = useState<SkillCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<StoreFilters>({});
+  const [hasMore, setHasMore] = useState(false);
+  const [currentOffset, setCurrentOffset] = useState(0);
+
+  /** 每页加载数量 */
+  const PAGE_SIZE = 50;
 
   /**
    * 加载商店技能列表
    */
-  const loadStoreSkills = useCallback(async (newFilters?: StoreFilters) => {
-    console.log('[useSkillStore] 加载商店技能列表', newFilters)
-    setIsLoading(true)
-    setError(null)
+  const loadStoreSkills = useCallback(
+    async (newFilters?: StoreFilters) => {
+      console.log("[useSkillStore] 加载商店技能列表", newFilters);
+      setIsLoading(true);
+      setError(null);
 
-    if (newFilters) {
-      setFilters(newFilters)
-    }
+      if (newFilters) {
+        setFilters(newFilters);
+      }
 
-    try {
-      const currentFilters = newFilters || filters
+      try {
+        const currentFilters = newFilters || filters;
 
-      // 调用后端 API
-      const result = await window.electronAPI.gateway.call<StoreQueryResult>(
-        'assistant.store.query',
-        {
+        // 通过 REST API 获取商店技能列表
+        const result = (await window.electronAPI.api.getStoreSkills({
           category: currentFilters.category,
           subscription: currentFilters.subscription,
           sortBy: currentFilters.sortBy,
           search: currentFilters.search,
           tags: currentFilters.tags,
           offset: 0,
-          limit: 50,
-        }
-      )
+          limit: PAGE_SIZE,
+        })) as {
+          success: boolean;
+          data?: StoreSkillInfo[];
+          meta?: { total: number; hasMore?: boolean };
+          error?: string;
+        };
 
-      setSkills(result.skills)
-      console.log('[useSkillStore] 加载成功，共', result.total, '个技能')
+        if (result.success && result.data) {
+          setSkills(result.data);
+          setCurrentOffset(result.data.length);
+          const total = result.meta?.total ?? result.data.length;
+          setHasMore(result.meta?.hasMore ?? result.data.length < total);
+          console.log(
+            "[useSkillStore] 加载成功，共",
+            total,
+            "个技能，hasMore:",
+            result.meta?.hasMore ?? result.data.length < total,
+          );
+        } else {
+          console.error("[useSkillStore] 加载失败:", result.error);
+          setError(result.error || "加载商店失败");
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "加载商店失败";
+        console.error("[useSkillStore] 加载失败:", errorMessage);
+        setError(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [filters],
+  );
+
+  /**
+   * 加载更多技能（分页追加）
+   */
+  const loadMore = useCallback(async () => {
+    if (isLoading || !hasMore) return;
+
+    console.log("[useSkillStore] 加载更多技能, offset:", currentOffset);
+    setIsLoading(true);
+
+    try {
+      const result = (await window.electronAPI.api.getStoreSkills({
+        category: filters.category,
+        subscription: filters.subscription,
+        sortBy: filters.sortBy,
+        search: filters.search,
+        tags: filters.tags,
+        offset: currentOffset,
+        limit: PAGE_SIZE,
+      })) as {
+        success: boolean;
+        data?: StoreSkillInfo[];
+        meta?: { total: number; hasMore?: boolean };
+        error?: string;
+      };
+
+      if (result.success && result.data) {
+        setSkills((prev) => [...prev, ...result.data!]);
+        setCurrentOffset((prev) => prev + result.data!.length);
+        const total = result.meta?.total ?? 0;
+        setHasMore(result.meta?.hasMore ?? currentOffset + result.data.length < total);
+        console.log("[useSkillStore] 追加加载成功，新增", result.data.length, "个技能");
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '加载商店失败'
-      console.error('[useSkillStore] 加载失败:', errorMessage)
-      setError(errorMessage)
+      console.error("[useSkillStore] 加载更多失败:", err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [filters])
+  }, [isLoading, hasMore, currentOffset, filters]);
 
   /**
    * 加载推荐技能
    */
   const loadFeatured = useCallback(async () => {
-    console.log('[useSkillStore] 加载推荐技能')
+    console.log("[useSkillStore] 加载推荐技能");
     try {
-      const result = await window.electronAPI.gateway.call<{ skills: StoreSkillInfo[]; total: number }>(
-        'assistant.store.featured',
-        { limit: 3 }
-      )
-      setFeatured(result.skills)
+      const result = (await window.electronAPI.api.getStoreFeatured(3)) as {
+        success: boolean;
+        data?: StoreSkillInfo[];
+        error?: string;
+      };
+
+      if (result.success && result.data) {
+        setFeatured(result.data);
+      }
     } catch (err) {
-      console.error('[useSkillStore] 加载推荐失败:', err)
+      console.error("[useSkillStore] 加载推荐失败:", err);
     }
-  }, [])
+  }, []);
 
   /**
    * 加载热门技能
    */
   const loadPopular = useCallback(async () => {
-    console.log('[useSkillStore] 加载热门技能')
+    console.log("[useSkillStore] 加载热门技能");
     try {
-      const result = await window.electronAPI.gateway.call<{ skills: StoreSkillInfo[]; total: number }>(
-        'assistant.store.popular',
-        { limit: 4 }
-      )
-      setPopular(result.skills)
+      const result = (await window.electronAPI.api.getStorePopular(4)) as {
+        success: boolean;
+        data?: StoreSkillInfo[];
+        error?: string;
+      };
+
+      if (result.success && result.data) {
+        setPopular(result.data);
+      }
     } catch (err) {
-      console.error('[useSkillStore] 加载热门失败:', err)
+      console.error("[useSkillStore] 加载热门失败:", err);
     }
-  }, [])
+  }, []);
 
   /**
    * 加载最新技能
    */
   const loadRecent = useCallback(async () => {
-    console.log('[useSkillStore] 加载最新技能')
+    console.log("[useSkillStore] 加载最新技能");
     try {
-      const result = await window.electronAPI.gateway.call<{ skills: StoreSkillInfo[]; total: number }>(
-        'assistant.store.recent',
-        { limit: 4 }
-      )
-      setRecent(result.skills)
+      const result = (await window.electronAPI.api.getStoreRecent(4)) as {
+        success: boolean;
+        data?: StoreSkillInfo[];
+        error?: string;
+      };
+
+      if (result.success && result.data) {
+        setRecent(result.data);
+      }
     } catch (err) {
-      console.error('[useSkillStore] 加载最新失败:', err)
+      console.error("[useSkillStore] 加载最新失败:", err);
     }
-  }, [])
+  }, []);
 
   /**
    * 加载商店统计
    */
   const loadStats = useCallback(async () => {
-    console.log('[useSkillStore] 加载商店统计')
+    console.log("[useSkillStore] 加载商店统计");
     try {
-      const result = await window.electronAPI.gateway.call<StoreStats>(
-        'assistant.store.stats',
-        {}
-      )
-      setStats(result)
+      const result = (await window.electronAPI.api.getStoreStats()) as {
+        success: boolean;
+        data?: StoreStats;
+        error?: string;
+      };
+
+      if (result.success && result.data) {
+        setStats(result.data);
+      }
     } catch (err) {
-      console.error('[useSkillStore] 加载统计失败:', err)
+      console.error("[useSkillStore] 加载统计失败:", err);
     }
-  }, [])
+  }, []);
 
   /**
    * 加载分类列表
    */
   const loadCategories = useCallback(async () => {
-    console.log('[useSkillStore] 加载分类列表')
+    console.log("[useSkillStore] 加载分类列表");
     try {
-      // 使用新的 admin.skills.categories.list RPC 方法
-      const result = await window.electronAPI.gateway.call<{ items: Array<{ id: string; name: string; icon: string; skillCount: number }>; total: number }>(
-        'admin.skills.categories.list',
-        {}
-      )
+      const result = (await window.electronAPI.api.getStoreCategories()) as {
+        success: boolean;
+        data?: Array<{
+          id: string;
+          name: string;
+          icon: string;
+          skillCount: number;
+        }>;
+        error?: string;
+      };
 
-      // 转换为 SkillCategory 格式
-      const categories: SkillCategory[] = (result.items || []).map(item => ({
-        id: item.id,
-        name: item.name,
-        icon: item.icon || '📦',
-        count: item.skillCount || 0
-      }))
+      if (result.success && result.data) {
+        // 转换为 SkillCategory 格式
+        const mappedCategories: SkillCategory[] = result.data.map((item) => ({
+          id: item.id,
+          name: item.name,
+          icon: item.icon || "📦",
+          count: item.skillCount || 0,
+        }));
 
-      setCategories(categories)
+        setCategories(mappedCategories);
+      }
     } catch (err) {
-      console.error('[useSkillStore] 加载分类失败:', err)
+      console.error("[useSkillStore] 加载分类失败:", err);
     }
-  }, [])
+  }, []);
 
   /**
    * 搜索技能
    */
-  const searchSkills = useCallback(async (query: string) => {
-    console.log('[useSkillStore] 搜索技能:', query)
-    await loadStoreSkills({ ...filters, search: query })
-  }, [filters, loadStoreSkills])
+  const searchSkills = useCallback(
+    async (query: string) => {
+      console.log("[useSkillStore] 搜索技能:", query);
+      await loadStoreSkills({ ...filters, search: query });
+    },
+    [filters, loadStoreSkills],
+  );
 
   /**
    * 获取技能详情
    */
-  const getSkillDetail = useCallback(async (skillId: string): Promise<StoreSkillInfo | null> => {
-    console.log('[useSkillStore] 获取技能详情:', skillId)
-    try {
-      const result = await window.electronAPI.gateway.call<StoreSkillInfo>(
-        'assistant.store.detail',
-        { skillId }
-      )
-      return result
-    } catch (err) {
-      console.error('[useSkillStore] 获取详情失败:', err)
-      return null
-    }
-  }, [])
+  const getSkillDetail = useCallback(
+    async (skillId: string): Promise<StoreSkillInfo | null> => {
+      console.log("[useSkillStore] 获取技能详情:", skillId);
+      try {
+        const result = (await window.electronAPI.api.getStoreSkillDetail(skillId)) as {
+          success: boolean;
+          data?: StoreSkillInfo;
+          error?: string;
+        };
+
+        if (result.success && result.data) {
+          return result.data;
+        }
+        return null;
+      } catch (err) {
+        console.error("[useSkillStore] 获取详情失败:", err);
+        return null;
+      }
+    },
+    [],
+  );
 
   /**
    * 安装技能
    */
-  const installSkill = useCallback(async (skillId: string): Promise<{ success: boolean; error?: string }> => {
-    console.log('[useSkillStore] 安装技能:', skillId)
-    try {
-      const result = await window.electronAPI.gateway.call<{ success: boolean; skillId?: string; error?: string; message?: string }>(
-        'assistant.store.install',
-        { skillId }
-      )
+  const installSkill = useCallback(
+    async (skillId: string): Promise<{ success: boolean; error?: string }> => {
+      console.log("[useSkillStore] 安装技能:", skillId);
+      try {
+        const result = (await window.electronAPI.api.installStoreSkill(skillId)) as {
+          success: boolean;
+          data?: { skillId: string; message: string };
+          error?: string;
+        };
 
-      if (result.success) {
-        // 刷新商店列表以更新安装状态
-        await loadStoreSkills()
+        if (result.success) {
+          // 刷新商店列表以更新安装状态
+          await loadStoreSkills();
+        }
+
+        return { success: result.success, error: result.error };
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "安装失败";
+        console.error("[useSkillStore] 安装失败:", errorMessage);
+        return { success: false, error: errorMessage };
       }
-
-      return { success: result.success, error: result.error }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '安装失败'
-      console.error('[useSkillStore] 安装失败:', errorMessage)
-      return { success: false, error: errorMessage }
-    }
-  }, [loadStoreSkills])
+    },
+    [loadStoreSkills],
+  );
 
   /**
-   * 上传技能
+   * 上传技能（创建用户自建技能）
    */
-  const uploadSkill = useCallback(async (data: SkillUploadData): Promise<{ success: boolean; skillId?: string; error?: string }> => {
-    console.log('[useSkillStore] 上传技能:', data.name)
-    setIsUploading(true)
-    setError(null)
+  const uploadSkill = useCallback(
+    async (
+      data: SkillUploadData,
+    ): Promise<{ success: boolean; skillId?: string; error?: string }> => {
+      console.log("[useSkillStore] 上传技能:", data.name);
+      setIsUploading(true);
+      setError(null);
 
-    try {
-      // 使用新的 user.skills.create RPC 方法
-      const result = await window.electronAPI.gateway.call<{ id: string; name: string; status: string }>(
-        'user.skills.create',
-        {
+      try {
+        // 通过 REST API 创建用户自建技能
+        const result = (await window.electronAPI.api.createUserSkill({
           name: data.name,
           description: data.description,
-          readme: data.readme,
           version: data.version,
-          categoryId: data.categoryId,
-          tags: data.tags || []
-        }
-      )
+        })) as {
+          success: boolean;
+          data?: { id: string; name: string; status: string };
+          error?: string;
+        };
 
-      if (result && result.id) {
-        console.log('[useSkillStore] 技能创建成功, skillId:', result.id)
-        // 刷新商店列表
-        await loadStoreSkills()
-        return { success: true, skillId: result.id }
-      } else {
-        const errorMessage = '创建技能失败'
-        console.error('[useSkillStore] 创建失败')
-        setError(errorMessage)
-        return { success: false, error: errorMessage }
+        if (result.success && result.data?.id) {
+          console.log("[useSkillStore] 技能创建成功, skillId:", result.data.id);
+          // 刷新商店列表
+          await loadStoreSkills();
+          return { success: true, skillId: result.data.id };
+        } else {
+          const errorMessage = result.error || "创建技能失败";
+          console.error("[useSkillStore] 创建失败:", errorMessage);
+          setError(errorMessage);
+          return { success: false, error: errorMessage };
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "上传失败";
+        console.error("[useSkillStore] 上传异常:", errorMessage);
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      } finally {
+        setIsUploading(false);
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '上传失败'
-      console.error('[useSkillStore] 上传异常:', errorMessage)
-      setError(errorMessage)
-      return { success: false, error: errorMessage }
-    } finally {
-      setIsUploading(false)
-    }
-  }, [loadStoreSkills])
+    },
+    [loadStoreSkills],
+  );
 
   /**
    * 检查更新
    */
   const checkUpdates = useCallback(async (): Promise<StoreSkillInfo[]> => {
-    console.log('[useSkillStore] 检查更新')
+    console.log("[useSkillStore] 检查更新");
     try {
-      const result = await window.electronAPI.gateway.call<{ skills: StoreSkillInfo[]; total: number }>(
-        'assistant.store.checkUpdates',
-        {}
-      )
-      return result.skills
+      const result = (await window.electronAPI.api.checkStoreUpdates()) as {
+        success: boolean;
+        data?: { skills: StoreSkillInfo[]; total: number };
+        error?: string;
+      };
+
+      if (result.success && result.data) {
+        return result.data.skills;
+      }
+      return [];
     } catch (err) {
-      console.error('[useSkillStore] 检查更新失败:', err)
-      return []
+      console.error("[useSkillStore] 检查更新失败:", err);
+      return [];
     }
-  }, [])
+  }, []);
 
   /**
    * 刷新商店
    */
   const refreshStore = useCallback(async () => {
-    console.log('[useSkillStore] 刷新商店')
+    console.log("[useSkillStore] 刷新商店");
+    setIsRefreshing(true);
     try {
-      await window.electronAPI.gateway.call<{ refreshed: boolean; stats: StoreStats }>(
-        'assistant.store.refresh',
-        {}
-      )
+      await window.electronAPI.api.refreshStore();
       // 重新加载所有数据
       await Promise.all([
         loadStoreSkills(),
@@ -445,11 +552,13 @@ export function useSkillStore(): UseSkillStoreReturn {
         loadPopular(),
         loadRecent(),
         loadStats(),
-      ])
+      ]);
     } catch (err) {
-      console.error('[useSkillStore] 刷新商店失败:', err)
+      console.error("[useSkillStore] 刷新商店失败:", err);
+    } finally {
+      setIsRefreshing(false);
     }
-  }, [loadStoreSkills, loadFeatured, loadPopular, loadRecent, loadStats])
+  }, [loadStoreSkills, loadFeatured, loadPopular, loadRecent, loadStats]);
 
   return {
     // 状态
@@ -461,11 +570,14 @@ export function useSkillStore(): UseSkillStoreReturn {
     categories,
     isLoading,
     isUploading,
+    isRefreshing,
     error,
     filters,
+    hasMore,
 
     // 方法
     loadStoreSkills,
+    loadMore,
     loadFeatured,
     loadPopular,
     loadRecent,
@@ -478,5 +590,5 @@ export function useSkillStore(): UseSkillStoreReturn {
     uploadSkill,
     checkUpdates,
     refreshStore,
-  }
+  };
 }

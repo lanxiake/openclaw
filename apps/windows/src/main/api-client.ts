@@ -849,6 +849,140 @@ export class ApiClient {
   }
 
   // ==========================================================================
+  // 技能商店接口
+  // ==========================================================================
+
+  /**
+   * 获取商店技能列表
+   */
+  async getStoreSkills(filters?: {
+    category?: string
+    tags?: string[]
+    subscription?: string
+    sortBy?: string
+    search?: string
+    offset?: number
+    limit?: number
+  }): Promise<ApiResponse<unknown>> {
+    log.info('获取商店技能列表', { filters })
+
+    const params = new URLSearchParams()
+    if (filters?.category) params.set('category', filters.category)
+    if (filters?.tags?.length) params.set('tags', filters.tags.join(','))
+    if (filters?.subscription) params.set('subscription', filters.subscription)
+    if (filters?.sortBy) params.set('sortBy', filters.sortBy)
+    if (filters?.search) params.set('search', filters.search)
+    if (filters?.offset !== undefined) params.set('offset', String(filters.offset))
+    if (filters?.limit !== undefined) params.set('limit', String(filters.limit))
+
+    const query = params.toString()
+    const path = query ? `/api/store/skills?${query}` : '/api/store/skills'
+
+    return this.request<ApiResponse<unknown>>('GET', path)
+  }
+
+  /**
+   * 获取推荐技能
+   */
+  async getStoreFeatured(limit?: number): Promise<ApiResponse<unknown>> {
+    log.info('获取推荐技能', { limit })
+
+    const path = limit ? `/api/store/skills/featured?limit=${limit}` : '/api/store/skills/featured'
+    return this.request<ApiResponse<unknown>>('GET', path)
+  }
+
+  /**
+   * 获取热门技能
+   */
+  async getStorePopular(limit?: number): Promise<ApiResponse<unknown>> {
+    log.info('获取热门技能', { limit })
+
+    const path = limit ? `/api/store/skills/popular?limit=${limit}` : '/api/store/skills/popular'
+    return this.request<ApiResponse<unknown>>('GET', path)
+  }
+
+  /**
+   * 获取最新技能
+   */
+  async getStoreRecent(limit?: number): Promise<ApiResponse<unknown>> {
+    log.info('获取最新技能', { limit })
+
+    const path = limit ? `/api/store/skills/recent?limit=${limit}` : '/api/store/skills/recent'
+    return this.request<ApiResponse<unknown>>('GET', path)
+  }
+
+  /**
+   * 获取商店统计信息
+   */
+  async getStoreStats(): Promise<ApiResponse<unknown>> {
+    log.info('获取商店统计')
+
+    return this.request<ApiResponse<unknown>>('GET', '/api/store/stats')
+  }
+
+  /**
+   * 获取商店分类列表
+   */
+  async getStoreCategories(): Promise<ApiResponse<unknown>> {
+    log.info('获取商店分类列表')
+
+    return this.request<ApiResponse<unknown>>('GET', '/api/store/categories')
+  }
+
+  /**
+   * 获取商店技能详情
+   */
+  async getStoreSkillDetail(skillId: string): Promise<ApiResponse<unknown>> {
+    log.info('获取商店技能详情', { skillId })
+
+    return this.request<ApiResponse<unknown>>('GET', `/api/store/skills/${skillId}`)
+  }
+
+  /**
+   * 安装商店技能
+   */
+  async installStoreSkill(skillId: string): Promise<ApiResponse<unknown>> {
+    log.info('安装商店技能', { skillId })
+
+    return this.request<ApiResponse<unknown>>('POST', `/api/store/skills/${skillId}/install`)
+  }
+
+  /**
+   * 创建用户自建技能
+   */
+  async createUserSkill(data: {
+    name: string
+    description?: string
+    version?: string
+    code?: string
+    manifest?: Record<string, unknown>
+    status?: string
+    metadata?: Record<string, unknown>
+  }): Promise<ApiResponse<unknown>> {
+    log.info('创建用户自建技能', { name: data.name })
+
+    return this.request<ApiResponse<unknown>>('POST', '/api/skills', data)
+  }
+
+  /**
+   * 检查已安装技能的更新
+   */
+  async checkStoreUpdates(): Promise<ApiResponse<unknown>> {
+    log.info('检查技能更新')
+
+    return this.request<ApiResponse<unknown>>('GET', '/api/store/skills/updates')
+  }
+
+  /**
+   * 刷新商店缓存
+   */
+  async refreshStore(): Promise<ApiResponse<unknown>> {
+    log.info('刷新商店缓存')
+
+    return this.request<ApiResponse<unknown>>('POST', '/api/store/refresh')
+  }
+
+  // ==========================================================================
   // 通用请求方法
   // ==========================================================================
 

@@ -423,6 +423,46 @@ export interface ElectronAPI {
       reason: string
       description?: string
     }) => Promise<unknown>
+
+    // --- 技能商店接口 ---
+    /** 获取商店技能列表 */
+    getStoreSkills: (filters?: {
+      category?: string
+      tags?: string[]
+      subscription?: string
+      sortBy?: string
+      search?: string
+      offset?: number
+      limit?: number
+    }) => Promise<unknown>
+    /** 获取推荐技能 */
+    getStoreFeatured: (limit?: number) => Promise<unknown>
+    /** 获取热门技能 */
+    getStorePopular: (limit?: number) => Promise<unknown>
+    /** 获取最新技能 */
+    getStoreRecent: (limit?: number) => Promise<unknown>
+    /** 获取商店统计 */
+    getStoreStats: () => Promise<unknown>
+    /** 获取商店分类列表 */
+    getStoreCategories: () => Promise<unknown>
+    /** 获取商店技能详情 */
+    getStoreSkillDetail: (skillId: string) => Promise<unknown>
+    /** 安装商店技能 */
+    installStoreSkill: (skillId: string) => Promise<unknown>
+    /** 创建用户自建技能 */
+    createUserSkill: (data: {
+      name: string
+      description?: string
+      version?: string
+      code?: string
+      manifest?: Record<string, unknown>
+      status?: string
+      metadata?: Record<string, unknown>
+    }) => Promise<unknown>
+    /** 检查已安装技能更新 */
+    checkStoreUpdates: () => Promise<unknown>
+    /** 刷新商店缓存 */
+    refreshStore: () => Promise<unknown>
   }
 }
 
@@ -663,6 +703,40 @@ const electronAPI: ElectronAPI = {
       reason: string
       description?: string
     }) => ipcRenderer.invoke('api:createRefund', params),
+
+    // --- 技能商店接口 ---
+    getStoreSkills: (filters?: {
+      category?: string
+      tags?: string[]
+      subscription?: string
+      sortBy?: string
+      search?: string
+      offset?: number
+      limit?: number
+    }) => ipcRenderer.invoke('api:getStoreSkills', filters),
+    getStoreFeatured: (limit?: number) =>
+      ipcRenderer.invoke('api:getStoreFeatured', limit),
+    getStorePopular: (limit?: number) =>
+      ipcRenderer.invoke('api:getStorePopular', limit),
+    getStoreRecent: (limit?: number) =>
+      ipcRenderer.invoke('api:getStoreRecent', limit),
+    getStoreStats: () => ipcRenderer.invoke('api:getStoreStats'),
+    getStoreCategories: () => ipcRenderer.invoke('api:getStoreCategories'),
+    getStoreSkillDetail: (skillId: string) =>
+      ipcRenderer.invoke('api:getStoreSkillDetail', skillId),
+    installStoreSkill: (skillId: string) =>
+      ipcRenderer.invoke('api:installStoreSkill', skillId),
+    createUserSkill: (data: {
+      name: string
+      description?: string
+      version?: string
+      code?: string
+      manifest?: Record<string, unknown>
+      status?: string
+      metadata?: Record<string, unknown>
+    }) => ipcRenderer.invoke('api:createUserSkill', data),
+    checkStoreUpdates: () => ipcRenderer.invoke('api:checkStoreUpdates'),
+    refreshStore: () => ipcRenderer.invoke('api:refreshStore'),
   },
 }
 
