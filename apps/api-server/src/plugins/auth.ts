@@ -25,13 +25,17 @@ const PUBLIC_ROUTES = new Set([
   "/api/auth/send-code",
 ]);
 
+/** 不需要认证的公开路由前缀 */
+const PUBLIC_ROUTE_PREFIXES = ["/api/plans"];
+
 /**
  * 检查是否为公开路由
  */
 function isPublicRoute(url: string): boolean {
   // 移除 query string
   const path = url.split("?")[0];
-  return PUBLIC_ROUTES.has(path);
+  if (PUBLIC_ROUTES.has(path)) return true;
+  return PUBLIC_ROUTE_PREFIXES.some((prefix) => path === prefix || path.startsWith(prefix + "/"));
 }
 
 /**
