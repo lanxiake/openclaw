@@ -15,3 +15,4 @@ export { registerAdminMonitorRoutes } from "./monitor.js";
 export { registerAdminDashboardRoutes } from "./dashboard.js";
 export { registerModelProviderRoutes } from "./model-providers.js";
 export { registerAgentConfigRoutes } from "./agent-config.js";
+export { registerAuthProfileRoutes } from "./auth-profiles.js";
