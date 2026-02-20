@@ -225,6 +225,126 @@ export interface ChangePasswordParams {
 }
 
 // ============================================================================
+// 订阅相关类型
+// ============================================================================
+
+/** 订阅计划 ID */
+export type SubscriptionPlanId = 'free' | 'pro' | 'team' | 'enterprise'
+
+/** 计费周期 */
+export type BillingPeriod = 'monthly' | 'yearly'
+
+/** 订阅计划（API 返回格式） */
+export interface SubscriptionPlan {
+  id: SubscriptionPlanId
+  name: string
+  description: string
+  price: { monthly: number; yearly: number }
+  features: Array<{ id: string; name: string; description?: string; included: boolean; limit?: string }>
+  quotas: Record<string, unknown>
+  recommended?: boolean
+  sortOrder?: number
+}
+
+/** 订阅概览响应 */
+export interface SubscriptionOverviewResponse {
+  success: boolean
+  data?: {
+    subscription: unknown
+    plan: unknown
+    usage: { daily: unknown; monthly: unknown }
+  }
+  error?: string
+  code?: string
+}
+
+/** 创建订阅参数 */
+export interface CreateSubscriptionParams {
+  planId: SubscriptionPlanId
+  billingPeriod: BillingPeriod
+  paymentMethodId?: string
+  startTrial?: boolean
+}
+
+/** 取消订阅参数 */
+export interface CancelSubscriptionParams {
+  immediately?: boolean
+  reason?: string
+  feedback?: string
+}
+
+/** 更新订阅参数 */
+export interface UpdateSubscriptionParams {
+  planId?: SubscriptionPlanId
+  billingPeriod?: BillingPeriod
+  cancelAtPeriodEnd?: boolean
+}
+
+/** 配额检查类型 */
+export type QuotaType = 'conversations' | 'aiCalls' | 'skills' | 'devices' | 'storage'
+
+// ============================================================================
+// 支付相关类型
+// ============================================================================
+
+/** 支付提供商 */
+export type PaymentProvider = 'alipay' | 'wechat' | 'stripe' | 'mock'
+
+/** 订单状态 */
+export type OrderStatus = 'pending' | 'processing' | 'paid' | 'failed' | 'canceled' | 'refunded' | 'partially_refunded'
+
+/** 订单类型 */
+export type OrderType = 'subscription' | 'skill' | 'addon' | 'topup'
+
+/** 退款原因 */
+export type RefundReason = string
+
+/** 通用 API 响应 */
+export interface ApiResponse<T = unknown> {
+  success: boolean
+  data?: T
+  error?: string
+  code?: string
+}
+
+/** 创建订单参数 */
+export interface CreateOrderParams {
+  type: OrderType
+  planId: string
+  billingPeriod?: BillingPeriod
+  provider: PaymentProvider
+  couponCode?: string
+}
+
+/** 发起支付参数 */
+export interface InitiatePaymentParams {
+  provider: PaymentProvider
+  returnUrl?: string
+}
+
+/** 计算价格参数 */
+export interface CalculatePriceParams {
+  type: OrderType
+  itemId: string
+  billingPeriod?: BillingPeriod
+  couponCode?: string
+}
+
+/** 模拟支付参数 */
+export interface MockPaymentParams {
+  orderId: string
+  success?: boolean
+}
+
+/** 创建退款参数 */
+export interface CreateRefundParams {
+  orderId: string
+  amount?: number
+  reason: RefundReason
+  description?: string
+}
+
+// ============================================================================
 // 日志工具
 // ============================================================================
 
@@ -471,6 +591,261 @@ export class ApiClient {
     log.info('修改密码')
 
     return this.request<{ success: boolean; error?: string }>('POST', '/api/users/me/change-password', params)
+  }
+
+  // ==========================================================================
+  // 订阅接口
+  // ==========================================================================
+
+  /**
+   * 获取所有订阅计划列表（公开接口，无需认证）
+   *
+   * @returns 计划列表响应
+   */
+  async getPlans(): Promise<ApiResponse<{ plans: SubscriptionPlan[] }>> {
+    log.info('获取订阅计划列表')
+
+    return this.request<ApiResponse<{ plans: SubscriptionPlan[] }>>('GET', '/api/plans')
+  }
+
+  /**
+   * 获取指定计划详情（公开接口，无需认证）
+   *
+   * @param planId - 计划 ID
+   * @returns 计划详情响应
+   */
+  async getPlan(planId: string): Promise<ApiResponse<{ plan: SubscriptionPlan }>> {
+    log.info('获取计划详情', { planId })
+
+    return this.request<ApiResponse<{ plan: SubscriptionPlan }>>('GET', `/api/plans/${planId}`)
+  }
+
+  /**
+   * 获取当前用户订阅信息
+   *
+   * @returns 订阅信息响应
+   */
+  async getSubscription(): Promise<ApiResponse<{ subscription: unknown }>> {
+    log.info('获取用户订阅信息')
+
+    return this.request<ApiResponse<{ subscription: unknown }>>('GET', '/api/users/me/subscription')
+  }
+
+  /**
+   * 获取当前用户使用量
+   *
+   * @returns 使用量响应
+   */
+  async getUsage(): Promise<ApiResponse<{ usage: unknown }>> {
+    log.info('获取用户使用量')
+
+    return this.request<ApiResponse<{ usage: unknown }>>('GET', '/api/users/me/usage')
+  }
+
+  /**
+   * 获取订阅概览（订阅 + 计划 + 使用量）
+   *
+   * @returns 订阅概览响应
+   */
+  async getSubscriptionOverview(): Promise<SubscriptionOverviewResponse> {
+    log.info('获取订阅概览')
+
+    return this.request<SubscriptionOverviewResponse>('GET', '/api/subscriptions/overview')
+  }
+
+  /**
+   * 创建订阅
+   *
+   * @param params - 创建订阅参数
+   * @returns 订阅响应
+   */
+  async createSubscription(params: CreateSubscriptionParams): Promise<ApiResponse<{ subscription: unknown }>> {
+    log.info('创建订阅', { planId: params.planId, billingPeriod: params.billingPeriod })
+
+    return this.request<ApiResponse<{ subscription: unknown }>>('POST', '/api/subscriptions', params)
+  }
+
+  /**
+   * 取消订阅
+   *
+   * @param subscriptionId - 订阅 ID
+   * @param params - 取消参数
+   * @returns 订阅响应
+   */
+  async cancelSubscription(subscriptionId: string, params: CancelSubscriptionParams = {}): Promise<ApiResponse<{ subscription: unknown }>> {
+    log.info('取消订阅', { subscriptionId, immediately: params.immediately })
+
+    return this.request<ApiResponse<{ subscription: unknown }>>('POST', `/api/subscriptions/${subscriptionId}/cancel`, params)
+  }
+
+  /**
+   * 更新订阅
+   *
+   * @param subscriptionId - 订阅 ID
+   * @param params - 更新参数
+   * @returns 订阅响应
+   */
+  async updateSubscription(subscriptionId: string, params: UpdateSubscriptionParams): Promise<ApiResponse<{ subscription: unknown }>> {
+    log.info('更新订阅', { subscriptionId, changes: Object.keys(params) })
+
+    return this.request<ApiResponse<{ subscription: unknown }>>('PUT', `/api/subscriptions/${subscriptionId}`, params)
+  }
+
+  /**
+   * 检查配额
+   *
+   * @param quotaType - 配额类型
+   * @returns 配额检查结果
+   */
+  async checkQuota(quotaType: QuotaType): Promise<ApiResponse<unknown>> {
+    log.info('检查配额', { quotaType })
+
+    return this.request<ApiResponse<unknown>>('POST', '/api/subscriptions/quota-check', { quotaType })
+  }
+
+  // ==========================================================================
+  // 支付接口
+  // ==========================================================================
+
+  /**
+   * 获取可用支付方式
+   *
+   * @returns 支付方式列表
+   */
+  async getPaymentProviders(): Promise<ApiResponse<{ providers: unknown[] }>> {
+    log.info('获取可用支付方式')
+
+    return this.request<ApiResponse<{ providers: unknown[] }>>('GET', '/api/payments/providers')
+  }
+
+  /**
+   * 获取用户订单列表
+   *
+   * @param options - 查询选项
+   * @returns 订单列表
+   */
+  async getUserOrders(options?: {
+    status?: OrderStatus | OrderStatus[]
+    page?: number
+    limit?: number
+  }): Promise<ApiResponse<unknown>> {
+    log.info('获取用户订单列表', { status: options?.status, page: options?.page })
+
+    const params = new URLSearchParams()
+    if (options?.status) {
+      const statuses = Array.isArray(options.status) ? options.status : [options.status]
+      for (const s of statuses) {
+        params.append('status', s)
+      }
+    }
+    if (options?.page) params.set('page', String(options.page))
+    if (options?.limit) params.set('limit', String(options.limit))
+
+    const query = params.toString()
+    const path = query ? `/api/payments/orders?${query}` : '/api/payments/orders'
+
+    return this.request<ApiResponse<unknown>>('GET', path)
+  }
+
+  /**
+   * 获取订单详情
+   *
+   * @param orderId - 订单 ID
+   * @returns 订单详情
+   */
+  async getOrder(orderId: string): Promise<ApiResponse<{ order: unknown }>> {
+    log.info('获取订单详情', { orderId })
+
+    return this.request<ApiResponse<{ order: unknown }>>('GET', `/api/payments/orders/${orderId}`)
+  }
+
+  /**
+   * 计算价格
+   *
+   * @param params - 计算价格参数
+   * @returns 价格信息
+   */
+  async calculatePrice(params: CalculatePriceParams): Promise<ApiResponse<{ price: unknown }>> {
+    log.info('计算价格', { type: params.type, itemId: params.itemId })
+
+    return this.request<ApiResponse<{ price: unknown }>>('POST', '/api/payments/calculate-price', params)
+  }
+
+  /**
+   * 创建订单并发起支付（购买订阅）
+   *
+   * @param params - 创建订单参数
+   * @returns 订单、价格和支付信息
+   */
+  async purchaseSubscription(params: CreateOrderParams): Promise<ApiResponse<{
+    order: unknown
+    price: unknown
+    payment: unknown
+  }>> {
+    log.info('购买订阅', { type: params.type, planId: params.planId, provider: params.provider })
+
+    return this.request<ApiResponse<{ order: unknown; price: unknown; payment: unknown }>>('POST', '/api/payments/orders', params)
+  }
+
+  /**
+   * 取消订单
+   *
+   * @param orderId - 订单 ID
+   * @returns 订单信息
+   */
+  async cancelOrder(orderId: string): Promise<ApiResponse<{ order: unknown }>> {
+    log.info('取消订单', { orderId })
+
+    return this.request<ApiResponse<{ order: unknown }>>('POST', `/api/payments/orders/${orderId}/cancel`)
+  }
+
+  /**
+   * 发起支付（对已有订单）
+   *
+   * @param orderId - 订单 ID
+   * @param params - 支付参数
+   * @returns 支付信息
+   */
+  async initiatePayment(orderId: string, params: InitiatePaymentParams): Promise<ApiResponse<unknown>> {
+    log.info('发起支付', { orderId, provider: params.provider })
+
+    return this.request<ApiResponse<unknown>>('POST', `/api/payments/orders/${orderId}/pay`, params)
+  }
+
+  /**
+   * 查询支付状态
+   *
+   * @param orderId - 订单 ID
+   * @returns 支付状态
+   */
+  async queryPaymentStatus(orderId: string): Promise<ApiResponse<unknown>> {
+    log.info('查询支付状态', { orderId })
+
+    return this.request<ApiResponse<unknown>>('GET', `/api/payments/orders/${orderId}/status`)
+  }
+
+  /**
+   * 模拟支付完成（仅测试环境）
+   *
+   * @param params - 模拟支付参数
+   * @returns 订单信息
+   */
+  async mockPaymentComplete(params: MockPaymentParams): Promise<ApiResponse<{ order: unknown }>> {
+    log.info('模拟支付完成', { orderId: params.orderId, success: params.success })
+
+    return this.request<ApiResponse<{ order: unknown }>>('POST', '/api/payments/mock-complete', params)
+  }
+
+  /**
+   * 创建退款
+   *
+   * @param params - 退款参数
+   * @returns 退款信息
+   */
+  async createRefund(params: CreateRefundParams): Promise<ApiResponse<{ refund: unknown }>> {
+    log.info('创建退款', { orderId: params.orderId, reason: params.reason })
+
+    return this.request<ApiResponse<{ refund: unknown }>>('POST', '/api/payments/refunds', params)
   }
 
   // ==========================================================================
