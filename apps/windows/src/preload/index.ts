@@ -494,6 +494,20 @@ export interface ElectronAPI {
     }) => Promise<unknown>
     /** 清除审计日志 */
     clearAuditLogs: (beforeDate?: string) => Promise<unknown>
+
+    // --- 技能运行时 + 节点列表 + 文件上传 ---
+    /** 获取所有已加载技能列表（通过 Gateway WS） */
+    listAllSkills: () => Promise<unknown>
+    /** 获取 Gateway 节点列表（通过 Gateway WS） */
+    listNodes: () => Promise<unknown>
+    /** 上传技能文件（Base64，通过 API Server） */
+    uploadSkillFile: (params: {
+      skillId: string
+      fileType: string
+      originalName: string
+      contentType: string
+      data: string
+    }) => Promise<unknown>
   }
 }
 
@@ -795,6 +809,19 @@ const electronAPI: ElectronAPI = {
     }) => ipcRenderer.invoke('api:exportAuditLogs', params),
     clearAuditLogs: (beforeDate?: string) =>
       ipcRenderer.invoke('api:clearAuditLogs', beforeDate),
+
+    // --- 技能运行时 + 节点列表 + 文件上传 ---
+    listAllSkills: () =>
+      ipcRenderer.invoke('api:listAllSkills'),
+    listNodes: () =>
+      ipcRenderer.invoke('api:listNodes'),
+    uploadSkillFile: (params: {
+      skillId: string
+      fileType: string
+      originalName: string
+      contentType: string
+      data: string
+    }) => ipcRenderer.invoke('api:uploadSkillFile', params),
   },
 }
 

@@ -4,7 +4,7 @@
  * 用于管理用户的设备绑定、查看设备列表、配对新设备
  * 融合两套数据源：
  * - REST API (deviceService): 持久化绑定信息（isPrimary, alias, linkedAt）
- * - Gateway RPC (node.list): 实时连接信息（connected, remoteIp, version）
+ * - api.listNodes (IPC → Gateway WS): 实时连接信息（connected, remoteIp, version）
  */
 
 import React, { useState, useEffect, useCallback } from 'react'
@@ -95,12 +95,15 @@ export const DeviceManagementView: React.FC<DeviceManagementViewProps> = ({
   const [requestId, setRequestId] = useState<string | null>(null)
 
   /**
-   * 加载 Gateway 节点列表（实时连接信息）
+   * 加载 Gateway 节点列表（实时连接信息，通过 IPC → Gateway WS）
    */
   const loadNodes = useCallback(async (): Promise<NodeInfo[]> => {
     try {
-      const result = await window.electronAPI.gateway.call('node.list', {}) as { nodes?: NodeInfo[] }
-      const nodes: NodeInfo[] = result?.nodes || []
+      const result = await window.electronAPI.api.listNodes() as {
+        success: boolean
+        data?: { nodes?: NodeInfo[] }
+      }
+      const nodes: NodeInfo[] = result?.data?.nodes || []
       console.log('[DeviceManagementView] Gateway 节点列表:', nodes.length, '个')
       return nodes
     } catch (err) {

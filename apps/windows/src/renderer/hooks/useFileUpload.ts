@@ -2,6 +2,7 @@
  * useFileUpload Hook - 文件上传
  *
  * 处理技能文件（package/icon/manifest）的上传
+ * 通过 API Server REST API 与后端交互
  */
 
 import { useState, useCallback } from 'react'
@@ -121,33 +122,41 @@ export function useFileUpload(): UseFileUploadReturn {
 
       setProgress(40)
 
-      // 调用 RPC 方法上传
-      console.log('[useFileUpload] 调用 RPC 上传文件')
-      const result = await window.electronAPI.gateway.call<{
-        bucket: string
-        key: string
-        url: string
-        size: number
-        etag: string
-      }>('user.skills.uploadFile', {
+      // 调用 API Server 上传文件
+      console.log('[useFileUpload] 调用 API Server 上传文件')
+      const result = await window.electronAPI.api.uploadSkillFile({
         skillId,
         fileType,
         originalName: file.name,
         contentType: file.type,
         data: dataBase64
-      })
+      }) as {
+        success: boolean
+        data?: {
+          bucket: string
+          key: string
+          url: string
+          size: number
+          etag: string
+        }
+        error?: string
+      }
+
+      if (!result.success || !result.data) {
+        throw new Error(result.error || '上传失败')
+      }
 
       setProgress(100)
 
       console.log('[useFileUpload] 文件上传成功', {
-        url: result.url,
-        size: result.size
+        url: result.data.url,
+        size: result.data.size
       })
 
       return {
         success: true,
-        url: result.url,
-        size: result.size
+        url: result.data.url,
+        size: result.data.size
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '上传失败'

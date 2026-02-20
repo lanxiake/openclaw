@@ -1094,6 +1094,46 @@ export class ApiClient {
   }
 
   // ==========================================================================
+  // 技能文件上传
+  // ==========================================================================
+
+  /**
+   * 上传技能文件（Base64 编码）
+   *
+   * @param skillId - 技能 ID
+   * @param fileType - 文件类型 (package/icon/manifest)
+   * @param originalName - 原始文件名
+   * @param contentType - MIME 类型
+   * @param data - Base64 编码的文件数据
+   * @returns 上传结果
+   */
+  async uploadSkillFile(params: {
+    skillId: string
+    fileType: string
+    originalName: string
+    contentType: string
+    data: string
+  }): Promise<ApiResponse<unknown>> {
+    log.info('上传技能文件', {
+      skillId: params.skillId,
+      fileType: params.fileType,
+      originalName: params.originalName,
+      dataLength: params.data.length,
+    })
+
+    return this.request<ApiResponse<unknown>>(
+      'POST',
+      `/api/skills/${encodeURIComponent(params.skillId)}/upload`,
+      {
+        fileType: params.fileType,
+        originalName: params.originalName,
+        contentType: params.contentType,
+        data: params.data,
+      }
+    )
+  }
+
+  // ==========================================================================
   // 通用请求方法
   // ==========================================================================
 

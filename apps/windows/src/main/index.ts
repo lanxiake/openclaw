@@ -1454,6 +1454,58 @@ function setupApiIpcHandlers(): void {
     return apiClient.clearAuditLogs(beforeDate)
   })
 
+  // --- 技能运行时 + 节点列表 + 文件上传 ---
+
+  /**
+   * 获取所有已加载技能列表（通过 Gateway WS 转发）
+   */
+  ipcMain.handle('api:listAllSkills', async () => {
+    if (!gatewayClient || !gatewayClient.isConnected()) {
+      log.warn('Gateway 未连接，返回空技能列表')
+      return { success: true, data: { skills: [], total: 0 } }
+    }
+    log.info('获取所有已加载技能列表（通过 Gateway WS）')
+    const result = await gatewayClient.call('assistant.skills.listAll', {})
+    return { success: true, data: result }
+  })
+
+  /**
+   * 获取 Gateway 节点列表（通过 Gateway WS 转发）
+   */
+  ipcMain.handle('api:listNodes', async () => {
+    if (!gatewayClient || !gatewayClient.isConnected()) {
+      log.warn('Gateway 未连接，返回空节点列表')
+      return { success: true, data: { nodes: [] } }
+    }
+    log.info('获取 Gateway 节点列表（通过 Gateway WS）')
+    const result = await gatewayClient.call('node.list', {})
+    return { success: true, data: result }
+  })
+
+  /**
+   * 上传技能文件（通过 API Server REST）
+   */
+  ipcMain.handle('api:uploadSkillFile', async (_event, params: {
+    skillId: string
+    fileType: string
+    originalName: string
+    contentType: string
+    data: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (!params.skillId || !params.fileType || !params.originalName || !params.contentType || !params.data) {
+      throw new Error('缺少必需参数')
+    }
+    log.info('上传技能文件', {
+      skillId: params.skillId,
+      fileType: params.fileType,
+      originalName: params.originalName,
+    })
+    return apiClient.uploadSkillFile(params)
+  })
+
   log.info('API Server IPC 处理器设置完成')
 }
 

@@ -10,7 +10,7 @@
  * 数据来源：
  * - subscriptionService: 订阅状态和使用量（REST API）
  * - deviceService: 设备列表（REST API）
- * - Gateway RPC: 技能列表（WebSocket）
+ * - api.listAllSkills: 技能列表（IPC → Gateway WS）
  */
 
 import { useState, useCallback, useEffect } from 'react'
@@ -90,12 +90,15 @@ export function useDashboard(): UseDashboardReturn {
   const [error, setError] = useState<string | null>(null)
 
   /**
-   * 加载技能统计（通过 Gateway RPC，失败不阻塞其他数据）
+   * 加载技能统计（通过 IPC → Gateway WS，失败不阻塞其他数据）
    */
   const loadSkillStats = useCallback(async (): Promise<SkillStats> => {
     try {
-      const result = await window.electronAPI.gateway.call('assistant.skills.listAll', {}) as { skills?: Array<{ status: string }> }
-      const skills = result?.skills || []
+      const result = await window.electronAPI.api.listAllSkills() as {
+        success: boolean
+        data?: { skills?: Array<{ status: string }>; total?: number }
+      }
+      const skills = result?.data?.skills || []
       const loaded = skills.filter((s: { status: string }) => s.status === 'loaded').length
       const errors = skills.filter((s: { status: string }) => s.status === 'error').length
       console.log('[useDashboard] 技能统计:', { total: skills.length, loaded, errors })
