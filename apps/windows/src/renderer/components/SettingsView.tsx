@@ -717,6 +717,35 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
     <div className="settings-section">
       <h3 className="settings-section-title">隐私与安全</h3>
 
+      {/* 安全设置 */}
+      <h4 className="settings-subsection-title">安全设置</h4>
+
+      <div className="settings-group">
+        <div className="security-card">
+          <div className="security-card-header">
+            <span className="security-icon">🔐</span>
+            <div className="security-card-info">
+              <span className="security-card-title">两步验证</span>
+              <span className="security-card-desc">通过手机验证码或认证器 App 增加账户安全性</span>
+            </div>
+          </div>
+          <span className="security-badge coming-soon">即将推出</span>
+        </div>
+
+        <div className="security-card">
+          <div className="security-card-header">
+            <span className="security-icon">📱</span>
+            <div className="security-card-info">
+              <span className="security-card-title">登录设备管理</span>
+              <span className="security-card-desc">查看和管理已登录的设备，可远程注销可疑设备</span>
+            </div>
+          </div>
+          <span className="security-badge coming-soon">即将推出</span>
+        </div>
+      </div>
+
+      <h4 className="settings-subsection-title">隐私偏好</h4>
+
       <div className="settings-group">
         <div className="setting-item">
           <label className="setting-label">
@@ -767,13 +796,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
       <div className="settings-group">
         <div className="setting-actions">
           <button className="setting-action-btn" onClick={handleExport}>
-            📤 导出设置
+            导出设置
           </button>
           <button className="setting-action-btn" onClick={handleImport}>
-            📥 导入设置
+            导入设置
           </button>
           <button className="setting-action-btn danger" onClick={handleReset}>
-            🗑️ 重置设置
+            重置设置
           </button>
         </div>
       </div>

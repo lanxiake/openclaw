@@ -158,6 +158,22 @@ export interface SubscriptionOverview {
       limit: number
       percent: number
     }
+    devices?: {
+      used: number
+      limit: number
+      percent: number
+    }
+    skills?: {
+      used: number
+      limit: number
+      percent: number
+    }
+    storage?: {
+      used: number
+      limit: number
+      percent: number
+      unit?: string
+    }
   }
   features: {
     premiumSkills: boolean

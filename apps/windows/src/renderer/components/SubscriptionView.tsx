@@ -137,6 +137,46 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ isConnected 
   }
 
   /**
+   * 获取使用量级别（用于颜色编码）
+   */
+  const getUsageLevel = (percent: number): string => {
+    if (percent >= 80) return 'critical'
+    if (percent >= 60) return 'warning'
+    return 'normal'
+  }
+
+  /**
+   * 渲染单个使用量条目
+   */
+  const renderUsageItem = (
+    label: string,
+    item: { used: number; limit: number; percent: number; unit?: string },
+    unit?: string
+  ) => {
+    const level = getUsageLevel(item.percent)
+    const displayUnit = unit || (item as { unit?: string }).unit || ''
+    const limitText = item.limit === -1 ? '∞' : `${item.limit}${displayUnit}`
+    const usedText = `${item.used}${displayUnit}`
+
+    return (
+      <div className="usage-item" key={label}>
+        <div className="usage-header">
+          <span className="usage-label">{label}</span>
+          <span className="usage-text">
+            {usedText} / {limitText}
+          </span>
+        </div>
+        <div className="usage-bar">
+          <div
+            className={`usage-fill usage-${level}`}
+            style={{ width: `${Math.min(item.percent, 100)}%` }}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  /**
    * 渲染使用量统计
    */
   const renderUsageStats = () => {
@@ -148,31 +188,11 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ isConnected 
       <div className="usage-stats">
         <h3>使用量统计</h3>
         <div className="usage-items">
-          <div className="usage-item">
-            <div className="usage-label">今日对话</div>
-            <div className="usage-bar">
-              <div
-                className="usage-fill"
-                style={{ width: `${Math.min(usage.conversations.percent, 100)}%` }}
-              />
-            </div>
-            <div className="usage-text">
-              {usage.conversations.used} / {usage.conversations.limit === -1 ? '∞' : usage.conversations.limit}
-            </div>
-          </div>
-
-          <div className="usage-item">
-            <div className="usage-label">本月 AI 调用</div>
-            <div className="usage-bar">
-              <div
-                className="usage-fill"
-                style={{ width: `${Math.min(usage.aiCalls.percent, 100)}%` }}
-              />
-            </div>
-            <div className="usage-text">
-              {usage.aiCalls.used} / {usage.aiCalls.limit === -1 ? '∞' : usage.aiCalls.limit}
-            </div>
-          </div>
+          {renderUsageItem('今日对话', usage.conversations)}
+          {renderUsageItem('本月 AI 调用', usage.aiCalls)}
+          {usage.devices && renderUsageItem('已连接设备', usage.devices)}
+          {usage.skills && renderUsageItem('已安装技能', usage.skills)}
+          {usage.storage && renderUsageItem('存储空间', usage.storage, 'MB')}
         </div>
       </div>
     )
