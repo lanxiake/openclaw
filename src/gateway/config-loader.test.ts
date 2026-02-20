@@ -64,8 +64,14 @@ describe("loadAllDatabaseConfigs (集成测试)", () => {
     expect(result).toHaveProperty("modelProviders");
     expect(result).toHaveProperty("agentConfig");
     expect(result).toHaveProperty("systemConfigs");
+    expect(result).toHaveProperty("authProfiles");
+    expect(result).toHaveProperty("authProfileOrders");
     // modelProviders 是数组
     expect(Array.isArray(result!.modelProviders)).toBe(true);
+    // authProfiles 是数组
+    expect(Array.isArray(result!.authProfiles)).toBe(true);
+    // authProfileOrders 是数组
+    expect(Array.isArray(result!.authProfileOrders)).toBe(true);
     // systemConfigs 是对象
     expect(typeof result!.systemConfigs).toBe("object");
   });

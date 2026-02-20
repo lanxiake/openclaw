@@ -11,6 +11,7 @@ import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { GatewayConfig as DbGatewayConfig } from "../db/schema/gateway-configs.js";
 import type { ModelProvider } from "../db/schema/model-configs.js";
 import type { AgentDefaultConfig } from "../db/schema/model-configs.js";
+import type { AuthProfile, AuthProfileOrderRecord } from "../db/schema/auth-profiles.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,6 +27,10 @@ export interface DatabaseConfigs {
   agentConfig: AgentDefaultConfig | null;
   /** system_configs 表的 KV 配置（key → value） */
   systemConfigs: Record<string, unknown>;
+  /** auth_profiles 表的有效 profile 列表 */
+  authProfiles: AuthProfile[];
+  /** auth_profile_order 表的有效排序列表 */
+  authProfileOrders: AuthProfileOrderRecord[];
 }
 
 // ---------------------------------------------------------------------------
@@ -230,6 +235,81 @@ function mergeSystemConfigs(
 }
 
 // ---------------------------------------------------------------------------
+// Auth Profiles 合并
+// ---------------------------------------------------------------------------
+
+/**
+ * 将数据库 auth_profiles + auth_profile_order 合并到文件配置的 auth 段
+ *
+ * 策略：
+ * - auth.profiles: 按 profileId 合并，数据库存在则覆盖文件的同名 profile
+ * - auth.order: 按 agentKey 合并，数据库存在则覆盖文件的同名排序
+ * - auth.cooldowns: 从 auth_profiles 的 cooldownConfig 合并（仅取第一个非空值作为全局冷却配置）
+ */
+function mergeAuthProfiles(
+  fileConfig: OpenClawConfig,
+  dbProfiles: AuthProfile[],
+  dbOrders: AuthProfileOrderRecord[],
+): OpenClawConfig {
+  if (dbProfiles.length === 0 && dbOrders.length === 0) {
+    return fileConfig;
+  }
+
+  const fileAuth = fileConfig.auth ?? {};
+  const fileProfiles = fileAuth.profiles ?? {};
+  const fileOrder = fileAuth.order ?? {};
+
+  // 1. 合并 profiles：数据库记录转换为 AuthProfileConfig 格式
+  const mergedProfiles: Record<string, { provider: string; mode: string; email?: string }> = {
+    ...fileProfiles,
+  };
+
+  for (const dbProfile of dbProfiles) {
+    if (!dbProfile.enabled) {
+      continue;
+    }
+
+    mergedProfiles[dbProfile.profileId] = {
+      provider: dbProfile.provider,
+      mode: dbProfile.credentialMode as "api_key" | "oauth" | "token",
+      ...(dbProfile.email != null ? { email: dbProfile.email } : {}),
+    };
+  }
+
+  // 2. 合并 order：数据库排序覆盖文件排序
+  const mergedOrder: Record<string, string[]> = { ...fileOrder };
+
+  for (const dbOrder of dbOrders) {
+    const profileIds = dbOrder.profileIds;
+    if (Array.isArray(profileIds) && profileIds.length > 0) {
+      mergedOrder[dbOrder.agentKey] = profileIds as string[];
+    }
+  }
+
+  // 3. 合并 cooldowns：取数据库 profile 中第一个非空的 cooldownConfig
+  let mergedCooldowns = fileAuth.cooldowns;
+  for (const dbProfile of dbProfiles) {
+    if (isPlainObject(dbProfile.cooldownConfig)) {
+      mergedCooldowns = {
+        ...mergedCooldowns,
+        ...(dbProfile.cooldownConfig as Record<string, unknown>),
+      } as typeof mergedCooldowns;
+      break;
+    }
+  }
+
+  return {
+    ...fileConfig,
+    auth: {
+      ...fileAuth,
+      profiles: mergedProfiles as typeof fileAuth.profiles,
+      order: mergedOrder as typeof fileAuth.order,
+      ...(mergedCooldowns ? { cooldowns: mergedCooldowns } : {}),
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -266,6 +346,9 @@ export function mergeFileAndDbConfigs(
 
   // 4. 合并 system_configs KV
   merged = mergeSystemConfigs(merged, dbConfigs.systemConfigs);
+
+  // 5. 合并 auth profiles + order
+  merged = mergeAuthProfiles(merged, dbConfigs.authProfiles, dbConfigs.authProfileOrders);
 
   return merged;
 }

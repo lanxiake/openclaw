@@ -21,6 +21,8 @@ function emptyDbConfigs(): DatabaseConfigs {
     modelProviders: [],
     agentConfig: null,
     systemConfigs: {},
+    authProfiles: [],
+    authProfileOrders: [],
   };
 }
 
@@ -490,6 +492,8 @@ describe("mergeFileAndDbConfigs", () => {
         systemConfigs: {
           logging: { level: "debug" },
         },
+        authProfiles: [],
+        authProfileOrders: [],
       };
 
       const result = mergeFileAndDbConfigs(fileConfig, dbConfigs);
@@ -587,6 +591,214 @@ describe("mergeFileAndDbConfigs", () => {
       const result = mergeFileAndDbConfigs(fileConfig, dbConfigs);
 
       expect(result.models?.providers?.openai?.apiKey).toBe("sk-test");
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Auth Profiles 合并
+  // -----------------------------------------------------------------------
+
+  describe("auth profiles 合并", () => {
+    it("数据库 auth profiles 覆盖文件 auth.profiles", () => {
+      const fileConfig: OpenClawConfig = {
+        auth: {
+          profiles: {
+            "anthropic-main": { provider: "anthropic", mode: "api_key" },
+          },
+          order: { anthropic: ["anthropic-main"] },
+        },
+      };
+
+      const dbConfigs = emptyDbConfigs();
+      dbConfigs.authProfiles = [
+        {
+          id: "ap-1",
+          configType: "system",
+          userId: null,
+          profileId: "anthropic-main",
+          provider: "anthropic",
+          credentialMode: "api_key",
+          apiKey: "db-key",
+          token: null,
+          tokenExpires: null,
+          oauthCredentials: null,
+          email: "db@anthropic.com",
+          enabled: true,
+          priority: 10,
+          modelBindings: null,
+          usageStats: null,
+          cooldownConfig: null,
+          extraConfig: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+        {
+          id: "ap-2",
+          configType: "system",
+          userId: null,
+          profileId: "openai-backup",
+          provider: "openai",
+          credentialMode: "token",
+          apiKey: null,
+          token: "tok-123",
+          tokenExpires: null,
+          oauthCredentials: null,
+          email: null,
+          enabled: true,
+          priority: 20,
+          modelBindings: null,
+          usageStats: null,
+          cooldownConfig: null,
+          extraConfig: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      ];
+
+      const result = mergeFileAndDbConfigs(fileConfig, dbConfigs);
+
+      // anthropic-main 被数据库覆盖
+      expect(result.auth?.profiles?.["anthropic-main"]).toEqual({
+        provider: "anthropic",
+        mode: "api_key",
+        email: "db@anthropic.com",
+      });
+
+      // openai-backup 是数据库新增的
+      expect(result.auth?.profiles?.["openai-backup"]).toEqual({
+        provider: "openai",
+        mode: "token",
+      });
+
+      // 文件中的 order 保持不变（数据库没有 order）
+      expect(result.auth?.order?.anthropic).toEqual(["anthropic-main"]);
+    });
+
+    it("数据库 auth_profile_order 覆盖文件 auth.order", () => {
+      const fileConfig: OpenClawConfig = {
+        auth: {
+          order: { default: ["a", "b"], anthropic: ["x"] },
+        },
+      };
+
+      const dbConfigs = emptyDbConfigs();
+      dbConfigs.authProfileOrders = [
+        {
+          id: "apo-1",
+          configType: "system",
+          userId: null,
+          agentKey: "default",
+          profileIds: ["c", "d", "e"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      ];
+
+      const result = mergeFileAndDbConfigs(fileConfig, dbConfigs);
+
+      // default 被数据库覆盖
+      expect(result.auth?.order?.default).toEqual(["c", "d", "e"]);
+      // anthropic 保持文件值
+      expect(result.auth?.order?.anthropic).toEqual(["x"]);
+    });
+
+    it("禁用的 profile 不合并到配置中", () => {
+      const fileConfig: OpenClawConfig = {};
+
+      const dbConfigs = emptyDbConfigs();
+      dbConfigs.authProfiles = [
+        {
+          id: "ap-disabled",
+          configType: "system",
+          userId: null,
+          profileId: "disabled-profile",
+          provider: "anthropic",
+          credentialMode: "api_key",
+          apiKey: "key",
+          token: null,
+          tokenExpires: null,
+          oauthCredentials: null,
+          email: null,
+          enabled: false,
+          priority: 10,
+          modelBindings: null,
+          usageStats: null,
+          cooldownConfig: null,
+          extraConfig: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      ];
+
+      const result = mergeFileAndDbConfigs(fileConfig, dbConfigs);
+
+      expect(result.auth?.profiles?.["disabled-profile"]).toBeUndefined();
+    });
+
+    it("cooldownConfig 从数据库 profile 合并到 auth.cooldowns", () => {
+      const fileConfig: OpenClawConfig = {
+        auth: {
+          cooldowns: { billingBackoffHours: 5 },
+        },
+      };
+
+      const dbConfigs = emptyDbConfigs();
+      dbConfigs.authProfiles = [
+        {
+          id: "ap-cool",
+          configType: "system",
+          userId: null,
+          profileId: "cool-profile",
+          provider: "anthropic",
+          credentialMode: "api_key",
+          apiKey: "key",
+          token: null,
+          tokenExpires: null,
+          oauthCredentials: null,
+          email: null,
+          enabled: true,
+          priority: 10,
+          modelBindings: null,
+          usageStats: null,
+          cooldownConfig: { billingMaxHours: 48, failureWindowHours: 12 },
+          extraConfig: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      ];
+
+      const result = mergeFileAndDbConfigs(fileConfig, dbConfigs);
+
+      // cooldowns 合并：文件的 billingBackoffHours + 数据库的 billingMaxHours + failureWindowHours
+      expect(result.auth?.cooldowns?.billingBackoffHours).toBe(5);
+      expect(result.auth?.cooldowns?.billingMaxHours).toBe(48);
+      expect(result.auth?.cooldowns?.failureWindowHours).toBe(12);
+    });
+
+    it("auth profiles 和 order 同时为空时保留文件配置", () => {
+      const fileConfig: OpenClawConfig = {
+        auth: {
+          profiles: { existing: { provider: "anthropic", mode: "api_key" } },
+          order: { default: ["existing"] },
+        },
+      };
+
+      const dbConfigs = emptyDbConfigs();
+
+      const result = mergeFileAndDbConfigs(fileConfig, dbConfigs);
+
+      expect(result.auth?.profiles?.existing).toEqual({ provider: "anthropic", mode: "api_key" });
+      expect(result.auth?.order?.default).toEqual(["existing"]);
     });
   });
 });

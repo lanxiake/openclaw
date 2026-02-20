@@ -16,6 +16,10 @@ import {
   ModelProviderRepository,
   AgentDefaultConfigRepository,
 } from "../db/repositories/model-configs.js";
+import {
+  AuthProfileRepository,
+  AuthProfileOrderRepository,
+} from "../db/repositories/auth-profile-configs.js";
 import { systemConfigs } from "../db/schema/system-config.js";
 import type { DatabaseConfigs } from "./config-merger.js";
 
@@ -251,13 +255,24 @@ export async function loadAllDatabaseConfigs(userId?: string): Promise<DatabaseC
     const gwRepo = new GatewayConfigRepository(db);
     const mpRepo = new ModelProviderRepository(db);
     const acRepo = new AgentDefaultConfigRepository(db);
+    const apRepo = new AuthProfileRepository(db);
+    const apoRepo = new AuthProfileOrderRepository(db);
 
-    // 并行查询所有配置表
-    const [gatewayConfig, modelProviders, agentConfig, systemConfigRows] = await Promise.all([
+    // 并行查询所有配置表（含 auth_profiles）
+    const [
+      gatewayConfig,
+      modelProviders,
+      agentConfig,
+      systemConfigRows,
+      authProfiles,
+      authProfileOrders,
+    ] = await Promise.all([
       gwRepo.getEffectiveConfig(userId),
       mpRepo.listEffectiveProviders(userId),
       acRepo.getEffectiveConfig(userId),
       loadSystemConfigEntries(db),
+      apRepo.listEffectiveProfiles(userId),
+      apoRepo.listEffectiveOrders(userId),
     ]);
 
     logger.info("[ConfigLoader] 数据库配置加载完成", {
@@ -265,6 +280,8 @@ export async function loadAllDatabaseConfigs(userId?: string): Promise<DatabaseC
       providerCount: modelProviders.length,
       hasAgent: agentConfig != null,
       systemConfigKeys: Object.keys(systemConfigRows),
+      authProfileCount: authProfiles.length,
+      authProfileOrderCount: authProfileOrders.length,
     });
 
     return {
@@ -272,6 +289,8 @@ export async function loadAllDatabaseConfigs(userId?: string): Promise<DatabaseC
       modelProviders,
       agentConfig,
       systemConfigs: systemConfigRows,
+      authProfiles,
+      authProfileOrders,
     };
   } catch (error) {
     logger.warn("[ConfigLoader] 数据库配置加载失败，将使用文件配置:", error);
