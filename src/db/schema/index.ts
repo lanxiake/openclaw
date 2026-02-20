@@ -339,3 +339,43 @@ export type {
   AgentDefaultConfig,
   NewAgentDefaultConfig,
 } from "./model-configs.js";
+
+// 用户画像记忆相关表 (Phase 1: L3 Archival Memory)
+export {
+  userProfiles,
+  userFacts,
+  userPreferencesV2,
+  behaviorPatterns,
+  userProfilesRelations,
+  userFactsRelations,
+  userPreferencesV2Relations,
+  behaviorPatternsRelations,
+  // Zod schemas
+  insertUserProfileSchema,
+  selectUserProfileSchema,
+  insertUserFactSchema,
+  selectUserFactSchema,
+  insertUserPreferencesV2Schema,
+  selectUserPreferencesV2Schema,
+  insertBehaviorPatternSchema,
+  selectBehaviorPatternSchema,
+} from "./profile-memory.js";
+
+// 用户画像记忆相关类型
+export type {
+  UserProfile,
+  NewUserProfile,
+  UserFactRecord,
+  NewUserFactRecord,
+  UserPreferencesV2Record,
+  NewUserPreferencesV2Record,
+  BehaviorPatternRecord,
+  NewBehaviorPatternRecord,
+  FactCategoryEnum,
+  FactSourceEnum,
+  ResponseStyleEnum,
+  ConfirmLevelEnum,
+  ThinkingLevelEnum,
+  VerboseLevelEnum,
+  BehaviorPatternTypeEnum,
+} from "./profile-memory.js";
