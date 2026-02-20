@@ -340,6 +340,30 @@ export type {
   NewAgentDefaultConfig,
 } from "./model-configs.js";
 
+// Auth Profile 配置相关表
+export {
+  authProfiles,
+  authProfileOrder,
+  authProfilesRelations,
+  authProfileOrderRelations,
+  // Zod schemas
+  insertAuthProfileSchema,
+  selectAuthProfileSchema,
+  insertAuthProfileOrderSchema,
+  selectAuthProfileOrderSchema,
+} from "./auth-profiles.js";
+
+// Auth Profile 配置相关类型
+export type {
+  AuthProfile,
+  NewAuthProfile,
+  AuthProfileOrderRecord,
+  NewAuthProfileOrderRecord,
+  OAuthCredentialsData,
+  AuthProfileUsageStats,
+  AuthProfileCooldownConfig,
+} from "./auth-profiles.js";
+
 // 用户画像记忆相关表 (Phase 1: L3 Archival Memory)
 export {
   userProfiles,

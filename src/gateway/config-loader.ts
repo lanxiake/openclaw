@@ -7,9 +7,21 @@
  * 3. 默认配置
  */
 
+import { eq, inArray } from "drizzle-orm";
+
 import { getLogger } from "../logging/logger.js";
 import { getDatabase } from "../db/connection.js";
 import { GatewayConfigRepository } from "../db/repositories/gateway-configs.js";
+import {
+  ModelProviderRepository,
+  AgentDefaultConfigRepository,
+} from "../db/repositories/model-configs.js";
+import {
+  AuthProfileRepository,
+  AuthProfileOrderRepository,
+} from "../db/repositories/auth-profile-configs.js";
+import { systemConfigs } from "../db/schema/system-config.js";
+import type { DatabaseConfigs } from "./config-merger.js";
 
 const logger = getLogger();
 
@@ -207,4 +219,106 @@ export function validateGatewayConfig(config: GatewayConfig): { valid: boolean; 
     valid: errors.length === 0,
     errors,
   };
+}
+
+// ---------------------------------------------------------------------------
+// 完整数据库配置加载（Phase 1 新增）
+// ---------------------------------------------------------------------------
+
+/** system_configs 中需要加载的 B 类配置 key 列表 */
+const SYSTEM_CONFIG_KEYS = [
+  "logging",
+  "session",
+  "messages",
+  "cron",
+  "hooks",
+  "approvals",
+  "talk",
+  "ui",
+  "tools",
+] as const;
+
+/**
+ * 从数据库加载所有配置表的数据
+ *
+ * 并行查询 gateway_configs、model_providers、agent_configs、system_configs，
+ * 返回 DatabaseConfigs 供 config-merger 合并使用。
+ * 任何数据库错误均被捕获并返回 null（不阻塞 Gateway 启动）。
+ *
+ * @param userId - 可选的租户 ID（传入时返回租户级有效配置）
+ * @returns DatabaseConfigs 或 null（数据库不可用时）
+ */
+export async function loadAllDatabaseConfigs(userId?: string): Promise<DatabaseConfigs | null> {
+  try {
+    const db = getDatabase();
+
+    const gwRepo = new GatewayConfigRepository(db);
+    const mpRepo = new ModelProviderRepository(db);
+    const acRepo = new AgentDefaultConfigRepository(db);
+    const apRepo = new AuthProfileRepository(db);
+    const apoRepo = new AuthProfileOrderRepository(db);
+
+    // 并行查询所有配置表（含 auth_profiles）
+    const [
+      gatewayConfig,
+      modelProviders,
+      agentConfig,
+      systemConfigRows,
+      authProfiles,
+      authProfileOrders,
+    ] = await Promise.all([
+      gwRepo.getEffectiveConfig(userId),
+      mpRepo.listEffectiveProviders(userId),
+      acRepo.getEffectiveConfig(userId),
+      loadSystemConfigEntries(db),
+      apRepo.listEffectiveProfiles(userId),
+      apoRepo.listEffectiveOrders(userId),
+    ]);
+
+    logger.info("[ConfigLoader] 数据库配置加载完成", {
+      hasGateway: gatewayConfig != null,
+      providerCount: modelProviders.length,
+      hasAgent: agentConfig != null,
+      systemConfigKeys: Object.keys(systemConfigRows),
+      authProfileCount: authProfiles.length,
+      authProfileOrderCount: authProfileOrders.length,
+    });
+
+    return {
+      gatewayConfig,
+      modelProviders,
+      agentConfig,
+      systemConfigs: systemConfigRows,
+      authProfiles,
+      authProfileOrders,
+    };
+  } catch (error) {
+    logger.warn("[ConfigLoader] 数据库配置加载失败，将使用文件配置:", error);
+    return null;
+  }
+}
+
+/**
+ * 批量查询 system_configs 表中的 B 类配置项
+ *
+ * @returns key → value 的映射表
+ */
+async function loadSystemConfigEntries(
+  db: ReturnType<typeof getDatabase>,
+): Promise<Record<string, unknown>> {
+  try {
+    const rows = await db
+      .select({ key: systemConfigs.key, value: systemConfigs.value })
+      .from(systemConfigs)
+      .where(inArray(systemConfigs.key, [...SYSTEM_CONFIG_KEYS]));
+
+    const result: Record<string, unknown> = {};
+    for (const row of rows) {
+      result[row.key] = row.value;
+    }
+    return result;
+  } catch (error) {
+    logger.warn("[ConfigLoader] system_configs 查询失败:", error);
+    return {};
+  }
 }
