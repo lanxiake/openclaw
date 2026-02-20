@@ -14,14 +14,11 @@ import {
   hasProvider,
   getAllProviders,
   clearRegistry,
-  createWorkingMemoryProvider,
   createEpisodicMemoryProvider,
   createProfileMemoryProvider,
   createKnowledgeMemoryProvider,
-  createObjectStorageProvider,
 
   // 内置提供者
-  MemoryWorkingMemoryProvider,
   MemoryEpisodicMemoryProvider,
   MemoryProfileMemoryProvider,
   SimpleKnowledgeMemoryProvider,
@@ -37,7 +34,6 @@ import {
   createMemoryManager,
 
   // 类型
-  type IWorkingMemoryProvider,
   type HealthStatus,
 } from "./index.js";
 
@@ -46,7 +42,6 @@ describe("MemoryProviderFactory", () => {
     // 确保注册表干净
     clearRegistry();
     // 重新注册内置提供者
-    registerProvider("working", "memory", MemoryWorkingMemoryProvider);
     registerProvider("episodic", "memory", MemoryEpisodicMemoryProvider);
     registerProvider("profile", "memory", MemoryProfileMemoryProvider);
     registerProvider("knowledge", "simple", SimpleKnowledgeMemoryProvider);
@@ -59,7 +54,6 @@ describe("MemoryProviderFactory", () => {
 
   describe("registerProvider", () => {
     it("应该成功注册提供者", () => {
-      class TestProvider implements IWorkingMemoryProvider {
         readonly name = "test";
         readonly version = "1.0.0";
         async initialize() {}
@@ -111,7 +105,6 @@ describe("MemoryProviderFactory", () => {
     });
 
     it("应该覆盖已存在的提供者", () => {
-      class TestProvider1 implements IWorkingMemoryProvider {
         readonly name = "test1";
         readonly version = "1.0.0";
         async initialize() {}
@@ -158,7 +151,6 @@ describe("MemoryProviderFactory", () => {
         }
       }
 
-      class TestProvider2 implements IWorkingMemoryProvider {
         readonly name = "test2";
         readonly version = "2.0.0";
         async initialize() {}
@@ -208,7 +200,6 @@ describe("MemoryProviderFactory", () => {
       registerProvider("working", "dup", TestProvider1);
       registerProvider("working", "dup", TestProvider2);
 
-      const provider = createProvider<IWorkingMemoryProvider>("working", {
         provider: "dup",
         options: {},
       });
@@ -232,12 +223,10 @@ describe("MemoryProviderFactory", () => {
 
   describe("createProvider", () => {
     it("应该成功创建已注册的提供者", () => {
-      const provider = createProvider<IWorkingMemoryProvider>("working", {
         provider: "memory",
         options: {},
       });
 
-      expect(provider).toBeInstanceOf(MemoryWorkingMemoryProvider);
       expect(provider.name).toBe("memory-working");
     });
 
@@ -269,142 +258,6 @@ describe("MemoryProviderFactory", () => {
     });
   });
 
-  describe("createWorkingMemoryProvider", () => {
-    it("应该创建工作记忆提供者", () => {
-      const provider = createWorkingMemoryProvider({
-        provider: "memory",
-        options: {},
-      });
-
-      expect(provider).toBeInstanceOf(MemoryWorkingMemoryProvider);
-    });
-  });
-});
-
-describe("MemoryWorkingMemoryProvider", () => {
-  let provider: MemoryWorkingMemoryProvider;
-
-  beforeEach(async () => {
-    provider = new MemoryWorkingMemoryProvider();
-    await provider.initialize();
-  });
-
-  afterEach(async () => {
-    await provider.shutdown();
-  });
-
-  describe("会话管理", () => {
-    it("应该创建会话", async () => {
-      const sessionId = await provider.createSession("user-123");
-      expect(sessionId).toBeTruthy();
-
-      const session = await provider.getSession(sessionId);
-      expect(session).not.toBeNull();
-      expect(session?.userId).toBe("user-123");
-    });
-
-    it("应该删除会话", async () => {
-      const sessionId = await provider.createSession("user-123");
-      await provider.deleteSession(sessionId);
-
-      const session = await provider.getSession(sessionId);
-      expect(session).toBeNull();
-    });
-
-    it("应该列出用户会话", async () => {
-      await provider.createSession("user-123");
-      await provider.createSession("user-123");
-      await provider.createSession("user-456");
-
-      const sessions = await provider.listSessions("user-123");
-      expect(sessions).toHaveLength(2);
-    });
-  });
-
-  describe("消息管理", () => {
-    it("应该添加和获取消息", async () => {
-      const sessionId = await provider.createSession("user-123");
-
-      await provider.addMessage(sessionId, {
-        role: "user",
-        content: "Hello",
-      });
-      await provider.addMessage(sessionId, {
-        role: "assistant",
-        content: "Hi there!",
-      });
-
-      const messages = await provider.getMessages(sessionId);
-      expect(messages).toHaveLength(2);
-      expect(messages[0].content).toBe("Hello");
-      expect(messages[1].content).toBe("Hi there!");
-    });
-
-    it("应该限制返回消息数量", async () => {
-      const sessionId = await provider.createSession("user-123");
-
-      for (let i = 0; i < 10; i++) {
-        await provider.addMessage(sessionId, {
-          role: "user",
-          content: `Message ${i}`,
-        });
-      }
-
-      const messages = await provider.getMessages(sessionId, 3);
-      expect(messages).toHaveLength(3);
-      expect(messages[0].content).toBe("Message 7");
-    });
-
-    it("应该按 token 限制获取上下文窗口", async () => {
-      const sessionId = await provider.createSession("user-123");
-
-      // 每条消息约 10 个 token (40 字符 / 4)
-      await provider.addMessage(sessionId, {
-        role: "user",
-        content: "A".repeat(40),
-      });
-      await provider.addMessage(sessionId, {
-        role: "user",
-        content: "B".repeat(40),
-      });
-      await provider.addMessage(sessionId, {
-        role: "user",
-        content: "C".repeat(40),
-      });
-
-      const messages = await provider.getContextWindow(sessionId, 25);
-      expect(messages).toHaveLength(2);
-      expect(messages[0].content).toBe("B".repeat(40));
-    });
-  });
-
-  describe("变量管理", () => {
-    it("应该设置和获取变量", async () => {
-      const sessionId = await provider.createSession("user-123");
-
-      await provider.setVariable(sessionId, "foo", "bar");
-      const value = await provider.getVariable(sessionId, "foo");
-      expect(value).toBe("bar");
-    });
-
-    it("应该清除变量", async () => {
-      const sessionId = await provider.createSession("user-123");
-
-      await provider.setVariable(sessionId, "foo", "bar");
-      await provider.clearVariables(sessionId);
-
-      const value = await provider.getVariable(sessionId, "foo");
-      expect(value).toBeUndefined();
-    });
-  });
-
-  describe("健康检查", () => {
-    it("应该返回健康状态", async () => {
-      const status = await provider.healthCheck();
-      expect(status.status).toBe("healthy");
-      expect(status.latency).toBe(0);
-    });
-  });
 });
 
 describe("配置验证", () => {
@@ -633,79 +486,9 @@ describe("SimpleKnowledgeMemoryProvider", () => {
   });
 });
 
-describe("LocalObjectStorageProvider", () => {
-  let provider: LocalObjectStorageProvider;
-  const testBasePath = "./.test-storage-" + Date.now();
-
-  beforeEach(async () => {
-    provider = new LocalObjectStorageProvider({
-      provider: "local",
-      options: { basePath: testBasePath },
-    });
-    await provider.initialize();
-  });
-
-  afterEach(async () => {
-    await provider.shutdown();
-    // 清理测试目录
-    const fs = await import("node:fs/promises");
-    try {
-      await fs.rm(testBasePath, { recursive: true, force: true });
-    } catch {
-      // 忽略错误
-    }
-  });
-
-  describe("存储桶管理", () => {
-    it("应该创建和列出存储桶", async () => {
-      await provider.createBucket("test-bucket");
-
-      const buckets = await provider.listBuckets();
-      expect(buckets.some((b) => b.name === "test-bucket")).toBe(true);
-    });
-
-    it("应该检查存储桶是否存在", async () => {
-      await provider.createBucket("exists-bucket");
-
-      expect(await provider.bucketExists("exists-bucket")).toBe(true);
-      expect(await provider.bucketExists("not-exists")).toBe(false);
-    });
-  });
-
-  describe("文件操作", () => {
-    it("应该上传和下载文件", async () => {
-      await provider.createBucket("files");
-
-      const content = Buffer.from("Hello, World!");
-      await provider.upload("files", "test.txt", content);
-
-      const downloaded = await provider.download("files", "test.txt");
-      expect(downloaded.toString()).toBe("Hello, World!");
-    });
-
-    it("应该检查文件是否存在", async () => {
-      await provider.createBucket("files");
-      await provider.upload("files", "exists.txt", Buffer.from("test"));
-
-      expect(await provider.exists("files", "exists.txt")).toBe(true);
-      expect(await provider.exists("files", "not-exists.txt")).toBe(false);
-    });
-
-    it("应该列出文件", async () => {
-      await provider.createBucket("files");
-      await provider.upload("files", "file1.txt", Buffer.from("1"));
-      await provider.upload("files", "file2.txt", Buffer.from("2"));
-
-      const result = await provider.list("files");
-      expect(result.objects).toHaveLength(2);
-    });
-  });
-});
-
 describe("工厂快捷方法", () => {
   beforeEach(() => {
     clearRegistry();
-    registerProvider("working", "memory", MemoryWorkingMemoryProvider);
     registerProvider("episodic", "memory", MemoryEpisodicMemoryProvider);
     registerProvider("profile", "memory", MemoryProfileMemoryProvider);
     registerProvider("knowledge", "simple", SimpleKnowledgeMemoryProvider);
@@ -732,7 +515,6 @@ describe("工厂快捷方法", () => {
   });
 
   it("应该创建对象存储提供者", () => {
-    const provider = createObjectStorageProvider({
       provider: "local",
       options: { basePath: "./.test" },
     });
@@ -743,7 +525,6 @@ describe("工厂快捷方法", () => {
 describe("MemoryManager", () => {
   beforeEach(() => {
     clearRegistry();
-    registerProvider("working", "memory", MemoryWorkingMemoryProvider);
     registerProvider("episodic", "memory", MemoryEpisodicMemoryProvider);
     registerProvider("profile", "memory", MemoryProfileMemoryProvider);
     registerProvider("knowledge", "simple", SimpleKnowledgeMemoryProvider);

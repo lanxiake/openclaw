@@ -10,7 +10,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { HealthStatus, ProviderConfig } from "../../interfaces/memory-provider.js";
-import type { Message } from "../../interfaces/working-memory.js";
+import type { Message } from "../../interfaces/types.js";
 import type {
   BehaviorPattern,
   ExtractedProfile,

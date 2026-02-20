@@ -18,12 +18,9 @@
  *
  * ```typescript
  * import {
- *   createWorkingMemoryProvider,
- *   MemoryWorkingMemoryProvider,
  * } from './memory/pluggable'
  *
  * // 创建提供者
- * const provider = createWorkingMemoryProvider({
  *   provider: 'memory',
  *   options: {},
  * })
@@ -58,16 +55,10 @@ export type {
 
 // 工作记忆接口
 export type {
-  SessionOptions,
   MessageRole,
   ToolCall,
   ToolResult,
   Message,
-  ToolState,
-  PendingConfirm,
-  WorkingMemory,
-  SessionInfo,
-  IWorkingMemoryProvider,
 } from "./interfaces/index.js";
 
 // 情节记忆接口
@@ -120,15 +111,6 @@ export type {
 
 // 对象存储接口
 export type {
-  UploadOptions,
-  MultipartUploadOptions,
-  StorageListOptions,
-  ListResult,
-  ObjectMetadata,
-  ObjectInfo,
-  BucketInfo,
-  StorageUsage,
-  IObjectStorageProvider,
 } from "./interfaces/index.js";
 
 // ==================== 提供者 ====================
@@ -143,23 +125,19 @@ export {
   hasProvider,
   getAllProviders,
   clearRegistry,
-  createWorkingMemoryProvider,
   createEpisodicMemoryProvider,
   createProfileMemoryProvider,
   createKnowledgeMemoryProvider,
-  createObjectStorageProvider,
 } from "./providers/index.js";
 
 // 内置提供者
 export {
-  MemoryWorkingMemoryProvider,
   type MemoryWorkingConfig,
   MemoryEpisodicMemoryProvider,
   MemoryProfileMemoryProvider,
   SimpleKnowledgeMemoryProvider,
   SQLiteKnowledgeMemoryAdapter,
   type SQLiteKnowledgeConfig,
-  LocalObjectStorageProvider,
 } from "./providers/index.js";
 
 // ==================== 配置 ====================

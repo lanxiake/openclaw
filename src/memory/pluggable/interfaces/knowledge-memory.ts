@@ -9,7 +9,6 @@
 
 import type { Readable } from "node:stream";
 import type { IMemoryProvider } from "./memory-provider.js";
-import type { Message } from "./working-memory.js";
 
 // ==================== 文档类型 ====================
 
@@ -446,8 +445,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
     options?: HybridSearchOptions,
   ): Promise<SearchResult[]>;
 
-  // ==================== 知识图谱 ====================
-
   /**
    * 添加实体
    *
@@ -455,10 +452,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param entity - 实体信息（不含 id、createdAt、updatedAt、mentionCount）
    * @returns 实体 ID
    */
-  addEntity(
-    userId: string,
-    entity: Omit<Entity, "id" | "createdAt" | "updatedAt" | "mentionCount">,
-  ): Promise<string>;
 
   /**
    * 获取实体
@@ -467,7 +460,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param entityId - 实体 ID
    * @returns 实体信息，不存在返回 null
    */
-  getEntity(userId: string, entityId: string): Promise<Entity | null>;
 
   /**
    * 更新实体
@@ -476,7 +468,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param entityId - 实体 ID
    * @param updates - 要更新的字段
    */
-  updateEntity(userId: string, entityId: string, updates: Partial<Entity>): Promise<void>;
 
   /**
    * 删除实体
@@ -486,7 +477,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param userId - 用户 ID
    * @param entityId - 实体 ID
    */
-  deleteEntity(userId: string, entityId: string): Promise<void>;
 
   /**
    * 添加关系
@@ -495,10 +485,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param relationship - 关系信息（不含 id、createdAt）
    * @returns 关系 ID
    */
-  addRelationship(
-    userId: string,
-    relationship: Omit<Relationship, "id" | "createdAt">,
-  ): Promise<string>;
 
   /**
    * 获取关系
@@ -507,7 +493,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param relationshipId - 关系 ID
    * @returns 关系信息，不存在返回 null
    */
-  getRelationship(userId: string, relationshipId: string): Promise<Relationship | null>;
 
   /**
    * 更新关系
@@ -516,11 +501,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param relationshipId - 关系 ID
    * @param updates - 要更新的字段
    */
-  updateRelationship(
-    userId: string,
-    relationshipId: string,
-    updates: Partial<Relationship>,
-  ): Promise<void>;
 
   /**
    * 删除关系
@@ -528,7 +508,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param userId - 用户 ID
    * @param relationshipId - 关系 ID
    */
-  deleteRelationship(userId: string, relationshipId: string): Promise<void>;
 
   /**
    * 查询图谱
@@ -537,7 +516,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param query - 图查询
    * @returns 查询结果
    */
-  queryGraph(userId: string, query: GraphQuery): Promise<GraphQueryResult>;
 
   /**
    * 获取实体上下文
@@ -547,9 +525,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param depth - 遍历深度（默认 2）
    * @returns 实体上下文
    */
-  getEntityContext(userId: string, entityId: string, depth?: number): Promise<EntityContext>;
-
-  // ==================== GraphRAG ====================
 
   /**
    * 构建社区
@@ -558,7 +533,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    *
    * @param userId - 用户 ID
    */
-  buildCommunities(userId: string): Promise<void>;
 
   /**
    * 获取社区
@@ -567,7 +541,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param level - 层级（可选）
    * @returns 社区列表
    */
-  getCommunities(userId: string, level?: number): Promise<Community[]>;
 
   /**
    * 基于图谱回答问题
@@ -578,9 +551,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param question - 问题
    * @returns 回答结果
    */
-  answerWithGraph(userId: string, question: string): Promise<GraphAnswer>;
-
-  // ==================== 对话转知识 ====================
 
   /**
    * 导入对话为知识
@@ -592,12 +562,6 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
    * @param messages - 对话消息
    * @returns 导入结果
    */
-  importConversation(
-    userId: string,
-    sessionId: string,
-    messages: Message[],
-  ): Promise<{
-    documentId: string;
     entities: string[];
     relationships: string[];
   }>;

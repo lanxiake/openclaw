@@ -12,20 +12,13 @@ import { randomUUID } from "node:crypto";
 
 import type { HealthStatus, ProviderConfig } from "../../interfaces/memory-provider.js";
 import type { Message } from "../../interfaces/working-memory.js";
-import type {
-  Community,
+import type {,
   DocumentInput,
   DocumentListOptions,
-  DocumentStatus,
-  Entity,
-  EntityContext,
-  GraphAnswer,
-  GraphQuery,
-  GraphQueryResult,
+  DocumentStatusContextResult,
   HybridSearchOptions,
   IKnowledgeMemoryProvider,
   KnowledgeDocument,
-  Relationship,
   SearchResult,
   VectorSearchOptions,
 } from "../../interfaces/knowledge-memory.js";
@@ -39,12 +32,8 @@ interface UserKnowledgeData {
   documents: Map<string, KnowledgeDocument>;
   /** 文档内容 (documentId -> content string) */
   documentContents: Map<string, string>;
-  /** 实体 (entityId -> entity) */
-  entities: Map<string, Entity>;
   /** 关系 (relationshipId -> relationship) */
-  relationships: Map<string, Relationship>;
   /** 社区 (communityId -> community) */
-  communities: Map<string, Community>;
 }
 
 /**
@@ -128,9 +117,6 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
       data = {
         documents: new Map(),
         documentContents: new Map(),
-        entities: new Map(),
-        relationships: new Map(),
-        communities: new Map(),
       };
       this.storage.set(userId, data);
     }
@@ -381,14 +367,12 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
     return this.searchSimilar(userId, query, options);
   }
 
-  // ==================== 知识图谱 ====================
-
   /**
    * 添加实体
    */
-  async addEntity(
+  async add(
     userId: string,
-    entity: Omit<Entity, "id" | "createdAt" | "updatedAt" | "mentionCount">,
+    entity: Omit<, "id" | "createdAt" | "updatedAt" | "mentionCount">,
   ): Promise<string> {
     const entityId = randomUUID();
     const now = new Date();
@@ -396,7 +380,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
     console.log(`[simple-knowledge] 添加实体: ${entityId} (用户: ${userId}, 名称: ${entity.name})`);
 
     const data = this.getUserData(userId);
-    const fullEntity: Entity = {
+    const full: = {
       ...entity,
       id: entityId,
       mentionCount: 1,
@@ -404,7 +388,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
       updatedAt: now,
     };
 
-    data.entities.set(entityId, fullEntity);
+    data.entities.set(entityId, full);
 
     return entityId;
   }
@@ -412,7 +396,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
   /**
    * 获取实体
    */
-  async getEntity(userId: string, entityId: string): Promise<Entity | null> {
+  async get(userId: string, entityId: string): Promise< | null> {
     const data = this.getUserData(userId);
     return data.entities.get(entityId) || null;
   }
@@ -420,7 +404,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
   /**
    * 更新实体
    */
-  async updateEntity(userId: string, entityId: string, updates: Partial<Entity>): Promise<void> {
+  async update(userId: string, entityId: string, updates: Partial<>): Promise<void> {
     console.log(`[simple-knowledge] 更新实体: ${entityId} (用户: ${userId})`);
 
     const data = this.getUserData(userId);
@@ -430,7 +414,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
       throw new Error(`实体不存在: ${entityId}`);
     }
 
-    const updatedEntity: Entity = {
+    const updated: = {
       ...entity,
       ...updates,
       id: entityId,
@@ -438,13 +422,13 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
       updatedAt: new Date(),
     };
 
-    data.entities.set(entityId, updatedEntity);
+    data.entities.set(entityId, updated);
   }
 
   /**
    * 删除实体
    */
-  async deleteEntity(userId: string, entityId: string): Promise<void> {
+  async delete(userId: string, entityId: string): Promise<void> {
     console.log(`[simple-knowledge] 删除实体: ${entityId} (用户: ${userId})`);
 
     const data = this.getUserData(userId);
@@ -461,9 +445,9 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
   /**
    * 添加关系
    */
-  async addRelationship(
+  async add(
     userId: string,
-    relationship: Omit<Relationship, "id" | "createdAt">,
+    relationship: Omit<, "id" | "createdAt">,
   ): Promise<string> {
     const relationshipId = randomUUID();
     const now = new Date();
@@ -473,7 +457,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
     );
 
     const data = this.getUserData(userId);
-    const fullRel: Relationship = {
+    const fullRel: = {
       ...relationship,
       id: relationshipId,
       createdAt: now,
@@ -487,7 +471,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
   /**
    * 获取关系
    */
-  async getRelationship(userId: string, relationshipId: string): Promise<Relationship | null> {
+  async get(userId: string, relationshipId: string): Promise< | null> {
     const data = this.getUserData(userId);
     return data.relationships.get(relationshipId) || null;
   }
@@ -495,10 +479,10 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
   /**
    * 更新关系
    */
-  async updateRelationship(
+  async update(
     userId: string,
     relationshipId: string,
-    updates: Partial<Relationship>,
+    updates: Partial<>,
   ): Promise<void> {
     console.log(`[simple-knowledge] 更新关系: ${relationshipId} (用户: ${userId})`);
 
@@ -509,7 +493,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
       throw new Error(`关系不存在: ${relationshipId}`);
     }
 
-    const updatedRel: Relationship = {
+    const updatedRel: = {
       ...rel,
       ...updates,
       id: relationshipId,
@@ -522,7 +506,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
   /**
    * 删除关系
    */
-  async deleteRelationship(userId: string, relationshipId: string): Promise<void> {
+  async delete(userId: string, relationshipId: string): Promise<void> {
     console.log(`[simple-knowledge] 删除关系: ${relationshipId} (用户: ${userId})`);
 
     const data = this.getUserData(userId);
@@ -530,39 +514,13 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
   }
 
   /**
-   * 查询图谱
-   */
-  async queryGraph(userId: string, query: GraphQuery): Promise<GraphQueryResult> {
-    console.log(`[simple-knowledge] 查询图谱 (用户: ${userId})`);
-
-    const data = this.getUserData(userId);
-    let nodes = Array.from(data.entities.values());
-    let edges = Array.from(data.relationships.values());
-
-    // 简单的模式匹配
-    if (query.pattern) {
-      if (query.pattern.entityType) {
-        nodes = nodes.filter((e) => e.type === query.pattern!.entityType);
-      }
-      if (query.pattern.relationshipType) {
-        edges = edges.filter((r) => r.type === query.pattern!.relationshipType);
-      }
-    }
-
-    return {
-      nodes,
-      edges,
-    };
-  }
-
-  /**
    * 获取实体上下文
    */
-  async getEntityContext(
+  async getContext(
     userId: string,
     entityId: string,
     _depth?: number,
-  ): Promise<EntityContext> {
+  ): Promise<Context> {
     console.log(`[simple-knowledge] 获取实体上下文: ${entityId} (用户: ${userId})`);
 
     const data = this.getUserData(userId);
@@ -573,8 +531,8 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
     }
 
     // 查找相邻实体和关系
-    const neighbors: Entity[] = [];
-    const relationships: Relationship[] = [];
+    const neighbors:[] = [];
+    const relationships:[] = [];
 
     for (const rel of data.relationships.values()) {
       if (rel.sourceId === entityId) {
@@ -595,69 +553,6 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
       relatedDocuments: [],
     };
   }
-
-  // ==================== GraphRAG ====================
-
-  /**
-   * 构建社区（简化版：不实现）
-   */
-  async buildCommunities(userId: string): Promise<void> {
-    console.log(`[simple-knowledge] 构建社区 (用户: ${userId}) - 简化版不支持`);
-    // 简化版不实现社区检测
-  }
-
-  /**
-   * 获取社区
-   */
-  async getCommunities(userId: string, _level?: number): Promise<Community[]> {
-    const data = this.getUserData(userId);
-    return Array.from(data.communities.values());
-  }
-
-  /**
-   * 基于图谱回答问题（简化版：使用简单搜索）
-   */
-  async answerWithGraph(userId: string, question: string): Promise<GraphAnswer> {
-    console.log(`[simple-knowledge] 基于图谱回答: "${question}" (用户: ${userId})`);
-
-    // 简化版：搜索文档和实体
-    const searchResults = await this.searchSimilar(userId, question, { limit: 3 });
-    const data = this.getUserData(userId);
-
-    // 搜索相关实体
-    const matchedEntities: Entity[] = [];
-    for (const entity of data.entities.values()) {
-      if (this.textMatch(`${entity.name} ${entity.description || ""}`, question) > 0.1) {
-        matchedEntities.push(entity);
-      }
-    }
-
-    // 构建简单回答
-    const sources = searchResults.map((r) => ({
-      type: "document" as const,
-      id: r.documentId || r.id,
-      content: r.content.slice(0, 200),
-      relevance: r.score,
-    }));
-
-    return {
-      answer:
-        searchResults.length > 0
-          ? `根据相关文档，找到以下信息：${searchResults[0].content.slice(0, 300)}...`
-          : "未找到相关信息。",
-      sources,
-      entities: matchedEntities.slice(0, 5),
-      confidence: searchResults.length > 0 ? searchResults[0].score : 0,
-    };
-  }
-
-  // ==================== 对话转知识 ====================
-
-  /**
-   * 导入对话为知识
-   */
-  async importConversation(
-    userId: string,
     sessionId: string,
     messages: Message[],
   ): Promise<{ documentId: string; entities: string[]; relationships: string[] }> {

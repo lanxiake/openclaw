@@ -187,7 +187,6 @@ export type GraphitiConfig = z.infer<typeof GraphitiConfigSchema>;
  */
 export const MemoryManagerConfigSchema = z.object({
   /** 工作记忆配置 */
-  working: ProviderConfigSchema,
   /** 情节记忆配置 */
   episodic: ProviderConfigSchema,
   /** 画像记忆配置 */
@@ -195,7 +194,6 @@ export const MemoryManagerConfigSchema = z.object({
   /** 知识记忆配置 */
   knowledge: ProviderConfigSchema,
   /** 对象存储配置 */
-  storage: ProviderConfigSchema,
 });
 
 export type MemoryManagerConfig = z.infer<typeof MemoryManagerConfigSchema>;
@@ -208,9 +206,6 @@ export type MemoryManagerConfig = z.infer<typeof MemoryManagerConfigSchema>;
  * 使用内存和本地存储，无需外部服务
  */
 export const DEFAULT_DEV_CONFIG: MemoryManagerConfig = {
-  working: {
-    provider: "memory",
-    options: {},
   },
   episodic: {
     provider: "memory",
@@ -224,11 +219,6 @@ export const DEFAULT_DEV_CONFIG: MemoryManagerConfig = {
     provider: "simple",
     options: {},
   },
-  storage: {
-    provider: "local",
-    options: {
-      basePath: "./.memory/storage",
-    },
   },
 };
 
@@ -238,11 +228,6 @@ export const DEFAULT_DEV_CONFIG: MemoryManagerConfig = {
  * 需要替换实际的配置值
  */
 export const PRODUCTION_CONFIG_TEMPLATE: MemoryManagerConfig = {
-  working: {
-    provider: "mem0",
-    options: {
-      apiKey: "${MEM0_API_KEY}",
-    },
   },
   episodic: {
     provider: "mem0",
@@ -269,13 +254,6 @@ export const PRODUCTION_CONFIG_TEMPLATE: MemoryManagerConfig = {
       },
     },
   },
-  storage: {
-    provider: "minio",
-    options: {
-      endpoint: "${MINIO_ENDPOINT}",
-      accessKey: "${MINIO_ACCESS_KEY}",
-      secretKey: "${MINIO_SECRET_KEY}",
-    },
   },
 };
 
