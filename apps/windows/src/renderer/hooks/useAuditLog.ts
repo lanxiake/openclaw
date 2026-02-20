@@ -2,7 +2,7 @@
  * useAuditLog Hook - 审计日志管理
  *
  * 提供审计日志的查询、统计、导出和配置管理功能
- * 通过 Gateway RPC 方法与后端交互
+ * 通过 API Server REST API 与后端交互
  */
 
 import { useState, useCallback, useEffect } from 'react'
@@ -258,16 +258,20 @@ export function useAuditLog(): UseAuditLogReturn {
     }
 
     try {
-      const result = await window.electronAPI.gateway.call<AuditLogQueryResult>(
-        'assistant.audit.query',
-        {
-          ...currentFilters,
-        }
-      )
+      const result = await window.electronAPI.api.queryAuditLogs(currentFilters) as {
+        success: boolean
+        data?: AuditLogQueryResult
+        error?: string
+      }
 
-      setEntries(result.entries)
-      setTotal(result.total)
-      console.log('[useAuditLog] 查询成功，共', result.total, '条记录')
+      if (result.success && result.data) {
+        setEntries(result.data.entries)
+        setTotal(result.data.total)
+        console.log('[useAuditLog] 查询成功，共', result.data.total, '条记录')
+      } else {
+        console.error('[useAuditLog] 查询失败:', result.error)
+        setError(result.error || '查询审计日志失败')
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '查询审计日志失败'
       console.error('[useAuditLog] 查询失败:', errorMessage)
@@ -283,11 +287,16 @@ export function useAuditLog(): UseAuditLogReturn {
   const getRecentLogs = useCallback(async (limit: number = 20): Promise<AuditLogEntry[]> => {
     console.log('[useAuditLog] 获取最近日志', { limit })
     try {
-      const result = await window.electronAPI.gateway.call<{ entries: AuditLogEntry[]; total: number }>(
-        'assistant.audit.recent',
-        { limit }
-      )
-      return result.entries
+      const result = await window.electronAPI.api.getRecentAuditLogs(limit) as {
+        success: boolean
+        data?: { entries: AuditLogEntry[]; total: number }
+        error?: string
+      }
+
+      if (result.success && result.data) {
+        return result.data.entries
+      }
+      return []
     } catch (err) {
       console.error('[useAuditLog] 获取最近日志失败:', err)
       return []
@@ -300,12 +309,16 @@ export function useAuditLog(): UseAuditLogReturn {
   const getStats = useCallback(async () => {
     console.log('[useAuditLog] 获取统计信息')
     try {
-      const result = await window.electronAPI.gateway.call<AuditLogStats>(
-        'assistant.audit.stats',
-        {}
-      )
-      setStats(result)
-      console.log('[useAuditLog] 统计信息:', result)
+      const result = await window.electronAPI.api.getAuditStats() as {
+        success: boolean
+        data?: AuditLogStats
+        error?: string
+      }
+
+      if (result.success && result.data) {
+        setStats(result.data)
+        console.log('[useAuditLog] 统计信息:', result.data)
+      }
     } catch (err) {
       console.error('[useAuditLog] 获取统计失败:', err)
     }
@@ -317,12 +330,16 @@ export function useAuditLog(): UseAuditLogReturn {
   const getConfig = useCallback(async () => {
     console.log('[useAuditLog] 获取配置')
     try {
-      const result = await window.electronAPI.gateway.call<{ config: AuditLogConfig }>(
-        'assistant.audit.config.get',
-        {}
-      )
-      setConfig(result.config)
-      console.log('[useAuditLog] 配置:', result.config)
+      const result = await window.electronAPI.api.getAuditConfig() as {
+        success: boolean
+        data?: { config: AuditLogConfig }
+        error?: string
+      }
+
+      if (result.success && result.data) {
+        setConfig(result.data.config)
+        console.log('[useAuditLog] 配置:', result.data.config)
+      }
     } catch (err) {
       console.error('[useAuditLog] 获取配置失败:', err)
     }
@@ -334,12 +351,18 @@ export function useAuditLog(): UseAuditLogReturn {
   const updateConfig = useCallback(async (newConfig: Partial<AuditLogConfig>) => {
     console.log('[useAuditLog] 更新配置', newConfig)
     try {
-      const result = await window.electronAPI.gateway.call<{ config: AuditLogConfig }>(
-        'assistant.audit.config.set',
-        newConfig
-      )
-      setConfig(result.config)
-      console.log('[useAuditLog] 配置已更新:', result.config)
+      const result = await window.electronAPI.api.updateAuditConfig(newConfig as Record<string, unknown>) as {
+        success: boolean
+        data?: { config: AuditLogConfig }
+        error?: string
+      }
+
+      if (result.success && result.data) {
+        setConfig(result.data.config)
+        console.log('[useAuditLog] 配置已更新:', result.data.config)
+      } else {
+        throw new Error(result.error || '更新配置失败')
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '更新配置失败'
       console.error('[useAuditLog] 更新配置失败:', errorMessage)
@@ -353,14 +376,19 @@ export function useAuditLog(): UseAuditLogReturn {
   const exportLogs = useCallback(async (format: 'json' | 'csv', exportFilters?: AuditLogFilters): Promise<string> => {
     console.log('[useAuditLog] 导出日志', { format, filters: exportFilters })
     try {
-      const result = await window.electronAPI.gateway.call<{ content: string; format: string }>(
-        'assistant.audit.export',
-        {
-          format,
-          filters: exportFilters || filters,
-        }
-      )
-      return result.content
+      const result = await window.electronAPI.api.exportAuditLogs({
+        format,
+        filters: (exportFilters || filters) as Record<string, unknown>,
+      }) as {
+        success: boolean
+        data?: { content: string; format: string }
+        error?: string
+      }
+
+      if (result.success && result.data) {
+        return result.data.content
+      }
+      throw new Error(result.error || '导出失败')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '导出失败'
       console.error('[useAuditLog] 导出失败:', errorMessage)
@@ -374,14 +402,19 @@ export function useAuditLog(): UseAuditLogReturn {
   const clearLogs = useCallback(async (beforeDate?: string): Promise<{ deletedCount: number }> => {
     console.log('[useAuditLog] 清除日志', { beforeDate })
     try {
-      const result = await window.electronAPI.gateway.call<{ deletedCount: number }>(
-        'assistant.audit.clear',
-        { beforeDate }
-      )
-      // 刷新列表
-      await queryLogs()
-      await getStats()
-      return result
+      const result = await window.electronAPI.api.clearAuditLogs(beforeDate) as {
+        success: boolean
+        data?: { deletedCount: number }
+        error?: string
+      }
+
+      if (result.success && result.data) {
+        // 刷新列表
+        await queryLogs()
+        await getStats()
+        return result.data
+      }
+      throw new Error(result.error || '清除失败')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '清除失败'
       console.error('[useAuditLog] 清除失败:', errorMessage)
@@ -417,16 +450,19 @@ export function useAuditLog(): UseAuditLogReturn {
     setIsLoading(true)
 
     try {
-      const result = await window.electronAPI.gateway.call<AuditLogQueryResult>(
-        'assistant.audit.query',
-        {
-          ...filters,
-          offset: newOffset,
-        }
-      )
+      const result = await window.electronAPI.api.queryAuditLogs({
+        ...filters,
+        offset: newOffset,
+      }) as {
+        success: boolean
+        data?: AuditLogQueryResult
+        error?: string
+      }
 
-      setEntries(prev => [...prev, ...result.entries])
-      setFilters(prev => ({ ...prev, offset: newOffset }))
+      if (result.success && result.data) {
+        setEntries(prev => [...prev, ...result.data!.entries])
+        setFilters(prev => ({ ...prev, offset: newOffset }))
+      }
     } catch (err) {
       console.error('[useAuditLog] 加载更多失败:', err)
     } finally {

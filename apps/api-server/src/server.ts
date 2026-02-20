@@ -38,6 +38,7 @@ import { registerStoreRoutes } from "./routes/store/index.js";
 import { registerPlansRoutes } from "./routes/plans/index.js";
 import { registerSubscriptionsRoutes } from "./routes/subscriptions/index.js";
 import { registerPaymentsRoutes } from "./routes/payments/index.js";
+import { registerAuditRoutes } from "./routes/audit/index.js";
 
 /**
  * 创建并配置 Fastify 实例
@@ -113,6 +114,7 @@ export async function createServer(
   registerAssistantConfigRoutes(server);
   registerSkillsRoutes(server);
   registerFilesRoutes(server);
+  registerAuditRoutes(server);
 
   // 9. 技能商店 API 路由（部分公开）
   registerStoreRoutes(server);

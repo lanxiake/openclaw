@@ -1366,6 +1366,88 @@ function setupApiIpcHandlers(): void {
     return apiClient.refreshStore()
   })
 
+  // ========== 审计日志 IPC 处理器 ==========
+
+  ipcMain.handle('api:queryAuditLogs', async (_event, filters?: {
+    startTime?: string
+    endTime?: string
+    eventTypes?: string[]
+    severities?: string[]
+    results?: string[]
+    sourceTypes?: string[]
+    search?: string
+    sessionId?: string
+    offset?: number
+    limit?: number
+    sortOrder?: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('查询审计日志', { filters })
+    return apiClient.queryAuditLogs(filters)
+  })
+
+  ipcMain.handle('api:getRecentAuditLogs', async (_event, limit?: number) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取最近审计日志', { limit })
+    return apiClient.getRecentAuditLogs(limit)
+  })
+
+  ipcMain.handle('api:getAuditStats', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取审计日志统计')
+    return apiClient.getAuditStats()
+  })
+
+  ipcMain.handle('api:getAuditConfig', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取审计配置')
+    return apiClient.getAuditConfig()
+  })
+
+  ipcMain.handle('api:updateAuditConfig', async (_event, config: Record<string, unknown>) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (!config || typeof config !== 'object') {
+      throw new Error('无效的配置参数')
+    }
+    log.info('更新审计配置', { fields: Object.keys(config) })
+    return apiClient.updateAuditConfig(config)
+  })
+
+  ipcMain.handle('api:exportAuditLogs', async (_event, params: {
+    format: string
+    filters?: Record<string, unknown>
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof params.format !== 'string' || !['json', 'csv'].includes(params.format)) {
+      throw new Error('导出格式必须是 json 或 csv')
+    }
+    log.info('导出审计日志', { format: params.format })
+    return apiClient.exportAuditLogs(params)
+  })
+
+  ipcMain.handle('api:clearAuditLogs', async (_event, beforeDate?: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (beforeDate !== undefined && typeof beforeDate !== 'string') {
+      throw new Error('无效的日期参数')
+    }
+    log.info('清除审计日志', { beforeDate })
+    return apiClient.clearAuditLogs(beforeDate)
+  })
+
   log.info('API Server IPC 处理器设置完成')
 }
 

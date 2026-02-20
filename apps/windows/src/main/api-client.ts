@@ -983,6 +983,117 @@ export class ApiClient {
   }
 
   // ==========================================================================
+  // 审计日志接口
+  // ==========================================================================
+
+  /**
+   * 查询审计日志
+   */
+  async queryAuditLogs(filters?: {
+    startTime?: string
+    endTime?: string
+    eventTypes?: string[]
+    severities?: string[]
+    results?: string[]
+    sourceTypes?: string[]
+    search?: string
+    sessionId?: string
+    offset?: number
+    limit?: number
+    sortOrder?: string
+  }): Promise<ApiResponse<unknown>> {
+    log.info('查询审计日志', { filters })
+
+    const params = new URLSearchParams()
+    if (filters?.startTime) params.set('startTime', filters.startTime)
+    if (filters?.endTime) params.set('endTime', filters.endTime)
+    if (filters?.eventTypes?.length) params.set('eventTypes', filters.eventTypes.join(','))
+    if (filters?.severities?.length) params.set('severities', filters.severities.join(','))
+    if (filters?.results?.length) params.set('results', filters.results.join(','))
+    if (filters?.sourceTypes?.length) params.set('sourceTypes', filters.sourceTypes.join(','))
+    if (filters?.search) params.set('search', filters.search)
+    if (filters?.sessionId) params.set('sessionId', filters.sessionId)
+    if (filters?.offset !== undefined) params.set('offset', String(filters.offset))
+    if (filters?.limit !== undefined) params.set('limit', String(filters.limit))
+    if (filters?.sortOrder) params.set('sortOrder', filters.sortOrder)
+
+    const query = params.toString()
+    const path = query ? `/api/audit/logs?${query}` : '/api/audit/logs'
+
+    return this.request<ApiResponse<unknown>>('GET', path)
+  }
+
+  /**
+   * 获取最近的审计日志
+   */
+  async getRecentAuditLogs(limit?: number): Promise<ApiResponse<unknown>> {
+    log.info('获取最近审计日志', { limit })
+
+    const path = limit ? `/api/audit/logs/recent?limit=${limit}` : '/api/audit/logs/recent'
+    return this.request<ApiResponse<unknown>>('GET', path)
+  }
+
+  /**
+   * 获取审计日志统计
+   */
+  async getAuditStats(): Promise<ApiResponse<unknown>> {
+    log.info('获取审计日志统计')
+
+    return this.request<ApiResponse<unknown>>('GET', '/api/audit/logs/stats')
+  }
+
+  /**
+   * 获取审计配置
+   */
+  async getAuditConfig(): Promise<ApiResponse<unknown>> {
+    log.info('获取审计配置')
+
+    return this.request<ApiResponse<unknown>>('GET', '/api/audit/config')
+  }
+
+  /**
+   * 更新审计配置
+   */
+  async updateAuditConfig(config: Record<string, unknown>): Promise<ApiResponse<unknown>> {
+    log.info('更新审计配置', { fields: Object.keys(config) })
+
+    return this.request<ApiResponse<unknown>>('PUT', '/api/audit/config', config)
+  }
+
+  /**
+   * 导出审计日志
+   */
+  async exportAuditLogs(params: {
+    format: string
+    filters?: Record<string, unknown>
+  }): Promise<ApiResponse<unknown>> {
+    log.info('导出审计日志', { format: params.format })
+
+    const urlParams = new URLSearchParams()
+    urlParams.set('format', params.format)
+    if (params.filters) {
+      const f = params.filters
+      if (f.startTime) urlParams.set('startTime', String(f.startTime))
+      if (f.endTime) urlParams.set('endTime', String(f.endTime))
+      if (f.search) urlParams.set('search', String(f.search))
+      if (Array.isArray(f.eventTypes) && f.eventTypes.length) urlParams.set('eventTypes', f.eventTypes.join(','))
+      if (Array.isArray(f.severities) && f.severities.length) urlParams.set('severities', f.severities.join(','))
+    }
+
+    return this.request<ApiResponse<unknown>>('GET', `/api/audit/logs/export?${urlParams.toString()}`)
+  }
+
+  /**
+   * 清除审计日志
+   */
+  async clearAuditLogs(beforeDate?: string): Promise<ApiResponse<unknown>> {
+    log.info('清除审计日志', { beforeDate })
+
+    const path = beforeDate ? `/api/audit/logs?beforeDate=${encodeURIComponent(beforeDate)}` : '/api/audit/logs'
+    return this.request<ApiResponse<unknown>>('DELETE', path)
+  }
+
+  // ==========================================================================
   // 通用请求方法
   // ==========================================================================
 

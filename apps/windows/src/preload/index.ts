@@ -463,6 +463,37 @@ export interface ElectronAPI {
     checkStoreUpdates: () => Promise<unknown>
     /** 刷新商店缓存 */
     refreshStore: () => Promise<unknown>
+
+    // --- 审计日志接口 ---
+    /** 查询审计日志 */
+    queryAuditLogs: (filters?: {
+      startTime?: string
+      endTime?: string
+      eventTypes?: string[]
+      severities?: string[]
+      results?: string[]
+      sourceTypes?: string[]
+      search?: string
+      sessionId?: string
+      offset?: number
+      limit?: number
+      sortOrder?: string
+    }) => Promise<unknown>
+    /** 获取最近审计日志 */
+    getRecentAuditLogs: (limit?: number) => Promise<unknown>
+    /** 获取审计日志统计 */
+    getAuditStats: () => Promise<unknown>
+    /** 获取审计配置 */
+    getAuditConfig: () => Promise<unknown>
+    /** 更新审计配置 */
+    updateAuditConfig: (config: Record<string, unknown>) => Promise<unknown>
+    /** 导出审计日志 */
+    exportAuditLogs: (params: {
+      format: string
+      filters?: Record<string, unknown>
+    }) => Promise<unknown>
+    /** 清除审计日志 */
+    clearAuditLogs: (beforeDate?: string) => Promise<unknown>
   }
 }
 
@@ -737,6 +768,33 @@ const electronAPI: ElectronAPI = {
     }) => ipcRenderer.invoke('api:createUserSkill', data),
     checkStoreUpdates: () => ipcRenderer.invoke('api:checkStoreUpdates'),
     refreshStore: () => ipcRenderer.invoke('api:refreshStore'),
+
+    // --- 审计日志接口 ---
+    queryAuditLogs: (filters?: {
+      startTime?: string
+      endTime?: string
+      eventTypes?: string[]
+      severities?: string[]
+      results?: string[]
+      sourceTypes?: string[]
+      search?: string
+      sessionId?: string
+      offset?: number
+      limit?: number
+      sortOrder?: string
+    }) => ipcRenderer.invoke('api:queryAuditLogs', filters),
+    getRecentAuditLogs: (limit?: number) =>
+      ipcRenderer.invoke('api:getRecentAuditLogs', limit),
+    getAuditStats: () => ipcRenderer.invoke('api:getAuditStats'),
+    getAuditConfig: () => ipcRenderer.invoke('api:getAuditConfig'),
+    updateAuditConfig: (config: Record<string, unknown>) =>
+      ipcRenderer.invoke('api:updateAuditConfig', config),
+    exportAuditLogs: (params: {
+      format: string
+      filters?: Record<string, unknown>
+    }) => ipcRenderer.invoke('api:exportAuditLogs', params),
+    clearAuditLogs: (beforeDate?: string) =>
+      ipcRenderer.invoke('api:clearAuditLogs', beforeDate),
   },
 }
 
