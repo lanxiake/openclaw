@@ -81,7 +81,7 @@ export type GatewayMemoryServiceStatus =
  * await service.initialize()
  *
  * // 使用工作记忆
- * const sessionId = await service.manager.working.createSession('user-123')
+ * await service.manager.episodic.addConversation('user-123', 'session-1', messages)
  *
  * // 使用知识记忆（通过 SQLite 适配器）
  * const results = await service.manager.knowledge.searchHybrid('user-123', '查询')
@@ -252,34 +252,6 @@ export class GatewayMemoryService {
   }
 
   // ==================== 便捷方法 ====================
-
-  /**
-   * 创建会话
-   *
-   * @param userId - 用户 ID
-   * @returns 会话 ID
-   */
-  async createSession(userId: string): Promise<string> {
-    return this.manager.working.createSession(userId);
-  }
-
-  /**
-   * 添加消息到会话
-   *
-   * @param sessionId - 会话 ID
-   * @param role - 消息角色
-   * @param content - 消息内容
-   */
-  async addMessage(
-    sessionId: string,
-    role: "user" | "assistant" | "system" | "tool",
-    content: string,
-  ): Promise<void> {
-    await this.manager.working.addMessage(sessionId, {
-      role,
-      content,
-    });
-  }
 
   /**
    * 搜索知识库

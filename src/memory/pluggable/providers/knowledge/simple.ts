@@ -11,11 +11,10 @@
 import { randomUUID } from "node:crypto";
 
 import type { HealthStatus, ProviderConfig } from "../../interfaces/memory-provider.js";
-import type { Message } from "../../interfaces/working-memory.js";
-import type {,
+import type {
   DocumentInput,
   DocumentListOptions,
-  DocumentStatusContextResult,
+  DocumentStatus,
   HybridSearchOptions,
   IKnowledgeMemoryProvider,
   KnowledgeDocument,
@@ -32,8 +31,6 @@ interface UserKnowledgeData {
   documents: Map<string, KnowledgeDocument>;
   /** 文档内容 (documentId -> content string) */
   documentContents: Map<string, string>;
-  /** 关系 (relationshipId -> relationship) */
-  /** 社区 (communityId -> community) */
 }
 
 /**
@@ -367,217 +364,6 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
     return this.searchSimilar(userId, query, options);
   }
 
-  /**
-   * 添加实体
-   */
-  async add(
-    userId: string,
-    entity: Omit<, "id" | "createdAt" | "updatedAt" | "mentionCount">,
-  ): Promise<string> {
-    const entityId = randomUUID();
-    const now = new Date();
-
-    console.log(`[simple-knowledge] 添加实体: ${entityId} (用户: ${userId}, 名称: ${entity.name})`);
-
-    const data = this.getUserData(userId);
-    const full: = {
-      ...entity,
-      id: entityId,
-      mentionCount: 1,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    data.entities.set(entityId, full);
-
-    return entityId;
-  }
-
-  /**
-   * 获取实体
-   */
-  async get(userId: string, entityId: string): Promise< | null> {
-    const data = this.getUserData(userId);
-    return data.entities.get(entityId) || null;
-  }
-
-  /**
-   * 更新实体
-   */
-  async update(userId: string, entityId: string, updates: Partial<>): Promise<void> {
-    console.log(`[simple-knowledge] 更新实体: ${entityId} (用户: ${userId})`);
-
-    const data = this.getUserData(userId);
-    const entity = data.entities.get(entityId);
-
-    if (!entity) {
-      throw new Error(`实体不存在: ${entityId}`);
-    }
-
-    const updated: = {
-      ...entity,
-      ...updates,
-      id: entityId,
-      createdAt: entity.createdAt,
-      updatedAt: new Date(),
-    };
-
-    data.entities.set(entityId, updated);
-  }
-
-  /**
-   * 删除实体
-   */
-  async delete(userId: string, entityId: string): Promise<void> {
-    console.log(`[simple-knowledge] 删除实体: ${entityId} (用户: ${userId})`);
-
-    const data = this.getUserData(userId);
-    data.entities.delete(entityId);
-
-    // 删除相关关系
-    for (const [relId, rel] of data.relationships) {
-      if (rel.sourceId === entityId || rel.targetId === entityId) {
-        data.relationships.delete(relId);
-      }
-    }
-  }
-
-  /**
-   * 添加关系
-   */
-  async add(
-    userId: string,
-    relationship: Omit<, "id" | "createdAt">,
-  ): Promise<string> {
-    const relationshipId = randomUUID();
-    const now = new Date();
-
-    console.log(
-      `[simple-knowledge] 添加关系: ${relationshipId} (用户: ${userId}, 类型: ${relationship.type})`,
-    );
-
-    const data = this.getUserData(userId);
-    const fullRel: = {
-      ...relationship,
-      id: relationshipId,
-      createdAt: now,
-    };
-
-    data.relationships.set(relationshipId, fullRel);
-
-    return relationshipId;
-  }
-
-  /**
-   * 获取关系
-   */
-  async get(userId: string, relationshipId: string): Promise< | null> {
-    const data = this.getUserData(userId);
-    return data.relationships.get(relationshipId) || null;
-  }
-
-  /**
-   * 更新关系
-   */
-  async update(
-    userId: string,
-    relationshipId: string,
-    updates: Partial<>,
-  ): Promise<void> {
-    console.log(`[simple-knowledge] 更新关系: ${relationshipId} (用户: ${userId})`);
-
-    const data = this.getUserData(userId);
-    const rel = data.relationships.get(relationshipId);
-
-    if (!rel) {
-      throw new Error(`关系不存在: ${relationshipId}`);
-    }
-
-    const updatedRel: = {
-      ...rel,
-      ...updates,
-      id: relationshipId,
-      createdAt: rel.createdAt,
-    };
-
-    data.relationships.set(relationshipId, updatedRel);
-  }
-
-  /**
-   * 删除关系
-   */
-  async delete(userId: string, relationshipId: string): Promise<void> {
-    console.log(`[simple-knowledge] 删除关系: ${relationshipId} (用户: ${userId})`);
-
-    const data = this.getUserData(userId);
-    data.relationships.delete(relationshipId);
-  }
-
-  /**
-   * 获取实体上下文
-   */
-  async getContext(
-    userId: string,
-    entityId: string,
-    _depth?: number,
-  ): Promise<Context> {
-    console.log(`[simple-knowledge] 获取实体上下文: ${entityId} (用户: ${userId})`);
-
-    const data = this.getUserData(userId);
-    const entity = data.entities.get(entityId);
-
-    if (!entity) {
-      throw new Error(`实体不存在: ${entityId}`);
-    }
-
-    // 查找相邻实体和关系
-    const neighbors:[] = [];
-    const relationships:[] = [];
-
-    for (const rel of data.relationships.values()) {
-      if (rel.sourceId === entityId) {
-        relationships.push(rel);
-        const neighbor = data.entities.get(rel.targetId);
-        if (neighbor) neighbors.push(neighbor);
-      } else if (rel.targetId === entityId) {
-        relationships.push(rel);
-        const neighbor = data.entities.get(rel.sourceId);
-        if (neighbor) neighbors.push(neighbor);
-      }
-    }
-
-    return {
-      entity,
-      neighbors,
-      relationships,
-      relatedDocuments: [],
-    };
-  }
-    sessionId: string,
-    messages: Message[],
-  ): Promise<{ documentId: string; entities: string[]; relationships: string[] }> {
-    console.log(
-      `[simple-knowledge] 导入对话: ${sessionId} (用户: ${userId}, 消息数: ${messages.length})`,
-    );
-
-    // 将对话转换为文档
-    const content = messages.map((m) => `[${m.role}]: ${m.content}`).join("\n\n");
-
-    const documentId = await this.addDocument(userId, {
-      title: `对话记录 - ${sessionId}`,
-      content: Buffer.from(content, "utf-8"),
-      mimeType: "text/plain",
-      source: "conversation",
-      metadata: { sessionId },
-    });
-
-    // 简化版不提取实体和关系
-    return {
-      documentId,
-      entities: [],
-      relationships: [],
-    };
-  }
 }
 
 // 自动注册提供者

@@ -2,11 +2,9 @@
  * 可插拔记忆系统
  *
  * 提供统一的记忆管理接口，支持多种后端实现：
- * - 工作记忆 (Working Memory): 当前对话的临时上下文
  * - 情节记忆 (Episodic Memory): 长期对话历史和关键事件
  * - 画像记忆 (Profile Memory): 用户事实、偏好和行为模式
  * - 知识记忆 (Knowledge Memory): 文档、向量索引和知识图谱
- * - 对象存储 (Object Storage): 多媒体文件存储
  *
  * ## 设计原则
  *
@@ -18,9 +16,12 @@
  *
  * ```typescript
  * import {
+ *   createEpisodicMemoryProvider,
+ *   MemoryEpisodicMemoryProvider,
  * } from './memory/pluggable'
  *
  * // 创建提供者
+ * const provider = createEpisodicMemoryProvider({
  *   provider: 'memory',
  *   options: {},
  * })
@@ -29,11 +30,7 @@
  * await provider.initialize()
  *
  * // 使用
- * const sessionId = await provider.createSession('user-123')
- * await provider.addMessage(sessionId, {
- *   role: 'user',
- *   content: 'Hello',
- * })
+ * await provider.addConversation('user-123', 'session-1', messages)
  *
  * // 关闭
  * await provider.shutdown()
@@ -53,7 +50,7 @@ export type {
   ProviderConstructor,
 } from "./interfaces/index.js";
 
-// 工作记忆接口
+// 公共类型
 export type {
   MessageRole,
   ToolCall,
@@ -66,8 +63,6 @@ export type {
   ConversationSummary,
   KeyEventType,
   KeyEvent,
-  EmotionalRecord,
-  EmotionTrend,
   EpisodicQueryOptions,
   EventQueryOptions,
   EpisodicSearchOptions,
@@ -109,9 +104,6 @@ export type {
   IKnowledgeMemoryProvider,
 } from "./interfaces/index.js";
 
-// 对象存储接口
-export type {
-} from "./interfaces/index.js";
 
 // ==================== 提供者 ====================
 
@@ -132,7 +124,6 @@ export {
 
 // 内置提供者
 export {
-  type MemoryWorkingConfig,
   MemoryEpisodicMemoryProvider,
   MemoryProfileMemoryProvider,
   SimpleKnowledgeMemoryProvider,

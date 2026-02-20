@@ -11,18 +11,14 @@ import type {
   IMemoryProvider,
   ProviderConfig,
 } from "./interfaces/memory-provider.js";
-import type { IWorkingMemoryProvider } from "./interfaces/working-memory.js";
 import type { IEpisodicMemoryProvider } from "./interfaces/episodic-memory.js";
 import type { IProfileMemoryProvider } from "./interfaces/profile-memory.js";
 import type { IKnowledgeMemoryProvider } from "./interfaces/knowledge-memory.js";
-import type { IObjectStorageProvider } from "./interfaces/object-storage.js";
 import type { MemoryManagerConfig } from "./config/schema.js";
 import {
-  createWorkingMemoryProvider,
   createEpisodicMemoryProvider,
   createProfileMemoryProvider,
   createKnowledgeMemoryProvider,
-  createObjectStorageProvider,
 } from "./providers/factory.js";
 
 /**
@@ -43,11 +39,9 @@ export interface MemoryHealthReport {
   status: MemoryManagerStatus;
   /** 各提供者状态 */
   providers: {
-    working?: HealthStatus;
     episodic?: HealthStatus;
     profile?: HealthStatus;
     knowledge?: HealthStatus;
-    storage?: HealthStatus;
   };
   /** 检查时间 */
   checkedAt: Date;
@@ -81,12 +75,8 @@ export interface MemoryManagerOptions {
  *
  * await manager.initialize()
  *
- * // 使用工作记忆
- * const sessionId = await manager.working.createSession('user-123')
- * await manager.working.addMessage(sessionId, { role: 'user', content: 'Hello' })
- *
  * // 使用情节记忆
- * await manager.episodic.addConversation('user-123', sessionId, messages)
+ * await manager.episodic.addConversation('user-123', 'session-1', messages)
  *
  * // 健康检查
  * const health = await manager.healthCheck()
@@ -111,9 +101,6 @@ export class MemoryManager {
   /** 健康检查定时器 */
   private healthCheckTimer?: ReturnType<typeof setInterval>;
 
-  /** 工作记忆提供者 */
-  private _working?: IWorkingMemoryProvider;
-
   /** 情节记忆提供者 */
   private _episodic?: IEpisodicMemoryProvider;
 
@@ -123,8 +110,7 @@ export class MemoryManager {
   /** 知识记忆提供者 */
   private _knowledge?: IKnowledgeMemoryProvider;
 
-  /** 对象存储提供者 */
-  private _storage?: IObjectStorageProvider;
+
 
   /**
    * 创建记忆管理器
@@ -159,14 +145,6 @@ export class MemoryManager {
   }
 
   /**
-   * 获取工作记忆提供者
-   */
-  get working(): IWorkingMemoryProvider {
-    this.ensureReady("working");
-    return this._working!;
-  }
-
-  /**
    * 获取情节记忆提供者
    */
   get episodic(): IEpisodicMemoryProvider {
@@ -188,14 +166,6 @@ export class MemoryManager {
   get knowledge(): IKnowledgeMemoryProvider {
     this.ensureReady("knowledge");
     return this._knowledge!;
-  }
-
-  /**
-   * 获取对象存储提供者
-   */
-  get storage(): IObjectStorageProvider {
-    this.ensureReady("storage");
-    return this._storage!;
   }
 
   // ==================== 生命周期 ====================
@@ -220,11 +190,9 @@ export class MemoryManager {
     try {
       // 创建并初始化所有提供者
       await Promise.all([
-        this.initializeProvider("working", this.config.working),
         this.initializeProvider("episodic", this.config.episodic),
         this.initializeProvider("profile", this.config.profile),
         this.initializeProvider("knowledge", this.config.knowledge),
-        this.initializeProvider("storage", this.config.storage),
       ]);
 
       this._status = "ready";
@@ -245,7 +213,7 @@ export class MemoryManager {
    * 初始化单个提供者
    */
   private async initializeProvider(
-    type: "working" | "episodic" | "profile" | "knowledge" | "storage",
+    type: "episodic" | "profile" | "knowledge",
     config: ProviderConfig,
   ): Promise<void> {
     console.log(`[MemoryManager] 初始化 ${type} 提供者: ${config.provider}`);
@@ -254,10 +222,6 @@ export class MemoryManager {
       let provider: IMemoryProvider;
 
       switch (type) {
-        case "working":
-          provider = createWorkingMemoryProvider(config);
-          this._working = provider as IWorkingMemoryProvider;
-          break;
         case "episodic":
           provider = createEpisodicMemoryProvider(config);
           this._episodic = provider as IEpisodicMemoryProvider;
@@ -269,10 +233,6 @@ export class MemoryManager {
         case "knowledge":
           provider = createKnowledgeMemoryProvider(config);
           this._knowledge = provider as IKnowledgeMemoryProvider;
-          break;
-        case "storage":
-          provider = createObjectStorageProvider(config);
-          this._storage = provider as IObjectStorageProvider;
           break;
       }
 
@@ -301,13 +261,6 @@ export class MemoryManager {
     // 关闭所有提供者
     const shutdownTasks: Promise<void>[] = [];
 
-    if (this._working) {
-      shutdownTasks.push(
-        this._working.shutdown().catch((e) => {
-          console.error("[MemoryManager] working 提供者关闭失败:", e);
-        }),
-      );
-    }
     if (this._episodic) {
       shutdownTasks.push(
         this._episodic.shutdown().catch((e) => {
@@ -329,14 +282,6 @@ export class MemoryManager {
         }),
       );
     }
-    if (this._storage) {
-      shutdownTasks.push(
-        this._storage.shutdown().catch((e) => {
-          console.error("[MemoryManager] storage 提供者关闭失败:", e);
-        }),
-      );
-    }
-
     await Promise.all(shutdownTasks);
 
     this._status = "shutdown";
@@ -352,12 +297,7 @@ export class MemoryManager {
     const providers: MemoryHealthReport["providers"] = {};
 
     // 并行检查所有提供者
-    const [working, episodic, profile, knowledge, storage] = await Promise.all([
-      this._working?.healthCheck().catch((e) => ({
-        status: "unhealthy" as const,
-        latency: 0,
-        details: { error: String(e) },
-      })),
+    const [episodic, profile, knowledge] = await Promise.all([
       this._episodic?.healthCheck().catch((e) => ({
         status: "unhealthy" as const,
         latency: 0,
@@ -373,18 +313,11 @@ export class MemoryManager {
         latency: 0,
         details: { error: String(e) },
       })),
-      this._storage?.healthCheck().catch((e) => ({
-        status: "unhealthy" as const,
-        latency: 0,
-        details: { error: String(e) },
-      })),
     ]);
 
-    if (working) providers.working = working;
     if (episodic) providers.episodic = episodic;
     if (profile) providers.profile = profile;
     if (knowledge) providers.knowledge = knowledge;
-    if (storage) providers.storage = storage;
 
     // 判断总体状态
     const allHealthy = Object.values(providers).every((p) => p?.status === "healthy");

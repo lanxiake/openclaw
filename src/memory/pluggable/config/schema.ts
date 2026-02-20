@@ -186,14 +186,12 @@ export type GraphitiConfig = z.infer<typeof GraphitiConfigSchema>;
  * 记忆管理器完整配置
  */
 export const MemoryManagerConfigSchema = z.object({
-  /** 工作记忆配置 */
   /** 情节记忆配置 */
   episodic: ProviderConfigSchema,
   /** 画像记忆配置 */
   profile: ProviderConfigSchema,
   /** 知识记忆配置 */
   knowledge: ProviderConfigSchema,
-  /** 对象存储配置 */
 });
 
 export type MemoryManagerConfig = z.infer<typeof MemoryManagerConfigSchema>;
@@ -206,7 +204,6 @@ export type MemoryManagerConfig = z.infer<typeof MemoryManagerConfigSchema>;
  * 使用内存和本地存储，无需外部服务
  */
 export const DEFAULT_DEV_CONFIG: MemoryManagerConfig = {
-  },
   episodic: {
     provider: "memory",
     options: {},
@@ -219,7 +216,6 @@ export const DEFAULT_DEV_CONFIG: MemoryManagerConfig = {
     provider: "simple",
     options: {},
   },
-  },
 };
 
 /**
@@ -228,7 +224,6 @@ export const DEFAULT_DEV_CONFIG: MemoryManagerConfig = {
  * 需要替换实际的配置值
  */
 export const PRODUCTION_CONFIG_TEMPLATE: MemoryManagerConfig = {
-  },
   episodic: {
     provider: "mem0",
     options: {
@@ -253,7 +248,6 @@ export const PRODUCTION_CONFIG_TEMPLATE: MemoryManagerConfig = {
         password: "${NEO4J_PASSWORD}",
       },
     },
-  },
   },
 };
 

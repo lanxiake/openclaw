@@ -2,7 +2,6 @@
  * 可插拔记忆系统接口定义
  *
  * 本模块导出所有记忆类型的接口定义，用于实现可插拔的记忆后端。
- * 当前支持 3 种记忆类型：情节记忆、画像记忆、知识记忆。
  *
  * @module memory/pluggable/interfaces
  */
@@ -16,8 +15,13 @@ export type {
   ProviderConstructor,
 } from "./memory-provider.js";
 
-// 公共类型（Message 等）
-export type { MessageRole, ToolCall, ToolResult, Message } from "./types.js";
+// 公共类型（从 types.ts 提取）
+export type {
+  MessageRole,
+  ToolCall,
+  ToolResult,
+  Message,
+} from "./types.js";
 
 // 情节记忆
 export type {
@@ -64,3 +68,4 @@ export type {
   DocumentListOptions,
   IKnowledgeMemoryProvider,
 } from "./knowledge-memory.js";
+

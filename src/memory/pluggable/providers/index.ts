@@ -19,8 +19,6 @@ export {
   createKnowledgeMemoryProvider,
 } from "./factory.js";
 
-// 工作记忆提供者
-
 // 情节记忆提供者
 export { MemoryEpisodicMemoryProvider } from "./episodic/index.js";
 
@@ -34,7 +32,6 @@ export {
   type SQLiteKnowledgeConfig,
 } from "./knowledge/index.js";
 
-// 对象存储提供者
 
 // 自动注册内置提供者
 import "./episodic/index.js";

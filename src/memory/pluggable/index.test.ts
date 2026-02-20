@@ -22,7 +22,6 @@ import {
   MemoryEpisodicMemoryProvider,
   MemoryProfileMemoryProvider,
   SimpleKnowledgeMemoryProvider,
-  LocalObjectStorageProvider,
 
   // 配置
   validateConfig,
@@ -34,6 +33,7 @@ import {
   createMemoryManager,
 
   // 类型
+  type IEpisodicMemoryProvider,
   type HealthStatus,
 } from "./index.js";
 
@@ -45,7 +45,6 @@ describe("MemoryProviderFactory", () => {
     registerProvider("episodic", "memory", MemoryEpisodicMemoryProvider);
     registerProvider("profile", "memory", MemoryProfileMemoryProvider);
     registerProvider("knowledge", "simple", SimpleKnowledgeMemoryProvider);
-    registerProvider("storage", "local", LocalObjectStorageProvider);
   });
 
   afterEach(() => {
@@ -54,6 +53,7 @@ describe("MemoryProviderFactory", () => {
 
   describe("registerProvider", () => {
     it("应该成功注册提供者", () => {
+      class TestProvider implements IEpisodicMemoryProvider {
         readonly name = "test";
         readonly version = "1.0.0";
         async initialize() {}
@@ -100,11 +100,12 @@ describe("MemoryProviderFactory", () => {
         }
       }
 
-      registerProvider("working", "test", TestProvider);
-      expect(hasProvider("working", "test")).toBe(true);
+      registerProvider("episodic", "test", TestProvider);
+      expect(hasProvider("episodic", "test")).toBe(true);
     });
 
     it("应该覆盖已存在的提供者", () => {
+      class TestProvider1 implements IEpisodicMemoryProvider {
         readonly name = "test1";
         readonly version = "1.0.0";
         async initialize() {}
@@ -151,6 +152,7 @@ describe("MemoryProviderFactory", () => {
         }
       }
 
+      class TestProvider2 implements IEpisodicMemoryProvider {
         readonly name = "test2";
         readonly version = "2.0.0";
         async initialize() {}
@@ -197,9 +199,10 @@ describe("MemoryProviderFactory", () => {
         }
       }
 
-      registerProvider("working", "dup", TestProvider1);
-      registerProvider("working", "dup", TestProvider2);
+      registerProvider("episodic", "dup", TestProvider1);
+      registerProvider("episodic", "dup", TestProvider2);
 
+      const provider = createProvider<IEpisodicMemoryProvider>("episodic", {
         provider: "dup",
         options: {},
       });
@@ -209,37 +212,39 @@ describe("MemoryProviderFactory", () => {
 
   describe("unregisterProvider", () => {
     it("应该成功注销提供者", () => {
-      expect(hasProvider("working", "memory")).toBe(true);
-      const result = unregisterProvider("working", "memory");
+      expect(hasProvider("episodic", "memory")).toBe(true);
+      const result = unregisterProvider("episodic", "memory");
       expect(result).toBe(true);
-      expect(hasProvider("working", "memory")).toBe(false);
+      expect(hasProvider("episodic", "memory")).toBe(false);
     });
 
     it("应该对不存在的提供者返回 false", () => {
-      const result = unregisterProvider("working", "nonexistent");
+      const result = unregisterProvider("episodic", "nonexistent");
       expect(result).toBe(false);
     });
   });
 
   describe("createProvider", () => {
     it("应该成功创建已注册的提供者", () => {
+      const provider = createProvider<IEpisodicMemoryProvider>("episodic", {
         provider: "memory",
         options: {},
       });
 
-      expect(provider.name).toBe("memory-working");
+      expect(provider).toBeInstanceOf(MemoryEpisodicMemoryProvider);
+      expect(provider.name).toBe("memory-episodic");
     });
 
     it("应该对未注册的提供者抛出错误", () => {
       expect(() => {
-        createProvider("working", { provider: "nonexistent", options: {} });
+        createProvider("episodic", { provider: "nonexistent", options: {} });
       }).toThrow(/未知的记忆提供者/);
     });
   });
 
   describe("getAvailableProviders", () => {
     it("应该返回已注册的提供者列表", () => {
-      const providers = getAvailableProviders("working");
+      const providers = getAvailableProviders("episodic");
       expect(providers).toContain("memory");
     });
 
@@ -254,12 +259,11 @@ describe("MemoryProviderFactory", () => {
   describe("getAllProviders", () => {
     it("应该返回所有已注册的提供者", () => {
       const all = getAllProviders();
-      expect(all).toContainEqual({ type: "working", name: "memory" });
+      expect(all).toContainEqual({ type: "episodic", name: "memory" });
     });
   });
 
 });
-
 describe("配置验证", () => {
   describe("validateConfig", () => {
     it("应该验证有效配置", () => {
@@ -470,29 +474,13 @@ describe("SimpleKnowledgeMemoryProvider", () => {
     });
   });
 
-  describe("实体管理", () => {
-    it("应该添加和获取实体", async () => {
-      const userId = "user-123";
-      const entityId = await provider.addEntity(userId, {
-        name: "张三",
-        type: "person",
-        properties: { age: 30 },
-      });
-
-      const entity = await provider.getEntity(userId, entityId);
-      expect(entity).toBeTruthy();
-      expect(entity?.name).toBe("张三");
-    });
-  });
 });
-
 describe("工厂快捷方法", () => {
   beforeEach(() => {
     clearRegistry();
     registerProvider("episodic", "memory", MemoryEpisodicMemoryProvider);
     registerProvider("profile", "memory", MemoryProfileMemoryProvider);
     registerProvider("knowledge", "simple", SimpleKnowledgeMemoryProvider);
-    registerProvider("storage", "local", LocalObjectStorageProvider);
   });
 
   afterEach(() => {
@@ -514,12 +502,6 @@ describe("工厂快捷方法", () => {
     expect(provider).toBeInstanceOf(SimpleKnowledgeMemoryProvider);
   });
 
-  it("应该创建对象存储提供者", () => {
-      provider: "local",
-      options: { basePath: "./.test" },
-    });
-    expect(provider).toBeInstanceOf(LocalObjectStorageProvider);
-  });
 });
 
 describe("MemoryManager", () => {
@@ -528,7 +510,6 @@ describe("MemoryManager", () => {
     registerProvider("episodic", "memory", MemoryEpisodicMemoryProvider);
     registerProvider("profile", "memory", MemoryProfileMemoryProvider);
     registerProvider("knowledge", "simple", SimpleKnowledgeMemoryProvider);
-    registerProvider("storage", "local", LocalObjectStorageProvider);
   });
 
   afterEach(() => {
@@ -564,18 +545,6 @@ describe("MemoryManager", () => {
   });
 
   describe("提供者访问", () => {
-    it("应该提供工作记忆访问", async () => {
-      const manager = new MemoryManager({
-        config: DEFAULT_DEV_CONFIG,
-      });
-      await manager.initialize();
-
-      const sessionId = await manager.working.createSession("user-123");
-      expect(sessionId).toBeTruthy();
-
-      await manager.shutdown();
-    });
-
     it("应该提供情节记忆访问", async () => {
       const manager = new MemoryManager({
         config: DEFAULT_DEV_CONFIG,
@@ -606,7 +575,7 @@ describe("MemoryManager", () => {
         config: DEFAULT_DEV_CONFIG,
       });
 
-      expect(() => manager.working).toThrow("未初始化");
+      expect(() => manager.episodic).toThrow("未初始化");
     });
   });
 
@@ -620,11 +589,9 @@ describe("MemoryManager", () => {
       const health = await manager.healthCheck();
 
       expect(health.status).toBe("ready");
-      expect(health.providers.working?.status).toBe("healthy");
       expect(health.providers.episodic?.status).toBe("healthy");
       expect(health.providers.profile?.status).toBe("healthy");
       expect(health.providers.knowledge?.status).toBe("healthy");
-      expect(health.providers.storage?.status).toBe("healthy");
       expect(health.checkedAt).toBeInstanceOf(Date);
 
       await manager.shutdown();
