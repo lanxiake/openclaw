@@ -99,7 +99,7 @@ export const DeviceManagementView: React.FC<DeviceManagementViewProps> = ({
    */
   const loadNodes = useCallback(async (): Promise<NodeInfo[]> => {
     try {
-      const result = await window.electronAPI.gateway.call('node.list', {})
+      const result = await window.electronAPI.gateway.call('node.list', {}) as { nodes?: NodeInfo[] }
       const nodes: NodeInfo[] = result?.nodes || []
       console.log('[DeviceManagementView] Gateway 节点列表:', nodes.length, '个')
       return nodes

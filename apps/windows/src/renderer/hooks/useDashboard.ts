@@ -94,7 +94,7 @@ export function useDashboard(): UseDashboardReturn {
    */
   const loadSkillStats = useCallback(async (): Promise<SkillStats> => {
     try {
-      const result = await window.electronAPI.gateway.call('assistant.skills.listAll', {})
+      const result = await window.electronAPI.gateway.call('assistant.skills.listAll', {}) as { skills?: Array<{ status: string }> }
       const skills = result?.skills || []
       const loaded = skills.filter((s: { status: string }) => s.status === 'loaded').length
       const errors = skills.filter((s: { status: string }) => s.status === 'error').length

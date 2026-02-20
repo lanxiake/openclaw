@@ -22,7 +22,7 @@ export type SubscriptionPlanId = 'free' | 'pro' | 'team' | 'enterprise'
 /**
  * 计费周期
  */
-export type BillingPeriod = 'monthly' | 'yearly' | 'lifetime'
+export type BillingPeriod = 'monthly' | 'yearly'
 
 /**
  * 订阅状态

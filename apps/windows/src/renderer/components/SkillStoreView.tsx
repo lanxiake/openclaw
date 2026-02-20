@@ -102,8 +102,11 @@ const StoreSkillCard: React.FC<{
       </div>
       <div className="store-card-footer">
         {skill.installed ? (
-          <button className="installed-button" disabled>
-            ✓ 已安装
+          <button
+            className={`installed-button ${skill.hasUpdate ? 'has-update' : ''}`}
+            disabled={!skill.hasUpdate}
+          >
+            {skill.hasUpdate ? '🔄 有更新' : '✓ 已安装'}
           </button>
         ) : (
           <button
@@ -205,7 +208,12 @@ const SkillDetailDialog: React.FC<{
         <div className="dialog-footer">
           <button className="cancel-button" onClick={onClose}>关闭</button>
           {skill.installed ? (
-            <button className="installed-button" disabled>✓ 已安装</button>
+            <button
+              className={`installed-button ${skill.hasUpdate ? 'has-update' : ''}`}
+              disabled={!skill.hasUpdate}
+            >
+              {skill.hasUpdate ? '🔄 有更新' : '✓ 已安装'}
+            </button>
           ) : (
             <button
               className="confirm-button"
@@ -283,9 +291,12 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
     popular,
     stats,
     isLoading,
+    isRefreshing,
     error,
     filters,
+    hasMore,
     loadStoreSkills,
+    loadMore,
     loadFeatured,
     loadPopular,
     loadStats,
@@ -293,6 +304,7 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
     setFilters,
     getSkillDetail,
     installSkill,
+    refreshStore,
   } = useSkillStore()
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -457,6 +469,14 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
             <option value="updated">按更新时间</option>
             <option value="name">按名称</option>
           </select>
+          <button
+            className="refresh-store-button"
+            onClick={refreshStore}
+            disabled={isRefreshing}
+            title="刷新商店数据"
+          >
+            {isRefreshing ? '⏳' : '🔄'}
+          </button>
         </div>
       </div>
 
@@ -550,6 +570,15 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
                     isInstalling={installingSkillId === skill.id}
                   />
                 ))}
+              </div>
+            )}
+
+            {/* 加载更多按钮 */}
+            {hasMore && !isLoading && (
+              <div className="load-more-container">
+                <button className="load-more-button" onClick={loadMore}>
+                  加载更多
+                </button>
               </div>
             )}
           </section>

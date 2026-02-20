@@ -890,7 +890,7 @@ function setupApiIpcHandlers(): void {
   ipcMain.handle('api:sendCode', async (_event, params: {
     phone?: string
     email?: string
-    type?: string
+    type?: 'register' | 'login' | 'reset'
   }) => {
     if (!apiClient) {
       throw new Error('API 客户端未初始化')
@@ -1069,7 +1069,10 @@ function setupApiIpcHandlers(): void {
       throw new Error('无效的计费周期')
     }
     log.info('创建订阅', { planId: params.planId, billingPeriod: params.billingPeriod })
-    return apiClient.createSubscription(params)
+    return apiClient.createSubscription({
+      ...params,
+      planId: params.planId as import('./api-client').SubscriptionPlanId,
+    })
   })
 
   ipcMain.handle('api:cancelSubscription', async (_event, subscriptionId: string, params?: {
@@ -1099,7 +1102,10 @@ function setupApiIpcHandlers(): void {
       throw new Error('无效的订阅 ID')
     }
     log.info('更新订阅', { subscriptionId, changes: Object.keys(params) })
-    return apiClient.updateSubscription(subscriptionId, params)
+    return apiClient.updateSubscription(subscriptionId, {
+      ...params,
+      planId: params.planId as import('./api-client').SubscriptionPlanId | undefined,
+    })
   })
 
   ipcMain.handle('api:checkQuota', async (_event, quotaType: string) => {

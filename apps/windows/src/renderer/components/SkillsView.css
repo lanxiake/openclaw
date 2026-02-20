@@ -890,3 +890,31 @@
 .path-input button:hover {
   background-color: var(--bg-hover);
 }
+
+/* 按状态分组展示 */
+.skill-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.skill-group-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin: 0 0 var(--spacing-xs) 0;
+  border-radius: var(--border-radius);
+}
+
+.skill-group-title.error-group {
+  color: var(--color-error);
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.skill-group-title.enabled-group {
+  color: var(--color-success);
+  background-color: rgba(34, 197, 94, 0.08);
+}
+
+.skill-group-title.disabled-group {
+  color: var(--text-muted);
+  background-color: var(--bg-tertiary);
+}

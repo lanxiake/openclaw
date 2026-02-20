@@ -628,3 +628,62 @@
   border-radius: var(--border-radius);
   cursor: default;
 }
+
+/* 有更新的已安装按钮 */
+.store-card-footer .installed-button.has-update,
+.dialog-footer .installed-button.has-update {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--color-warning, #f59e0b);
+  cursor: pointer;
+}
+
+.store-card-footer .installed-button.has-update:hover,
+.dialog-footer .installed-button.has-update:hover {
+  background-color: rgba(245, 158, 11, 0.25);
+}
+
+/* 刷新商店按钮 */
+.refresh-store-button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.refresh-store-button:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.refresh-store-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 加载更多按钮 */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-lg) 0;
+}
+
+.load-more-button {
+  padding: var(--spacing-sm) var(--spacing-xl);
+  font-size: var(--font-size-sm);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.load-more-button:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--color-primary);
+}

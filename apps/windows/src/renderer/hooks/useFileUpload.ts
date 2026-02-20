@@ -84,7 +84,7 @@ export function useFileUpload(): UseFileUploadReturn {
       fileType,
       fileName: file.name,
       fileSize: file.size,
-      fileType: file.type
+      fileMimeType: file.type
     })
 
     setIsUploading(true)

@@ -126,7 +126,7 @@ export const SkillUploadView: React.FC<SkillUploadViewProps> = ({
     }
 
     console.log(`[SkillUploadView] 上传${fileType}文件:`, file.name)
-    const result = await uploadFile(file, skillId, fileType)
+    const result = await uploadFile({ file, skillId, fileType })
 
     if (result.success && result.url) {
       console.log(`[SkillUploadView] ${fileType}文件上传成功:`, result.url)

@@ -560,6 +560,7 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ isConnected }) => {
   const [filterCategory, setFilterCategory] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string | null>(null)
   const [showAllSkills, setShowAllSkills] = useState(true)
+  const [groupByStatus, setGroupByStatus] = useState(true)
   const [showInstallDialog, setShowInstallDialog] = useState(false)
   const [isInstalling, setIsInstalling] = useState(false)
 
@@ -752,6 +753,16 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ isConnected }) => {
   })
 
   /**
+   * 按状态分组的技能列表
+   */
+  const errorSkills = filteredSkills.filter((s) => s.status === 'error')
+  const enabledSkills = filteredSkills.filter((s) => s.status === 'loaded')
+  const disabledSkills = filteredSkills.filter((s) => s.status === 'disabled')
+
+  /** 仅在启用分组且未按状态筛选时使用分组展示 */
+  const useGroupedDisplay = groupByStatus && !filterStatus
+
+  /**
    * 获取所有分类
    */
   const categories = Array.from(new Set(displaySkills.map((s) => s.category).filter(Boolean)))
@@ -859,6 +870,14 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ isConnected }) => {
                 />
                 显示禁用
               </label>
+              <label className="show-all-toggle">
+                <input
+                  type="checkbox"
+                  checked={groupByStatus}
+                  onChange={(e) => setGroupByStatus(e.target.checked)}
+                />
+                分组
+              </label>
               <button
                 className="install-button"
                 onClick={() => setShowInstallDialog(true)}
@@ -909,6 +928,60 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ isConnected }) => {
                   <span className="icon">📭</span>
                   <p>{searchQuery || filterCategory || filterStatus ? '没有找到匹配的技能' : '暂无技能'}</p>
                 </div>
+              ) : useGroupedDisplay ? (
+                <>
+                  {errorSkills.length > 0 && (
+                    <div className="skill-group">
+                      <h3 className="skill-group-title error-group">
+                        ❌ 加载失败 ({errorSkills.length})
+                      </h3>
+                      {errorSkills.map((skill) => (
+                        <SkillCard
+                          key={skill.id}
+                          skill={skill}
+                          isSelected={skill.id === selectedSkillId}
+                          onSelect={() => setSelectedSkillId(skill.id)}
+                          onToggle={() => handleToggle(skill.id)}
+                          isToggling={isToggling && togglingSkillId === skill.id}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {enabledSkills.length > 0 && (
+                    <div className="skill-group">
+                      <h3 className="skill-group-title enabled-group">
+                        ▶️ 已启用 ({enabledSkills.length})
+                      </h3>
+                      {enabledSkills.map((skill) => (
+                        <SkillCard
+                          key={skill.id}
+                          skill={skill}
+                          isSelected={skill.id === selectedSkillId}
+                          onSelect={() => setSelectedSkillId(skill.id)}
+                          onToggle={() => handleToggle(skill.id)}
+                          isToggling={isToggling && togglingSkillId === skill.id}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {disabledSkills.length > 0 && (
+                    <div className="skill-group">
+                      <h3 className="skill-group-title disabled-group">
+                        ⏸️ 已禁用 ({disabledSkills.length})
+                      </h3>
+                      {disabledSkills.map((skill) => (
+                        <SkillCard
+                          key={skill.id}
+                          skill={skill}
+                          isSelected={skill.id === selectedSkillId}
+                          onSelect={() => setSelectedSkillId(skill.id)}
+                          onToggle={() => handleToggle(skill.id)}
+                          isToggling={isToggling && togglingSkillId === skill.id}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
               ) : (
                 filteredSkills.map((skill) => (
                   <SkillCard
