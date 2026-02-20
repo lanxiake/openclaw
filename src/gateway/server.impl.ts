@@ -13,6 +13,8 @@ import {
   readConfigFileSnapshot,
   writeConfigFile,
 } from "../config/config.js";
+import { loadAllDatabaseConfigs } from "./config-loader.js";
+import { mergeFileAndDbConfigs } from "./config-merger.js";
 import { isDiagnosticsEnabled } from "../infra/diagnostic-events.js";
 import { logAcceptedEnvOption } from "../infra/env.js";
 import { applyPluginAutoEnable } from "../config/plugin-auto-enable.js";
@@ -209,7 +211,17 @@ export async function startGatewayServer(
     }
   }
 
-  const cfgAtStart = loadConfig();
+  // Phase 1: 文件配置 + 数据库配置合并
+  // 优先级: 数据库 > 文件 > 环境变量 > 默认值
+  // 数据库不可用时自动 fallback 到纯文件配置
+  const fileConfig = loadConfig();
+  const dbConfigs = await loadAllDatabaseConfigs();
+  const cfgAtStart = dbConfigs ? mergeFileAndDbConfigs(fileConfig, dbConfigs) : fileConfig;
+  if (dbConfigs) {
+    log.info("gateway: config loaded from file + database merge");
+  } else {
+    log.info("gateway: config loaded from file only (database unavailable or empty)");
+  }
   const diagnosticsEnabled = isDiagnosticsEnabled(cfgAtStart);
   if (diagnosticsEnabled) {
     startDiagnosticHeartbeat();
