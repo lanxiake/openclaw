@@ -13,6 +13,8 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react'
 import { useChatHistory, type ChatMessage, type ChatSession, type MessageAttachment, type SessionSource } from '../hooks/useChatHistory'
 import { useChatStream, type ChatEventPayload } from '../hooks/useChatStream'
+import { useToolStream, type ToolCall } from '../hooks/useToolStream'
+import { ToolCallBlock } from './ToolCallBlock'
 import { AttachmentPreview, type Attachment } from './AttachmentPreview'
 import './ChatView.css'
 
@@ -144,7 +146,8 @@ MemoizedMarkdown.displayName = 'MemoizedMarkdown'
 const MessageItem = memo<{
   message: ChatMessage
   formatTime: (date: Date) => string
-}>(({ message, formatTime }) => {
+  toolCalls?: ToolCall[]
+}>(({ message, formatTime, toolCalls }) => {
   return (
     <div className={`message ${message.role}`}>
       <div className="message-avatar">
@@ -171,6 +174,11 @@ const MessageItem = memo<{
               </div>
             ))}
           </div>
+        )}
+
+        {/* Tool 调用可视化 - 显示在 assistant 消息文本之前 */}
+        {message.role === 'assistant' && toolCalls && toolCalls.length > 0 && (
+          <ToolCallBlock toolCalls={toolCalls} />
         )}
 
         <div className="message-text">
@@ -394,6 +402,9 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
 
   // 流式响应 Hook
   const { streamingMessage, isStreaming: isStreamingResponse, startStream, reset: resetStream } = useChatStream()
+
+  // Tool 执行事件流 Hook
+  const { getToolCalls, clearRun } = useToolStream()
 
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -789,13 +800,22 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
             </div>
           )}
 
-          {currentMessages.map((message) => (
-            <MessageItem
-              key={message.id}
-              message={message}
-              formatTime={formatTime}
-            />
-          ))}
+          {currentMessages.map((message) => {
+            // 将当前运行的 tool 调用关联到对应的 assistant 消息
+            const messageToolCalls =
+              currentRunId && message.id === currentAssistantMessageId
+                ? getToolCalls(currentRunId)
+                : undefined
+
+            return (
+              <MessageItem
+                key={message.id}
+                message={message}
+                formatTime={formatTime}
+                toolCalls={messageToolCalls}
+              />
+            )
+          })}
 
           {isLoading && currentMessages[currentMessages.length - 1]?.content === '' && (
             <div className="message assistant">
