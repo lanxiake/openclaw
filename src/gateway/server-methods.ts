@@ -20,6 +20,7 @@ import { adminMonitorHandlers } from "./server-methods/admin-monitor.js";
 import { adminConfigHandlers } from "./server-methods/admin-config.js";
 import { adminAnalyticsHandlers } from "./server-methods/admin-analytics.js";
 import { adminAdminMethods } from "./server-methods/admin-admins.js";
+import { memoryHandlers } from "./server-methods/memory.js";
 import { browserHandlers } from "./server-methods/browser.js";
 import { channelsHandlers } from "./server-methods/channels.js";
 import { chatHandlers } from "./server-methods/chat.js";
@@ -147,6 +148,18 @@ const READ_METHODS = new Set([
   "renewal.getTasks",
   "renewal.getTask",
   "renewal.getConfig",
+  // Memory methods (read-only)
+  "memory.profile.fact.list",
+  "memory.profile.fact.search",
+  "memory.profile.preferences.get",
+  "memory.profile.pattern.list",
+  "memory.profile.export",
+  "memory.episodic.conversation.history",
+  "memory.episodic.conversation.summary",
+  "memory.episodic.event.list",
+  "memory.episodic.search",
+  "memory.episodic.timeline",
+  "memory.health",
 ]);
 const WRITE_METHODS = new Set([
   "send",
@@ -212,6 +225,21 @@ const WRITE_METHODS = new Set([
   "renewal.updateConfig",
   "renewal.start",
   "renewal.stop",
+  // Memory methods (write)
+  "memory.profile.fact.add",
+  "memory.profile.fact.update",
+  "memory.profile.fact.delete",
+  "memory.profile.preferences.update",
+  "memory.profile.preferences.reset",
+  "memory.profile.pattern.add",
+  "memory.profile.pattern.update",
+  "memory.profile.pattern.delete",
+  "memory.profile.pattern.confirm",
+  "memory.episodic.conversation.add",
+  "memory.episodic.conversation.delete",
+  "memory.episodic.event.add",
+  "memory.episodic.event.update",
+  "memory.episodic.event.delete",
 ]);
 
 function authorizeGatewayMethod(method: string, client: GatewayRequestOptions["client"]) {
@@ -336,6 +364,7 @@ export const coreGatewayHandlers: GatewayRequestHandlers = {
   ...adminConfigHandlers,
   ...adminAnalyticsHandlers,
   ...adminAdminMethods,
+  ...memoryHandlers,
 };
 
 export async function handleGatewayRequest(
