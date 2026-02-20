@@ -6,6 +6,12 @@ export type MemorySearchManagerResult = {
   error?: string;
 };
 
+/**
+ * 获取旧版记忆搜索管理器
+ *
+ * @deprecated 使用 GatewayMemoryService.manager.knowledge 代替。
+ * 旧版 MemoryIndexManager 将在后续版本中移除。
+ */
 export async function getMemorySearchManager(params: {
   cfg: OpenClawConfig;
   agentId: string;
