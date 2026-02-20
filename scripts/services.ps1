@@ -4,13 +4,13 @@
 
 .DESCRIPTION
     Start/stop OpenClaw services
-    Services: gateway, api-server, admin-console, web-admin, windows
+    Services: gateway, api-server, admin-console, windows
 
 .PARAMETER Action
     Action: start, stop, restart, status
 
 .PARAMETER Service
-    Service name: all, gateway, api-server, admin-console, web-admin, windows
+    Service name: all, gateway, api-server, admin-console, windows
     Default: all
 
 .EXAMPLE
@@ -28,7 +28,7 @@ param(
     [string]$Action,
 
     [Parameter(Position=1)]
-    [ValidateSet("all", "gateway", "api-server", "admin-console", "web-admin", "windows")]
+    [ValidateSet("all", "gateway", "api-server", "admin-console", "windows")]
     [string]$Service = "all"
 )
 
@@ -92,15 +92,6 @@ $Services = @{
         WorkDir = "$ProjectRoot\apps\admin-console"
         StartCmd = "pnpm dev"
         Color = "Yellow"
-        EnvFile = $null
-        ExtraEnv = @{}
-    }
-    "web-admin" = @{
-        Name = "Web Admin"
-        Port = 5173
-        WorkDir = "$ProjectRoot\apps\web-admin"
-        StartCmd = "pnpm dev"
-        Color = "Magenta"
         EnvFile = $null
         ExtraEnv = @{}
     }
@@ -308,7 +299,7 @@ function Show-Status {
     Write-Host "  Service            | Port   | Status   | PID                  " -ForegroundColor Cyan
     Write-Host "----------------------------------------------------------------" -ForegroundColor Cyan
 
-    foreach ($key in @("gateway", "api-server", "admin-console", "web-admin", "windows")) {
+    foreach ($key in @("gateway", "api-server", "admin-console", "windows")) {
         $status = Get-SingleServiceStatus $key
         $svc = $Services[$key]
 
@@ -342,7 +333,7 @@ Write-Host ""
 
 # Determine target services
 $targetServices = if ($Service -eq "all") {
-    @("gateway", "api-server", "admin-console", "web-admin")
+    @("gateway", "api-server", "admin-console")
 } else {
     @($Service)
 }

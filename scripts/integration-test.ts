@@ -141,8 +141,7 @@ async function main() {
     console.log("");
     console.log("📝 下一步操作:");
     console.log("1. 启动后端 Gateway 服务: pnpm dev:gateway");
-    console.log("2. 启动前端应用: cd apps/web-admin && pnpm dev");
-    console.log("3. 访问 http://localhost:5173 进行前后端联调测试");
+    console.log("2. 启动 Windows 客户端: cd apps/windows && pnpm dev");
     console.log("");
   } catch (error) {
     console.error("❌ 测试过程中出现错误:", error);

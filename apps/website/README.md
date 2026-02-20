@@ -351,7 +351,6 @@ CMD ["nginx", "-g", "daemon off;"]
 
 - [OpenClaw 主项目](../../README.md)
 - [Admin Console](../admin-console/README.md)
-- [Web Admin](../web-admin/README.md)
 - [Windows App](../windows/README.md)
 
 ## 许可证

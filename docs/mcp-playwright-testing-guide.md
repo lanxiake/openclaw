@@ -335,7 +335,7 @@ nav a
 curl http://localhost:5173
 
 # 如果未启动，启动前端
-cd apps/web-admin && pnpm dev
+cd apps/windows && pnpm dev
 
 # 等待启动完成（约 3-5 秒）
 ```

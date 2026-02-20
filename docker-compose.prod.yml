@@ -1,6 +1,6 @@
 # OpenClaw 生产环境 Docker Compose 配置
 #
-# 包含所有应用服务（API Server, Gateway, Web Admin）
+# 包含所有应用服务（API Server, Gateway）
 #
 # 使用方式:
 #   docker-compose -f docker-compose.prod.yml up -d          # 启动所有服务
@@ -125,42 +125,6 @@ services:
         "--port",
         "${GATEWAY_PORT:-18789}",
       ]
-
-  # ==================== Web Admin (可选) ====================
-  web-admin:
-    build:
-      context: .
-      dockerfile: apps/web-admin/Dockerfile
-    image: openclaw-web-admin:latest
-    container_name: openclaw-web-admin
-    restart: unless-stopped
-    env_file:
-      - .env.production
-    environment:
-      NODE_ENV: production
-      # API Server 地址
-      NEXT_PUBLIC_API_URL: ${API_SERVER_PUBLIC_URL:-http://localhost:3000}
-      # Gateway 地址
-      NEXT_PUBLIC_GATEWAY_URL: ${GATEWAY_PUBLIC_URL:-ws://localhost:18789}
-    ports:
-      - "${WEB_ADMIN_PORT:-3001}:3001"
-    depends_on:
-      - api-server
-      - gateway
-    networks:
-      - openclaw-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 256M
 
 # ==================== 网络配置 ====================
 networks:
