@@ -159,28 +159,19 @@ describe("GatewayMemoryService", () => {
       await service.initialize();
     });
 
-    it("应该创建会话", async () => {
-      const sessionId = await service.createSession("user-123");
-      expect(sessionId).toBeDefined();
-      expect(typeof sessionId).toBe("string");
-    });
-
-    it("应该添加消息", async () => {
-      const sessionId = await service.createSession("user-123");
-      await service.addMessage(sessionId, "user", "Hello");
-      // 验证消息已添加
-      const messages = await service.manager.working.getMessages(sessionId);
-      expect(messages).toHaveLength(1);
-      expect(messages[0].content).toBe("Hello");
-    });
-
     it("应该搜索知识库", async () => {
       const results = await service.searchKnowledge("user-123", "测试查询");
       expect(Array.isArray(results)).toBe(true);
     });
 
     it("应该添加用户事实", async () => {
-      const factId = await service.addUserFact("user-123", "profession", "Software Engineer", 0.9);
+      const factId = await service.addUserFact(
+        "user-123",
+        "work",
+        "profession",
+        "Software Engineer",
+        0.9,
+      );
       expect(factId).toBeDefined();
     });
 

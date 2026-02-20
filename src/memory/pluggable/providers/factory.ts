@@ -99,9 +99,9 @@ export function unregisterProvider(type: MemoryType, name: string): boolean {
  *
  * @example
  * ```typescript
- * const provider = createProvider<IWorkingMemoryProvider>('working', {
- *   provider: 'mem0',
- *   options: { apiKey: 'xxx' },
+ * const provider = createProvider<IEpisodicMemoryProvider>('episodic', {
+ *   provider: 'memory',
+ *   options: {},
  * })
  * ```
  */

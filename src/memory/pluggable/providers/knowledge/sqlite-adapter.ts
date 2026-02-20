@@ -36,7 +36,7 @@ import type {
   SearchResult,
   VectorSearchOptions,
 } from "../../interfaces/knowledge-memory.js";
-import type { Message } from "../../interfaces/working-memory.js";
+import type { Message } from "../../interfaces/types.js";
 import { registerProvider } from "../factory.js";
 
 /**

@@ -51,6 +51,8 @@ import type { startBrowserControlServerIfEnabled } from "./server-browser.js";
 import { createChannelManager } from "./server-channels.js";
 import { createAgentEventHandler } from "./server-chat.js";
 import { createGatewayCloseHandler } from "./server-close.js";
+import { initializeGatewayMemoryService, shutdownGatewayMemoryService } from "./memory-service.js";
+import { registerMemoryHooks } from "../hooks/bundled/session-memory/register.js";
 import { buildGatewayCronService } from "./server-cron.js";
 import { applyGatewayLaneConcurrency } from "./server-lanes.js";
 import { startGatewayMaintenanceTimers } from "./server-maintenance.js";
@@ -561,6 +563,21 @@ export async function startGatewayServer(
     watchPath: CONFIG_PATH,
   });
 
+  // ==================== 记忆服务初始化 ====================
+  try {
+    await initializeGatewayMemoryService({
+      openclawConfig: cfgAtStart,
+      agentId: defaultAgentId,
+      useSQLiteKnowledge: true,
+    });
+    registerMemoryHooks();
+    log.info("gateway: memory service initialized");
+  } catch (memErr) {
+    log.warn("gateway: memory service initialization failed, memory features disabled", {
+      error: memErr instanceof Error ? memErr.message : String(memErr),
+    });
+  }
+
   const close = createGatewayCloseHandler({
     bonjourStop,
     tailscaleCleanup,
@@ -596,6 +613,7 @@ export async function startGatewayServer(
         skillsRefreshTimer = null;
       }
       skillsChangeUnsub();
+      await shutdownGatewayMemoryService().catch(() => {});
       await close(opts);
     },
   };

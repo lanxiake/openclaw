@@ -1,7 +1,7 @@
 /**
  * 记忆系统公共类型
  *
- * 被多个记忆接口共享的类型定义，从 working-memory.ts 提取。
+ * 被多个记忆接口共享的类型定义。
  *
  * @module memory/pluggable/interfaces
  */

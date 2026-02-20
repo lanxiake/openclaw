@@ -22,40 +22,6 @@ export const ProviderConfigSchema = z.object({
   options: z.record(z.string(), z.unknown()),
 });
 
-// ==================== Mem0 配置模式 ====================
-
-/**
- * Mem0 提供者配置
- */
-export const Mem0ConfigSchema = z.object({
-  /** Mem0 Cloud API Key */
-  apiKey: z.string().optional(),
-  /** 自托管 Mem0 服务地址 */
-  baseUrl: z.string().url().optional(),
-  /** 会话 TTL（毫秒） */
-  sessionTtl: z.number().positive().optional(),
-  /** 是否同步到远程 */
-  syncToRemote: z.boolean().optional(),
-});
-
-export type Mem0Config = z.infer<typeof Mem0ConfigSchema>;
-
-// ==================== Redis 配置模式 ====================
-
-/**
- * Redis 提供者配置
- */
-export const RedisConfigSchema = z.object({
-  /** Redis 连接 URL */
-  url: z.string().url(),
-  /** 键前缀 */
-  keyPrefix: z.string().optional(),
-  /** 连接超时（毫秒） */
-  connectTimeout: z.number().positive().optional(),
-});
-
-export type RedisConfig = z.infer<typeof RedisConfigSchema>;
-
 // ==================== PostgreSQL 配置模式 ====================
 
 /**
@@ -77,73 +43,6 @@ export const PostgresConfigSchema = z.object({
 
 export type PostgresConfig = z.infer<typeof PostgresConfigSchema>;
 
-// ==================== Milvus 配置模式 ====================
-
-/**
- * Milvus 向量数据库配置
- */
-export const MilvusConfigSchema = z.object({
-  /** 服务地址 */
-  address: z.string().min(1, "Milvus 地址不能为空"),
-  /** 认证 Token */
-  token: z.string().optional(),
-  /** 数据库名称 */
-  database: z.string().optional(),
-  /** 集合前缀 */
-  collectionPrefix: z.string().optional(),
-});
-
-export type MilvusConfig = z.infer<typeof MilvusConfigSchema>;
-
-// ==================== Neo4j 配置模式 ====================
-
-/**
- * Neo4j 图数据库配置
- */
-export const Neo4jConfigSchema = z.object({
-  /** 连接 URI */
-  uri: z.string().min(1, "Neo4j URI 不能为空"),
-  /** 用户名 */
-  username: z.string().min(1, "用户名不能为空"),
-  /** 密码 */
-  password: z.string().min(1, "密码不能为空"),
-  /** 数据库名称 */
-  database: z.string().optional(),
-});
-
-export type Neo4jConfig = z.infer<typeof Neo4jConfigSchema>;
-
-// ==================== MinIO 配置模式 ====================
-
-/**
- * MinIO 对象存储配置
- */
-export const MinIOConfigSchema = z.object({
-  /** 服务端点 */
-  endpoint: z.string().min(1, "MinIO 端点不能为空"),
-  /** 端口 */
-  port: z.number().positive().optional(),
-  /** 是否使用 SSL */
-  useSSL: z.boolean().optional(),
-  /** 访问密钥 */
-  accessKey: z.string().min(1, "Access Key 不能为空"),
-  /** 密钥 */
-  secretKey: z.string().min(1, "Secret Key 不能为空"),
-  /** 区域 */
-  region: z.string().optional(),
-  /** 存储桶配置 */
-  buckets: z
-    .object({
-      documents: z.string().optional(),
-      media: z.string().optional(),
-      temp: z.string().optional(),
-      exports: z.string().optional(),
-    })
-    .optional(),
-});
-
-export type MinIOConfig = z.infer<typeof MinIOConfigSchema>;
-
 // ==================== 嵌入模型配置模式 ====================
 
 /**
@@ -163,22 +62,6 @@ export const EmbeddingConfigSchema = z.object({
 });
 
 export type EmbeddingConfig = z.infer<typeof EmbeddingConfigSchema>;
-
-// ==================== 知识记忆配置模式 ====================
-
-/**
- * 知识记忆提供者配置（Graphiti）
- */
-export const GraphitiConfigSchema = z.object({
-  /** Milvus 配置 */
-  milvus: MilvusConfigSchema,
-  /** Neo4j 配置 */
-  neo4j: Neo4jConfigSchema,
-  /** 嵌入模型配置 */
-  embedding: EmbeddingConfigSchema.optional(),
-});
-
-export type GraphitiConfig = z.infer<typeof GraphitiConfigSchema>;
 
 // ==================== 记忆管理器配置模式 ====================
 
@@ -201,7 +84,7 @@ export type MemoryManagerConfig = z.infer<typeof MemoryManagerConfigSchema>;
 /**
  * 开发环境默认配置
  *
- * 使用内存和本地存储，无需外部服务
+ * 使用内存实现，无需外部服务
  */
 export const DEFAULT_DEV_CONFIG: MemoryManagerConfig = {
   episodic: {
@@ -221,13 +104,13 @@ export const DEFAULT_DEV_CONFIG: MemoryManagerConfig = {
 /**
  * 生产环境推荐配置模板
  *
- * 需要替换实际的配置值
+ * 使用 PostgreSQL 作为后端存储
  */
 export const PRODUCTION_CONFIG_TEMPLATE: MemoryManagerConfig = {
   episodic: {
-    provider: "mem0",
+    provider: "postgres",
     options: {
-      apiKey: "${MEM0_API_KEY}",
+      url: "${DATABASE_URL}",
     },
   },
   profile: {
@@ -237,17 +120,8 @@ export const PRODUCTION_CONFIG_TEMPLATE: MemoryManagerConfig = {
     },
   },
   knowledge: {
-    provider: "graphiti",
-    options: {
-      milvus: {
-        address: "${MILVUS_ADDRESS}",
-      },
-      neo4j: {
-        uri: "${NEO4J_URI}",
-        username: "${NEO4J_USER}",
-        password: "${NEO4J_PASSWORD}",
-      },
-    },
+    provider: "simple",
+    options: {},
   },
 };
 
