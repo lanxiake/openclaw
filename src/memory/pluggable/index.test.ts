@@ -262,7 +262,6 @@ describe("MemoryProviderFactory", () => {
       expect(all).toContainEqual({ type: "episodic", name: "memory" });
     });
   });
-
 });
 describe("配置验证", () => {
   describe("validateConfig", () => {
@@ -473,7 +472,6 @@ describe("SimpleKnowledgeMemoryProvider", () => {
       expect(results.length).toBeGreaterThan(0);
     });
   });
-
 });
 describe("工厂快捷方法", () => {
   beforeEach(() => {
@@ -501,7 +499,6 @@ describe("工厂快捷方法", () => {
     const provider = createKnowledgeMemoryProvider({ provider: "simple", options: {} });
     expect(provider).toBeInstanceOf(SimpleKnowledgeMemoryProvider);
   });
-
 });
 
 describe("MemoryManager", () => {

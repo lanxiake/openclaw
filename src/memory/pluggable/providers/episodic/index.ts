@@ -5,3 +5,4 @@
  */
 
 export { MemoryEpisodicMemoryProvider } from "./memory.js";
+export { PostgresEpisodicMemoryProvider } from "./postgres.js";

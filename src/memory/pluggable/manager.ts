@@ -110,8 +110,6 @@ export class MemoryManager {
   /** 知识记忆提供者 */
   private _knowledge?: IKnowledgeMemoryProvider;
 
-
-
   /**
    * 创建记忆管理器
    *

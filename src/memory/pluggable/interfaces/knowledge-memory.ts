@@ -444,5 +444,4 @@ export interface IKnowledgeMemoryProvider extends IMemoryProvider {
     query: string,
     options?: HybridSearchOptions,
   ): Promise<SearchResult[]>;
-
 }

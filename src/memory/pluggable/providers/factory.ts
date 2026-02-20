@@ -193,7 +193,6 @@ export function clearRegistry(): void {
 
 // ==================== 类型安全的创建函数 ====================
 
-
 /**
  * 创建情节记忆提供者
  *
@@ -223,4 +222,3 @@ export function createProfileMemoryProvider(config: ProviderConfig): IProfileMem
 export function createKnowledgeMemoryProvider(config: ProviderConfig): IKnowledgeMemoryProvider {
   return createProvider<IKnowledgeMemoryProvider>("knowledge", config);
 }
-

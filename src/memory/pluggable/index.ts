@@ -51,12 +51,7 @@ export type {
 } from "./interfaces/index.js";
 
 // 公共类型
-export type {
-  MessageRole,
-  ToolCall,
-  ToolResult,
-  Message,
-} from "./interfaces/index.js";
+export type { MessageRole, ToolCall, ToolResult, Message } from "./interfaces/index.js";
 
 // 情节记忆接口
 export type {
@@ -103,7 +98,6 @@ export type {
   DocumentListOptions,
   IKnowledgeMemoryProvider,
 } from "./interfaces/index.js";
-
 
 // ==================== 提供者 ====================
 

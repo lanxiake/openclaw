@@ -560,7 +560,6 @@ export class MemoryEpisodicMemoryProvider implements IEpisodicMemoryProvider {
 
     return entries;
   }
-
 }
 
 // 自动注册提供者

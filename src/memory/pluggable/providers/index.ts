@@ -20,10 +20,10 @@ export {
 } from "./factory.js";
 
 // 情节记忆提供者
-export { MemoryEpisodicMemoryProvider } from "./episodic/index.js";
+export { MemoryEpisodicMemoryProvider, PostgresEpisodicMemoryProvider } from "./episodic/index.js";
 
 // 画像记忆提供者
-export { MemoryProfileMemoryProvider } from "./profile/index.js";
+export { MemoryProfileMemoryProvider, PostgresProfileMemoryProvider } from "./profile/index.js";
 
 // 知识记忆提供者
 export {
@@ -31,7 +31,6 @@ export {
   SQLiteKnowledgeMemoryAdapter,
   type SQLiteKnowledgeConfig,
 } from "./knowledge/index.js";
-
 
 // 自动注册内置提供者
 import "./episodic/index.js";

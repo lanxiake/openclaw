@@ -68,8 +68,6 @@ export interface KeyEvent {
   metadata?: Record<string, unknown>;
 }
 
-
-
 // ==================== 查询选项 ====================
 
 /**
@@ -297,5 +295,4 @@ export interface IEpisodicMemoryProvider extends IMemoryProvider {
    * @returns 时间线条目列表
    */
   getTimeline(userId: string, startDate: Date, endDate: Date): Promise<TimelineEntry[]>;
-
 }

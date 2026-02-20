@@ -363,7 +363,6 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
   ): Promise<SearchResult[]> {
     return this.searchSimilar(userId, query, options);
   }
-
 }
 
 // 自动注册提供者

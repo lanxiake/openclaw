@@ -16,12 +16,7 @@ export type {
 } from "./memory-provider.js";
 
 // 公共类型（从 types.ts 提取）
-export type {
-  MessageRole,
-  ToolCall,
-  ToolResult,
-  Message,
-} from "./types.js";
+export type { MessageRole, ToolCall, ToolResult, Message } from "./types.js";
 
 // 情节记忆
 export type {
@@ -68,4 +63,3 @@ export type {
   DocumentListOptions,
   IKnowledgeMemoryProvider,
 } from "./knowledge-memory.js";
-
