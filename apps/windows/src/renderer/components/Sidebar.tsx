@@ -12,7 +12,7 @@ import './Sidebar.css'
 /**
  * 视图类型
  */
-type ViewType = 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'settings' | 'devices'
+type ViewType = 'dashboard' | 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'settings' | 'devices'
 
 /**
  * 连接选项
@@ -61,6 +61,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <h3 className="sidebar-section-title">功能</h3>
 
         <nav className="sidebar-nav">
+          <button
+            className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`}
+            onClick={() => handleViewChange('dashboard')}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8.354 1.146a.5.5 0 00-.708 0l-6 6A.5.5 0 002 7.5V14a1 1 0 001 1h3a1 1 0 001-1v-3h2v3a1 1 0 001 1h3a1 1 0 001-1V7.5a.5.5 0 00.354-.854l-6-6zM13 7.207V14h-2.5v-3a1 1 0 00-1-1h-3a1 1 0 00-1 1v3H3V7.207l5-5 5 5z"/>
+            </svg>
+            <span>概览</span>
+          </button>
+
           <button
             className={`nav-item ${activeView === 'chat' ? 'active' : ''}`}
             onClick={() => handleViewChange('chat')}

@@ -10,6 +10,7 @@ import { AuditLogView } from './components/AuditLogView'
 import { AuthView } from './components/AuthView'
 import { ChatView } from './components/ChatView'
 import { ConfirmDialog } from './components/ConfirmDialog'
+import { DashboardView } from './components/DashboardView'
 import { DeviceManagementView } from './components/DeviceManagementView'
 import { FilesView } from './components/FilesView'
 import { SettingsView } from './components/SettingsView'
@@ -26,7 +27,7 @@ import { useSettings } from './hooks/useSettings'
 /**
  * 视图类型
  */
-type ViewType = 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'settings' | 'devices'
+type ViewType = 'dashboard' | 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'settings' | 'devices'
 
 /**
  * 主应用组件
@@ -50,7 +51,7 @@ const App: React.FC = () => {
 
   // UI 状态
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [activeView, setActiveView] = useState<ViewType>('chat')
+  const [activeView, setActiveView] = useState<ViewType>('dashboard')
 
   /**
    * 监控认证状态变化
@@ -187,6 +188,8 @@ const App: React.FC = () => {
    */
   const renderMainView = () => {
     switch (activeView) {
+      case 'dashboard':
+        return <DashboardView displayName={user?.displayName || undefined} isConnected={isConnected} onViewChange={setActiveView} />
       case 'files':
         return <FilesView isConnected={isConnected} />
       case 'system':
