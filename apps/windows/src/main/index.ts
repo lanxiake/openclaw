@@ -1009,6 +1009,248 @@ function setupApiIpcHandlers(): void {
     apiClient.setAccessToken(token)
   })
 
+  // === 订阅接口 ===
+  ipcMain.handle('api:getPlans', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取订阅计划列表')
+    return apiClient.getPlans()
+  })
+
+  ipcMain.handle('api:getPlan', async (_event, planId: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof planId !== 'string' || planId.length > 100) {
+      throw new Error('无效的计划 ID')
+    }
+    log.info('获取计划详情', { planId })
+    return apiClient.getPlan(planId)
+  })
+
+  ipcMain.handle('api:getSubscription', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取用户订阅信息')
+    return apiClient.getSubscription()
+  })
+
+  ipcMain.handle('api:getUsage', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取用户使用量')
+    return apiClient.getUsage()
+  })
+
+  ipcMain.handle('api:getSubscriptionOverview', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取订阅概览')
+    return apiClient.getSubscriptionOverview()
+  })
+
+  ipcMain.handle('api:createSubscription', async (_event, params: {
+    planId: string
+    billingPeriod: 'monthly' | 'yearly'
+    paymentMethodId?: string
+    startTrial?: boolean
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof params.planId !== 'string' || params.planId.length > 100) {
+      throw new Error('无效的计划 ID')
+    }
+    if (params.billingPeriod !== 'monthly' && params.billingPeriod !== 'yearly') {
+      throw new Error('无效的计费周期')
+    }
+    log.info('创建订阅', { planId: params.planId, billingPeriod: params.billingPeriod })
+    return apiClient.createSubscription(params)
+  })
+
+  ipcMain.handle('api:cancelSubscription', async (_event, subscriptionId: string, params?: {
+    immediately?: boolean
+    reason?: string
+    feedback?: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof subscriptionId !== 'string' || subscriptionId.length > 200) {
+      throw new Error('无效的订阅 ID')
+    }
+    log.info('取消订阅', { subscriptionId, immediately: params?.immediately })
+    return apiClient.cancelSubscription(subscriptionId, params || {})
+  })
+
+  ipcMain.handle('api:updateSubscription', async (_event, subscriptionId: string, params: {
+    planId?: string
+    billingPeriod?: 'monthly' | 'yearly'
+    cancelAtPeriodEnd?: boolean
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof subscriptionId !== 'string' || subscriptionId.length > 200) {
+      throw new Error('无效的订阅 ID')
+    }
+    log.info('更新订阅', { subscriptionId, changes: Object.keys(params) })
+    return apiClient.updateSubscription(subscriptionId, params)
+  })
+
+  ipcMain.handle('api:checkQuota', async (_event, quotaType: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    const validTypes = ['conversations', 'aiCalls', 'skills', 'devices', 'storage']
+    if (!validTypes.includes(quotaType)) {
+      throw new Error('无效的配额类型')
+    }
+    log.info('检查配额', { quotaType })
+    return apiClient.checkQuota(quotaType as 'conversations' | 'aiCalls' | 'skills' | 'devices' | 'storage')
+  })
+
+  // === 支付接口 ===
+  ipcMain.handle('api:getPaymentProviders', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取可用支付方式')
+    return apiClient.getPaymentProviders()
+  })
+
+  ipcMain.handle('api:getUserOrders', async (_event, options?: {
+    status?: string | string[]
+    page?: number
+    limit?: number
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取用户订单列表', { status: options?.status, page: options?.page })
+    return apiClient.getUserOrders(options as Parameters<typeof apiClient.getUserOrders>[0])
+  })
+
+  ipcMain.handle('api:getOrder', async (_event, orderId: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof orderId !== 'string' || orderId.length > 200) {
+      throw new Error('无效的订单 ID')
+    }
+    log.info('获取订单详情', { orderId })
+    return apiClient.getOrder(orderId)
+  })
+
+  ipcMain.handle('api:calculatePrice', async (_event, params: {
+    type: string
+    itemId: string
+    billingPeriod?: string
+    couponCode?: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof params.type !== 'string' || typeof params.itemId !== 'string') {
+      throw new Error('无效的计算价格参数')
+    }
+    log.info('计算价格', { type: params.type, itemId: params.itemId })
+    return apiClient.calculatePrice(params as Parameters<typeof apiClient.calculatePrice>[0])
+  })
+
+  ipcMain.handle('api:purchaseSubscription', async (_event, params: {
+    type: string
+    planId: string
+    billingPeriod?: string
+    provider: string
+    couponCode?: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof params.planId !== 'string' || typeof params.provider !== 'string') {
+      throw new Error('无效的购买参数')
+    }
+    log.info('购买订阅', { type: params.type, planId: params.planId, provider: params.provider })
+    return apiClient.purchaseSubscription(params as Parameters<typeof apiClient.purchaseSubscription>[0])
+  })
+
+  ipcMain.handle('api:cancelOrder', async (_event, orderId: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof orderId !== 'string' || orderId.length > 200) {
+      throw new Error('无效的订单 ID')
+    }
+    log.info('取消订单', { orderId })
+    return apiClient.cancelOrder(orderId)
+  })
+
+  ipcMain.handle('api:initiatePayment', async (_event, orderId: string, params: {
+    provider: string
+    returnUrl?: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof orderId !== 'string' || orderId.length > 200) {
+      throw new Error('无效的订单 ID')
+    }
+    if (typeof params.provider !== 'string') {
+      throw new Error('无效的支付提供商')
+    }
+    log.info('发起支付', { orderId, provider: params.provider })
+    return apiClient.initiatePayment(orderId, params as Parameters<typeof apiClient.initiatePayment>[1])
+  })
+
+  ipcMain.handle('api:queryPaymentStatus', async (_event, orderId: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof orderId !== 'string' || orderId.length > 200) {
+      throw new Error('无效的订单 ID')
+    }
+    log.info('查询支付状态', { orderId })
+    return apiClient.queryPaymentStatus(orderId)
+  })
+
+  ipcMain.handle('api:mockPaymentComplete', async (_event, params: {
+    orderId: string
+    success?: boolean
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof params.orderId !== 'string' || params.orderId.length > 200) {
+      throw new Error('无效的订单 ID')
+    }
+    log.info('模拟支付完成', { orderId: params.orderId, success: params.success })
+    return apiClient.mockPaymentComplete(params)
+  })
+
+  ipcMain.handle('api:createRefund', async (_event, params: {
+    orderId: string
+    amount?: number
+    reason: string
+    description?: string
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof params.orderId !== 'string' || params.orderId.length > 200) {
+      throw new Error('无效的订单 ID')
+    }
+    if (typeof params.reason !== 'string' || params.reason.length > 500) {
+      throw new Error('无效的退款原因')
+    }
+    log.info('创建退款', { orderId: params.orderId, reason: params.reason })
+    return apiClient.createRefund(params)
+  })
+
   log.info('API Server IPC 处理器设置完成')
 }
 

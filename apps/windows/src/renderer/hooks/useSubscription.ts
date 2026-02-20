@@ -302,12 +302,18 @@ export function useSubscription(): UseSubscriptionReturn {
     console.log('[useSubscription] 获取订阅概览')
 
     try {
-      const result = await window.electronAPI.gateway.call<SubscriptionOverview>(
-        'assistant.subscription.overview',
-        {}
-      )
-      setOverview(result)
-      console.log('[useSubscription] 概览:', result.plan.name)
+      const result = await window.electronAPI.api.getSubscriptionOverview() as {
+        success: boolean
+        data?: SubscriptionOverview
+        error?: string
+      }
+
+      if (result.success && result.data) {
+        setOverview(result.data)
+        console.log('[useSubscription] 概览:', result.data.plan.name)
+      } else {
+        console.error('[useSubscription] 获取概览失败:', result.error)
+      }
     } catch (err) {
       console.error('[useSubscription] 获取概览失败:', err)
     }
@@ -320,12 +326,18 @@ export function useSubscription(): UseSubscriptionReturn {
     console.log('[useSubscription] 获取使用量统计')
 
     try {
-      const result = await window.electronAPI.gateway.call<UsageStats>(
-        'assistant.subscription.usage',
-        {}
-      )
-      setUsage(result)
-      console.log('[useSubscription] 使用量:', result.daily.conversations, '次对话')
+      const result = await window.electronAPI.api.getUsage() as {
+        success: boolean
+        data?: { usage: UsageStats }
+        error?: string
+      }
+
+      if (result.success && result.data) {
+        setUsage(result.data.usage as UsageStats)
+        console.log('[useSubscription] 使用量获取成功')
+      } else {
+        console.error('[useSubscription] 获取使用量失败:', result.error)
+      }
     } catch (err) {
       console.error('[useSubscription] 获取使用量失败:', err)
     }
@@ -345,18 +357,22 @@ export function useSubscription(): UseSubscriptionReturn {
       setError(null)
 
       try {
-        const result = await window.electronAPI.gateway.call<{
-          success: boolean
-          subscription: UserSubscription
-          message: string
-        }>('assistant.subscription.create', {
+        const result = await window.electronAPI.api.createSubscription({
           planId,
           billingPeriod,
           startTrial: options?.startTrial,
-        })
+        }) as {
+          success: boolean
+          data?: { subscription: UserSubscription; message?: string }
+          error?: string
+        }
 
-        setSubscription(result.subscription)
-        console.log('[useSubscription] 订阅创建成功:', result.message)
+        if (result.success && result.data) {
+          setSubscription(result.data.subscription)
+          console.log('[useSubscription] 订阅创建成功:', result.data.message)
+        } else {
+          throw new Error(result.error || '创建订阅失败')
+        }
 
         // 刷新相关数据
         await fetchOverview()
@@ -386,18 +402,21 @@ export function useSubscription(): UseSubscriptionReturn {
       setError(null)
 
       try {
-        const result = await window.electronAPI.gateway.call<{
+        const result = await window.electronAPI.api.cancelSubscription(
+          subscription.id,
+          { immediately, reason }
+        ) as {
           success: boolean
-          subscription: UserSubscription
-          message: string
-        }>('assistant.subscription.cancel', {
-          subscriptionId: subscription.id,
-          immediately,
-          reason,
-        })
+          data?: { subscription: UserSubscription; message?: string }
+          error?: string
+        }
 
-        setSubscription(result.subscription)
-        console.log('[useSubscription] 订阅取消成功:', result.message)
+        if (result.success && result.data) {
+          setSubscription(result.data.subscription)
+          console.log('[useSubscription] 订阅取消成功:', result.data.message)
+        } else {
+          throw new Error(result.error || '取消订阅失败')
+        }
 
         // 刷新相关数据
         await fetchOverview()
@@ -427,18 +446,21 @@ export function useSubscription(): UseSubscriptionReturn {
       setError(null)
 
       try {
-        const result = await window.electronAPI.gateway.call<{
+        const result = await window.electronAPI.api.updateSubscription(
+          subscription.id,
+          { planId, billingPeriod }
+        ) as {
           success: boolean
-          subscription: UserSubscription
-          message: string
-        }>('assistant.subscription.update', {
-          subscriptionId: subscription.id,
-          planId,
-          billingPeriod,
-        })
+          data?: { subscription: UserSubscription; message?: string }
+          error?: string
+        }
 
-        setSubscription(result.subscription)
-        console.log('[useSubscription] 订阅更新成功:', result.message)
+        if (result.success && result.data) {
+          setSubscription(result.data.subscription)
+          console.log('[useSubscription] 订阅更新成功:', result.data.message)
+        } else {
+          throw new Error(result.error || '更新订阅失败')
+        }
 
         // 刷新相关数据
         await fetchOverview()
@@ -464,12 +486,17 @@ export function useSubscription(): UseSubscriptionReturn {
     ): Promise<QuotaCheckResult> => {
       console.log('[useSubscription] 检查配额:', quotaType)
 
-      const result = await window.electronAPI.gateway.call<QuotaCheckResult>(
-        'assistant.subscription.quota.check',
-        { quotaType }
-      )
+      const result = await window.electronAPI.api.checkQuota(quotaType) as {
+        success: boolean
+        data?: QuotaCheckResult
+        error?: string
+      }
 
-      return result
+      if (result.success && result.data) {
+        return result.data
+      }
+
+      throw new Error(result.error || '检查配额失败')
     },
     []
   )

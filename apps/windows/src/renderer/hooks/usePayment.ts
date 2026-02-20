@@ -137,27 +137,22 @@ export function usePayment(userId: string) {
   })
 
   /**
-   * Gateway RPC 调用
-   */
-  const callGateway = useCallback(async <T>(method: string, params?: unknown): Promise<T> => {
-    return window.electronAPI.gateway.call<T>(method, params)
-  }, [])
-
-  /**
    * 加载可用的支付方式
    */
   const loadProviders = useCallback(async () => {
     try {
-      const result = await callGateway<{ success: boolean; providers: PaymentProvider[] }>(
-        'payment.getProviders'
-      )
-      if (result.success) {
-        setState((prev) => ({ ...prev, providers: result.providers }))
+      const result = await window.electronAPI.api.getPaymentProviders() as {
+        success: boolean
+        data?: { providers: PaymentProvider[] }
+        error?: string
+      }
+      if (result.success && result.data) {
+        setState((prev) => ({ ...prev, providers: result.data!.providers }))
       }
     } catch (error) {
       console.error('加载支付方式失败:', error)
     }
-  }, [callGateway])
+  }, [])
 
   /**
    * 加载用户订单列表
@@ -167,18 +162,17 @@ export function usePayment(userId: string) {
       setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
       try {
-        const result = await callGateway<{
+        const result = await window.electronAPI.api.getUserOrders(params) as {
           success: boolean
-          orders: PaymentOrder[]
-          total: number
+          data?: { orders: PaymentOrder[]; total: number }
           error?: string
-        }>('payment.getUserOrders', { userId, ...params })
+        }
 
-        if (result.success) {
+        if (result.success && result.data) {
           setState((prev) => ({
             ...prev,
-            orders: result.orders,
-            totalOrders: result.total,
+            orders: result.data!.orders,
+            totalOrders: result.data!.total,
             isLoading: false,
           }))
         } else {
@@ -196,7 +190,7 @@ export function usePayment(userId: string) {
         }))
       }
     },
-    [userId, callGateway]
+    []
   )
 
   /**
@@ -205,15 +199,15 @@ export function usePayment(userId: string) {
   const getOrder = useCallback(
     async (orderId: string): Promise<PaymentOrder | null> => {
       try {
-        const result = await callGateway<{
+        const result = await window.electronAPI.api.getOrder(orderId) as {
           success: boolean
-          order?: PaymentOrder
+          data?: { order: PaymentOrder }
           error?: string
-        }>('payment.getOrder', { orderId })
+        }
 
-        if (result.success && result.order) {
-          setState((prev) => ({ ...prev, currentOrder: result.order! }))
-          return result.order
+        if (result.success && result.data?.order) {
+          setState((prev) => ({ ...prev, currentOrder: result.data!.order }))
+          return result.data.order
         }
         return null
       } catch (error) {
@@ -221,7 +215,7 @@ export function usePayment(userId: string) {
         return null
       }
     },
-    [callGateway]
+    []
   )
 
   /**
@@ -237,19 +231,19 @@ export function usePayment(userId: string) {
       setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
       try {
-        const result = await callGateway<{
+        const result = await window.electronAPI.api.calculatePrice(params) as {
           success: boolean
-          price?: PriceInfo
+          data?: { price: PriceInfo }
           error?: string
-        }>('payment.calculatePrice', params)
+        }
 
-        if (result.success && result.price) {
+        if (result.success && result.data?.price) {
           setState((prev) => ({
             ...prev,
-            priceInfo: result.price!,
+            priceInfo: result.data!.price,
             isLoading: false,
           }))
-          return result.price
+          return result.data.price
         } else {
           setState((prev) => ({
             ...prev,
@@ -267,7 +261,7 @@ export function usePayment(userId: string) {
         return null
       }
     },
-    [callGateway]
+    []
   )
 
   /**
@@ -283,23 +277,27 @@ export function usePayment(userId: string) {
       setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
       try {
-        const result = await callGateway<{
+        const result = await window.electronAPI.api.purchaseSubscription({
+          type: 'subscription',
+          planId: params.planId,
+          billingPeriod: params.billingPeriod,
+          provider: params.provider,
+          couponCode: params.couponCode,
+        }) as {
           success: boolean
-          order?: PaymentOrder
-          price?: PriceInfo
-          payment?: PaymentResult
+          data?: { order: PaymentOrder; price?: PriceInfo; payment: PaymentResult }
           error?: string
-        }>('payment.purchaseSubscription', { userId, ...params })
+        }
 
-        if (result.success && result.order && result.payment) {
+        if (result.success && result.data?.order && result.data?.payment) {
           setState((prev) => ({
             ...prev,
-            currentOrder: result.order!,
-            priceInfo: result.price || null,
-            paymentResult: result.payment!,
+            currentOrder: result.data!.order,
+            priceInfo: result.data!.price || null,
+            paymentResult: result.data!.payment,
             isLoading: false,
           }))
-          return { order: result.order, payment: result.payment }
+          return { order: result.data.order, payment: result.data.payment }
         } else {
           setState((prev) => ({
             ...prev,
@@ -317,7 +315,7 @@ export function usePayment(userId: string) {
         return null
       }
     },
-    [userId, callGateway]
+    []
   )
 
   /**
@@ -326,25 +324,23 @@ export function usePayment(userId: string) {
   const queryPaymentStatus = useCallback(
     async (orderId: string): Promise<{ status: OrderStatus; paid: boolean } | null> => {
       try {
-        const result = await callGateway<{
+        const result = await window.electronAPI.api.queryPaymentStatus(orderId) as {
           success: boolean
-          status?: OrderStatus
-          paid?: boolean
-          paidAt?: string
+          data?: { status: OrderStatus; paid: boolean; paidAt?: string }
           error?: string
-        }>('payment.queryStatus', { orderId })
+        }
 
-        if (result.success) {
+        if (result.success && result.data) {
           // 更新当前订单状态
           if (state.currentOrder?.id === orderId) {
             setState((prev) => ({
               ...prev,
               currentOrder: prev.currentOrder
-                ? { ...prev.currentOrder, status: result.status!, paidAt: result.paidAt }
+                ? { ...prev.currentOrder, status: result.data!.status, paidAt: result.data!.paidAt }
                 : null,
             }))
           }
-          return { status: result.status!, paid: result.paid! }
+          return { status: result.data.status, paid: result.data.paid }
         }
         return null
       } catch (error) {
@@ -352,7 +348,7 @@ export function usePayment(userId: string) {
         return null
       }
     },
-    [callGateway, state.currentOrder?.id]
+    [state.currentOrder?.id]
   )
 
   /**
@@ -361,15 +357,18 @@ export function usePayment(userId: string) {
   const mockPaymentComplete = useCallback(
     async (orderId: string, success: boolean = true): Promise<PaymentOrder | null> => {
       try {
-        const result = await callGateway<{
+        const result = await window.electronAPI.api.mockPaymentComplete({
+          orderId,
+          success,
+        }) as {
           success: boolean
-          order?: PaymentOrder
+          data?: { order: PaymentOrder }
           error?: string
-        }>('payment.mockComplete', { orderId, success })
+        }
 
-        if (result.success && result.order) {
-          setState((prev) => ({ ...prev, currentOrder: result.order! }))
-          return result.order
+        if (result.success && result.data?.order) {
+          setState((prev) => ({ ...prev, currentOrder: result.data!.order }))
+          return result.data.order
         }
         return null
       } catch (error) {
@@ -377,7 +376,7 @@ export function usePayment(userId: string) {
         return null
       }
     },
-    [callGateway]
+    []
   )
 
   /**
@@ -388,11 +387,10 @@ export function usePayment(userId: string) {
       setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
       try {
-        const result = await callGateway<{
+        const result = await window.electronAPI.api.cancelOrder(orderId) as {
           success: boolean
-          order?: PaymentOrder
           error?: string
-        }>('payment.cancelOrder', { orderId })
+        }
 
         if (result.success) {
           // 刷新订单列表
@@ -416,7 +414,7 @@ export function usePayment(userId: string) {
         return false
       }
     },
-    [callGateway, loadOrders]
+    [loadOrders]
   )
 
   /**
@@ -432,17 +430,17 @@ export function usePayment(userId: string) {
       setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
       try {
-        const result = await callGateway<{
+        const result = await window.electronAPI.api.createRefund(params) as {
           success: boolean
-          refund?: Refund
+          data?: { refund: Refund }
           error?: string
-        }>('payment.createRefund', params)
+        }
 
-        if (result.success && result.refund) {
+        if (result.success && result.data?.refund) {
           // 刷新订单列表
           await loadOrders()
           setState((prev) => ({ ...prev, isLoading: false }))
-          return result.refund
+          return result.data.refund
         } else {
           setState((prev) => ({
             ...prev,
@@ -460,7 +458,7 @@ export function usePayment(userId: string) {
         return null
       }
     },
-    [callGateway, loadOrders]
+    [loadOrders]
   )
 
   /**
