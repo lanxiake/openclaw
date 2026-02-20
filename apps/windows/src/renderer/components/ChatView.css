@@ -606,3 +606,69 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ===== 服务端同步相关样式 ===== */
+
+/* 会话分组标签 */
+.session-group-label {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+.session-group-label:first-child {
+  margin-top: 0;
+  border-top: none;
+}
+
+/* 服务端会话来源标记 */
+.session-source-badge {
+  margin-right: 4px;
+  font-size: 10px;
+  vertical-align: middle;
+}
+
+.session-source-badge.server {
+  color: var(--color-primary);
+  opacity: 0.8;
+}
+
+/* 同步中提示 */
+.session-sync-hint {
+  padding: var(--spacing-md);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-style: italic;
+}
+
+/* 消息加载覆盖层 */
+.messages-loading-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  color: var(--text-muted);
+}
+
+.messages-loading-overlay .loading-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.messages-loading-overlay .spinner {
+  font-size: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

@@ -173,6 +173,13 @@ function initGatewayClientLazy(): void {
       return
     }
 
+    // 转发 agent 事件到渲染进程（包含 tool 执行信息）
+    if (message.type === 'event' && message.event === 'agent') {
+      log.info('[Gateway] 收到 agent 事件:', message.payload)
+      mainWindow?.webContents.send('gateway:agent', message.payload)
+      return
+    }
+
     // 其他消息转发
     mainWindow?.webContents.send('gateway:message', message)
   })

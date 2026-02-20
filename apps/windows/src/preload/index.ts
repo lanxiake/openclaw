@@ -64,6 +64,53 @@ export interface ChatEventPayload {
 }
 
 /**
+ * Agent 事件负载（包含 tool 执行信息）
+ *
+ * Gateway 通过 agent 事件通道广播 tool 执行的三个阶段：
+ * - start: 工具开始执行
+ * - update: 部分结果流式更新
+ * - result: 工具执行完成
+ */
+export interface AgentEventPayload {
+  /** 运行 ID */
+  runId: string
+  /** 事件序列号 */
+  seq: number
+  /** 事件流类型 */
+  stream: 'tool' | 'lifecycle' | 'assistant' | 'compaction' | string
+  /** 时间戳 */
+  ts: number
+  /** 事件数据 */
+  data: AgentEventData
+  /** 会话 Key */
+  sessionKey?: string
+}
+
+/**
+ * Agent 事件数据（tool 执行信息）
+ */
+export interface AgentEventData {
+  /** 工具执行阶段 */
+  phase?: 'start' | 'update' | 'result'
+  /** 工具名称 */
+  name?: string
+  /** 工具调用 ID */
+  toolCallId?: string
+  /** 工具参数 (phase=start 时) */
+  args?: Record<string, unknown>
+  /** 部分结果 (phase=update 时) */
+  partialResult?: unknown
+  /** 工具元数据 (phase=result 时) */
+  meta?: string
+  /** 是否出错 (phase=result 时) */
+  isError?: boolean
+  /** 工具结果 (phase=result 时) */
+  result?: unknown
+  /** 其他数据字段 */
+  [key: string]: unknown
+}
+
+/**
  * 设备信息
  */
 export interface DeviceInfo {
@@ -183,6 +230,7 @@ export interface ElectronAPI {
     onConfirmRequest: (callback: (request: ConfirmRequest) => void) => () => void
     onCommandExecute: (callback: (request: CommandExecuteRequest) => void) => () => void
     onChatEvent: (callback: (payload: ChatEventPayload) => void) => () => void
+    onAgentEvent: (callback: (payload: AgentEventPayload) => void) => () => void
   }
 
   // 文件操作
@@ -553,6 +601,8 @@ const electronAPI: ElectronAPI = {
       createEventListener('command:execute', callback as (...args: unknown[]) => void),
     onChatEvent: (callback: (payload: ChatEventPayload) => void) =>
       createEventListener('gateway:chat', callback as (...args: unknown[]) => void),
+    onAgentEvent: (callback: (payload: AgentEventPayload) => void) =>
+      createEventListener('gateway:agent', callback as (...args: unknown[]) => void),
   },
 
   // 文件操作 API

@@ -11,7 +11,7 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react'
-import { useChatHistory, type ChatMessage, type ChatSession, type MessageAttachment } from '../hooks/useChatHistory'
+import { useChatHistory, type ChatMessage, type ChatSession, type MessageAttachment, type SessionSource } from '../hooks/useChatHistory'
 import { useChatStream, type ChatEventPayload } from '../hooks/useChatStream'
 import { AttachmentPreview, type Attachment } from './AttachmentPreview'
 import './ChatView.css'
@@ -194,11 +194,12 @@ MessageItem.displayName = 'MessageItem'
 const SessionSidebar = memo<{
   sessions: ChatSession[]
   activeSessionId: string | null
+  isSyncing?: boolean
   onSelect: (id: string) => void
   onNew: () => void
   onDelete: (id: string) => void
   onRename: (id: string, title: string) => void
-}>(({ sessions, activeSessionId, onSelect, onNew, onDelete, onRename }) => {
+}>(({ sessions, activeSessionId, isSyncing, onSelect, onNew, onDelete, onRename }) => {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
 
@@ -248,6 +249,72 @@ const SessionSidebar = memo<{
     }
   }
 
+  // 分组会话：本地在前，服务端在后
+  const localSessions = sessions.filter((s) => s.source === 'local')
+  const serverSessions = sessions.filter((s) => s.source === 'server')
+
+  /**
+   * 渲染单个会话条目
+   */
+  const renderSessionItem = (session: ChatSession) => (
+    <div
+      key={session.id}
+      className={`session-item ${session.id === activeSessionId ? 'active' : ''}`}
+      onClick={() => onSelect(session.id)}
+    >
+      {editingId === session.id ? (
+        <div className="session-edit">
+          <input
+            type="text"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSaveEdit()
+              if (e.key === 'Escape') handleCancelEdit()
+            }}
+            onClick={(e) => e.stopPropagation()}
+            autoFocus
+          />
+          <button onClick={(e) => { e.stopPropagation(); handleSaveEdit() }}>✓</button>
+          <button onClick={(e) => { e.stopPropagation(); handleCancelEdit() }}>✕</button>
+        </div>
+      ) : (
+        <>
+          <div className="session-info">
+            <span className="session-title">
+              {session.source === 'server' && (
+                <span className="session-source-badge server" title="服务端会话">&#9729;</span>
+              )}
+              {session.title}
+            </span>
+            <span className="session-time">{formatDate(session.updatedAt)}</span>
+          </div>
+          <div className="session-actions">
+            <button
+              className="session-action-btn"
+              onClick={(e) => { e.stopPropagation(); handleStartEdit(session) }}
+              title="重命名"
+            >
+              ✏️
+            </button>
+            <button
+              className="session-action-btn danger"
+              onClick={(e) => {
+                e.stopPropagation()
+                if (window.confirm('确定要删除这个对话吗？')) {
+                  onDelete(session.id)
+                }
+              }}
+              title="删除"
+            >
+              🗑️
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+
   return (
     <div className="session-sidebar">
       <div className="session-sidebar-header">
@@ -258,62 +325,35 @@ const SessionSidebar = memo<{
       </div>
 
       <div className="session-list">
-        {sessions.length === 0 ? (
+        {sessions.length === 0 && !isSyncing ? (
           <div className="no-sessions">暂无历史对话</div>
         ) : (
-          sessions.map((session) => (
-            <div
-              key={session.id}
-              className={`session-item ${session.id === activeSessionId ? 'active' : ''}`}
-              onClick={() => onSelect(session.id)}
-            >
-              {editingId === session.id ? (
-                <div className="session-edit">
-                  <input
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleSaveEdit()
-                      if (e.key === 'Escape') handleCancelEdit()
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    autoFocus
-                  />
-                  <button onClick={(e) => { e.stopPropagation(); handleSaveEdit() }}>✓</button>
-                  <button onClick={(e) => { e.stopPropagation(); handleCancelEdit() }}>✕</button>
+          <>
+            {/* 本地会话 */}
+            {localSessions.length > 0 && (
+              <>
+                {serverSessions.length > 0 && (
+                  <div className="session-group-label">本地对话</div>
+                )}
+                {localSessions.map(renderSessionItem)}
+              </>
+            )}
+
+            {/* 服务端会话 */}
+            {serverSessions.length > 0 && (
+              <>
+                <div className="session-group-label">
+                  {isSyncing ? '同步中...' : '服务端对话'}
                 </div>
-              ) : (
-                <>
-                  <div className="session-info">
-                    <span className="session-title">{session.title}</span>
-                    <span className="session-time">{formatDate(session.updatedAt)}</span>
-                  </div>
-                  <div className="session-actions">
-                    <button
-                      className="session-action-btn"
-                      onClick={(e) => { e.stopPropagation(); handleStartEdit(session) }}
-                      title="重命名"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      className="session-action-btn danger"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (window.confirm('确定要删除这个对话吗？')) {
-                          onDelete(session.id)
-                        }
-                      }}
-                      title="删除"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          ))
+                {serverSessions.map(renderSessionItem)}
+              </>
+            )}
+
+            {/* 同步中但尚无服务端会话 */}
+            {isSyncing && serverSessions.length === 0 && (
+              <div className="session-sync-hint">正在同步服务端会话...</div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -339,6 +379,8 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
     activeSessionId,
     currentMessages,
     isLoading: isLoadingHistory,
+    isSyncing,
+    isLoadingMessages,
     createSession,
     switchSession,
     deleteSession,
@@ -346,6 +388,8 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
     clearCurrentSession,
     addMessage,
     updateMessage,
+    syncSessionsFromServer,
+    loadServerMessages,
   } = useChatHistory()
 
   // 流式响应 Hook
@@ -371,6 +415,34 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
   useEffect(() => {
     scrollToBottom()
   }, [currentMessages, scrollToBottom])
+
+  /**
+   * 连接 Gateway 后自动同步服务端会话列表
+   */
+  const hasSyncedRef = useRef(false)
+  useEffect(() => {
+    if (isConnected && !hasSyncedRef.current) {
+      hasSyncedRef.current = true
+      console.log('[ChatView] Gateway 已连接，同步服务端会话列表')
+      syncSessionsFromServer().then((count) => {
+        console.log('[ChatView] 同步完成，获取', count, '个服务端会话')
+      })
+    }
+    if (!isConnected) {
+      hasSyncedRef.current = false
+    }
+  }, [isConnected, syncSessionsFromServer])
+
+  /**
+   * 切换到服务端会话时自动加载消息历史
+   */
+  useEffect(() => {
+    if (!activeSession) return
+    if (activeSession.source === 'server' && !activeSession.messagesLoaded) {
+      console.log('[ChatView] 切换到服务端会话，加载消息历史:', activeSession.id)
+      loadServerMessages(activeSession.id)
+    }
+  }, [activeSessionId, activeSession, loadServerMessages])
 
   /**
    * 监听流式响应更新，同步到消息
@@ -519,6 +591,11 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
       sessionKey = newSession.id
     }
 
+    // 服务端会话使用 serverKey 作为 sessionKey
+    if (activeSession?.source === 'server' && activeSession.serverKey) {
+      sessionKey = activeSession.serverKey
+    }
+
     // 转换附件格式
     const attachments: MessageAttachment[] = pendingAttachments.map((att) => ({
       type: att.mimeType.startsWith('image/') ? 'image' : 'file',
@@ -612,7 +689,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
         setCurrentAssistantMessageId(null)
       }
     }
-  }, [inputValue, pendingAttachments, isConnected, isLoading, activeSessionId, createSession, addMessage, updateMessage, startStream])
+  }, [inputValue, pendingAttachments, isConnected, isLoading, activeSessionId, activeSession, createSession, addMessage, updateMessage, startStream])
 
   /**
    * 处理键盘事件
@@ -652,6 +729,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
         <SessionSidebar
           sessions={sessions}
           activeSessionId={activeSessionId}
+          isSyncing={isSyncing}
           onSelect={switchSession}
           onNew={handleNewSession}
           onDelete={deleteSession}
@@ -702,6 +780,15 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
 
         {/* 消息列表 */}
         <div className="messages-container">
+          {isLoadingMessages && (
+            <div className="messages-loading-overlay">
+              <div className="loading-message">
+                <span className="spinner">&#8987;</span>
+                <p>加载服务端消息...</p>
+              </div>
+            </div>
+          )}
+
           {currentMessages.map((message) => (
             <MessageItem
               key={message.id}
