@@ -212,6 +212,33 @@ export class AuthProfileRepository {
   }
 
   /**
+   * 删除租户私有的 auth profile 覆盖
+   *
+   * 安全方法：仅删除 configType=tenant 且 userId 匹配的记录，
+   * 不会影响系统级配置。按 profileId 匹配而非内部 id。
+   *
+   * @param userId - 租户用户 ID
+   * @param profileId - 认证 profile 标识符
+   * @returns 是否成功删除
+   */
+  async deleteTenantProfile(userId: string, profileId: string): Promise<boolean> {
+    logger.debug("[AuthProfileRepo] 删除租户 profile", { userId, profileId });
+
+    const result = await this.db
+      .delete(authProfiles)
+      .where(
+        and(
+          eq(authProfiles.configType, "tenant"),
+          eq(authProfiles.userId, userId),
+          eq(authProfiles.profileId, profileId),
+        ),
+      )
+      .returning();
+
+    return result.length > 0;
+  }
+
+  /**
    * 创建或更新系统级 profile（upsert by profileId）
    */
   async upsertSystemProfile(

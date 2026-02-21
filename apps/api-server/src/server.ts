@@ -40,6 +40,7 @@ import { registerPlansRoutes } from "./routes/plans/index.js";
 import { registerSubscriptionsRoutes } from "./routes/subscriptions/index.js";
 import { registerPaymentsRoutes } from "./routes/payments/index.js";
 import { registerAuditRoutes } from "./routes/audit/index.js";
+import { registerUserConfigRoutes } from "./routes/user-config/index.js";
 
 /**
  * 创建并配置 Fastify 实例
@@ -114,6 +115,7 @@ export async function createServer(
   registerConversationsRoutes(server);
   registerMemoriesRoutes(server);
   registerAssistantConfigRoutes(server);
+  registerUserConfigRoutes(server);
   registerSkillsRoutes(server);
   registerFilesRoutes(server);
   registerAuditRoutes(server);

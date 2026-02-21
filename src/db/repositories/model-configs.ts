@@ -237,6 +237,48 @@ export class ModelProviderRepository {
       return created!;
     }
   }
+
+  /**
+   * 删除租户私有的提供商覆盖配置
+   *
+   * 仅删除 configType=tenant 且 userId 匹配的记录，
+   * 不会影响系统级配置。
+   *
+   * @param userId - 租户用户 ID
+   * @param providerKey - 提供商 Key
+   * @returns 是否成功删除
+   */
+  async deleteTenantProvider(userId: string, providerKey: string): Promise<boolean> {
+    const result = await this.db
+      .delete(modelProviders)
+      .where(
+        and(
+          eq(modelProviders.configType, "tenant"),
+          eq(modelProviders.userId, userId),
+          eq(modelProviders.providerKey, providerKey),
+        ),
+      )
+      .returning();
+
+    return result.length > 0;
+  }
+
+  /**
+   * 删除系统级提供商配置
+   *
+   * @param providerKey - 提供商 Key
+   * @returns 是否成功删除
+   */
+  async deleteSystemProvider(providerKey: string): Promise<boolean> {
+    const result = await this.db
+      .delete(modelProviders)
+      .where(
+        and(eq(modelProviders.configType, "system"), eq(modelProviders.providerKey, providerKey)),
+      )
+      .returning();
+
+    return result.length > 0;
+  }
 }
 
 /**
@@ -359,5 +401,23 @@ export class AgentDefaultConfigRepository {
 
       return created!;
     }
+  }
+
+  /**
+   * 删除租户私有的 Agent 配置覆盖
+   *
+   * 仅删除 configType=tenant 且 userId 匹配的记录，
+   * 删除后用户将回退到系统级 Agent 配置。
+   *
+   * @param userId - 租户用户 ID
+   * @returns 是否成功删除
+   */
+  async deleteTenantConfig(userId: string): Promise<boolean> {
+    const result = await this.db
+      .delete(agentConfigs)
+      .where(and(eq(agentConfigs.configType, "tenant"), eq(agentConfigs.userId, userId)))
+      .returning();
+
+    return result.length > 0;
   }
 }
