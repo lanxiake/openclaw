@@ -42,6 +42,11 @@ interface ChatViewProps {
  * 支持代码块、粗体、斜体、链接等基础语法
  */
 function renderMarkdownContent(text: string): React.ReactNode {
+  // 防御性检查：确保 text 是字符串
+  if (typeof text !== 'string') {
+    console.warn('[ChatView] renderMarkdownContent 收到非字符串内容:', typeof text)
+    return String(text ?? '')
+  }
   // 处理代码块 (```code```)
   const parts = text.split(/(```[\s\S]*?```)/g)
 

@@ -9,14 +9,43 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 
 /**
  * Chat 事件负载接口
+ *
+ * Gateway 广播的 chat 事件结构：
+ * - delta: message.content 为 [{type:"text", text:"完整累积文本"}] 格式（每次覆盖，非增量）
+ * - final: message.content 同上，为最终完整文本
+ * - error: errorMessage 为错误描述字符串
  */
 export interface ChatEventPayload {
   runId: string
   sessionKey: string
   state: 'delta' | 'final' | 'error'
-  delta?: string
   message?: Record<string, unknown>
   errorMessage?: string
+}
+
+/**
+ * 从 Gateway 的 message 对象中提取纯文本内容
+ *
+ * Gateway 发送的 message.content 格式为 [{type:"text", text:"..."}] 数组，
+ * 需要遍历提取所有 text 块并拼接为字符串
+ */
+function extractTextFromMessage(message: Record<string, unknown> | undefined): string {
+  if (!message) return ''
+  const content = message.content
+  // 如果 content 已经是字符串，直接返回
+  if (typeof content === 'string') return content
+  // 如果 content 是数组，提取所有 text 块
+  if (Array.isArray(content)) {
+    return content
+      .filter((block): block is { type: 'text'; text: string } =>
+        typeof block === 'object' && block !== null &&
+        block.type === 'text' &&
+        typeof block.text === 'string'
+      )
+      .map((block) => block.text)
+      .join('')
+  }
+  return ''
 }
 
 /**
@@ -89,7 +118,7 @@ export function useChatStream(): UseChatStreamReturn {
    * 处理 chat 事件
    */
   const handleChatEvent = useCallback((payload: ChatEventPayload) => {
-    const { runId, sessionKey, state, delta, message, errorMessage } = payload
+    const { runId, state, message, errorMessage } = payload
     console.log('[useChatStream] 收到 chat 事件:', { runId, state })
 
     setStreamingMessage((prev) => {
@@ -100,10 +129,12 @@ export function useChatStream(): UseChatStreamReturn {
       }
 
       switch (state) {
-        case 'delta':
-          // 累积增量内容
-          if (delta) {
-            contentRef.current += delta
+        case 'delta': {
+          // Gateway 的 delta 事件中 message.content[0].text 为当前完整累积文本（非增量）
+          // 直接覆盖即可，无需拼接
+          const deltaText = extractTextFromMessage(message)
+          if (deltaText) {
+            contentRef.current = deltaText
             return {
               ...prev,
               content: contentRef.current,
@@ -112,17 +143,19 @@ export function useChatStream(): UseChatStreamReturn {
             }
           }
           return prev
+        }
 
-        case 'final':
+        case 'final': {
           // 流式完成
           console.log('[useChatStream] 流式完成')
-          const finalContent = message?.content as string || contentRef.current
+          const finalContent = extractTextFromMessage(message) || contentRef.current
           return {
             ...prev,
             content: finalContent,
             isStreaming: false,
             isComplete: true,
           }
+        }
 
         case 'error':
           // 发生错误

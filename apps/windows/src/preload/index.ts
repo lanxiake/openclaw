@@ -47,17 +47,20 @@ export interface CommandExecuteRequest {
 
 /**
  * Chat 事件负载
+ *
+ * Gateway 广播的 chat 事件结构：
+ * - delta: message.content 为 [{type:"text", text:"完整累积文本"}] 格式（每次覆盖，非增量）
+ * - final: message.content 同上，为最终完整文本
+ * - error: errorMessage 为错误描述字符串
  */
 export interface ChatEventPayload {
   /** 运行 ID */
   runId: string
   /** 会话 Key */
   sessionKey: string
-  /** 状态: delta (流式增量), final (最终结果), error (错误) */
+  /** 状态: delta (流式累积), final (最终结果), error (错误) */
   state: 'delta' | 'final' | 'error'
-  /** 增量内容 (state=delta 时) */
-  delta?: string
-  /** 完整消息 (state=final 时) */
+  /** 消息对象，content 为 [{type:"text", text:"..."}] 数组格式 */
   message?: Record<string, unknown>
   /** 错误信息 (state=error 时) */
   errorMessage?: string
