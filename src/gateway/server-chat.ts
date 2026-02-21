@@ -279,25 +279,32 @@ export function createAgentEventHandler({
       }
     }
 
-    if (evt.stream === "tool" && !shouldEmitToolEvents(evt.runId, sessionKey)) {
+    /**
+     * verbose 关闭时，tool 事件不广播到 Control UI（broadcast），
+     * 但仍然通过 nodeSendToSession 发送给 node 客户端（如 Windows app）。
+     */
+    const suppressToolBroadcast =
+      evt.stream === "tool" && !shouldEmitToolEvents(evt.runId, sessionKey);
+
+    if (suppressToolBroadcast) {
       agentRunSeq.set(evt.runId, evt.seq);
-      return;
+    } else {
+      if (evt.seq !== last + 1) {
+        broadcast("agent", {
+          runId: evt.runId,
+          stream: "error",
+          ts: Date.now(),
+          sessionKey,
+          data: {
+            reason: "seq gap",
+            expected: last + 1,
+            received: evt.seq,
+          },
+        });
+      }
+      agentRunSeq.set(evt.runId, evt.seq);
+      broadcast("agent", agentPayload);
     }
-    if (evt.seq !== last + 1) {
-      broadcast("agent", {
-        runId: evt.runId,
-        stream: "error",
-        ts: Date.now(),
-        sessionKey,
-        data: {
-          reason: "seq gap",
-          expected: last + 1,
-          received: evt.seq,
-        },
-      });
-    }
-    agentRunSeq.set(evt.runId, evt.seq);
-    broadcast("agent", agentPayload);
 
     const lifecyclePhase =
       evt.stream === "lifecycle" && typeof evt.data?.phase === "string" ? evt.data.phase : null;
