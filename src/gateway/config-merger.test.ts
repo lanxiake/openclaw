@@ -8,7 +8,11 @@ import { describe, expect, it } from "vitest";
 
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 
-import { mergeFileAndDbConfigs, type DatabaseConfigs } from "./config-merger.js";
+import {
+  mergeFileAndDbConfigs,
+  buildConfigSources,
+  type DatabaseConfigs,
+} from "./config-merger.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -800,5 +804,266 @@ describe("mergeFileAndDbConfigs", () => {
       expect(result.auth?.profiles?.existing).toEqual({ provider: "anthropic", mode: "api_key" });
       expect(result.auth?.order?.default).toEqual(["existing"]);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildConfigSources 测试
+// ---------------------------------------------------------------------------
+
+describe("buildConfigSources", () => {
+  it("数据库无数据时所有段标记为 file", () => {
+    const fileConfig = baseFileConfig();
+    const dbConfigs = emptyDbConfigs();
+
+    const sources = buildConfigSources(fileConfig, dbConfigs);
+
+    expect(sources.gateway).toBe("file");
+    expect(sources["models.providers"]).toBe("file");
+    expect(sources["agents.defaults"]).toBe("file");
+    expect(sources["auth.profiles"]).toBe("file");
+    expect(sources["auth.order"]).toBe("file");
+  });
+
+  it("数据库有 gateway 配置时标记为 db-system", () => {
+    const fileConfig = baseFileConfig();
+    const dbConfigs = emptyDbConfigs();
+    dbConfigs.gatewayConfig = {
+      id: "gw1",
+      configType: "system",
+      userId: null,
+      gatewayMode: "local",
+      gatewayPort: 18789,
+      gatewayBind: "loopback",
+      authMode: "none",
+      authToken: null,
+      authPassword: null,
+      authAllowTailscale: false,
+      controlUiEnabled: true,
+      controlUiAllowInsecureAuth: false,
+      tailscaleMode: "off",
+      tailscaleResetOnExit: false,
+      extraConfig: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: null,
+      updatedBy: null,
+    };
+
+    const sources = buildConfigSources(fileConfig, dbConfigs);
+
+    expect(sources.gateway).toBe("db-system");
+  });
+
+  it("数据库有 tenant gateway 配置时标记为 db-tenant", () => {
+    const fileConfig = baseFileConfig();
+    const dbConfigs = emptyDbConfigs();
+    dbConfigs.gatewayConfig = {
+      id: "gw-t1",
+      configType: "tenant",
+      userId: "user-123",
+      gatewayMode: "local",
+      gatewayPort: 19000,
+      gatewayBind: "loopback",
+      authMode: "token",
+      authToken: "my-token",
+      authPassword: null,
+      authAllowTailscale: false,
+      controlUiEnabled: true,
+      controlUiAllowInsecureAuth: false,
+      tailscaleMode: "off",
+      tailscaleResetOnExit: false,
+      extraConfig: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: null,
+      updatedBy: null,
+    };
+
+    const sources = buildConfigSources(fileConfig, dbConfigs);
+
+    expect(sources.gateway).toBe("db-tenant");
+  });
+
+  it("数据库有 model providers 时标记各 provider 来源", () => {
+    const fileConfig = baseFileConfig();
+    const dbConfigs = emptyDbConfigs();
+    dbConfigs.modelProviders = [
+      {
+        id: "mp1",
+        configType: "system",
+        userId: null,
+        providerKey: "anthropic",
+        providerName: "Anthropic",
+        baseUrl: "https://api.anthropic.com",
+        apiKey: "sk-xxx",
+        apiType: "openai-completions",
+        models: [],
+        enabled: true,
+        priority: 100,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: null,
+        updatedBy: null,
+      },
+    ];
+
+    const sources = buildConfigSources(fileConfig, dbConfigs);
+
+    expect(sources["models.providers"]).toBe("db-system");
+  });
+
+  it("数据库有 tenant model providers 时标记为 db-tenant", () => {
+    const fileConfig = baseFileConfig();
+    const dbConfigs = emptyDbConfigs();
+    dbConfigs.modelProviders = [
+      {
+        id: "mp-t1",
+        configType: "tenant",
+        userId: "user-123",
+        providerKey: "openai",
+        providerName: "OpenAI",
+        baseUrl: "https://api.openai.com/v1",
+        apiKey: "sk-user-key",
+        apiType: "openai-completions",
+        models: [],
+        enabled: true,
+        priority: 100,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: null,
+        updatedBy: null,
+      },
+    ];
+
+    const sources = buildConfigSources(fileConfig, dbConfigs);
+
+    expect(sources["models.providers"]).toBe("db-tenant");
+  });
+
+  it("数据库有 agent 配置时标记来源", () => {
+    const fileConfig = baseFileConfig();
+    const dbConfigs = emptyDbConfigs();
+    dbConfigs.agentConfig = {
+      id: "ac1",
+      configType: "system",
+      userId: null,
+      primaryModel: "claude-opus-4-5-20251101",
+      workspacePath: null,
+      compactionMode: "safeguard",
+      maxConcurrent: 4,
+      subagentsMaxConcurrent: 8,
+      extraConfig: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: null,
+      updatedBy: null,
+    };
+
+    const sources = buildConfigSources(fileConfig, dbConfigs);
+
+    expect(sources["agents.defaults"]).toBe("db-system");
+  });
+
+  it("数据库有 auth profiles 时标记来源", () => {
+    const fileConfig = baseFileConfig();
+    const dbConfigs = emptyDbConfigs();
+    dbConfigs.authProfiles = [
+      {
+        id: "ap1",
+        configType: "system",
+        userId: null,
+        profileId: "anthropic-main",
+        provider: "anthropic",
+        credentialMode: "api_key",
+        apiKey: "sk-xxx",
+        token: null,
+        tokenExpires: null,
+        oauthCredentials: null,
+        email: null,
+        enabled: true,
+        priority: 100,
+        modelBindings: null,
+        usageStats: null,
+        cooldownConfig: null,
+        extraConfig: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: null,
+        updatedBy: null,
+      },
+    ];
+
+    const sources = buildConfigSources(fileConfig, dbConfigs);
+
+    expect(sources["auth.profiles"]).toBe("db-system");
+  });
+
+  it("数据库有 system configs KV 时标记各 key 来源", () => {
+    const fileConfig = baseFileConfig();
+    const dbConfigs = emptyDbConfigs();
+    dbConfigs.systemConfigs = {
+      logging: { level: "debug" },
+      hooks: { gmail: { enabled: true } },
+    };
+
+    const sources = buildConfigSources(fileConfig, dbConfigs);
+
+    expect(sources["system.logging"]).toBe("db-system");
+    expect(sources["system.hooks"]).toBe("db-system");
+  });
+
+  it("混合来源时正确标注每个段", () => {
+    const fileConfig = baseFileConfig();
+    const dbConfigs = emptyDbConfigs();
+
+    /** 只有 gateway 和 agent 来自数据库 */
+    dbConfigs.gatewayConfig = {
+      id: "gw1",
+      configType: "system",
+      userId: null,
+      gatewayMode: "local",
+      gatewayPort: 18789,
+      gatewayBind: "loopback",
+      authMode: "none",
+      authToken: null,
+      authPassword: null,
+      authAllowTailscale: false,
+      controlUiEnabled: true,
+      controlUiAllowInsecureAuth: false,
+      tailscaleMode: "off",
+      tailscaleResetOnExit: false,
+      extraConfig: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: null,
+      updatedBy: null,
+    };
+    dbConfigs.agentConfig = {
+      id: "ac1",
+      configType: "tenant",
+      userId: "user-123",
+      primaryModel: "sonnet",
+      workspacePath: null,
+      compactionMode: "safeguard",
+      maxConcurrent: 4,
+      subagentsMaxConcurrent: 8,
+      extraConfig: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: null,
+      updatedBy: null,
+    };
+
+    const sources = buildConfigSources(fileConfig, dbConfigs);
+
+    /** gateway 来自 db-system */
+    expect(sources.gateway).toBe("db-system");
+    /** agent 来自 db-tenant */
+    expect(sources["agents.defaults"]).toBe("db-tenant");
+    /** 其余来自 file */
+    expect(sources["models.providers"]).toBe("file");
+    expect(sources["auth.profiles"]).toBe("file");
+    expect(sources["auth.order"]).toBe("file");
   });
 });

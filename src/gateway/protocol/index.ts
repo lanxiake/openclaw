@@ -41,6 +41,8 @@ import {
   ConfigSchemaResponseSchema,
   type ConfigSetParams,
   ConfigSetParamsSchema,
+  ConfigSourcesParamsSchema,
+  type ConfigSourcesParams,
   type ConnectParams,
   ConnectParamsSchema,
   type CronAddParams,
@@ -252,6 +254,8 @@ export const validateConfigSetParams = ajv.compile<ConfigSetParams>(ConfigSetPar
 export const validateConfigApplyParams = ajv.compile<ConfigApplyParams>(ConfigApplyParamsSchema);
 export const validateConfigPatchParams = ajv.compile<ConfigPatchParams>(ConfigPatchParamsSchema);
 export const validateConfigSchemaParams = ajv.compile<ConfigSchemaParams>(ConfigSchemaParamsSchema);
+export const validateConfigSourcesParams =
+  ajv.compile<ConfigSourcesParams>(ConfigSourcesParamsSchema);
 export const validateWizardStartParams = ajv.compile<WizardStartParams>(WizardStartParamsSchema);
 export const validateWizardNextParams = ajv.compile<WizardNextParams>(WizardNextParamsSchema);
 export const validateWizardCancelParams = ajv.compile<WizardCancelParams>(WizardCancelParamsSchema);
@@ -394,6 +398,7 @@ export {
   ConfigPatchParamsSchema,
   ConfigSchemaParamsSchema,
   ConfigSchemaResponseSchema,
+  ConfigSourcesParamsSchema,
   WizardStartParamsSchema,
   WizardNextParamsSchema,
   WizardCancelParamsSchema,
@@ -467,6 +472,7 @@ export type {
   ConfigPatchParams,
   ConfigSchemaParams,
   ConfigSchemaResponse,
+  ConfigSourcesParams,
   WizardStartParams,
   WizardNextParams,
   WizardCancelParams,

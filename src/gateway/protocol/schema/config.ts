@@ -69,3 +69,10 @@ export const ConfigSchemaResponseSchema = Type.Object(
   },
   { additionalProperties: false },
 );
+
+/**
+ * config.sources 参数 — 查询各配置段的来源信息
+ *
+ * 无参数，返回当前有效配置中每个段的来源标注
+ */
+export const ConfigSourcesParamsSchema = Type.Object({}, { additionalProperties: false });
