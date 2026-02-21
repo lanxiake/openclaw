@@ -20,6 +20,9 @@ import {
   createProfileMemoryProvider,
   createKnowledgeMemoryProvider,
 } from "./providers/factory.js";
+import { createSubsystemLogger } from "../../logging/subsystem.js";
+
+const logger = createSubsystemLogger("memory/manager");
 
 /**
  * 记忆管理器状态
@@ -80,7 +83,7 @@ export interface MemoryManagerOptions {
  *
  * // 健康检查
  * const health = await manager.healthCheck()
- * console.log('状态:', health.status)
+ * logger.info('状态:', health.status)
  *
  * await manager.shutdown()
  * ```
@@ -120,14 +123,14 @@ export class MemoryManager {
     this.healthCheckInterval = options.healthCheckInterval ?? 0;
     this.onHealthCheck = options.onHealthCheck;
 
-    console.log("[MemoryManager] 创建记忆管理器");
+    logger.info("创建记忆管理器");
 
     // 自动初始化
     if (options.autoInitialize) {
       // 延迟初始化，避免构造函数中的异步操作
       setTimeout(() => {
         this.initialize().catch((err) => {
-          console.error("[MemoryManager] 自动初始化失败:", err);
+          logger.error("自动初始化失败", { error: String(err) });
         });
       }, 0);
     }
@@ -173,16 +176,16 @@ export class MemoryManager {
    */
   async initialize(): Promise<void> {
     if (this._status === "ready") {
-      console.log("[MemoryManager] 已经初始化");
+      logger.info("已经初始化");
       return;
     }
 
     if (this._status === "initializing") {
-      console.log("[MemoryManager] 正在初始化中...");
+      logger.info("正在初始化中...");
       return;
     }
 
-    console.log("[MemoryManager] 开始初始化...");
+    logger.info("开始初始化...");
     this._status = "initializing";
 
     try {
@@ -194,7 +197,7 @@ export class MemoryManager {
       ]);
 
       this._status = "ready";
-      console.log("[MemoryManager] 初始化完成");
+      logger.info("初始化完成");
 
       // 启动健康检查
       if (this.healthCheckInterval > 0) {
@@ -202,7 +205,7 @@ export class MemoryManager {
       }
     } catch (error) {
       this._status = "degraded";
-      console.error("[MemoryManager] 初始化失败:", error);
+      logger.error("初始化失败", { error: String(error) });
       throw error;
     }
   }
@@ -214,7 +217,7 @@ export class MemoryManager {
     type: "episodic" | "profile" | "knowledge",
     config: ProviderConfig,
   ): Promise<void> {
-    console.log(`[MemoryManager] 初始化 ${type} 提供者: ${config.provider}`);
+    logger.info(`初始化 ${type} 提供者: ${config.provider}`);
 
     try {
       let provider: IMemoryProvider;
@@ -235,9 +238,9 @@ export class MemoryManager {
       }
 
       await provider.initialize();
-      console.log(`[MemoryManager] ${type} 提供者初始化成功`);
+      logger.info(`${type} 提供者初始化成功`);
     } catch (error) {
-      console.error(`[MemoryManager] ${type} 提供者初始化失败:`, error);
+      logger.error(`${type} 提供者初始化失败`, { error: String(error) });
       throw error;
     }
   }
@@ -247,11 +250,11 @@ export class MemoryManager {
    */
   async shutdown(): Promise<void> {
     if (this._status === "shutdown") {
-      console.log("[MemoryManager] 已经关闭");
+      logger.info("已经关闭");
       return;
     }
 
-    console.log("[MemoryManager] 开始关闭...");
+    logger.info("开始关闭...");
 
     // 停止健康检查
     this.stopHealthCheck();
@@ -262,28 +265,28 @@ export class MemoryManager {
     if (this._episodic) {
       shutdownTasks.push(
         this._episodic.shutdown().catch((e) => {
-          console.error("[MemoryManager] episodic 提供者关闭失败:", e);
+          logger.error("episodic 提供者关闭失败", { error: String(e) });
         }),
       );
     }
     if (this._profile) {
       shutdownTasks.push(
         this._profile.shutdown().catch((e) => {
-          console.error("[MemoryManager] profile 提供者关闭失败:", e);
+          logger.error("profile 提供者关闭失败", { error: String(e) });
         }),
       );
     }
     if (this._knowledge) {
       shutdownTasks.push(
         this._knowledge.shutdown().catch((e) => {
-          console.error("[MemoryManager] knowledge 提供者关闭失败:", e);
+          logger.error("knowledge 提供者关闭失败", { error: String(e) });
         }),
       );
     }
     await Promise.all(shutdownTasks);
 
     this._status = "shutdown";
-    console.log("[MemoryManager] 已关闭");
+    logger.info("已关闭");
   }
 
   // ==================== 健康检查 ====================
@@ -345,7 +348,7 @@ export class MemoryManager {
   private startHealthCheck(): void {
     if (this.healthCheckTimer) return;
 
-    console.log(`[MemoryManager] 启动健康检查 (间隔: ${this.healthCheckInterval}ms)`);
+    logger.debug("启动健康检查", { interval: this.healthCheckInterval });
 
     this.healthCheckTimer = setInterval(async () => {
       try {
@@ -353,14 +356,14 @@ export class MemoryManager {
 
         // 更新状态
         if (report.status !== this._status && this._status !== "shutdown") {
-          console.log(`[MemoryManager] 状态变更: ${this._status} -> ${report.status}`);
+          logger.info("状态变更", { from: this._status, to: report.status });
           this._status = report.status;
         }
 
         // 回调
         this.onHealthCheck?.(report);
       } catch (error) {
-        console.error("[MemoryManager] 健康检查失败:", error);
+        logger.error("健康检查失败", { error: String(error) });
       }
     }, this.healthCheckInterval);
   }
@@ -372,7 +375,7 @@ export class MemoryManager {
     if (this.healthCheckTimer) {
       clearInterval(this.healthCheckTimer);
       this.healthCheckTimer = undefined;
-      console.log("[MemoryManager] 停止健康检查");
+      logger.debug("停止健康检查");
     }
   }
 

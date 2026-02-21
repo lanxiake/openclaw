@@ -21,6 +21,9 @@ import type {
   TimelineEntry,
 } from "../../interfaces/episodic-memory.js";
 import { registerProvider } from "../factory.js";
+import { createSubsystemLogger } from "../../../../logging/subsystem.js";
+
+const logger = createSubsystemLogger("memory/episodic");
 
 /**
  * 用户情节数据存储结构
@@ -73,18 +76,18 @@ export class MemoryEpisodicMemoryProvider implements IEpisodicMemoryProvider {
    * 初始化提供者
    */
   async initialize(): Promise<void> {
-    console.log("[memory-episodic] 初始化内存情节记忆提供者");
+    logger.info("初始化内存情节记忆提供者");
     this.storage.clear();
-    console.log("[memory-episodic] 初始化完成");
+    logger.info("初始化完成");
   }
 
   /**
    * 关闭提供者
    */
   async shutdown(): Promise<void> {
-    console.log("[memory-episodic] 关闭提供者");
+    logger.info("关闭提供者");
     this.storage.clear();
-    console.log("[memory-episodic] 已关闭");
+    logger.info("已关闭");
   }
 
   /**
@@ -243,9 +246,7 @@ export class MemoryEpisodicMemoryProvider implements IEpisodicMemoryProvider {
    * 添加对话到历史
    */
   async addConversation(userId: string, sessionId: string, messages: Message[]): Promise<void> {
-    console.log(
-      `[memory-episodic] 添加对话: ${sessionId} (用户: ${userId}, 消息数: ${messages.length})`,
-    );
+    logger.debug("添加对话", { sessionId, userId, messageCount: messages.length });
 
     const data = this.getUserData(userId);
 
@@ -259,7 +260,7 @@ export class MemoryEpisodicMemoryProvider implements IEpisodicMemoryProvider {
    * 注意：这是一个简化版本，生产环境应该使用 AI 生成摘要
    */
   async summarizeConversation(userId: string, sessionId: string): Promise<ConversationSummary> {
-    console.log(`[memory-episodic] 生成摘要: ${sessionId} (用户: ${userId})`);
+    logger.debug("生成摘要", { sessionId, userId });
 
     const data = this.getUserData(userId);
     const messages = data.conversations.get(sessionId);
@@ -343,7 +344,7 @@ export class MemoryEpisodicMemoryProvider implements IEpisodicMemoryProvider {
    * 删除对话
    */
   async deleteConversation(userId: string, sessionId: string): Promise<void> {
-    console.log(`[memory-episodic] 删除对话: ${sessionId} (用户: ${userId})`);
+    logger.debug("删除对话", { sessionId, userId });
 
     const data = this.getUserData(userId);
     data.conversations.delete(sessionId);
@@ -357,7 +358,7 @@ export class MemoryEpisodicMemoryProvider implements IEpisodicMemoryProvider {
    */
   async addKeyEvent(userId: string, event: Omit<KeyEvent, "id">): Promise<string> {
     const eventId = randomUUID();
-    console.log(`[memory-episodic] 添加事件: ${eventId} (类型: ${event.type}, 用户: ${userId})`);
+    logger.debug("添加事件", { eventId, eventType: event.type, userId });
 
     const data = this.getUserData(userId);
     const fullEvent: KeyEvent = {
@@ -410,7 +411,7 @@ export class MemoryEpisodicMemoryProvider implements IEpisodicMemoryProvider {
    * 更新关键事件
    */
   async updateKeyEvent(userId: string, eventId: string, updates: Partial<KeyEvent>): Promise<void> {
-    console.log(`[memory-episodic] 更新事件: ${eventId} (用户: ${userId})`);
+    logger.debug("更新事件", { eventId, userId });
 
     const data = this.getUserData(userId);
     const event = data.events.get(eventId);
@@ -433,7 +434,7 @@ export class MemoryEpisodicMemoryProvider implements IEpisodicMemoryProvider {
    * 删除关键事件
    */
   async deleteKeyEvent(userId: string, eventId: string): Promise<void> {
-    console.log(`[memory-episodic] 删除事件: ${eventId} (用户: ${userId})`);
+    logger.debug("删除事件", { eventId, userId });
 
     const data = this.getUserData(userId);
     data.events.delete(eventId);
@@ -451,7 +452,7 @@ export class MemoryEpisodicMemoryProvider implements IEpisodicMemoryProvider {
     query: string,
     options?: { limit?: number; minScore?: number; startDate?: Date; endDate?: Date },
   ): Promise<EpisodeSearchResult[]> {
-    console.log(`[memory-episodic] 搜索: "${query}" (用户: ${userId})`);
+    logger.debug("搜索", { query, userId });
 
     const data = this.getUserData(userId);
     const results: EpisodeSearchResult[] = [];
@@ -512,9 +513,11 @@ export class MemoryEpisodicMemoryProvider implements IEpisodicMemoryProvider {
    * 获取时间线
    */
   async getTimeline(userId: string, startDate: Date, endDate: Date): Promise<TimelineEntry[]> {
-    console.log(
-      `[memory-episodic] 获取时间线: ${startDate.toISOString()} - ${endDate.toISOString()} (用户: ${userId})`,
-    );
+    logger.debug("获取时间线", {
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      userId,
+    });
 
     const data = this.getUserData(userId);
     const entries: TimelineEntry[] = [];

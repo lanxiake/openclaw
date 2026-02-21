@@ -13,6 +13,9 @@ import { getGlobalPluginRegistry } from "../../../plugins/hook-runner-global.js"
 import type { PluginHookRegistration } from "../../../plugins/types.js";
 import { createRecallHandler } from "./recall.js";
 import { createCaptureHandler } from "./capture.js";
+import { createSubsystemLogger } from "../../../logging/subsystem.js";
+
+const logger = createSubsystemLogger("memory/hooks");
 
 /** 插件标识（用于日志和 hook 追踪） */
 const PLUGIN_ID = "memory-hooks";
@@ -31,7 +34,7 @@ const PLUGIN_SOURCE = "bundled:session-memory";
 export function registerMemoryHooks(): number {
   const registry = getGlobalPluginRegistry();
   if (!registry) {
-    console.log("[memory-hooks] 插件 registry 未初始化，跳过 hook 注册");
+    logger.debug("插件 registry 未初始化，跳过 hook 注册");
     return 0;
   }
 
@@ -39,7 +42,7 @@ export function registerMemoryHooks(): number {
   const existingCount = registry.typedHooks.filter((h) => h.pluginId === PLUGIN_ID).length;
 
   if (existingCount > 0) {
-    console.log(`[memory-hooks] 已注册 ${existingCount} 个 hooks，跳过重复注册`);
+    logger.debug("已注册 hooks，跳过重复注册", { count: existingCount });
     return existingCount;
   }
 
@@ -63,6 +66,6 @@ export function registerMemoryHooks(): number {
 
   registry.typedHooks.push(recallHook as any, captureHook as any);
 
-  console.log("[memory-hooks] 注册完成: before_agent_start (recall) + agent_end (capture)");
+  logger.info("注册完成: before_agent_start (recall) + agent_end (capture)");
   return 2;
 }

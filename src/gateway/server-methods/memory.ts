@@ -45,6 +45,9 @@ import type {
 } from "../../memory/pluggable/interfaces/profile-memory.js";
 import type { KeyEventType } from "../../memory/pluggable/interfaces/episodic-memory.js";
 import type { Message } from "../../memory/pluggable/interfaces/types.js";
+import { createSubsystemLogger } from "../../logging/subsystem.js";
+
+const logger = createSubsystemLogger("memory/rpc");
 
 // ==================== 辅助函数 ====================
 
@@ -86,7 +89,7 @@ function getMemoryManager(respond: Parameters<GatewayRequestHandler>[0]["respond
   try {
     const service = getGatewayMemoryService();
     if (!service.isReady) {
-      console.warn("[memory] 记忆服务未就绪, 状态:", service.status);
+      logger.warn("记忆服务未就绪", { status: service.status });
       respond(true, {
         success: false,
         error: "记忆服务未就绪",
@@ -95,7 +98,7 @@ function getMemoryManager(respond: Parameters<GatewayRequestHandler>[0]["respond
     }
     return service.manager;
   } catch (error) {
-    console.error("[memory] 获取记忆服务失败:", error);
+    logger.error("获取记忆服务失败", { error: String(error) });
     respond(true, {
       success: false,
       error: "记忆服务不可用",
@@ -116,7 +119,7 @@ const addFact: GatewayRequestHandler = async ({ params, client, respond }) => {
   const manager = getMemoryManager(respond);
   if (!manager) return;
 
-  console.log("[memory] 添加事实, userId:", userId, "category:", params.category);
+  logger.debug("添加事实", { userId, category: params.category });
 
   try {
     const factId = await manager.profile.addFact(userId, {
@@ -128,13 +131,13 @@ const addFact: GatewayRequestHandler = async ({ params, client, respond }) => {
       sensitive: (params.sensitive as boolean) ?? false,
     });
 
-    console.log("[memory] 事实已添加, id:", factId);
+    logger.debug("事实已添加", { factId });
     respond(true, {
       success: true,
       factId,
     });
   } catch (error) {
-    console.error("[memory] 添加事实失败:", error);
+    logger.error("添加事实失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "添加事实失败",
@@ -153,19 +156,19 @@ const listFacts: GatewayRequestHandler = async ({ params, client, respond }) => 
   if (!manager) return;
 
   const category = params.category as string | undefined;
-  console.log("[memory] 查询事实, userId:", userId, "category:", category ?? "all");
+  logger.debug("查询事实", { userId, category: category ?? "all" });
 
   try {
     const facts = await manager.profile.getFacts(userId, category as FactCategory | undefined);
 
-    console.log("[memory] 事实查询结果:", facts.length, "条");
+    logger.debug("事实查询结果", { count: facts.length });
     respond(true, {
       success: true,
       facts,
       total: facts.length,
     });
   } catch (error) {
-    console.error("[memory] 查询事实失败:", error);
+    logger.error("查询事实失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "查询事实失败",
@@ -184,19 +187,19 @@ const searchFacts: GatewayRequestHandler = async ({ params, client, respond }) =
   if (!manager) return;
 
   const query = params.query as string;
-  console.log("[memory] 搜索事实, userId:", userId, "query:", query);
+  logger.debug("搜索事实", { userId, query });
 
   try {
     const facts = await manager.profile.searchFacts(userId, query);
 
-    console.log("[memory] 搜索结果:", facts.length, "条");
+    logger.debug("搜索结果", { count: facts.length });
     respond(true, {
       success: true,
       facts,
       total: facts.length,
     });
   } catch (error) {
-    console.error("[memory] 搜索事实失败:", error);
+    logger.error("搜索事实失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "搜索事实失败",
@@ -215,7 +218,7 @@ const updateFact: GatewayRequestHandler = async ({ params, client, respond }) =>
   if (!manager) return;
 
   const factId = params.factId as string;
-  console.log("[memory] 更新事实, userId:", userId, "factId:", factId);
+  logger.debug("更新事实", { userId, factId });
 
   try {
     const updates: Record<string, unknown> = {};
@@ -225,13 +228,13 @@ const updateFact: GatewayRequestHandler = async ({ params, client, respond }) =>
 
     await manager.profile.updateFact(userId, factId, updates);
 
-    console.log("[memory] 事实已更新");
+    logger.debug("事实已更新");
     respond(true, {
       success: true,
       message: "事实已更新",
     });
   } catch (error) {
-    console.error("[memory] 更新事实失败:", error);
+    logger.error("更新事实失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "更新事实失败",
@@ -250,18 +253,18 @@ const deleteFact: GatewayRequestHandler = async ({ params, client, respond }) =>
   if (!manager) return;
 
   const factId = params.factId as string;
-  console.log("[memory] 删除事实, userId:", userId, "factId:", factId);
+  logger.debug("删除事实", { userId, factId });
 
   try {
     await manager.profile.deleteFact(userId, factId);
 
-    console.log("[memory] 事实已删除");
+    logger.debug("事实已删除");
     respond(true, {
       success: true,
       message: "事实已删除",
     });
   } catch (error) {
-    console.error("[memory] 删除事实失败:", error);
+    logger.error("删除事实失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "删除事实失败",
@@ -281,18 +284,18 @@ const getPreferences: GatewayRequestHandler = async ({ client, respond }) => {
   const manager = getMemoryManager(respond);
   if (!manager) return;
 
-  console.log("[memory] 获取偏好, userId:", userId);
+  logger.debug("获取偏好", { userId });
 
   try {
     const preferences = await manager.profile.getPreferences(userId);
 
-    console.log("[memory] 偏好已获取, language:", preferences.language);
+    logger.debug("偏好已获取", { language: preferences.language });
     respond(true, {
       success: true,
       preferences,
     });
   } catch (error) {
-    console.error("[memory] 获取偏好失败:", error);
+    logger.error("获取偏好失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "获取偏好失败",
@@ -310,7 +313,7 @@ const updatePreferences: GatewayRequestHandler = async ({ params, client, respon
   const manager = getMemoryManager(respond);
   if (!manager) return;
 
-  console.log("[memory] 更新偏好, userId:", userId, "keys:", Object.keys(params));
+  logger.debug("更新偏好", { userId, keys: Object.keys(params) });
 
   try {
     const updates: Record<string, unknown> = {};
@@ -334,13 +337,13 @@ const updatePreferences: GatewayRequestHandler = async ({ params, client, respon
 
     await manager.profile.updatePreferences(userId, updates);
 
-    console.log("[memory] 偏好已更新");
+    logger.debug("偏好已更新");
     respond(true, {
       success: true,
       message: "偏好已更新",
     });
   } catch (error) {
-    console.error("[memory] 更新偏好失败:", error);
+    logger.error("更新偏好失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "更新偏好失败",
@@ -358,18 +361,18 @@ const resetPreferences: GatewayRequestHandler = async ({ client, respond }) => {
   const manager = getMemoryManager(respond);
   if (!manager) return;
 
-  console.log("[memory] 重置偏好, userId:", userId);
+  logger.debug("重置偏好", { userId });
 
   try {
     await manager.profile.resetPreferences(userId);
 
-    console.log("[memory] 偏好已重置");
+    logger.debug("偏好已重置");
     respond(true, {
       success: true,
       message: "偏好已重置为默认值",
     });
   } catch (error) {
-    console.error("[memory] 重置偏好失败:", error);
+    logger.error("重置偏好失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "重置偏好失败",
@@ -389,19 +392,21 @@ const listPatterns: GatewayRequestHandler = async ({ client, respond }) => {
   const manager = getMemoryManager(respond);
   if (!manager) return;
 
-  console.log("[memory] 查询行为模式, userId:", userId);
+  logger.debug("查询行为模式", { userId });
 
   try {
     const patterns = await manager.profile.getPatterns(userId);
 
-    console.log("[memory] 行为模式查询结果:", patterns.length, "条");
+    logger.debug("行为模式查询结果", { count: patterns.length });
     respond(true, {
       success: true,
       patterns,
       total: patterns.length,
     });
   } catch (error) {
-    console.error("[memory] 查询行为模式失败:", error);
+    logger.error("查询行为模式失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "查询行为模式失败",
@@ -419,7 +424,7 @@ const addPattern: GatewayRequestHandler = async ({ params, client, respond }) =>
   const manager = getMemoryManager(respond);
   if (!manager) return;
 
-  console.log("[memory] 添加行为模式, userId:", userId, "type:", params.type);
+  logger.debug("添加行为模式", { userId, type: params.type });
 
   try {
     const patternId = await manager.profile.addPattern(userId, {
@@ -429,13 +434,15 @@ const addPattern: GatewayRequestHandler = async ({ params, client, respond }) =>
       confidence: (params.confidence as number) ?? 0.5,
     });
 
-    console.log("[memory] 行为模式已添加, id:", patternId);
+    logger.debug("行为模式已添加", { patternId });
     respond(true, {
       success: true,
       patternId,
     });
   } catch (error) {
-    console.error("[memory] 添加行为模式失败:", error);
+    logger.error("添加行为模式失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "添加行为模式失败",
@@ -454,7 +461,7 @@ const updatePattern: GatewayRequestHandler = async ({ params, client, respond })
   if (!manager) return;
 
   const patternId = params.patternId as string;
-  console.log("[memory] 更新行为模式, userId:", userId, "patternId:", patternId);
+  logger.debug("更新行为模式", { userId, patternId });
 
   try {
     const updates: Record<string, unknown> = {};
@@ -464,13 +471,15 @@ const updatePattern: GatewayRequestHandler = async ({ params, client, respond })
 
     await manager.profile.updatePattern(userId, patternId, updates);
 
-    console.log("[memory] 行为模式已更新");
+    logger.debug("行为模式已更新");
     respond(true, {
       success: true,
       message: "行为模式已更新",
     });
   } catch (error) {
-    console.error("[memory] 更新行为模式失败:", error);
+    logger.error("更新行为模式失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "更新行为模式失败",
@@ -489,18 +498,20 @@ const deletePattern: GatewayRequestHandler = async ({ params, client, respond })
   if (!manager) return;
 
   const patternId = params.patternId as string;
-  console.log("[memory] 删除行为模式, userId:", userId, "patternId:", patternId);
+  logger.debug("删除行为模式", { userId, patternId });
 
   try {
     await manager.profile.deletePattern(userId, patternId);
 
-    console.log("[memory] 行为模式已删除");
+    logger.debug("行为模式已删除");
     respond(true, {
       success: true,
       message: "行为模式已删除",
     });
   } catch (error) {
-    console.error("[memory] 删除行为模式失败:", error);
+    logger.error("删除行为模式失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "删除行为模式失败",
@@ -520,25 +531,20 @@ const confirmPattern: GatewayRequestHandler = async ({ params, client, respond }
 
   const patternId = params.patternId as string;
   const confirmed = params.confirmed as boolean;
-  console.log(
-    "[memory] 确认行为模式, userId:",
-    userId,
-    "patternId:",
-    patternId,
-    "confirmed:",
-    confirmed,
-  );
+  logger.debug("确认行为模式", { userId, patternId, confirmed });
 
   try {
     await manager.profile.confirmPattern(userId, patternId, confirmed);
 
-    console.log("[memory] 行为模式确认状态已更新");
+    logger.debug("行为模式确认状态已更新");
     respond(true, {
       success: true,
       message: confirmed ? "行为模式已确认" : "行为模式已否定",
     });
   } catch (error) {
-    console.error("[memory] 确认行为模式失败:", error);
+    logger.error("确认行为模式失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "确认行为模式失败",
@@ -558,23 +564,21 @@ const exportProfile: GatewayRequestHandler = async ({ client, respond }) => {
   const manager = getMemoryManager(respond);
   if (!manager) return;
 
-  console.log("[memory] 导出画像, userId:", userId);
+  logger.debug("导出画像", { userId });
 
   try {
     const profile = await manager.profile.exportProfile(userId);
 
-    console.log(
-      "[memory] 画像已导出, facts:",
-      profile.facts.length,
-      "patterns:",
-      profile.patterns.length,
-    );
+    logger.debug("画像已导出", {
+      factsCount: profile.facts.length,
+      patternsCount: profile.patterns.length,
+    });
     respond(true, {
       success: true,
       profile,
     });
   } catch (error) {
-    console.error("[memory] 导出画像失败:", error);
+    logger.error("导出画像失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "导出画像失败",
@@ -596,14 +600,7 @@ const addConversation: GatewayRequestHandler = async ({ params, client, respond 
 
   const sessionId = params.sessionId as string;
   const rawMessages = params.messages as Array<{ role: string; content: string }>;
-  console.log(
-    "[memory] 添加对话, userId:",
-    userId,
-    "sessionId:",
-    sessionId,
-    "messages:",
-    rawMessages.length,
-  );
+  logger.debug("添加对话", { userId, sessionId, messageCount: rawMessages.length });
 
   try {
     // 补充 Message 接口必需的 id 和 createdAt 字段
@@ -616,13 +613,13 @@ const addConversation: GatewayRequestHandler = async ({ params, client, respond 
 
     await manager.episodic.addConversation(userId, sessionId, messages);
 
-    console.log("[memory] 对话已添加");
+    logger.debug("对话已添加");
     respond(true, {
       success: true,
       message: "对话已添加",
     });
   } catch (error) {
-    console.error("[memory] 添加对话失败:", error);
+    logger.error("添加对话失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "添加对话失败",
@@ -642,7 +639,7 @@ const getConversationHistory: GatewayRequestHandler = async ({ params, client, r
 
   const limit = params.limit as number | undefined;
   const offset = params.offset as number | undefined;
-  console.log("[memory] 获取对话历史, userId:", userId, "limit:", limit, "offset:", offset);
+  logger.debug("获取对话历史", { userId, limit, offset });
 
   try {
     const history = await manager.episodic.getConversationHistory(userId, {
@@ -650,14 +647,16 @@ const getConversationHistory: GatewayRequestHandler = async ({ params, client, r
       offset,
     });
 
-    console.log("[memory] 对话历史:", history.length, "条");
+    logger.debug("对话历史", { count: history.length });
     respond(true, {
       success: true,
       history,
       total: history.length,
     });
   } catch (error) {
-    console.error("[memory] 获取对话历史失败:", error);
+    logger.error("获取对话历史失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "获取对话历史失败",
@@ -676,18 +675,20 @@ const getConversationSummary: GatewayRequestHandler = async ({ params, client, r
   if (!manager) return;
 
   const sessionId = params.sessionId as string;
-  console.log("[memory] 获取对话摘要, userId:", userId, "sessionId:", sessionId);
+  logger.debug("获取对话摘要", { userId, sessionId });
 
   try {
     const summary = await manager.episodic.summarizeConversation(userId, sessionId);
 
-    console.log("[memory] 对话摘要已生成, topics:", summary.keyTopics.length);
+    logger.debug("对话摘要已生成", { topicsCount: summary.keyTopics.length });
     respond(true, {
       success: true,
       summary,
     });
   } catch (error) {
-    console.error("[memory] 获取对话摘要失败:", error);
+    logger.error("获取对话摘要失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "获取对话摘要失败",
@@ -706,18 +707,18 @@ const deleteConversation: GatewayRequestHandler = async ({ params, client, respo
   if (!manager) return;
 
   const sessionId = params.sessionId as string;
-  console.log("[memory] 删除对话, userId:", userId, "sessionId:", sessionId);
+  logger.debug("删除对话", { userId, sessionId });
 
   try {
     await manager.episodic.deleteConversation(userId, sessionId);
 
-    console.log("[memory] 对话已删除");
+    logger.debug("对话已删除");
     respond(true, {
       success: true,
       message: "对话已删除",
     });
   } catch (error) {
-    console.error("[memory] 删除对话失败:", error);
+    logger.error("删除对话失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "删除对话失败",
@@ -737,7 +738,7 @@ const addKeyEvent: GatewayRequestHandler = async ({ params, client, respond }) =
   const manager = getMemoryManager(respond);
   if (!manager) return;
 
-  console.log("[memory] 添加关键事件, userId:", userId, "type:", params.type);
+  logger.debug("添加关键事件", { userId, type: params.type });
 
   try {
     const eventId = await manager.episodic.addKeyEvent(userId, {
@@ -749,13 +750,15 @@ const addKeyEvent: GatewayRequestHandler = async ({ params, client, respond }) =
       timestamp: params.timestamp ? new Date(params.timestamp as string) : new Date(),
     });
 
-    console.log("[memory] 关键事件已添加, id:", eventId);
+    logger.debug("关键事件已添加", { eventId });
     respond(true, {
       success: true,
       eventId,
     });
   } catch (error) {
-    console.error("[memory] 添加关键事件失败:", error);
+    logger.error("添加关键事件失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "添加关键事件失败",
@@ -775,7 +778,7 @@ const listKeyEvents: GatewayRequestHandler = async ({ params, client, respond })
 
   const types = params.types as KeyEventType[] | undefined;
   const limit = params.limit as number | undefined;
-  console.log("[memory] 查询关键事件, userId:", userId, "types:", types, "limit:", limit);
+  logger.debug("查询关键事件", { userId, types, limit });
 
   try {
     const events = await manager.episodic.getKeyEvents(userId, {
@@ -783,14 +786,16 @@ const listKeyEvents: GatewayRequestHandler = async ({ params, client, respond })
       limit,
     });
 
-    console.log("[memory] 关键事件查询结果:", events.length, "条");
+    logger.debug("关键事件查询结果", { count: events.length });
     respond(true, {
       success: true,
       events,
       total: events.length,
     });
   } catch (error) {
-    console.error("[memory] 查询关键事件失败:", error);
+    logger.error("查询关键事件失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "查询关键事件失败",
@@ -809,7 +814,7 @@ const updateKeyEvent: GatewayRequestHandler = async ({ params, client, respond }
   if (!manager) return;
 
   const eventId = params.eventId as string;
-  console.log("[memory] 更新关键事件, userId:", userId, "eventId:", eventId);
+  logger.debug("更新关键事件", { userId, eventId });
 
   try {
     const updates: Record<string, unknown> = {};
@@ -819,13 +824,15 @@ const updateKeyEvent: GatewayRequestHandler = async ({ params, client, respond }
 
     await manager.episodic.updateKeyEvent(userId, eventId, updates);
 
-    console.log("[memory] 关键事件已更新");
+    logger.debug("关键事件已更新");
     respond(true, {
       success: true,
       message: "关键事件已更新",
     });
   } catch (error) {
-    console.error("[memory] 更新关键事件失败:", error);
+    logger.error("更新关键事件失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "更新关键事件失败",
@@ -844,18 +851,20 @@ const deleteKeyEvent: GatewayRequestHandler = async ({ params, client, respond }
   if (!manager) return;
 
   const eventId = params.eventId as string;
-  console.log("[memory] 删除关键事件, userId:", userId, "eventId:", eventId);
+  logger.debug("删除关键事件", { userId, eventId });
 
   try {
     await manager.episodic.deleteKeyEvent(userId, eventId);
 
-    console.log("[memory] 关键事件已删除");
+    logger.debug("关键事件已删除");
     respond(true, {
       success: true,
       message: "关键事件已删除",
     });
   } catch (error) {
-    console.error("[memory] 删除关键事件失败:", error);
+    logger.error("删除关键事件失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "删除关键事件失败",
@@ -877,21 +886,21 @@ const searchEpisodes: GatewayRequestHandler = async ({ params, client, respond }
 
   const query = params.query as string;
   const limit = params.limit as number | undefined;
-  console.log("[memory] 搜索情节, userId:", userId, "query:", query);
+  logger.debug("搜索情节", { userId, query });
 
   try {
     const results = await manager.episodic.searchEpisodes(userId, query, {
       limit,
     });
 
-    console.log("[memory] 搜索结果:", results.length, "条");
+    logger.debug("搜索结果", { count: results.length });
     respond(true, {
       success: true,
       results,
       total: results.length,
     });
   } catch (error) {
-    console.error("[memory] 搜索情节失败:", error);
+    logger.error("搜索情节失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "搜索情节失败",
@@ -911,26 +920,25 @@ const getTimeline: GatewayRequestHandler = async ({ params, client, respond }) =
 
   const startDate = new Date(params.startDate as string);
   const endDate = new Date(params.endDate as string);
-  console.log(
-    "[memory] 获取时间线, userId:",
+  logger.debug("获取时间线", {
     userId,
-    "range:",
-    startDate.toISOString(),
-    "~",
-    endDate.toISOString(),
-  );
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+  });
 
   try {
     const timeline = await manager.episodic.getTimeline(userId, startDate, endDate);
 
-    console.log("[memory] 时间线条目:", timeline.length, "条");
+    logger.debug("时间线条目", { count: timeline.length });
     respond(true, {
       success: true,
       timeline,
       total: timeline.length,
     });
   } catch (error) {
-    console.error("[memory] 获取时间线失败:", error);
+    logger.error("获取时间线失败", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "获取时间线失败",
@@ -944,19 +952,19 @@ const getTimeline: GatewayRequestHandler = async ({ params, client, respond }) =
  * 记忆系统健康检查
  */
 const memoryHealth: GatewayRequestHandler = async ({ respond }) => {
-  console.log("[memory] 健康检查");
+  logger.debug("健康检查");
 
   try {
     const service = getGatewayMemoryService();
     const report = await service.healthCheck();
 
-    console.log("[memory] 健康状态:", report.status);
+    logger.debug("健康状态", { status: report.status });
     respond(true, {
       success: true,
       health: report,
     });
   } catch (error) {
-    console.error("[memory] 健康检查失败:", error);
+    logger.error("健康检查失败", { error: error instanceof Error ? error.message : String(error) });
     respond(true, {
       success: false,
       error: error instanceof Error ? error.message : "健康检查失败",

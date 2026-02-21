@@ -14,6 +14,9 @@ import type {
   ProviderConfig,
   ProviderConstructor,
 } from "../interfaces/index.js";
+import { createSubsystemLogger } from "../../../logging/subsystem.js";
+
+const logger = createSubsystemLogger("memory/factory");
 
 /**
  * 记忆类型
@@ -61,11 +64,11 @@ export function registerProvider<T extends IMemoryProvider>(
   const key = getRegistryKey(type, name);
 
   if (providerRegistry.has(key)) {
-    console.warn(`[MemoryProviderFactory] 覆盖已存在的提供者: ${key}`);
+    logger.warn("覆盖已存在的提供者", { key });
   }
 
   providerRegistry.set(key, constructor as ProviderConstructor);
-  console.log(`[MemoryProviderFactory] 注册提供者: ${key}`);
+  logger.debug("注册提供者", { key });
 }
 
 /**
@@ -80,7 +83,7 @@ export function unregisterProvider(type: MemoryType, name: string): boolean {
   const result = providerRegistry.delete(key);
 
   if (result) {
-    console.log(`[MemoryProviderFactory] 注销提供者: ${key}`);
+    logger.debug("注销提供者", { key });
   }
 
   return result;
@@ -120,7 +123,7 @@ export function createProvider<T extends IMemoryProvider>(
     );
   }
 
-  console.log(`[MemoryProviderFactory] 创建提供者: ${key}`);
+  logger.debug("创建提供者", { key });
   return new Constructor(config.options) as T;
 }
 
@@ -188,7 +191,7 @@ export function getAllProviders(): Array<{ type: MemoryType; name: string }> {
  */
 export function clearRegistry(): void {
   providerRegistry.clear();
-  console.log("[MemoryProviderFactory] 清空注册表");
+  logger.debug("清空注册表");
 }
 
 // ==================== 类型安全的创建函数 ====================

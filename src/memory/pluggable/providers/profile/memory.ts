@@ -22,6 +22,10 @@ import type {
 import { DEFAULT_USER_PREFERENCES } from "../../interfaces/profile-memory.js";
 import { registerProvider } from "../factory.js";
 
+import { createSubsystemLogger } from "../../../../logging/subsystem.js";
+
+const logger = createSubsystemLogger("memory/profile");
+
 /**
  * 用户画像数据存储结构
  */
@@ -79,18 +83,18 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
    * 初始化提供者
    */
   async initialize(): Promise<void> {
-    console.log("[memory-profile] 初始化内存画像记忆提供者");
+    logger.info("初始化内存画像记忆提供者");
     this.storage.clear();
-    console.log("[memory-profile] 初始化完成");
+    logger.info("初始化完成");
   }
 
   /**
    * 关闭提供者
    */
   async shutdown(): Promise<void> {
-    console.log("[memory-profile] 关闭提供者");
+    logger.info("关闭提供者");
     this.storage.clear();
-    console.log("[memory-profile] 已关闭");
+    logger.info("已关闭");
   }
 
   /**
@@ -149,7 +153,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
     const factId = randomUUID();
     const now = new Date();
 
-    console.log(`[memory-profile] 添加事实: ${factId} (用户: ${userId}, 类别: ${fact.category})`);
+    logger.debug("添加事实", { factId, userId, category: fact.category });
 
     const data = this.getUserData(userId);
     const fullFact: UserFact = {
@@ -168,7 +172,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
    * 更新用户事实
    */
   async updateFact(userId: string, factId: string, updates: Partial<UserFact>): Promise<void> {
-    console.log(`[memory-profile] 更新事实: ${factId} (用户: ${userId})`);
+    logger.debug("更新事实", { factId, userId });
 
     const data = this.getUserData(userId);
     const fact = data.facts.get(factId);
@@ -192,7 +196,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
    * 删除用户事实
    */
   async deleteFact(userId: string, factId: string): Promise<void> {
-    console.log(`[memory-profile] 删除事实: ${factId} (用户: ${userId})`);
+    logger.debug("删除事实", { factId, userId });
 
     const data = this.getUserData(userId);
     data.facts.delete(factId);
@@ -219,7 +223,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
    * 搜索用户事实
    */
   async searchFacts(userId: string, query: string): Promise<UserFact[]> {
-    console.log(`[memory-profile] 搜索事实: "${query}" (用户: ${userId})`);
+    logger.debug("搜索事实", { query, userId });
 
     const data = this.getUserData(userId);
     const results: UserFact[] = [];
@@ -247,7 +251,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
    * 更新用户偏好
    */
   async updatePreferences(userId: string, updates: Partial<UserPreferences>): Promise<void> {
-    console.log(`[memory-profile] 更新偏好 (用户: ${userId})`);
+    logger.debug("更新偏好", { userId });
 
     const data = this.getUserData(userId);
 
@@ -267,7 +271,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
    * 重置用户偏好
    */
   async resetPreferences(userId: string): Promise<void> {
-    console.log(`[memory-profile] 重置偏好 (用户: ${userId})`);
+    logger.debug("重置偏好", { userId });
 
     const data = this.getUserData(userId);
     data.preferences = { ...DEFAULT_USER_PREFERENCES };
@@ -285,7 +289,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
     const patternId = randomUUID();
     const now = new Date();
 
-    console.log(`[memory-profile] 添加模式: ${patternId} (用户: ${userId}, 类型: ${pattern.type})`);
+    logger.debug("添加模式", { patternId, userId, type: pattern.type });
 
     const data = this.getUserData(userId);
     const fullPattern: BehaviorPattern = {
@@ -320,7 +324,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
     patternId: string,
     updates: Partial<BehaviorPattern>,
   ): Promise<void> {
-    console.log(`[memory-profile] 更新模式: ${patternId} (用户: ${userId})`);
+    logger.debug("更新模式", { patternId, userId });
 
     const data = this.getUserData(userId);
     const pattern = data.patterns.get(patternId);
@@ -343,7 +347,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
    * 删除行为模式
    */
   async deletePattern(userId: string, patternId: string): Promise<void> {
-    console.log(`[memory-profile] 删除模式: ${patternId} (用户: ${userId})`);
+    logger.debug("删除模式", { patternId, userId });
 
     const data = this.getUserData(userId);
     data.patterns.delete(patternId);
@@ -353,7 +357,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
    * 确认行为模式
    */
   async confirmPattern(userId: string, patternId: string, confirmed: boolean): Promise<void> {
-    console.log(`[memory-profile] 确认模式: ${patternId} = ${confirmed} (用户: ${userId})`);
+    logger.debug("确认模式", { patternId, confirmed, userId });
 
     const data = this.getUserData(userId);
     const pattern = data.patterns.get(patternId);
@@ -375,7 +379,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
    * 生产环境应该使用 AI 进行提取。
    */
   async extractFromConversation(userId: string, messages: Message[]): Promise<ExtractedProfile> {
-    console.log(`[memory-profile] 从对话提取画像 (用户: ${userId}, 消息数: ${messages.length})`);
+    logger.debug("从对话提取画像", { userId, messageCount: messages.length });
 
     const result: ExtractedProfile = {
       newFacts: [],
@@ -464,7 +468,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
    * 注意：简化版本，直接忽略确认操作
    */
   async confirmExtraction(userId: string, extractionId: string, confirmed: boolean): Promise<void> {
-    console.log(`[memory-profile] 确认提取: ${extractionId} = ${confirmed} (用户: ${userId})`);
+    logger.debug("确认提取", { extractionId, confirmed, userId });
     // 简化版本：不做任何操作
   }
 
@@ -478,7 +482,7 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
     preferences: UserPreferences;
     patterns: BehaviorPattern[];
   }> {
-    console.log(`[memory-profile] 导出画像 (用户: ${userId})`);
+    logger.debug("导出画像", { userId });
 
     const data = this.getUserData(userId);
 

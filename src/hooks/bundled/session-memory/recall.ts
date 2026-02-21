@@ -23,6 +23,9 @@ import type {
   PluginHookBeforeAgentStartResult,
   PluginHookAgentContext,
 } from "../../../plugins/types.js";
+import { createSubsystemLogger } from "../../../logging/subsystem.js";
+
+const logger = createSubsystemLogger("memory/recall");
 
 /** 最小置信度阈值，低于此值的事实不会被召回 */
 const MIN_CONFIDENCE = 0.5;
@@ -177,7 +180,7 @@ export function createRecallHandler(): (
     // 1. 检查前置条件
     const userId = resolveUserId(ctx.sessionKey);
     if (!userId) {
-      console.log("[memory-recall] 无 sessionKey，跳过记忆召回");
+      logger.debug("无 sessionKey，跳过记忆召回");
       return undefined;
     }
 
@@ -185,12 +188,12 @@ export function createRecallHandler(): (
     try {
       service = getGatewayMemoryService();
     } catch {
-      console.log("[memory-recall] 记忆服务未初始化，跳过");
+      logger.debug("记忆服务未初始化，跳过");
       return undefined;
     }
 
     if (!service.isReady) {
-      console.log("[memory-recall] 记忆服务不可用，跳过");
+      logger.debug("记忆服务不可用，跳过");
       return undefined;
     }
 
@@ -233,24 +236,23 @@ export function createRecallHandler(): (
 
       // 6. 组装 prependContext
       if (sections.length === 0) {
-        console.log("[memory-recall] 无有价值的记忆数据");
+        logger.debug("无有价值的记忆数据");
         return undefined;
       }
 
       const prependContext = `<user-profile-memory>\n${sections.join("\n\n")}\n</user-profile-memory>`;
 
-      console.log(
-        `[memory-recall] 注入记忆上下文: ${facts.length} 事实, ` +
-          `偏好=${hasNonDefaultPreferences(preferences) ? "自定义" : "默认"}, ` +
-          `${sections.length} 个区块`,
-      );
+      logger.info("注入记忆上下文", {
+        factsCount: facts.length,
+        preferences: hasNonDefaultPreferences(preferences) ? "自定义" : "默认",
+        sections: sections.length,
+      });
 
       return { prependContext };
     } catch (error) {
-      console.error(
-        "[memory-recall] 记忆召回失败:",
-        error instanceof Error ? error.message : String(error),
-      );
+      logger.error("记忆召回失败", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return undefined;
     }
   };

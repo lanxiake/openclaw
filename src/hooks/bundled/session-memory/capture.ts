@@ -15,6 +15,9 @@ import { randomUUID } from "node:crypto";
 import { getGatewayMemoryService } from "../../../gateway/memory-service.js";
 import type { Message } from "../../../memory/pluggable/interfaces/types.js";
 import type { PluginHookAgentEndEvent, PluginHookAgentContext } from "../../../plugins/types.js";
+import { createSubsystemLogger } from "../../../logging/subsystem.js";
+
+const logger = createSubsystemLogger("memory/capture");
 
 /** 保存到情节记忆的最大消息条数 */
 const MAX_MESSAGES_TO_SAVE = 50;
@@ -126,19 +129,19 @@ export function createCaptureHandler(): (
     // 1. 检查前置条件
     const userId = resolveUserId(ctx.sessionKey);
     if (!userId) {
-      console.log("[memory-capture] 无 sessionKey，跳过记忆捕获");
+      logger.debug("无 sessionKey，跳过记忆捕获");
       return;
     }
 
     // 不保存失败的会话
     if (!event.success) {
-      console.log("[memory-capture] 会话失败，跳过记忆捕获");
+      logger.debug("会话失败，跳过记忆捕获");
       return;
     }
 
     // 无消息时跳过
     if (!event.messages || event.messages.length === 0) {
-      console.log("[memory-capture] 无消息，跳过记忆捕获");
+      logger.debug("无消息，跳过记忆捕获");
       return;
     }
 
@@ -146,12 +149,12 @@ export function createCaptureHandler(): (
     try {
       service = getGatewayMemoryService();
     } catch {
-      console.log("[memory-capture] 记忆服务未初始化，跳过");
+      logger.debug("记忆服务未初始化，跳过");
       return;
     }
 
     if (!service.isReady) {
-      console.log("[memory-capture] 记忆服务不可用，跳过");
+      logger.debug("记忆服务不可用，跳过");
       return;
     }
 
@@ -161,7 +164,7 @@ export function createCaptureHandler(): (
 
       // 3. 检查消息数量是否足够
       if (messages.length < MIN_MEANINGFUL_MESSAGES) {
-        console.log(`[memory-capture] 有效消息不足 (${messages.length})，跳过`);
+        logger.debug("有效消息不足，跳过", { count: messages.length });
         return;
       }
 
@@ -175,15 +178,15 @@ export function createCaptureHandler(): (
       // 6. 保存到情节记忆
       await service.manager.episodic.addConversation(userId, sessionId, truncatedMessages);
 
-      console.log(
-        `[memory-capture] 保存对话: ${truncatedMessages.length} 条消息, ` +
-          `sessionId=${sessionId}, userId=${userId.slice(0, 30)}...`,
-      );
+      logger.info("保存对话", {
+        messageCount: truncatedMessages.length,
+        sessionId,
+        userId: userId.slice(0, 30),
+      });
     } catch (error) {
-      console.error(
-        "[memory-capture] 记忆捕获失败:",
-        error instanceof Error ? error.message : String(error),
-      );
+      logger.error("记忆捕获失败", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       // 不抛出异常，agent_end hook 是 fire-and-forget
     }
   };

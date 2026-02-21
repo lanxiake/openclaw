@@ -21,6 +21,9 @@ import {
 } from "../memory/pluggable/index.js";
 import { SQLiteKnowledgeMemoryAdapter } from "../memory/pluggable/providers/knowledge/sqlite-adapter.js";
 import { getMemorySearchManager } from "../memory/search-manager.js";
+import { createSubsystemLogger } from "../logging/subsystem.js";
+
+const logger = createSubsystemLogger("gateway/memory-service");
 
 /**
  * Gateway 记忆服务配置
@@ -115,7 +118,7 @@ export class GatewayMemoryService {
       ...config,
     };
 
-    console.log("[GatewayMemoryService] 创建记忆服务");
+    logger.info("创建记忆服务");
   }
 
   // ==================== 状态访问 ====================
@@ -151,11 +154,11 @@ export class GatewayMemoryService {
    */
   async initialize(): Promise<void> {
     if (this._status === "ready" || this._status === "initializing") {
-      console.log("[GatewayMemoryService] 已初始化或正在初始化");
+      logger.info("已初始化或正在初始化");
       return;
     }
 
-    console.log("[GatewayMemoryService] 开始初始化...");
+    logger.info("开始初始化...");
     this._status = "initializing";
 
     try {
@@ -164,7 +167,7 @@ export class GatewayMemoryService {
 
       // 如果启用 SQLite 知识适配器，替换知识记忆提供者
       if (this.config.useSQLiteKnowledge) {
-        console.log("[GatewayMemoryService] 启用 SQLite 知识适配器");
+        logger.info("启用 SQLite 知识适配器");
 
         // 创建 SQLite 适配器
         this.sqliteAdapter = new SQLiteKnowledgeMemoryAdapter({
@@ -193,7 +196,7 @@ export class GatewayMemoryService {
         autoInitialize: false,
         healthCheckInterval: this.config.healthCheckInterval,
         onHealthCheck: (report) => {
-          console.log("[GatewayMemoryService] 健康检查:", report.status);
+          logger.debug("健康检查", { status: report.status });
         },
       });
 
@@ -201,10 +204,10 @@ export class GatewayMemoryService {
       await this._manager.initialize();
 
       this._status = "ready";
-      console.log("[GatewayMemoryService] 初始化完成");
+      logger.info("初始化完成");
     } catch (error) {
       this._status = "degraded";
-      console.error("[GatewayMemoryService] 初始化失败:", error);
+      logger.error("初始化失败", { error: String(error) });
       throw error;
     }
   }
@@ -214,11 +217,11 @@ export class GatewayMemoryService {
    */
   async shutdown(): Promise<void> {
     if (this._status === "shutdown") {
-      console.log("[GatewayMemoryService] 已关闭");
+      logger.info("已关闭");
       return;
     }
 
-    console.log("[GatewayMemoryService] 开始关闭...");
+    logger.info("开始关闭...");
 
     // 关闭记忆管理器
     if (this._manager) {
@@ -233,7 +236,7 @@ export class GatewayMemoryService {
     }
 
     this._status = "shutdown";
-    console.log("[GatewayMemoryService] 已关闭");
+    logger.info("已关闭");
   }
 
   /**

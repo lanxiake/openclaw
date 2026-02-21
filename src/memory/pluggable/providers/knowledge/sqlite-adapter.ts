@@ -38,6 +38,9 @@ import type {
 } from "../../interfaces/knowledge-memory.js";
 import type { Message } from "../../interfaces/types.js";
 import { registerProvider } from "../factory.js";
+import { createSubsystemLogger } from "../../../../logging/subsystem.js";
+
+const logger = createSubsystemLogger("memory/knowledge/sqlite");
 
 /**
  * SQLite 适配器配置
@@ -193,7 +196,7 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
   constructor(config: SQLiteKnowledgeConfig = {}) {
     this.config = config;
 
-    console.log("[SQLiteKnowledgeAdapter] 创建适配器");
+    logger.debug("创建适配器");
   }
 
   // ==================== 生命周期 ====================
@@ -203,18 +206,18 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
    */
   async initialize(): Promise<void> {
     if (this.initialized) {
-      console.log("[SQLiteKnowledgeAdapter] 已初始化");
+      logger.debug("已初始化");
       return;
     }
 
-    console.log("[SQLiteKnowledgeAdapter] 开始初始化...");
+    logger.info("开始初始化...");
 
     try {
       // 如果提供了已存在的管理器，直接使用
       if (this.config.indexManager) {
         this.indexManager = this.config.indexManager as IMemoryIndexManager;
         this.ownsManager = false;
-        console.log("[SQLiteKnowledgeAdapter] 使用已存在的 MemoryIndexManager");
+        logger.info("使用已存在的 MemoryIndexManager");
       } else if (this.config.openclawConfig && this.config.agentId) {
         // 动态导入并创建管理器
         const { getMemorySearchManager } = await import("../../../search-manager.js");
@@ -228,7 +231,7 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
         }
 
         if (!result.manager) {
-          console.log("[SQLiteKnowledgeAdapter] 记忆搜索未启用，使用空实现");
+          logger.warn("记忆搜索未启用，使用空实现");
         }
 
         this.indexManager = result.manager as IMemoryIndexManager | null;
@@ -236,9 +239,9 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
       }
 
       this.initialized = true;
-      console.log("[SQLiteKnowledgeAdapter] 初始化完成");
+      logger.info("初始化完成");
     } catch (error) {
-      console.error("[SQLiteKnowledgeAdapter] 初始化失败:", error);
+      logger.error("初始化失败", { error: String(error) });
       throw error;
     }
   }
@@ -251,7 +254,7 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
       return;
     }
 
-    console.log("[SQLiteKnowledgeAdapter] 开始关闭...");
+    logger.info("开始关闭...");
 
     // 只有当我们拥有管理器时才关闭它
     if (this.ownsManager && this.indexManager) {
@@ -264,7 +267,7 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
     this.entities.clear();
     this.relationships.clear();
 
-    console.log("[SQLiteKnowledgeAdapter] 已关闭");
+    logger.info("已关闭");
   }
 
   /**
@@ -345,7 +348,7 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
     }
     this.documents.get(userId)!.set(id, doc);
 
-    console.log(`[SQLiteKnowledgeAdapter] 添加文档: ${id} for user ${userId}`);
+    logger.debug("添加文档", { documentId: id, userId });
 
     return id;
   }
@@ -362,7 +365,7 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
    */
   async deleteDocument(userId: string, documentId: string): Promise<void> {
     this.documents.get(userId)?.delete(documentId);
-    console.log(`[SQLiteKnowledgeAdapter] 删除文档: ${documentId}`);
+    logger.debug("删除文档", { documentId });
   }
 
   /**
@@ -479,7 +482,7 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
     options?: VectorSearchOptions,
   ): Promise<SearchResult[]> {
     if (!this.indexManager) {
-      console.log("[SQLiteKnowledgeAdapter] 记忆搜索未启用，返回空结果");
+      logger.debug("记忆搜索未启用，返回空结果");
       return [];
     }
 
@@ -705,14 +708,14 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
    * 当前为存根实现，需要图数据库支持
    */
   async buildCommunities(userId: string): Promise<void> {
-    console.log(`[SQLiteKnowledgeAdapter] buildCommunities 尚未实现 (userId: ${userId})`);
+    logger.debug("buildCommunities 尚未实现", { userId });
   }
 
   /**
    * 获取社区
    */
   async getCommunities(userId: string, level?: number): Promise<Community[]> {
-    console.log(`[SQLiteKnowledgeAdapter] getCommunities 尚未实现`);
+    logger.debug("getCommunities 尚未实现");
     return [];
   }
 

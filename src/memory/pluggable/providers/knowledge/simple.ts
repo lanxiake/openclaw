@@ -22,6 +22,9 @@ import type {
   VectorSearchOptions,
 } from "../../interfaces/knowledge-memory.js";
 import { registerProvider } from "../factory.js";
+import { createSubsystemLogger } from "../../../../logging/subsystem.js";
+
+const logger = createSubsystemLogger("memory/knowledge/simple");
 
 /**
  * 用户知识数据存储结构
@@ -76,18 +79,18 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
    * 初始化提供者
    */
   async initialize(): Promise<void> {
-    console.log("[simple-knowledge] 初始化简单知识记忆提供者");
+    logger.info("初始化简单知识记忆提供者");
     this.storage.clear();
-    console.log("[simple-knowledge] 初始化完成");
+    logger.info("初始化完成");
   }
 
   /**
    * 关闭提供者
    */
   async shutdown(): Promise<void> {
-    console.log("[simple-knowledge] 关闭提供者");
+    logger.info("关闭提供者");
     this.storage.clear();
-    console.log("[simple-knowledge] 已关闭");
+    logger.info("已关闭");
   }
 
   /**
@@ -149,9 +152,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
     const documentId = randomUUID();
     const now = new Date();
 
-    console.log(
-      `[simple-knowledge] 添加文档: ${documentId} (用户: ${userId}, 标题: ${document.title})`,
-    );
+    logger.debug("添加文档", { documentId, userId, title: document.title });
 
     const data = this.getUserData(userId);
 
@@ -203,7 +204,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
    * 删除文档
    */
   async deleteDocument(userId: string, documentId: string): Promise<void> {
-    console.log(`[simple-knowledge] 删除文档: ${documentId} (用户: ${userId})`);
+    logger.debug("删除文档", { documentId, userId });
 
     const data = this.getUserData(userId);
     data.documents.delete(documentId);
@@ -280,7 +281,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
    * 索引文档（简化版：直接标记为已索引）
    */
   async indexDocument(userId: string, documentId: string): Promise<void> {
-    console.log(`[simple-knowledge] 索引文档: ${documentId} (用户: ${userId})`);
+    logger.debug("索引文档", { documentId, userId });
 
     const data = this.getUserData(userId);
     const doc = data.documents.get(documentId);
@@ -304,7 +305,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
    * 重新索引所有文档
    */
   async reindexAll(userId: string): Promise<void> {
-    console.log(`[simple-knowledge] 重新索引所有文档 (用户: ${userId})`);
+    logger.debug("重新索引所有文档", { userId });
 
     const data = this.getUserData(userId);
     for (const doc of data.documents.values()) {
@@ -323,7 +324,7 @@ export class SimpleKnowledgeMemoryProvider implements IKnowledgeMemoryProvider {
     query: string,
     options?: VectorSearchOptions,
   ): Promise<SearchResult[]> {
-    console.log(`[simple-knowledge] 搜索: "${query}" (用户: ${userId})`);
+    logger.debug("搜索", { query, userId });
 
     const data = this.getUserData(userId);
     const results: SearchResult[] = [];
