@@ -28,7 +28,10 @@ import {
   validateConfigPatchParams,
   validateConfigSchemaParams,
   validateConfigSetParams,
+  validateConfigSourcesParams,
 } from "../protocol/index.js";
+import { buildConfigSources } from "../config-merger.js";
+import { loadAllDatabaseConfigs } from "../config-loader.js";
 import type { GatewayRequestHandlers, RespondFn } from "./types.js";
 
 function resolveBaseHash(params: unknown): string | null {
@@ -409,6 +412,64 @@ export const configHandlers: GatewayRequestHandlers = {
           path: sentinelPath,
           payload,
         },
+      },
+      undefined,
+    );
+  },
+
+  /**
+   * config.sources — 返回各配置段的来源信息
+   *
+   * 标注每个配置段来自 file（文件）、db-system（数据库系统级）
+   * 还是 db-tenant（数据库租户级），帮助运维人员和客户端了解
+   * 当前生效配置的数据源。
+   */
+  "config.sources": async ({ params, client, respond }) => {
+    if (!validateConfigSourcesParams(params)) {
+      respond(
+        false,
+        undefined,
+        errorShape(
+          ErrorCodes.INVALID_REQUEST,
+          `invalid config.sources params: ${formatValidationErrors(validateConfigSourcesParams.errors)}`,
+        ),
+      );
+      return;
+    }
+
+    /** 获取当前用户 ID（多租户模式下从客户端获取） */
+    const userId = client?.authenticatedUser?.userId;
+
+    /** 并行加载文件配置和数据库配置 */
+    const fileConfig = loadConfig();
+    const dbConfigs = await loadAllDatabaseConfigs(userId);
+
+    if (!dbConfigs) {
+      /** 数据库不可用，所有配置来自文件 */
+      respond(
+        true,
+        {
+          sources: {
+            gateway: "file",
+            "models.providers": "file",
+            "agents.defaults": "file",
+            "auth.profiles": "file",
+            "auth.order": "file",
+          },
+          dbAvailable: false,
+        },
+        undefined,
+      );
+      return;
+    }
+
+    const sources = buildConfigSources(fileConfig, dbConfigs);
+
+    respond(
+      true,
+      {
+        sources,
+        dbAvailable: true,
       },
       undefined,
     );

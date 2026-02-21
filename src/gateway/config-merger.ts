@@ -352,3 +352,90 @@ export function mergeFileAndDbConfigs(
 
   return merged;
 }
+
+// ---------------------------------------------------------------------------
+// 配置来源分析
+// ---------------------------------------------------------------------------
+
+/** 配置来源标识 */
+export type ConfigSource = "file" | "db-system" | "db-tenant";
+
+/** 各配置段的来源映射 */
+export type ConfigSourcesMap = Record<string, ConfigSource>;
+
+/**
+ * 根据 configType 字段判断数据库来源级别
+ *
+ * @param configType - 数据库记录的 configType 值
+ * @returns "db-system" 或 "db-tenant"
+ */
+function resolveDbSource(configType: string | null | undefined): ConfigSource {
+  return configType === "tenant" ? "db-tenant" : "db-system";
+}
+
+/**
+ * 分析配置各段的来源信息
+ *
+ * 根据 DatabaseConfigs 中各表是否有数据、以及 configType 字段判断来源。
+ * 没有数据库记录的段标记为 "file"。
+ *
+ * 返回的 key 对应配置段路径：
+ * - gateway: Gateway 基础配置
+ * - models.providers: 模型提供商
+ * - agents.defaults: Agent 默认参数
+ * - auth.profiles: 认证 Profile
+ * - auth.order: 认证 Profile 排序
+ * - system.<key>: System Configs KV 段
+ *
+ * @param _fileConfig - 文件配置（用于未来扩展判断 file 段是否存在）
+ * @param dbConfigs   - 数据库配置集合
+ * @returns 每个配置段的来源标注
+ */
+export function buildConfigSources(
+  _fileConfig: OpenClawConfig,
+  dbConfigs: DatabaseConfigs,
+): ConfigSourcesMap {
+  const sources: ConfigSourcesMap = {};
+
+  // 1. Gateway 配置来源
+  sources.gateway = dbConfigs.gatewayConfig
+    ? resolveDbSource(dbConfigs.gatewayConfig.configType)
+    : "file";
+
+  // 2. Model Providers 来源
+  if (dbConfigs.modelProviders.length > 0) {
+    // 如果存在任何 tenant 记录，标记为 db-tenant；否则 db-system
+    const hasTenant = dbConfigs.modelProviders.some((p) => p.configType === "tenant");
+    sources["models.providers"] = hasTenant ? "db-tenant" : "db-system";
+  } else {
+    sources["models.providers"] = "file";
+  }
+
+  // 3. Agent 默认配置来源
+  sources["agents.defaults"] = dbConfigs.agentConfig
+    ? resolveDbSource(dbConfigs.agentConfig.configType)
+    : "file";
+
+  // 4. Auth Profiles 来源
+  if (dbConfigs.authProfiles.length > 0) {
+    const hasTenant = dbConfigs.authProfiles.some((p) => p.configType === "tenant");
+    sources["auth.profiles"] = hasTenant ? "db-tenant" : "db-system";
+  } else {
+    sources["auth.profiles"] = "file";
+  }
+
+  // 5. Auth Profile Order 来源
+  if (dbConfigs.authProfileOrders.length > 0) {
+    const hasTenant = dbConfigs.authProfileOrders.some((o) => o.configType === "tenant");
+    sources["auth.order"] = hasTenant ? "db-tenant" : "db-system";
+  } else {
+    sources["auth.order"] = "file";
+  }
+
+  // 6. System Configs KV 来源（每个 key 独立标注）
+  for (const key of Object.keys(dbConfigs.systemConfigs)) {
+    sources[`system.${key}`] = "db-system";
+  }
+
+  return sources;
+}

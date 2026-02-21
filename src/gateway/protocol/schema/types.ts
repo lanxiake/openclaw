@@ -36,6 +36,7 @@ import type {
   ConfigSchemaParamsSchema,
   ConfigSchemaResponseSchema,
   ConfigSetParamsSchema,
+  ConfigSourcesParamsSchema,
   UpdateRunParamsSchema,
 } from "./config.js";
 import type {
@@ -157,6 +158,7 @@ export type ConfigApplyParams = Static<typeof ConfigApplyParamsSchema>;
 export type ConfigPatchParams = Static<typeof ConfigPatchParamsSchema>;
 export type ConfigSchemaParams = Static<typeof ConfigSchemaParamsSchema>;
 export type ConfigSchemaResponse = Static<typeof ConfigSchemaResponseSchema>;
+export type ConfigSourcesParams = Static<typeof ConfigSourcesParamsSchema>;
 export type WizardStartParams = Static<typeof WizardStartParamsSchema>;
 export type WizardNextParams = Static<typeof WizardNextParamsSchema>;
 export type WizardCancelParams = Static<typeof WizardCancelParamsSchema>;
