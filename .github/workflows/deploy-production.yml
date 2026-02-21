@@ -1,0 +1,74 @@
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy"
+        required: true
+        default: "main"
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute remote deployment over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          script_stop: true
+          command_timeout: 45m
+          script: |
+            set -euo pipefail
+            DEPLOY_PATH="/opt/mtbot"
+            DEPLOY_BRANCH="${{ inputs.branch || github.ref_name }}"
+
+            echo "[ci] deploy path: ${DEPLOY_PATH}"
+            echo "[ci] deploy branch: ${DEPLOY_BRANCH}"
+
+            if [ ! -d "${DEPLOY_PATH}/.git" ]; then
+              echo "[ci] ${DEPLOY_PATH} 不是 git 仓库，请先完成首次部署。"
+              exit 1
+            fi
+
+            cd "${DEPLOY_PATH}"
+            git fetch origin "${DEPLOY_BRANCH}"
+            git checkout "${DEPLOY_BRANCH}"
+            git pull --ff-only origin "${DEPLOY_BRANCH}"
+
+            if [ ! -f "my-docs/部署信息/.env.infra" ]; then
+              echo "[ci] 缺少 my-docs/部署信息/.env.infra"
+              exit 1
+            fi
+
+            if [ ! -f "my-docs/部署信息/.env.production" ]; then
+              echo "[ci] 缺少 my-docs/部署信息/.env.production"
+              exit 1
+            fi
+
+            docker compose \
+              --project-directory "${DEPLOY_PATH}" \
+              -f "${DEPLOY_PATH}/my-docs/部署信息/docker-compose.infra.yml" \
+              --env-file "${DEPLOY_PATH}/my-docs/部署信息/.env.infra" \
+              up -d
+
+            docker compose \
+              --project-directory "${DEPLOY_PATH}" \
+              -f "${DEPLOY_PATH}/my-docs/部署信息/docker-compose.prod.yml" \
+              --env-file "${DEPLOY_PATH}/my-docs/部署信息/.env.production" \
+              up -d --build
+
+            docker compose \
+              --project-directory "${DEPLOY_PATH}" \
+              -f "${DEPLOY_PATH}/my-docs/部署信息/docker-compose.prod.yml" \
+              ps

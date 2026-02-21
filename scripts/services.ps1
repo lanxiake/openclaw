@@ -3,37 +3,50 @@
     OpenClaw Service Manager
 
 .DESCRIPTION
-    Start/stop OpenClaw services
+    Start/stop OpenClaw services with optional build step.
     Services: gateway, api-server, admin-console, windows
 
 .PARAMETER Action
-    Action: start, stop, restart, status
+    Action: start, stop, restart, status, build
 
 .PARAMETER Service
     Service name: all, gateway, api-server, admin-console, windows
     Default: all
 
+.PARAMETER NoBuild
+    Skip the build step when starting/restarting services
+
 .EXAMPLE
-    .\services.ps1 start              # Start all services
-    .\services.ps1 stop               # Stop all services
-    .\services.ps1 start gateway      # Start Gateway only
-    .\services.ps1 stop api-server    # Stop API Server only
+    .\services.ps1 start              # Build + start backend services
+    .\services.ps1 start all          # Build + start backend services (gateway, api-server, admin-console)
+    .\services.ps1 start windows      # Start Windows client (no build needed, uses electron-vite dev)
+    .\services.ps1 start -NoBuild     # Start without building
+    .\services.ps1 stop               # Stop all services (including windows)
+    .\services.ps1 stop windows       # Stop Windows client only
+    .\services.ps1 restart            # Build + restart all services
+    .\services.ps1 restart -NoBuild   # Restart without building
     .\services.ps1 status             # Show service status
-    .\services.ps1 restart            # Restart all services
+    .\services.ps1 build              # Build only (no start)
 #>
 
 param(
     [Parameter(Mandatory=$true, Position=0)]
-    [ValidateSet("start", "stop", "restart", "status")]
+    [ValidateSet("start", "stop", "restart", "status", "build")]
     [string]$Action,
 
     [Parameter(Position=1)]
     [ValidateSet("all", "gateway", "api-server", "admin-console", "windows")]
-    [string]$Service = "all"
+    [string]$Service = "all",
+
+    [switch]$NoBuild
 )
 
 # Project root directory
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+
+# ============================================================================
+# Helper functions
+# ============================================================================
 
 # Load .env file and return environment variables as hashtable
 function Get-EnvFromFile {
@@ -62,50 +75,6 @@ function Get-EnvFromFile {
     return $envVars
 }
 
-# Service configuration
-$Services = @{
-    "gateway" = @{
-        Name = "Gateway"
-        Port = 18789
-        WorkDir = $ProjectRoot
-        StartCmd = "node scripts/run-node.mjs --dev gateway --allow-unconfigured"
-        Color = "Cyan"
-        EnvFile = "$ProjectRoot\.env"
-        ExtraEnv = @{
-            "OPENCLAW_SKIP_CHANNELS" = "1"
-            "CLAWDBOT_SKIP_CHANNELS" = "1"
-            "OPENCLAW_GATEWAY_PORT" = "18789"
-        }
-    }
-    "api-server" = @{
-        Name = "API Server"
-        Port = 3000
-        WorkDir = "$ProjectRoot\apps\api-server"
-        StartCmd = "pnpm dev"
-        Color = "Green"
-        EnvFile = "$ProjectRoot\apps\api-server\.env"
-        ExtraEnv = @{}
-    }
-    "admin-console" = @{
-        Name = "Admin Console"
-        Port = 5176
-        WorkDir = "$ProjectRoot\apps\admin-console"
-        StartCmd = "pnpm dev"
-        Color = "Yellow"
-        EnvFile = $null
-        ExtraEnv = @{}
-    }
-    "windows" = @{
-        Name = "Windows Client"
-        Port = $null
-        WorkDir = "$ProjectRoot\apps\windows"
-        StartCmd = "pnpm dev"
-        Color = "Blue"
-        EnvFile = $null
-        ExtraEnv = @{}
-    }
-}
-
 # Log output function
 function Write-ServiceLog {
     param(
@@ -119,24 +88,109 @@ function Write-ServiceLog {
     Write-Host $Message
 }
 
-# Check if port is in use
-function Test-PortInUse {
+# Check if port is in use (only LISTEN state, ignore TIME_WAIT)
+function Test-PortListening {
     param([int]$Port)
-    if ($null -eq $Port) { return $false }
-    $connection = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue
+    if ($null -eq $Port -or $Port -eq 0) { return $false }
+    $connection = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
     return $null -ne $connection
 }
 
-# Get process using port
-function Get-PortProcess {
+# Get process listening on port (only LISTEN state)
+function Get-PortListeningProcess {
     param([int]$Port)
-    if ($null -eq $Port) { return $null }
-    $connection = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue
-    if ($connection) {
-        return Get-Process -Id $connection.OwningProcess -ErrorAction SilentlyContinue
+    if ($null -eq $Port -or $Port -eq 0) { return $null }
+    $connections = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
+    if ($connections) {
+        # Handle both single and multiple connections
+        $conn = if ($connections -is [array]) { $connections[0] } else { $connections }
+        $procId = $conn.OwningProcess
+        if ($procId -and $procId -gt 0) {
+            return Get-Process -Id $procId -ErrorAction SilentlyContinue
+        }
     }
     return $null
 }
+
+# ============================================================================
+# Service configuration
+# ============================================================================
+
+$Services = @{
+    "gateway" = @{
+        Name = "Gateway"
+        Port = 18789
+        WorkDir = $ProjectRoot
+        StartCmd = "node scripts/run-node.mjs --dev gateway --allow-unconfigured"
+        Color = "Cyan"
+        EnvFile = "$ProjectRoot\.env"
+        NeedsBuild = $true
+        ExtraEnv = @{
+            "OPENCLAW_SKIP_CHANNELS" = "1"
+            "CLAWDBOT_SKIP_CHANNELS" = "1"
+            "OPENCLAW_GATEWAY_PORT" = "18789"
+        }
+    }
+    "api-server" = @{
+        Name = "API Server"
+        Port = 3000
+        WorkDir = "$ProjectRoot\apps\api-server"
+        StartCmd = "pnpm dev"
+        Color = "Green"
+        EnvFile = "$ProjectRoot\apps\api-server\.env"
+        NeedsBuild = $false
+        ExtraEnv = @{}
+    }
+    "admin-console" = @{
+        Name = "Admin Console"
+        Port = 5176
+        WorkDir = "$ProjectRoot\apps\admin-console"
+        StartCmd = "pnpm dev"
+        Color = "Yellow"
+        EnvFile = $null
+        NeedsBuild = $false
+        ExtraEnv = @{}
+    }
+    "windows" = @{
+        Name = "Windows Client"
+        Port = $null
+        WorkDir = "$ProjectRoot\apps\windows"
+        StartCmd = "pnpm dev"
+        Color = "Blue"
+        EnvFile = $null
+        NeedsBuild = $false
+        ExtraEnv = @{}
+    }
+}
+
+# ============================================================================
+# Build function
+# ============================================================================
+
+function Invoke-Build {
+    Write-Host ""
+    Write-ServiceLog "Build" "Building project (pnpm build)..." "Magenta"
+
+    $buildStartTime = Get-Date
+
+    # Use cmd.exe to run pnpm (pnpm is a .cmd wrapper on Windows)
+    $result = Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "pnpm build" -WorkingDirectory $ProjectRoot -NoNewWindow -PassThru -Wait
+
+    $buildDuration = (Get-Date) - $buildStartTime
+    $durationStr = "{0:N1}s" -f $buildDuration.TotalSeconds
+
+    if ($result.ExitCode -eq 0) {
+        Write-ServiceLog "Build" "Build succeeded ($durationStr)" "Green"
+        return $true
+    } else {
+        Write-ServiceLog "Build" "Build FAILED (exit code: $($result.ExitCode), $durationStr)" "Red"
+        return $false
+    }
+}
+
+# ============================================================================
+# Start/Stop functions
+# ============================================================================
 
 # Start a single service
 function Start-SingleService {
@@ -148,10 +202,11 @@ function Start-SingleService {
 
     Write-ServiceLog $name "Starting..." $color
 
-    # Check if port is already in use
-    if ($svc.Port -and (Test-PortInUse $svc.Port)) {
-        $proc = Get-PortProcess $svc.Port
-        Write-ServiceLog $name "Port $($svc.Port) already in use (PID: $($proc.Id))" "Red"
+    # Check if port is already listening
+    if ($svc.Port -and (Test-PortListening $svc.Port)) {
+        $proc = Get-PortListeningProcess $svc.Port
+        $pidStr = if ($proc) { $proc.Id } else { "unknown" }
+        Write-ServiceLog $name "Port $($svc.Port) already in use (PID: $pidStr)" "Red"
         return $false
     }
 
@@ -161,14 +216,12 @@ function Start-SingleService {
         return $false
     }
 
-    # Start service in new PowerShell window
     # Build environment variable string for the command
     $envSetCmd = ""
     if ($svc.EnvFile -and (Test-Path $svc.EnvFile)) {
         $envVars = Get-EnvFromFile $svc.EnvFile
         foreach ($key in $envVars.Keys) {
             $value = $envVars[$key]
-            # Escape special characters in value
             $escapedValue = $value -replace "'", "''"
             $envSetCmd += "`$env:$key = '$escapedValue'; "
         }
@@ -184,6 +237,7 @@ function Start-SingleService {
         }
     }
 
+    # Start service in new PowerShell window
     $startInfo = @{
         FilePath = "powershell.exe"
         ArgumentList = @(
@@ -201,19 +255,22 @@ function Start-SingleService {
         Write-ServiceLog $name "Waiting for port $($svc.Port)..." $color
         $maxWait = 30
         $waited = 0
-        while (-not (Test-PortInUse $svc.Port) -and $waited -lt $maxWait) {
+        while (-not (Test-PortListening $svc.Port) -and $waited -lt $maxWait) {
             Start-Sleep -Seconds 1
             $waited++
         }
 
-        if (Test-PortInUse $svc.Port) {
-            Write-ServiceLog $name "Started (port: $($svc.Port))" "Green"
+        if (Test-PortListening $svc.Port) {
+            $proc = Get-PortListeningProcess $svc.Port
+            $pidStr = if ($proc) { " (PID: $($proc.Id))" } else { "" }
+            Write-ServiceLog $name "Started on port $($svc.Port)$pidStr" "Green"
             return $true
         } else {
-            Write-ServiceLog $name "Timeout - check logs" "Yellow"
+            Write-ServiceLog $name "Timeout waiting for port $($svc.Port) - check service window" "Yellow"
             return $false
         }
     } else {
+        Start-Sleep -Seconds 1
         Write-ServiceLog $name "Started (no port check)" "Green"
         return $true
     }
@@ -230,23 +287,42 @@ function Stop-SingleService {
     Write-ServiceLog $name "Stopping..." $color
 
     $stopped = $false
+    $killedPids = @{}
 
-    # Find and stop process by port
-    if ($svc.Port -and (Test-PortInUse $svc.Port)) {
-        $proc = Get-PortProcess $svc.Port
-        if ($proc) {
-            Write-ServiceLog $name "Killing process PID: $($proc.Id)" $color
+    # Find and stop process by port (LISTEN state only)
+    if ($svc.Port -and (Test-PortListening $svc.Port)) {
+        $proc = Get-PortListeningProcess $svc.Port
+        if ($proc -and $proc.Id -gt 0) {
+            Write-ServiceLog $name "Killing listener PID: $($proc.Id)" $color
+            # Kill process tree (parent + children)
             Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            $killedPids[$proc.Id] = $true
             $stopped = $true
         }
     }
 
     # Find and close by window title
-    $windows = Get-Process | Where-Object { $_.MainWindowTitle -like "*OpenClaw - $name*" }
+    $windows = Get-Process | Where-Object {
+        $_.MainWindowTitle -like "*OpenClaw - $name*" -and
+        -not $killedPids.ContainsKey($_.Id)
+    }
     foreach ($win in $windows) {
         Write-ServiceLog $name "Closing window PID: $($win.Id)" $color
+        # Kill the process tree
+        Get-CimInstance Win32_Process -Filter "ParentProcessId=$($win.Id)" -ErrorAction SilentlyContinue |
+            ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
         Stop-Process -Id $win.Id -Force -ErrorAction SilentlyContinue
+        $killedPids[$win.Id] = $true
         $stopped = $true
+    }
+
+    # Wait briefly for port to be released
+    if ($svc.Port -and $stopped) {
+        $waitCount = 0
+        while ((Test-PortListening $svc.Port) -and $waitCount -lt 5) {
+            Start-Sleep -Milliseconds 500
+            $waitCount++
+        }
     }
 
     if ($stopped) {
@@ -257,6 +333,10 @@ function Stop-SingleService {
 
     return $stopped
 }
+
+# ============================================================================
+# Status functions
+# ============================================================================
 
 # Get service status
 function Get-SingleServiceStatus {
@@ -273,17 +353,18 @@ function Get-SingleServiceStatus {
     }
 
     if ($svc.Port) {
-        if (Test-PortInUse $svc.Port) {
-            $proc = Get-PortProcess $svc.Port
+        if (Test-PortListening $svc.Port) {
+            $proc = Get-PortListeningProcess $svc.Port
             $status.Running = $true
-            $status.PID = $proc.Id
+            if ($proc) { $status.PID = $proc.Id }
         }
     } else {
         # For services without port, check window title
         $windows = Get-Process | Where-Object { $_.MainWindowTitle -like "*OpenClaw - $name*" }
         if ($windows) {
             $status.Running = $true
-            $status.PID = $windows[0].Id
+            $firstWin = if ($windows -is [array]) { $windows[0] } else { $windows }
+            $status.PID = $firstWin.Id
         }
     }
 
@@ -324,7 +405,10 @@ function Show-Status {
     Write-Host ""
 }
 
+# ============================================================================
 # Main logic
+# ============================================================================
+
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Cyan
 Write-Host "              OpenClaw Service Manager                          " -ForegroundColor Cyan
@@ -332,14 +416,43 @@ Write-Host "================================================================" -F
 Write-Host ""
 
 # Determine target services
+# "all" starts backend services only (gateway, api-server, admin-console)
+# Use "windows" explicitly to start the Windows client
 $targetServices = if ($Service -eq "all") {
     @("gateway", "api-server", "admin-console")
 } else {
     @($Service)
 }
 
+# Check if build is needed for the target services
+function Test-BuildNeeded {
+    param([string[]]$ServiceKeys)
+    foreach ($key in $ServiceKeys) {
+        if ($Services[$key].NeedsBuild) { return $true }
+    }
+    return $false
+}
+
 switch ($Action) {
+    "build" {
+        $buildOk = Invoke-Build
+        if (-not $buildOk) {
+            Write-Host "Build failed. Aborting." -ForegroundColor Red
+            exit 1
+        }
+    }
+
     "start" {
+        # Build before starting if needed (unless -NoBuild)
+        if (-not $NoBuild -and (Test-BuildNeeded $targetServices)) {
+            $buildOk = Invoke-Build
+            if (-not $buildOk) {
+                Write-Host "Build failed. Aborting start." -ForegroundColor Red
+                exit 1
+            }
+            Write-Host ""
+        }
+
         Write-Host "Starting services: $($targetServices -join ', ')" -ForegroundColor Green
         Write-Host ""
 
@@ -353,12 +466,17 @@ switch ($Action) {
     }
 
     "stop" {
-        Write-Host "Stopping services: $($targetServices -join ', ')" -ForegroundColor Yellow
+        # When stopping "all", also stop windows client
+        $stopTargets = if ($Service -eq "all") {
+            @("windows", "admin-console", "api-server", "gateway")
+        } else {
+            @($Service)
+        }
+
+        Write-Host "Stopping services: $($stopTargets -join ', ')" -ForegroundColor Yellow
         Write-Host ""
 
-        # Stop in reverse order (frontend first, then backend)
-        $reversed = $targetServices | Sort-Object -Descending
-        foreach ($svc in $reversed) {
+        foreach ($svc in $stopTargets) {
             Stop-SingleService $svc
         }
 
@@ -367,16 +485,31 @@ switch ($Action) {
     }
 
     "restart" {
+        # Stop first (including windows if "all")
+        $stopTargets = if ($Service -eq "all") {
+            @("windows", "admin-console", "api-server", "gateway")
+        } else {
+            @($Service)
+        }
+
         Write-Host "Restarting services: $($targetServices -join ', ')" -ForegroundColor Magenta
         Write-Host ""
 
-        # Stop first
-        $reversed = $targetServices | Sort-Object -Descending
-        foreach ($svc in $reversed) {
+        foreach ($svc in $stopTargets) {
             Stop-SingleService $svc
         }
 
         Start-Sleep -Seconds 2
+
+        # Build before restarting if needed (unless -NoBuild)
+        if (-not $NoBuild -and (Test-BuildNeeded $targetServices)) {
+            $buildOk = Invoke-Build
+            if (-not $buildOk) {
+                Write-Host "Build failed. Aborting restart." -ForegroundColor Red
+                exit 1
+            }
+            Write-Host ""
+        }
 
         # Then start
         foreach ($svc in $targetServices) {
