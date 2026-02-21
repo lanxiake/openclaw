@@ -4,6 +4,7 @@ import { type AgentEventPayload, getAgentRunContext } from "../infra/agent-event
 import { resolveHeartbeatVisibility } from "../infra/heartbeat-visibility.js";
 import { loadSessionEntry } from "./session-utils.js";
 import { formatForLog } from "./ws-log.js";
+import { persistAssistantMessage } from "./chat-persistence.js";
 
 /**
  * Check if webchat broadcasts should be suppressed for heartbeat runs.
@@ -182,6 +183,14 @@ export function createAgentEventHandler({
     chatRunState.buffers.delete(clientRunId);
     chatRunState.deltaSentAt.delete(clientRunId);
     if (jobState === "done") {
+      /** 双写：agent-run 的 AI 回复持久化到 DB（异步，不阻塞广播） */
+      if (text) {
+        void persistAssistantMessage(sessionKey, {
+          role: "assistant",
+          content: text,
+        });
+      }
+
       const payload = {
         runId: clientRunId,
         sessionKey,

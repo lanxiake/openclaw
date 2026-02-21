@@ -5,7 +5,7 @@
  * conversations 存储对话会话，messages 存储对话消息。
  */
 
-import { pgTable, text, timestamp, integer, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 
@@ -77,6 +77,8 @@ export const conversations = pgTable(
     agentConfig: jsonb("agent_config").$type<AgentConfig>(),
     /** 扩展元数据 */
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    /** 关联的 Gateway sessionKey（用于 sessionKey → conversationId 映射） */
+    sessionKey: text("session_key"),
     /** 最后消息时间（冗余，加速排序） */
     lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
     /** 消息数（冗余，加速展示） */
@@ -93,6 +95,8 @@ export const conversations = pgTable(
     index("conversations_user_updated_idx").on(table.userId, table.updatedAt),
     // 按状态过滤
     index("conversations_status_idx").on(table.status),
+    // 按 sessionKey 唯一查找（Gateway sessionKey → conversationId 映射）
+    uniqueIndex("conversations_session_key_idx").on(table.sessionKey),
   ],
 );
 
@@ -138,6 +142,12 @@ export const messages = pgTable(
     modelId: text("model_id"),
     /** 扩展元数据 */
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    /** 消息状态（sent=已发送, queued=排队中, failed=发送失败） */
+    status: text("message_status", {
+      enum: ["sent", "queued", "failed"],
+    }).default("sent"),
+    /** 排队顺序（仅 status='queued' 时有效） */
+    queueOrder: integer("queue_order"),
     /** 创建时间 */
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -148,6 +158,8 @@ export const messages = pgTable(
     index("messages_user_id_idx").on(table.userId),
     // 按创建时间排序
     index("messages_created_at_idx").on(table.createdAt),
+    // 按状态过滤排队消息
+    index("messages_status_idx").on(table.conversationId, table.status),
   ],
 );
 

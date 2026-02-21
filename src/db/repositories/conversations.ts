@@ -201,6 +201,74 @@ export class ConversationRepository extends TenantScopedRepository {
       })
       .where(and(eq(conversations.id, id), eq(conversations.userId, this.tenantId)));
   }
+
+  /**
+   * 根据 Gateway sessionKey 查找对话
+   *
+   * @param sessionKey - Gateway sessionKey（如 "user:123:agent:main:default"）
+   */
+  async findBySessionKey(sessionKey: string): Promise<Conversation | null> {
+    logger.debug(
+      `[ConversationRepository] 按 sessionKey 查找对话, sessionKey=${sessionKey}, userId=${this.tenantId}`,
+    );
+
+    const [conv] = await this.db
+      .select()
+      .from(conversations)
+      .where(
+        and(eq(conversations.sessionKey, sessionKey), eq(conversations.userId, this.tenantId)),
+      );
+
+    return conv ?? null;
+  }
+
+  /**
+   * 根据 sessionKey 查找或创建对话
+   *
+   * 首次消息时自动创建对话记录，后续消息复用已有对话。
+   *
+   * @param sessionKey - Gateway sessionKey
+   * @param defaults - 创建时的默认值（title、type 等）
+   */
+  async findOrCreateBySessionKey(
+    sessionKey: string,
+    defaults: Omit<
+      NewConversation,
+      "id" | "userId" | "createdAt" | "updatedAt" | "messageCount" | "status" | "sessionKey"
+    >,
+  ): Promise<{ conversation: Conversation; created: boolean }> {
+    const existing = await this.findBySessionKey(sessionKey);
+    if (existing) {
+      return { conversation: existing, created: false };
+    }
+
+    logger.debug(
+      `[ConversationRepository] sessionKey 未找到对话，创建新对话, sessionKey=${sessionKey}`,
+    );
+
+    const id = generateId();
+    const now = new Date();
+
+    const [conv] = await this.db
+      .insert(conversations)
+      .values({
+        id,
+        userId: this.tenantId,
+        sessionKey,
+        title: defaults.title,
+        type: defaults.type,
+        status: "active",
+        deviceId: defaults.deviceId,
+        agentConfig: defaults.agentConfig,
+        metadata: defaults.metadata,
+        messageCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+
+    return { conversation: conv, created: true };
+  }
 }
 
 // ==================== MessageRepository ====================
@@ -306,6 +374,78 @@ export class MessageRepository extends TenantScopedRepository {
       .where(and(eq(messages.id, id), eq(messages.userId, this.tenantId)));
 
     return msg ?? null;
+  }
+
+  /**
+   * 查询对话中排队中的消息
+   *
+   * @param conversationId - 对话 ID
+   */
+  async findQueuedByConversation(conversationId: string): Promise<Message[]> {
+    logger.debug(
+      `[MessageRepository] 查询排队消息, conversationId=${conversationId}, userId=${this.tenantId}`,
+    );
+
+    const result = await this.db
+      .select()
+      .from(messages)
+      .where(
+        and(
+          eq(messages.conversationId, conversationId),
+          eq(messages.userId, this.tenantId),
+          eq(messages.status, "queued"),
+        ),
+      )
+      .orderBy(messages.queueOrder);
+
+    return result;
+  }
+
+  /**
+   * 更新消息状态
+   */
+  async updateStatus(id: string, status: "sent" | "queued" | "failed"): Promise<Message | null> {
+    logger.debug(
+      `[MessageRepository] 更新消息状态, id=${id}, status=${status}, userId=${this.tenantId}`,
+    );
+
+    const [msg] = await this.db
+      .update(messages)
+      .set({ status })
+      .where(and(eq(messages.id, id), eq(messages.userId, this.tenantId)))
+      .returning();
+
+    return msg ?? null;
+  }
+
+  /**
+   * 删除消息（物理删除，用于移除排队消息）
+   */
+  async deleteById(id: string): Promise<void> {
+    logger.debug(`[MessageRepository] 删除消息, id=${id}, userId=${this.tenantId}`);
+
+    await this.db
+      .delete(messages)
+      .where(and(eq(messages.id, id), eq(messages.userId, this.tenantId)));
+  }
+
+  /**
+   * 删除对话中所有排队消息
+   */
+  async deleteQueuedByConversation(conversationId: string): Promise<void> {
+    logger.debug(
+      `[MessageRepository] 清空排队消息, conversationId=${conversationId}, userId=${this.tenantId}`,
+    );
+
+    await this.db
+      .delete(messages)
+      .where(
+        and(
+          eq(messages.conversationId, conversationId),
+          eq(messages.userId, this.tenantId),
+          eq(messages.status, "queued"),
+        ),
+      );
   }
 }
 

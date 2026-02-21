@@ -47,6 +47,11 @@ import { loadAllDatabaseConfigs } from "../config-loader.js";
 import { mergeFileAndDbConfigs } from "../config-merger.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
 import type { GatewayRequestContext, GatewayRequestHandlers } from "./types.js";
+import {
+  persistUserMessage,
+  persistAssistantMessage,
+  loadMessagesFromDb,
+} from "../chat-persistence.js";
 
 const log = createSubsystemLogger("chat/config");
 
@@ -210,17 +215,36 @@ export const chatHandlers: GatewayRequestHandlers = {
       sessionKey: string;
       limit?: number;
     };
-    const { cfg, storePath, entry } = loadSessionEntry(sessionKey);
-    const sessionId = entry?.sessionId;
-    const rawMessages =
-      sessionId && storePath ? readSessionMessages(sessionId, storePath, entry?.sessionFile) : [];
     const hardMax = 1000;
     const defaultLimit = 200;
     const requested = typeof limit === "number" ? limit : defaultLimit;
     const max = Math.min(hardMax, requested);
-    const sliced = rawMessages.length > max ? rawMessages.slice(-max) : rawMessages;
-    const sanitized = stripEnvelopeFromMessages(sliced);
-    const capped = capArrayByJsonBytes(sanitized, getMaxChatHistoryMessagesBytes()).items;
+
+    /** 双写过渡：优先从 DB 读取消息历史 */
+    const dbMessages = await loadMessagesFromDb(sessionKey, max);
+
+    const { cfg, storePath, entry } = loadSessionEntry(sessionKey);
+    const sessionId = entry?.sessionId;
+
+    let messages: unknown[];
+    if (dbMessages && dbMessages.length > 0) {
+      /** DB 有数据，使用 DB 消息（已按时间排序） */
+      messages = dbMessages.map((msg) => ({
+        role: msg.role,
+        content: msg.content ? [{ type: "text", text: msg.content }] : [],
+        toolCalls: msg.toolCalls,
+        attachments: msg.attachments,
+        timestamp: msg.createdAt.getTime(),
+      }));
+    } else {
+      /** DB 无数据，降级到 JSONL 读取 */
+      const rawMessages =
+        sessionId && storePath ? readSessionMessages(sessionId, storePath, entry?.sessionFile) : [];
+      const sliced = rawMessages.length > max ? rawMessages.slice(-max) : rawMessages;
+      const sanitized = stripEnvelopeFromMessages(sliced);
+      messages = capArrayByJsonBytes(sanitized, getMaxChatHistoryMessagesBytes()).items;
+    }
+
     let thinkingLevel = entry?.thinkingLevel;
     if (!thinkingLevel) {
       const configured = cfg.agents?.defaults?.thinkingDefault;
@@ -240,7 +264,7 @@ export const chatHandlers: GatewayRequestHandlers = {
     respond(true, {
       sessionKey,
       sessionId,
-      messages: capped,
+      messages,
       thinkingLevel,
     });
   },
@@ -546,6 +570,20 @@ export const chatHandlers: GatewayRequestHandlers = {
         },
       });
 
+      /** 双写：用户消息持久化到 DB（异步，不阻塞主流程） */
+      void persistUserMessage(p.sessionKey, {
+        role: "user",
+        content: parsedMessage,
+        attachments:
+          normalizedAttachments.length > 0
+            ? normalizedAttachments.map((a) => ({
+                fileId: randomUUID().slice(0, 8),
+                name: a.fileName ?? "attachment",
+                type: a.mimeType ?? a.type ?? "application/octet-stream",
+              }))
+            : undefined,
+      });
+
       let agentRunStarted = false;
       void dispatchInboundMessage({
         ctx,
@@ -608,6 +646,15 @@ export const chatHandlers: GatewayRequestHandlers = {
             if (isCommand) {
               message = { ...(message ?? {}), command: true };
             }
+
+            /** 双写：非 agent-run 的 AI 回复持久化到 DB（异步，不阻塞） */
+            if (combinedReply) {
+              void persistAssistantMessage(p.sessionKey, {
+                role: "assistant",
+                content: combinedReply,
+              });
+            }
+
             broadcastChatFinal({
               context,
               runId: clientRunId,
