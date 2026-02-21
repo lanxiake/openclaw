@@ -107,9 +107,11 @@ const READ_METHODS = new Set([
   "heartbeat",
   // Assistant skill system methods
   "assistant.skills.list",
+  "assistant.skills.listAll",
   "assistant.skills.get",
   "assistant.skills.tools",
   "assistant.skills.findByCommand",
+  "assistant.skills.stats",
   // Assistant audit methods (read-only)
   "assistant.audit.query",
   "assistant.audit.recent",
