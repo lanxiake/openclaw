@@ -1,11 +1,13 @@
 /**
  * 用户管理 API 路由
  *
- * GET    /api/admin/users              - 获取用户列表
- * GET    /api/admin/users/stats        - 获取用户统计
- * GET    /api/admin/users/:id          - 获取用户详情
- * POST   /api/admin/users/:id/suspend  - 停用用户
- * POST   /api/admin/users/:id/activate - 激活用户
+ * GET    /api/admin/users                    - 获取用户列表
+ * GET    /api/admin/users/stats              - 获取用户统计
+ * GET    /api/admin/users/:id                - 获取用户详情
+ * POST   /api/admin/users/:id/suspend        - 停用用户
+ * POST   /api/admin/users/:id/activate       - 激活用户
+ * POST   /api/admin/users/:id/reset-password - 重置用户密码
+ * POST   /api/admin/users/:id/force-logout   - 强制用户登出
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
@@ -208,6 +210,98 @@ export function registerAdminUsersRoutes(server: FastifyInstance): void {
       return {
         success: true,
         data: { message: "User activated successfully" },
+      };
+    },
+  );
+
+  /**
+   * POST /api/admin/users/:id/reset-password - 重置用户密码
+   */
+  server.post(
+    "/api/admin/users/:id/reset-password",
+    { preHandler: requirePermission("users", "edit") },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
+
+      const { id } = request.params as { id: string };
+      const { newPassword } = request.body as { newPassword?: string };
+      const { ipAddress, userAgent } = getClientInfo(request);
+
+      if (!newPassword || newPassword.length < 6) {
+        return reply.code(400).send({
+          success: false,
+          error: "New password must be at least 6 characters",
+          code: "VALIDATION_ERROR",
+        });
+      }
+
+      request.log.info(
+        { adminId: admin.adminId, userId: id },
+        "[admin-users] 重置用户密码",
+      );
+
+      const userService = getAdminUserService();
+      const result = await userService.resetUserPassword(
+        id,
+        newPassword,
+        admin.adminId,
+        admin.adminId,
+        ipAddress,
+        userAgent,
+      );
+
+      if (!result.success) {
+        return reply.code(400).send({
+          success: false,
+          error: result.error || "Failed to reset password",
+          code: "RESET_PASSWORD_FAILED",
+        });
+      }
+
+      return {
+        success: true,
+        data: { message: "Password reset successfully" },
+      };
+    },
+  );
+
+  /**
+   * POST /api/admin/users/:id/force-logout - 强制用户登出
+   */
+  server.post(
+    "/api/admin/users/:id/force-logout",
+    { preHandler: requirePermission("users", "suspend") },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
+
+      const { id } = request.params as { id: string };
+      const { ipAddress, userAgent } = getClientInfo(request);
+
+      request.log.info(
+        { adminId: admin.adminId, userId: id },
+        "[admin-users] 强制用户登出",
+      );
+
+      const userService = getAdminUserService();
+      const result = await userService.forceLogoutUser(
+        id,
+        admin.adminId,
+        admin.adminId,
+        ipAddress,
+        userAgent,
+      );
+
+      if (!result.success) {
+        return reply.code(400).send({
+          success: false,
+          error: result.error || "Failed to force logout",
+          code: "FORCE_LOGOUT_FAILED",
+        });
+      }
+
+      return {
+        success: true,
+        data: { message: "User force logged out successfully" },
       };
     },
   );

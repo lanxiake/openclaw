@@ -163,7 +163,7 @@ export function registerAgentConfigRoutes(server: FastifyInstance): void {
           // 重置系统配置为默认值
           await repo.upsertSystemConfig(
             {
-              primaryModel: "claude-opus-4-5-20251101",
+              primaryModel: "anthropic/claude-opus-4-5-20251101",
               compactionMode: "safeguard",
               maxConcurrent: 4,
               subagentsMaxConcurrent: 8,

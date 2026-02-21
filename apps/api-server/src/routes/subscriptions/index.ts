@@ -54,15 +54,77 @@ export function registerSubscriptionsRoutes(server: FastifyInstance): void {
         getUserMonthlyUsage(user.userId),
       ]);
 
+      /**
+       * 计算使用百分比，limit 为 -1 表示无限制
+       */
+      const calcPercent = (used: number, limit: number): number => {
+        if (limit <= 0) return 0;
+        return Math.round((used / limit) * 100);
+      };
+
+      const { quotas } = plan;
+
+      /**
+       * 构建前端期望的扁平 usage 结构（conversations/aiCalls 必需，其余可选）
+       */
+      const usage: Record<string, { used: number; limit: number; percent: number; unit?: string }> = {
+        conversations: {
+          used: dailyUsage.conversations,
+          limit: quotas.dailyConversations,
+          percent: calcPercent(dailyUsage.conversations, quotas.dailyConversations),
+        },
+        aiCalls: {
+          used: monthlyUsage.aiCalls,
+          limit: quotas.monthlyAiCalls,
+          percent: calcPercent(monthlyUsage.aiCalls, quotas.monthlyAiCalls),
+        },
+      };
+
+      if (quotas.maxDevices > 0) {
+        usage.devices = {
+          used: 0, // TODO: 从设备服务获取实际设备数
+          limit: quotas.maxDevices,
+          percent: 0,
+        };
+      }
+
+      if (quotas.maxSkills > 0) {
+        usage.skills = {
+          used: 0, // TODO: 从技能服务获取实际技能数
+          limit: quotas.maxSkills,
+          percent: 0,
+        };
+      }
+
+      if (quotas.storageQuotaMb > 0) {
+        usage.storage = {
+          used: monthlyUsage.storageUsedMb || 0,
+          limit: quotas.storageQuotaMb,
+          percent: calcPercent(monthlyUsage.storageUsedMb || 0, quotas.storageQuotaMb),
+          unit: "MB",
+        };
+      }
+
+      /**
+       * 构建已启用功能标记
+       */
+      const featureIds = new Set(plan.features.filter((f) => f.included).map((f) => f.id));
+      const features = {
+        premiumSkills: featureIds.has("premium_skills"),
+        prioritySupport: featureIds.has("priority_support"),
+        apiAccess: featureIds.has("api_access"),
+      };
+
       return {
         success: true,
         data: {
           subscription,
-          plan,
-          usage: {
-            daily: dailyUsage,
-            monthly: monthlyUsage,
+          plan: {
+            id: plan.id,
+            name: plan.name,
           },
+          usage,
+          features,
         },
       };
     },

@@ -65,6 +65,15 @@ export async function createServer(
   // 存储配置到 Fastify 实例
   server.decorate("config", config);
 
+  // 注册 application/octet-stream 内容类型解析器（技能包上传使用）
+  server.addContentTypeParser(
+    "application/octet-stream",
+    { parseAs: "buffer" },
+    (_request, body, done) => {
+      done(null, body);
+    },
+  );
+
   // 1. CORS 插件
   await server.register(cors, {
     origin: config.corsOrigins,

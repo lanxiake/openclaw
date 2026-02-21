@@ -361,4 +361,340 @@ export function registerModelProviderRoutes(server: FastifyInstance): void {
       }
     }
   );
+
+  /**
+   * POST /api/admin/model-providers/:key/test - 测试提供商连接和模型可用性
+   *
+   * 发送轻量请求验证 API 连通性，再逐个检测已配置模型的可用性。
+   * 返回连通状态、延迟（ms）和每个模型的测试结果。
+   */
+  server.post(
+    "/api/admin/model-providers/:key/test",
+    { preHandler: requirePermission("system", "viewConfig") },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
+      const { key } = request.params as { key: string };
+      const query = request.query as { userId?: string };
+
+      request.log.info(
+        { adminId: admin.adminId, key },
+        "[model-providers] 测试提供商连接"
+      );
+
+      // 获取完整的 provider 信息（含未脱敏 API Key）
+      const provider = await repo.getProviderByKey(key, query.userId);
+      if (!provider) {
+        return reply.code(404).send({
+          success: false,
+          error: "Provider not found",
+          code: "NOT_FOUND",
+        });
+      }
+
+      if (!provider.apiKey) {
+        return reply.code(400).send({
+          success: false,
+          error: "Provider has no API key configured",
+          code: "NO_API_KEY",
+        });
+      }
+
+      const apiType = provider.apiType ?? "openai-completions";
+      const models = Array.isArray(provider.models) ? provider.models : [];
+      const firstModel = models.length > 0 ? String(models[0]) : undefined;
+
+      // 连通性测试
+      const connectResult = await testProviderConnection(
+        provider.baseUrl,
+        provider.apiKey,
+        apiType,
+        firstModel
+      );
+
+      // 模型可用性测试（仅在连通的情况下测试）
+      const modelResults: Array<{
+        model: string;
+        available: boolean;
+        latencyMs: number;
+        error?: string;
+      }> = [];
+
+      if (connectResult.connected && models.length > 0) {
+        for (const model of models) {
+          const modelStr = String(model);
+          const result = await testModelAvailability(
+            provider.baseUrl,
+            provider.apiKey,
+            apiType,
+            modelStr
+          );
+          modelResults.push({
+            model: modelStr,
+            ...result,
+          });
+        }
+      }
+
+      return {
+        success: true,
+        data: {
+          connected: connectResult.connected,
+          latencyMs: connectResult.latencyMs,
+          error: connectResult.error,
+          models: modelResults,
+        },
+      };
+    }
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 模型测试辅助函数
+// ---------------------------------------------------------------------------
+
+/**
+ * 构造各 API 类型的测试请求参数
+ */
+function buildTestRequest(
+  baseUrl: string,
+  apiKey: string,
+  apiType: string,
+  model: string
+): { url: string; headers: Record<string, string>; body: string } {
+  const trimmedUrl = baseUrl.replace(/\/+$/, "");
+
+  if (apiType === "anthropic") {
+    return {
+      url: `${trimmedUrl}/v1/messages`,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 1024,
+        messages: [
+          {
+            role: "user",
+            content: [{ type: "text", text: "Reply with exactly one word: ok" }],
+          },
+        ],
+        metadata: { user_id: "admin_connection_test" },
+        output_config: {
+          format: {
+            type: "json_schema",
+            schema: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                reply: { type: "string" },
+              },
+              required: ["reply"],
+            },
+          },
+        },
+        system: [
+          {
+            type: "text",
+            text: "You are Claude Code, Anthropic's official CLI for Claude.",
+          },
+          {
+            type: "text",
+            text: 'This is a connection test. Reply with a JSON object: {"reply":"ok"}',
+          },
+        ],
+        stream: true,
+        temperature: 1,
+        tools: [],
+      }),
+    };
+  }
+
+  if (apiType === "google-gemini") {
+    return {
+      url: `${trimmedUrl}/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: "hi" }] }],
+        generationConfig: { maxOutputTokens: 1 },
+      }),
+    };
+  }
+
+  // 默认 openai-completions 格式（兼容 OpenAI / DeepSeek / 其他 OpenAI 兼容 API）
+  return {
+    url: `${trimmedUrl}/v1/chat/completions`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 10,
+      messages: [{ role: "user", content: "hi" }],
+      stream: false,
+    }),
+  };
+}
+
+/**
+ * 测试 Provider 连通性
+ *
+ * 使用第一个配置的模型或默认模型发送轻量请求，
+ * 验证 Base URL 和 API Key 是否有效。
+ */
+async function testProviderConnection(
+  baseUrl: string,
+  apiKey: string,
+  apiType: string,
+  firstModel?: string
+): Promise<{ connected: boolean; latencyMs: number; error?: string }> {
+  const model = firstModel ?? getDefaultModel(apiType);
+  const { url, headers, body } = buildTestRequest(baseUrl, apiKey, apiType, model);
+
+  const startTime = Date.now();
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+    const latencyMs = Date.now() - startTime;
+
+    // 2xx 或 4xx(模型不存在等) 均表示连通成功
+    // 仅 401/403 表示认证失败
+    if (response.status === 401 || response.status === 403) {
+      const errBody = await response.text().catch(() => "");
+      const friendlyError = parseApiError(response.status, errBody);
+      return {
+        connected: false,
+        latencyMs,
+        error: `认证失败: ${friendlyError}`,
+      };
+    }
+
+    // 主动关闭响应体，避免流式连接泄漏
+    try {
+      response.body?.cancel();
+    } catch {
+      // 忽略关闭错误
+    }
+
+    return { connected: true, latencyMs };
+  } catch (error) {
+    const latencyMs = Date.now() - startTime;
+    const msg = error instanceof Error ? error.message : String(error);
+    return {
+      connected: false,
+      latencyMs,
+      error: msg.includes("abort")
+        ? "连接超时（15秒）"
+        : `连接失败: ${msg.slice(0, 200)}`,
+    };
+  }
+}
+
+/**
+ * 测试单个模型的可用性
+ *
+ * 发送 max_tokens=10 的轻量请求，检测模型是否可调用。
+ */
+async function testModelAvailability(
+  baseUrl: string,
+  apiKey: string,
+  apiType: string,
+  model: string
+): Promise<{ available: boolean; latencyMs: number; error?: string }> {
+  const { url, headers, body } = buildTestRequest(baseUrl, apiKey, apiType, model);
+
+  const startTime = Date.now();
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+    const latencyMs = Date.now() - startTime;
+
+    if (response.ok) {
+      // 主动关闭响应体，避免流式连接泄漏
+      try {
+        response.body?.cancel();
+      } catch {
+        // 忽略关闭错误
+      }
+      return { available: true, latencyMs };
+    }
+
+    const errBody = await response.text().catch(() => "");
+    const friendlyError = parseApiError(response.status, errBody);
+    return {
+      available: false,
+      latencyMs,
+      error: friendlyError,
+    };
+  } catch (error) {
+    const latencyMs = Date.now() - startTime;
+    const msg = error instanceof Error ? error.message : String(error);
+    return {
+      available: false,
+      latencyMs,
+      error: msg.includes("abort") ? "请求超时（15秒）" : msg.slice(0, 200),
+    };
+  }
+}
+
+/**
+ * 解析 API 响应错误体，提取用户可读的错误信息
+ */
+function parseApiError(status: number, body: string): string {
+  try {
+    const parsed = JSON.parse(body);
+    // Anthropic 格式: { error: { type, message } }
+    if (parsed.error?.message) {
+      return `[${status}] ${parsed.error.message}`;
+    }
+    // OpenAI 格式: { error: { message, type, code } }
+    if (parsed.error && typeof parsed.error === "string") {
+      return `[${status}] ${parsed.error}`;
+    }
+    // Google Gemini 格式: [{ error: { message, status } }]
+    if (Array.isArray(parsed) && parsed[0]?.error?.message) {
+      return `[${status}] ${parsed[0].error.message}`;
+    }
+    // 其他 { message } 格式
+    if (parsed.message) {
+      return `[${status}] ${parsed.message}`;
+    }
+  } catch {
+    // JSON 解析失败，返回原始内容
+  }
+  return `HTTP ${status}: ${body.slice(0, 150)}`;
+}
+
+/**
+ * 根据 API 类型返回一个默认的测试模型
+ */
+function getDefaultModel(apiType: string): string {
+  switch (apiType) {
+    case "anthropic":
+      return "claude-3-haiku-20240307";
+    case "google-gemini":
+      return "gemini-1.5-flash";
+    default:
+      return "gpt-4o-mini";
+  }
 }

@@ -13,6 +13,7 @@ import {
   approveDevicePairing,
   rejectDevicePairing,
   updateDeviceUserId,
+  ensureDeviceToken,
   type PendingRequestCompat as DevicePairingPendingRequest,
 } from "../../../../../src/infra/device-pairing-db.js";
 
@@ -481,6 +482,97 @@ export function registerDeviceManagementRoutes(server: FastifyInstance): void {
           success: false,
           error: error instanceof Error ? error.message : "配对拒绝失败",
           code: "PAIR_REJECT_ERROR",
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/devices/:deviceId/token - 获取设备的 Gateway 连接 Token
+   *
+   * 已登录用户可获取其已绑定设备的 gateway 连接 token。
+   * 如果设备尚无 token，会自动创建。
+   */
+  server.get(
+    "/api/devices/:deviceId/token",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const userId = getUserIdFromRequest(request);
+      const { deviceId } = request.params as { deviceId: string };
+
+      if (!userId) {
+        return reply.code(401).send({
+          success: false,
+          error: "未授权",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      request.log.info({ userId, deviceId }, "[devices] 获取设备 Token");
+
+      try {
+        // 1. 验证设备属于当前用户
+        const userDeviceRepo = getUserDeviceRepository();
+        const userDevice = await userDeviceRepo.findByDeviceId(deviceId);
+
+        if (!userDevice || userDevice.userId !== userId) {
+          return reply.code(403).send({
+            success: false,
+            error: "无权操作此设备",
+            code: "FORBIDDEN",
+          });
+        }
+
+        // 2. 获取已配对设备信息
+        const pairedDevice = await getPairedDevice(deviceId);
+        if (!pairedDevice) {
+          return reply.code(404).send({
+            success: false,
+            error: "设备未找到或未完成配对",
+            code: "DEVICE_NOT_FOUND",
+          });
+        }
+
+        // 3. 确保设备拥有 token（已有则返回，无则创建）
+        const role = pairedDevice.role || "user";
+        const scopes = pairedDevice.scopes || ["user.basic"];
+        const tokenInfo = await ensureDeviceToken({
+          deviceId,
+          role,
+          scopes,
+        });
+
+        if (!tokenInfo) {
+          return reply.code(500).send({
+            success: false,
+            error: "获取设备 Token 失败",
+            code: "TOKEN_ERROR",
+          });
+        }
+
+        request.log.info(
+          { userId, deviceId, role },
+          "[devices] 设备 Token 获取成功"
+        );
+
+        return {
+          success: true,
+          data: {
+            deviceId,
+            token: tokenInfo.token,
+            role: tokenInfo.role,
+            scopes: tokenInfo.scopes,
+          },
+        };
+      } catch (error) {
+        request.log.error(
+          { userId, deviceId, error },
+          "[devices] 获取设备 Token 失败"
+        );
+
+        return reply.code(500).send({
+          success: false,
+          error: error instanceof Error ? error.message : "获取 Token 失败",
+          code: "TOKEN_ERROR",
         });
       }
     }

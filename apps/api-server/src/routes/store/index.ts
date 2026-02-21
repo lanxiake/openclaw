@@ -17,7 +17,14 @@ import {
   searchSkills,
   type StoreFilters,
 } from "../../../../../src/assistant/skills/store.js";
-import { getCategoryList } from "../../../../../src/assistant/skills/skill-service.js";
+import {
+  getCategoryList,
+  getSkill,
+  installSkillForUser,
+  uninstallSkillForUser,
+  getUserInstalledSkills,
+} from "../../../../../src/assistant/skills/skill-service.js";
+import { downloadSkillFile } from "../../../../../src/assistant/skills/skill-storage-service.js";
 
 /**
  * 从请求中获取当前用户信息
@@ -152,6 +159,35 @@ export function registerStoreRoutes(server: FastifyInstance): void {
   );
 
   /**
+   * GET /api/store/skills/installed - 获取用户已安装技能列表（需认证）
+   */
+  server.get(
+    "/api/store/skills/installed",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = getRequestUser(request);
+      if (!user) {
+        return reply.code(401).send({
+          success: false,
+          error: "Unauthorized",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      request.log.info({ userId: user.userId }, "[store] 查询已安装技能");
+
+      const results = await getUserInstalledSkills(user.userId);
+
+      return {
+        success: true,
+        data: results.map((r) => ({
+          ...r.installed,
+          skill: r.skill,
+        })),
+      };
+    },
+  );
+
+  /**
    * GET /api/store/skills/:id - 获取技能详情（公开）
    */
   server.get(
@@ -225,16 +261,93 @@ export function registerStoreRoutes(server: FastifyInstance): void {
         "[store] 安装技能",
       );
 
-      // 实际安装逻辑在 Sprint 11 实现
-      // 当前仅返回成功响应
+      const result = await installSkillForUser(user.userId, id);
+
+      if (!result.success) {
+        return reply.code(400).send({
+          success: false,
+          error: result.message,
+          code: "INSTALL_FAILED",
+        });
+      }
+
+      /** 获取完整技能信息用于返回下载 URL */
+      const skill = await getSkill(id);
+      const hasPackage = skill?.packageStorageKey != null;
+
       return {
         success: true,
         data: {
-          message: "Skill installation queued",
+          message: result.message,
           skillId: id,
-          userId: user.userId,
+          installed: result.installed,
+          downloadUrl: hasPackage ? `/api/store/skills/${id}/download` : null,
         },
       };
+    },
+  );
+
+  /**
+   * GET /api/store/skills/:id/download - 下载技能包（需认证 + 已安装）
+   */
+  server.get(
+    "/api/store/skills/:id/download",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = getRequestUser(request);
+      if (!user) {
+        return reply.code(401).send({
+          success: false,
+          error: "Unauthorized",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const { id } = request.params as { id: string };
+
+      request.log.info(
+        { userId: user.userId, skillId: id },
+        "[store] 下载技能包",
+      );
+
+      /** 确认技能存在且有包文件 */
+      const skill = await getSkill(id);
+      if (!skill) {
+        return reply.code(404).send({
+          success: false,
+          error: "Skill not found",
+          code: "NOT_FOUND",
+        });
+      }
+
+      if (!skill.packageStorageKey) {
+        return reply.code(404).send({
+          success: false,
+          error: "Skill package not available",
+          code: "NO_PACKAGE",
+        });
+      }
+
+      /** 下载文件流 */
+      try {
+        const stream = await downloadSkillFile(skill.packageStorageKey);
+
+        return reply
+          .header("Content-Type", "application/octet-stream")
+          .header("Content-Disposition", `attachment; filename="skill-${id}.zip"`)
+          .header("X-Package-Hash", skill.packageHash || "")
+          .header("X-Package-Size", String(skill.packageSize || 0))
+          .send(stream);
+      } catch (error) {
+        request.log.error(
+          { skillId: id, error },
+          "[store] 下载技能包失败",
+        );
+        return reply.code(500).send({
+          success: false,
+          error: "Failed to download skill package",
+          code: "DOWNLOAD_FAILED",
+        });
+      }
     },
   );
 
@@ -258,13 +371,22 @@ export function registerStoreRoutes(server: FastifyInstance): void {
         "[store] 检查技能更新",
       );
 
-      // 实际更新检查逻辑在 Sprint 11 实现
-      // 当前返回空列表
+      /** 获取已安装技能并对比版本 */
+      const installed = await getUserInstalledSkills(user.userId);
+      const updates = installed
+        .filter((item) => item.installed.installedVersion !== item.skill.version)
+        .map((item) => ({
+          skillId: item.skill.id,
+          name: item.skill.name,
+          installedVersion: item.installed.installedVersion,
+          latestVersion: item.skill.version,
+        }));
+
       return {
         success: true,
         data: {
-          skills: [],
-          total: 0,
+          skills: updates,
+          total: updates.length,
         },
       };
     },
@@ -290,8 +412,6 @@ export function registerStoreRoutes(server: FastifyInstance): void {
         "[store] 刷新商店缓存",
       );
 
-      // 实际刷新逻辑在 Sprint 11 实现
-      // 当前返回统计信息
       const stats = await getStoreStats();
 
       return {
@@ -326,11 +446,20 @@ export function registerStoreRoutes(server: FastifyInstance): void {
         "[store] 卸载技能",
       );
 
-      // 实际卸载逻辑在 Sprint 11 实现
+      const result = await uninstallSkillForUser(user.userId, id);
+
+      if (!result.success) {
+        return reply.code(400).send({
+          success: false,
+          error: result.message,
+          code: "UNINSTALL_FAILED",
+        });
+      }
+
       return {
         success: true,
         data: {
-          message: "Skill uninstalled",
+          message: result.message,
           skillId: id,
         },
       };

@@ -53,32 +53,41 @@ export function registerAdminSubscriptionsRoutes(
         "[admin-subscriptions] 查询订阅列表",
       );
 
-      const subscriptionService = getAdminSubscriptionService();
-      const result = await subscriptionService.listSubscriptions({
-        page,
-        pageSize,
-        userId: query.userId,
-        planId: query.planId,
-        status: query.status as
-          | "active"
-          | "cancelled"
-          | "expired"
-          | "trial"
-          | undefined,
-        sortBy: query.sortBy as "createdAt" | "endDate" | undefined,
-        sortOrder: query.sortOrder as "asc" | "desc" | undefined,
-      });
+      try {
+        const subscriptionService = getAdminSubscriptionService();
+        const result = await subscriptionService.listSubscriptions({
+          page,
+          pageSize,
+          userId: query.userId,
+          planId: query.planId,
+          status: query.status as
+            | "active"
+            | "canceled"
+            | "expired"
+            | "past_due"
+            | "trialing"
+            | undefined,
+          orderBy: query.sortBy as "createdAt" | "currentPeriodEnd" | undefined,
+          orderDir: query.sortOrder as "asc" | "desc" | undefined,
+        });
 
-      return {
-        success: true,
-        data: result.subscriptions,
-        meta: {
-          total: result.total,
-          page: result.page,
-          pageSize: result.pageSize,
-          totalPages: Math.ceil(result.total / result.pageSize),
-        },
-      };
+        return {
+          success: true,
+          data: result.subscriptions,
+          meta: {
+            total: result.total,
+            page: result.page,
+            pageSize: result.pageSize,
+            totalPages: Math.ceil(result.total / result.pageSize),
+          },
+        };
+      } catch (error) {
+        request.log.error(
+          { err: error },
+          "[admin-subscriptions] 查询订阅列表失败",
+        );
+        throw error;
+      }
     },
   );
 
