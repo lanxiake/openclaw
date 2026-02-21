@@ -155,7 +155,12 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
     startStream(runId, sessionKey)
 
     try {
-      console.log('[ChatView] 调用 chat.send:', { sessionKey, runId })
+      console.log('[ChatView] 调用 chat.send:', {
+        sessionKey,
+        runId,
+        attachmentCount: attachments.length,
+        attachmentTotalSize: attachments.reduce((sum, a) => sum + (a.content?.length ?? 0), 0),
+      })
       await window.electronAPI.gateway.call('chat.send', {
         sessionKey,
         message: content,

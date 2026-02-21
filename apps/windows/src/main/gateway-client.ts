@@ -160,6 +160,10 @@ export class GatewayClient extends EventEmitter {
   private handshakeComplete = false
   private connectNonce: string | null = null
   private skillRuntime: ClientSkillRuntime | null = null
+  /** 连续心跳失败次数 */
+  private heartbeatFailCount = 0
+  /** 心跳连续失败阈值，超过此值触发重连 */
+  private static readonly HEARTBEAT_FAIL_THRESHOLD = 3
 
   constructor(config: GatewayClientConfig) {
     super()
@@ -226,17 +230,26 @@ export class GatewayClient extends EventEmitter {
 
         this.ws.on('close', (code, reason) => {
           log.info(`WebSocket 连接关闭: ${code} - ${reason}`)
+          const wasHandshakeComplete = this.handshakeComplete
           this._isConnected = false
           this.handshakeComplete = false
           this.stopHeartbeat()
           this.emit('disconnected')
+          // 如果握手未完成，reject connect() 的 Promise（防止挂起）
+          if (!wasHandshakeComplete) {
+            reject(new Error(`Connection closed before handshake: ${code}`))
+          }
           this.scheduleReconnect()
         })
 
         this.ws.on('error', (error) => {
           log.error('WebSocket 错误:', error)
           this.emit('error', error)
-          reject(error)
+          // error 后通常会紧跟 close 事件，由 close 触发重连
+          // 但如果连接尚未建立成功，close 可能不会触发，所以这里也 reject
+          if (!this._isConnected) {
+            reject(error)
+          }
         })
       } catch (error) {
         log.error('连接失败:', error)
@@ -275,6 +288,8 @@ export class GatewayClient extends EventEmitter {
 
     this._isConnected = false
     this.handshakeComplete = false
+    this.reconnectAttempts = 0
+    this.heartbeatFailCount = 0
   }
 
   /**
@@ -530,13 +545,22 @@ export class GatewayClient extends EventEmitter {
    */
   private startHeartbeat(): void {
     this.stopHeartbeat()
+    this.heartbeatFailCount = 0
 
     this.heartbeatTimer = setInterval(() => {
       if (this.isConnected() && this.handshakeComplete) {
-        // 使用 Gateway 支持的 heartbeat 方法
-        this.call('heartbeat', { ts: Date.now() }).catch((error) => {
-          log.warn('心跳失败:', error)
-        })
+        this.call('heartbeat', { ts: Date.now() })
+          .then(() => {
+            this.heartbeatFailCount = 0
+          })
+          .catch((error) => {
+            this.heartbeatFailCount++
+            log.warn(`心跳失败 (${this.heartbeatFailCount}/${GatewayClient.HEARTBEAT_FAIL_THRESHOLD}):`, error)
+            if (this.heartbeatFailCount >= GatewayClient.HEARTBEAT_FAIL_THRESHOLD) {
+              log.error('连续心跳失败超过阈值，主动断开连接触发重连')
+              this.forceReconnect()
+            }
+          })
       }
     }, this.config.heartbeatInterval)
   }
@@ -552,22 +576,78 @@ export class GatewayClient extends EventEmitter {
   }
 
   /**
-   * 计划重连
+   * 强制断开并触发重连
+   */
+  private forceReconnect(): void {
+    // 幂等性保护：已在断开重连流程中则跳过
+    if (!this._isConnected && !this.handshakeComplete) {
+      return
+    }
+    this.stopHeartbeat()
+    this._isConnected = false
+    this.handshakeComplete = false
+    this.heartbeatFailCount = 0
+
+    // 拒绝所有待处理请求
+    for (const [, pending] of this.pendingRequests) {
+      clearTimeout(pending.timeout)
+      pending.reject(new Error('Connection reset for reconnect'))
+    }
+    this.pendingRequests.clear()
+
+    // 关闭 WebSocket（不重置 reconnectAttempts，让 scheduleReconnect 继续计数）
+    if (this.ws) {
+      try {
+        this.ws.removeAllListeners()
+        this.ws.close()
+      } catch {
+        // 忽略关闭错误
+      }
+      this.ws = null
+    }
+
+    this.emit('disconnected')
+    this.scheduleReconnect()
+  }
+
+  /**
+   * 计划重连（指数退避策略）
    */
   private scheduleReconnect(): void {
+    // 清除已有的重连定时器
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
+
     if (this.reconnectAttempts >= this.config.maxReconnectAttempts) {
-      log.error('达到最大重连次数，停止重连')
+      log.error(`达到最大重连次数 (${this.config.maxReconnectAttempts})，停止重连`)
       return
     }
 
     this.reconnectAttempts++
-    log.info(`${this.config.reconnectInterval}ms 后尝试第 ${this.reconnectAttempts} 次重连`)
+    // 指数退避：baseInterval * 2^(attempt-1)，上限 60 秒
+    const backoff = Math.min(
+      this.config.reconnectInterval * Math.pow(2, this.reconnectAttempts - 1),
+      60000,
+    )
+    // 添加 ±20% 随机抖动，防止多个客户端同时重连
+    const jitter = backoff * (0.8 + Math.random() * 0.4)
+    const delay = Math.round(jitter)
+
+    log.info(`${delay}ms 后尝试第 ${this.reconnectAttempts}/${this.config.maxReconnectAttempts} 次重连`)
 
     this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null
       this.connect().catch((error) => {
         log.error('重连失败:', error)
+        // close 事件处理器已调用 scheduleReconnect()，
+        // 但如果 WebSocket 构造阶段就抛异常（无 close 事件），需要这里兜底
+        if (!this.reconnectTimer) {
+          this.scheduleReconnect()
+        }
       })
-    }, this.config.reconnectInterval)
+    }, delay)
   }
 
   /**

@@ -154,13 +154,12 @@ export const ChatInput = memo<ChatInputProps>(({
       return
     }
 
-    // 转换附件格式
+    // 转换附件格式（不发送 preview 字段，避免消息体过大）
     const attachments: MessageAttachment[] = pendingAttachments.map((att) => ({
       type: att.mimeType.startsWith('image/') ? 'image' : 'file',
       mimeType: att.mimeType,
       fileName: att.fileName,
       content: att.content,
-      preview: att.preview,
     }))
 
     console.log('[ChatInput] 发送消息, isLoading:', isLoading, 'queueLength:', queueLength)
