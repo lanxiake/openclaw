@@ -17,6 +17,7 @@ import {
   type NewSkillCategory,
   type SkillStatus,
   type SubscriptionLevel,
+  type UserInstalledSkill,
 } from "../../db/schema/index.js";
 import { generateId } from "../../db/utils/id.js";
 
@@ -550,4 +551,120 @@ export async function updateFeaturedOrder(
       })
       .where(eq(skillStoreItems.id, item.id));
   }
+}
+
+// ===================== 安装管理 =====================
+
+/**
+ * 安装技能（写 DB 记录）
+ *
+ * @param userId 用户 ID
+ * @param skillItemId 技能商店条目 ID
+ * @returns 安装结果
+ */
+export async function installSkillForUser(
+  userId: string,
+  skillItemId: string,
+): Promise<{ success: boolean; message: string; installed?: UserInstalledSkill }> {
+  console.log(`${LOG_TAG} installSkillForUser`, { userId, skillItemId });
+
+  const db = await getDatabase();
+
+  /** 确认技能存在且已发布 */
+  const skill = await getSkill(skillItemId);
+  if (!skill) {
+    return { success: false, message: "技能不存在" };
+  }
+  if (skill.status !== "published") {
+    return { success: false, message: "技能未发布" };
+  }
+
+  /** 检查是否已安装 */
+  const existing = await db
+    .select()
+    .from(userInstalledSkills)
+    .where(
+      and(eq(userInstalledSkills.userId, userId), eq(userInstalledSkills.skillItemId, skillItemId)),
+    )
+    .limit(1);
+
+  if (existing.length > 0) {
+    return { success: true, message: "技能已安装", installed: existing[0] };
+  }
+
+  /** 写入安装记录 */
+  const id = generateId();
+  const now = new Date();
+
+  const [installed] = await db
+    .insert(userInstalledSkills)
+    .values({
+      id,
+      userId,
+      skillItemId,
+      installedVersion: skill.version,
+      isEnabled: true,
+      installedAt: now,
+    })
+    .returning();
+
+  /** 增加下载次数 */
+  await incrementDownloadCount(skillItemId);
+
+  return { success: true, message: "安装成功", installed };
+}
+
+/**
+ * 卸载技能（删 DB 记录）
+ *
+ * @param userId 用户 ID
+ * @param skillItemId 技能商店条目 ID
+ * @returns 是否成功
+ */
+export async function uninstallSkillForUser(
+  userId: string,
+  skillItemId: string,
+): Promise<{ success: boolean; message: string }> {
+  console.log(`${LOG_TAG} uninstallSkillForUser`, { userId, skillItemId });
+
+  const db = await getDatabase();
+
+  const result = await db
+    .delete(userInstalledSkills)
+    .where(
+      and(eq(userInstalledSkills.userId, userId), eq(userInstalledSkills.skillItemId, skillItemId)),
+    )
+    .returning();
+
+  if (result.length === 0) {
+    return { success: false, message: "未找到安装记录" };
+  }
+
+  return { success: true, message: "卸载成功" };
+}
+
+/**
+ * 获取用户已安装的技能列表
+ *
+ * @param userId 用户 ID
+ * @returns 已安装技能列表（含技能详情）
+ */
+export async function getUserInstalledSkills(
+  userId: string,
+): Promise<Array<{ installed: UserInstalledSkill; skill: SkillStoreItem }>> {
+  console.log(`${LOG_TAG} getUserInstalledSkills`, { userId });
+
+  const db = await getDatabase();
+
+  const results = await db
+    .select({
+      installed: userInstalledSkills,
+      skill: skillStoreItems,
+    })
+    .from(userInstalledSkills)
+    .innerJoin(skillStoreItems, eq(userInstalledSkills.skillItemId, skillStoreItems.id))
+    .where(eq(userInstalledSkills.userId, userId))
+    .orderBy(desc(userInstalledSkills.installedAt));
+
+  return results;
 }

@@ -184,7 +184,7 @@ class AdminDashboardService {
 
       // 查询本月收入
       const revenueResult = await db
-        .select({ total: sum(paymentOrders.paidAmount) })
+        .select({ total: sum(paymentOrders.amount) })
         .from(paymentOrders)
         .where(and(eq(paymentOrders.paymentStatus, "paid"), gte(paymentOrders.paidAt, monthStart)));
       const revenueThisMonth = Number(revenueResult[0]?.total ?? 0);
@@ -292,7 +292,7 @@ class AdminDashboardService {
         const result = await db
           .select({
             date: sql<string>`DATE(${paymentOrders.paidAt})`.as("date"),
-            total: sum(paymentOrders.paidAmount),
+            total: sum(paymentOrders.amount),
           })
           .from(paymentOrders)
           .where(and(eq(paymentOrders.paymentStatus, "paid"), gte(paymentOrders.paidAt, startDate)))
@@ -457,7 +457,7 @@ class AdminDashboardService {
       const recentPayments = await db
         .select({
           userId: paymentOrders.userId,
-          paidAmount: paymentOrders.paidAmount,
+          paidAmount: paymentOrders.amount,
           paymentStatus: paymentOrders.paymentStatus,
           paidAt: paymentOrders.paidAt,
         })

@@ -311,8 +311,8 @@ export async function updatePairedDeviceMetadata(
 export async function verifyDeviceToken(params: {
   deviceId: string;
   token: string;
-  role: string;
-  scopes: string[];
+  role?: string;
+  scopes?: string[];
 }): Promise<{ ok: boolean; reason?: string }> {
   const deviceRepo = getDeviceRepository();
   const result = await deviceRepo.verifyToken(params.deviceId, params.token, params.role);
@@ -321,8 +321,8 @@ export async function verifyDeviceToken(params: {
     return { ok: false, reason: "token-invalid" };
   }
 
-  // 检查权限范围
-  if (params.scopes.length > 0 && result.tokenInfo) {
+  // 检查权限范围（仅当调用方指定了 scopes 时检查）
+  if (params.scopes && params.scopes.length > 0 && result.tokenInfo) {
     const allowedScopes = new Set(result.tokenInfo.scopes);
     const allAllowed = params.scopes.every((scope) => allowedScopes.has(scope));
     if (!allAllowed) {

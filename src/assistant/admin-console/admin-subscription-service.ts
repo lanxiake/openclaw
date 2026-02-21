@@ -28,6 +28,8 @@ const logger = getLogger();
 export interface SubscriptionListParams {
   /** 搜索关键词 (用户手机号/邮箱) */
   search?: string;
+  /** 用户 ID 过滤 */
+  userId?: string;
   /** 订阅状态过滤 */
   status?: "active" | "canceled" | "expired" | "past_due" | "trialing" | "all";
   /** 套餐 ID 过滤 */
@@ -141,6 +143,7 @@ export class AdminSubscriptionService {
   async listSubscriptions(params: SubscriptionListParams = {}): Promise<SubscriptionListResult> {
     const {
       search,
+      userId,
       status = "all",
       planId,
       page = 1,
@@ -157,6 +160,9 @@ export class AdminSubscriptionService {
     }
     if (planId) {
       conditions.push(eq(subscriptions.planId, planId));
+    }
+    if (userId) {
+      conditions.push(eq(subscriptions.userId, userId));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
