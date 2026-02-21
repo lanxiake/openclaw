@@ -26,6 +26,7 @@ import {
   registerModelProviderRoutes,
   registerAgentConfigRoutes,
   registerAuthProfileRoutes,
+  registerGatewayConfigRoutes,
 } from "./routes/admin/index.js";
 import { registerAuthRoutes } from "./routes/auth/index.js";
 import { registerUsersRoutes } from "./routes/users/index.js";
@@ -105,6 +106,7 @@ export async function createServer(
   registerModelProviderRoutes(server);
   registerAgentConfigRoutes(server);
   registerAuthProfileRoutes(server);
+  registerGatewayConfigRoutes(server);
 
   // 7. 用户 API 路由（公开 + 认证）
   registerAuthRoutes(server);
