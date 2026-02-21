@@ -29,6 +29,10 @@ import type {
   SkillListParams,
   SkillListResponse,
   SkillCategory,
+  SkillStats,
+  CreateSkillRequest,
+  UpdateSkillRequest,
+  SkillPackageUploadResult,
   AuditLog,
   AuditLogListParams,
   AuditLogListResponse,
@@ -51,6 +55,8 @@ import type {
   UpdateAdminRequest,
   ModelProvider,
   UpsertModelProviderRequest,
+  UpdateModelProviderRequest,
+  ModelProviderTestResult,
   AgentConfig,
   UpdateAgentConfigRequest,
   AuthProfile,
@@ -180,7 +186,7 @@ export class AdminApiClient {
    * 获取用户列表
    */
   async getUsers(params?: UserListParams): Promise<UserListResponse> {
-    const response = await this.http.get<{ data: User[]; meta: unknown }>(
+    const response = await this.http.getFull<User[]>(
       "/api/admin/users",
       params as Record<string, string | number | boolean | undefined>,
     );
@@ -216,6 +222,20 @@ export class AdminApiClient {
    */
   async activateUser(userId: string): Promise<void> {
     await this.http.post(`/api/admin/users/${userId}/activate`);
+  }
+
+  /**
+   * 重置用户密码
+   */
+  async resetUserPassword(userId: string, newPassword: string): Promise<void> {
+    await this.http.post(`/api/admin/users/${userId}/reset-password`, { newPassword });
+  }
+
+  /**
+   * 强制用户登出
+   */
+  async forceLogoutUser(userId: string): Promise<void> {
+    await this.http.post(`/api/admin/users/${userId}/force-logout`);
   }
 
   // ============ 套餐管理 API ============
@@ -254,10 +274,10 @@ export class AdminApiClient {
    * 获取订阅列表
    */
   async getSubscriptions(params?: SubscriptionListParams): Promise<SubscriptionListResponse> {
-    const response = await this.http.get<{
-      data: Subscription[];
-      meta: unknown;
-    }>("/api/admin/subscriptions", params as Record<string, string | number | boolean | undefined>);
+    const response = await this.http.getFull<Subscription[]>(
+      "/api/admin/subscriptions",
+      params as Record<string, string | number | boolean | undefined>,
+    );
     return {
       data: response.data,
       meta: response.meta as SubscriptionListResponse["meta"],
@@ -277,7 +297,7 @@ export class AdminApiClient {
    * 获取技能列表
    */
   async getSkills(params?: SkillListParams): Promise<SkillListResponse> {
-    const response = await this.http.get<{ data: Skill[]; meta: unknown }>(
+    const response = await this.http.getFull<Skill[]>(
       "/api/admin/skills",
       params as Record<string, string | number | boolean | undefined>,
     );
@@ -318,13 +338,93 @@ export class AdminApiClient {
     return this.http.get<SkillCategory[]>("/api/admin/skills/categories");
   }
 
+  /**
+   * 获取技能统计
+   */
+  async getSkillStats(): Promise<SkillStats> {
+    return this.http.get<SkillStats>("/api/admin/skills/stats");
+  }
+
+  /**
+   * 创建系统技能
+   */
+  async createSkill(request: CreateSkillRequest): Promise<Skill> {
+    return this.http.post<Skill>("/api/admin/skills", request);
+  }
+
+  /**
+   * 更新技能
+   */
+  async updateSkill(skillId: string, request: UpdateSkillRequest): Promise<Skill> {
+    return this.http.put<Skill>(`/api/admin/skills/${skillId}`, request);
+  }
+
+  /**
+   * 删除技能
+   */
+  async deleteSkill(skillId: string): Promise<void> {
+    await this.http.delete(`/api/admin/skills/${skillId}`);
+  }
+
+  /**
+   * 上传技能包
+   *
+   * 使用 application/octet-stream 格式上传二进制文件
+   */
+  async uploadSkillPackage(
+    skillId: string,
+    file: File | Blob,
+    filename?: string,
+  ): Promise<SkillPackageUploadResult> {
+    const token = this.http["config"].tokenProvider?.getAccessToken();
+    const baseUrl = this.http["config"].baseUrl;
+    const url = new URL(`/api/admin/skills/${skillId}/upload-package`, baseUrl);
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/octet-stream",
+      "X-Filename": filename || (file instanceof File ? file.name : "package.zip"),
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const buffer = await file.arrayBuffer();
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers,
+      body: buffer,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: "Upload failed" }));
+      throw new Error((errorData as Record<string, string>).error || "Upload failed");
+    }
+
+    const result = (await response.json()) as { success: boolean; data: SkillPackageUploadResult };
+    return result.data;
+  }
+
+  /**
+   * 发布技能
+   */
+  async publishSkill(skillId: string): Promise<void> {
+    await this.http.post(`/api/admin/skills/${skillId}/publish`);
+  }
+
+  /**
+   * 下架技能
+   */
+  async unpublishSkill(skillId: string): Promise<void> {
+    await this.http.post(`/api/admin/skills/${skillId}/unpublish`);
+  }
+
   // ============ 审计日志 API ============
 
   /**
    * 获取审计日志列表
    */
   async getAuditLogs(params?: AuditLogListParams): Promise<AuditLogListResponse> {
-    const response = await this.http.get<{ data: AuditLog[]; meta: unknown }>(
+    const response = await this.http.getFull<AuditLog[]>(
       "/api/admin/audit",
       params as Record<string, string | number | boolean | undefined>,
     );
@@ -372,7 +472,7 @@ export class AdminApiClient {
    * 获取管理员列表
    */
   async getAdmins(params?: AdminListParams): Promise<AdminListResponse> {
-    const response = await this.http.get<{ data: AdminItem[]; meta: unknown }>(
+    const response = await this.http.getFull<AdminItem[]>(
       "/api/admin/admins",
       params as Record<string, string | number | boolean | undefined>,
     );
@@ -511,9 +611,15 @@ export class AdminApiClient {
 
   /**
    * 获取仪表盘趋势数据
+   *
+   * @param type - 趋势类型 (users | revenue | subscriptions)
+   * @param period - 时间周期 (7d | 30d | 90d)
    */
-  async getDashboardTrends(days?: number): Promise<TrendData> {
-    return this.http.get<TrendData>("/api/admin/dashboard/trends", { days });
+  async getDashboardTrends(
+    type?: "users" | "revenue" | "subscriptions",
+    period?: "7d" | "30d" | "90d",
+  ): Promise<TrendData> {
+    return this.http.get<TrendData>("/api/admin/dashboard/trends", { type, period });
   }
 
   /**
@@ -570,10 +676,20 @@ export class AdminApiClient {
   }
 
   /**
-   * 创建或更新模型提供商
+   * 创建或更新模型提供商（创建时使用 POST）
    */
   async upsertModelProvider(request: UpsertModelProviderRequest): Promise<ModelProvider> {
     return this.http.post<ModelProvider>("/api/admin/model-providers", request);
+  }
+
+  /**
+   * 更新已有模型提供商（使用 PUT，apiKey 可选）
+   */
+  async updateModelProvider(
+    providerKey: string,
+    request: UpdateModelProviderRequest,
+  ): Promise<ModelProvider> {
+    return this.http.put<ModelProvider>(`/api/admin/model-providers/${providerKey}`, request);
   }
 
   /**
@@ -581,6 +697,19 @@ export class AdminApiClient {
    */
   async deleteModelProvider(providerId: string): Promise<void> {
     await this.http.delete(`/api/admin/model-providers/${providerId}`);
+  }
+
+  /**
+   * 测试模型提供商连接和模型可用性
+   */
+  async testModelProvider(providerKey: string): Promise<ModelProviderTestResult> {
+    const response = await this.http.post<{ data: ModelProviderTestResult }>(
+      `/api/admin/model-providers/${providerKey}/test`,
+    );
+    return (
+      (response as unknown as { data: ModelProviderTestResult }).data ??
+      (response as unknown as ModelProviderTestResult)
+    );
   }
 
   // ============ Agent 配置 API ============

@@ -8,8 +8,21 @@
  * - 请求/响应拦截
  */
 
-import { ApiError, type ApiResponse } from "./types.js";
+import {
+  ApiError,
+  type ApiResponse,
+  type ApiSuccessResponse,
+  type PaginationMeta,
+} from "./types.js";
 import { type TokenProvider } from "./token-provider.js";
+
+/**
+ * 包含分页元数据的完整响应
+ */
+export interface FullResponse<T> {
+  data: T;
+  meta?: PaginationMeta;
+}
 
 /**
  * HTTP 客户端配置
@@ -138,9 +151,9 @@ export class HttpClient {
   }
 
   /**
-   * 发送请求
+   * 内部执行请求，返回完整的成功响应（包含 data 和 meta）
    */
-  async request<T>(requestConfig: RequestConfig): Promise<T> {
+  private async executeRequest<T>(requestConfig: RequestConfig): Promise<ApiSuccessResponse<T>> {
     let config = { ...requestConfig };
 
     // 应用请求拦截器
@@ -150,9 +163,9 @@ export class HttpClient {
 
     const { method, url, params, body, headers, timeout, skipAuth } = config;
 
-    // 构建请求头
+    // 构建请求头（仅在有 body 时设置 Content-Type，避免空 body + json content-type 被服务端拒绝）
     const requestHeaders: Record<string, string> = {
-      "Content-Type": "application/json",
+      ...(body !== undefined && body !== null ? { "Content-Type": "application/json" } : {}),
       ...this.config.headers,
       ...(skipAuth ? {} : this.getAuthHeaders()),
       ...headers,
@@ -162,7 +175,7 @@ export class HttpClient {
     const fetchOptions: RequestInit = {
       method,
       headers: requestHeaders,
-      body: body ? JSON.stringify(body) : undefined,
+      body: body !== undefined && body !== null ? JSON.stringify(body) : undefined,
     };
 
     // 创建超时控制器
@@ -181,10 +194,8 @@ export class HttpClient {
       if (response.status === 401 && this.config.autoRefreshToken && !skipAuth) {
         const newToken = await this.handleTokenRefresh();
         if (newToken) {
-          // 使用新令牌重试请求
-          return this.request<T>({ ...requestConfig, skipAuth: false });
+          return this.executeRequest<T>({ ...requestConfig, skipAuth: false });
         }
-        // 刷新失败，抛出错误
         throw new ApiError("Authentication required", "UNAUTHORIZED", 401);
       }
 
@@ -206,7 +217,7 @@ export class HttpClient {
         throw error;
       }
 
-      return processedData.data;
+      return processedData;
     } catch (error) {
       clearTimeout(timeoutId);
 
@@ -226,6 +237,27 @@ export class HttpClient {
   }
 
   /**
+   * 发送请求，仅返回 data 字段
+   */
+  async request<T>(requestConfig: RequestConfig): Promise<T> {
+    const response = await this.executeRequest<T>(requestConfig);
+    return response.data;
+  }
+
+  /**
+   * 发送请求并返回包含分页元数据的完整响应
+   *
+   * 与 request() 不同，此方法保留 meta 字段，适用于分页接口
+   */
+  async requestFull<T>(requestConfig: RequestConfig): Promise<FullResponse<T>> {
+    const response = await this.executeRequest<T>(requestConfig);
+    return {
+      data: response.data,
+      meta: response.meta,
+    };
+  }
+
+  /**
    * GET 请求
    */
   get<T>(
@@ -234,6 +266,17 @@ export class HttpClient {
     options?: Partial<RequestConfig>,
   ): Promise<T> {
     return this.request<T>({ method: "GET", url, params, ...options });
+  }
+
+  /**
+   * GET 请求（返回包含分页元数据的完整响应）
+   */
+  getFull<T>(
+    url: string,
+    params?: Record<string, string | number | boolean | undefined>,
+    options?: Partial<RequestConfig>,
+  ): Promise<FullResponse<T>> {
+    return this.requestFull<T>({ method: "GET", url, params, ...options });
   }
 
   /**

@@ -287,6 +287,58 @@ export interface SkillCategory {
   skillCount: number;
 }
 
+/**
+ * 技能统计
+ */
+export interface SkillStats {
+  total: number;
+  published: number;
+  pending: number;
+  unpublished: number;
+  rejected: number;
+  featured: number;
+}
+
+/**
+ * 创建技能请求
+ */
+export interface CreateSkillRequest {
+  name: string;
+  description?: string;
+  readme?: string;
+  version?: string;
+  categoryId?: string;
+  tags?: string[];
+  subscriptionLevel?: "free" | "pro" | "team" | "enterprise";
+  iconUrl?: string;
+  config?: Record<string, unknown>;
+}
+
+/**
+ * 更新技能请求
+ */
+export interface UpdateSkillRequest {
+  name?: string;
+  description?: string;
+  readme?: string;
+  version?: string;
+  categoryId?: string;
+  tags?: string[];
+  subscriptionLevel?: "free" | "pro" | "team" | "enterprise";
+  iconUrl?: string;
+  config?: Record<string, unknown>;
+}
+
+/**
+ * 技能包上传结果
+ */
+export interface SkillPackageUploadResult {
+  key: string;
+  hash: string;
+  size: number;
+  url?: string;
+}
+
 // ============ 审计日志 ============
 
 /**
@@ -463,17 +515,15 @@ export interface ConfigHistory {
  */
 export interface TrendData {
   labels: string[];
-  datasets: Array<{
-    label: string;
-    data: number[];
-  }>;
+  values: number[];
 }
 
 /**
  * 订阅分布
  */
 export interface SubscriptionDistribution {
-  planName: string;
+  name: string;
+  code: string;
   count: number;
   percentage: number;
 }
@@ -482,11 +532,17 @@ export interface SubscriptionDistribution {
  * 最近活动
  */
 export interface Activity {
-  id: string;
-  type: string;
-  description: string;
-  adminName?: string;
-  createdAt: string;
+  type:
+    | "user_register"
+    | "subscription_created"
+    | "subscription_canceled"
+    | "payment_success"
+    | "payment_refund";
+  userId?: string;
+  userName?: string;
+  amount?: number;
+  planName?: string;
+  timestamp: string;
 }
 
 // ============ 监控扩展 ============
@@ -547,9 +603,9 @@ export interface ModelProvider {
 }
 
 /**
- * 创建/更新模型提供商请求
+ * 创建模型提供商请求
  */
-export interface UpsertModelProviderRequest {
+export interface CreateModelProviderRequest {
   providerKey: string;
   providerName?: string;
   baseUrl: string;
@@ -559,6 +615,46 @@ export interface UpsertModelProviderRequest {
   enabled?: boolean;
   priority?: number;
   userId?: string;
+}
+
+/**
+ * 更新模型提供商请求（apiKey 可选，留空保持原值）
+ */
+export interface UpdateModelProviderRequest {
+  providerName?: string;
+  baseUrl?: string;
+  apiKey?: string;
+  apiType?: string;
+  models?: string[];
+  enabled?: boolean;
+  priority?: number;
+  userId?: string;
+}
+
+/**
+ * 创建/更新模型提供商请求（兼容旧代码）
+ * @deprecated 请使用 CreateModelProviderRequest 或 UpdateModelProviderRequest
+ */
+export type UpsertModelProviderRequest = CreateModelProviderRequest;
+
+/**
+ * 单个模型的测试结果
+ */
+export interface ModelTestResult {
+  model: string;
+  available: boolean;
+  latencyMs: number;
+  error?: string;
+}
+
+/**
+ * 模型提供商测试结果（连通性 + 模型可用性）
+ */
+export interface ModelProviderTestResult {
+  connected: boolean;
+  latencyMs: number;
+  error?: string;
+  models: ModelTestResult[];
 }
 
 // ============ Agent 配置 ============
@@ -596,26 +692,17 @@ export interface UpdateAgentConfigRequest {
  * 仪表盘统计
  */
 export interface DashboardStats {
-  users: {
-    total: number;
-    active: number;
-    newToday: number;
-    newWeek: number;
-  };
-  subscriptions: {
-    total: number;
-    active: number;
+  totalUsers: number;
+  newUsersToday: number;
+  activeUsers7d: number;
+  paidUsers: number;
+  revenueThisMonth: number;
+  onlineDevices: number;
+  apiCallsToday: number;
+  changes: {
+    users: number;
     revenue: number;
-  };
-  skills: {
-    total: number;
-    published: number;
-    pending: number;
-  };
-  system: {
-    uptime: number;
-    cpuUsage: number;
-    memoryUsage: number;
+    subscriptions: number;
   };
 }
 

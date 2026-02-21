@@ -24,7 +24,7 @@
 
 // 核心模块
 export { HttpClient } from "./http-client.js";
-export type { HttpClientConfig, RequestConfig } from "./http-client.js";
+export type { HttpClientConfig, RequestConfig, FullResponse } from "./http-client.js";
 
 // Token Provider
 export { BrowserTokenProvider, MemoryTokenProvider } from "./token-provider.js";
