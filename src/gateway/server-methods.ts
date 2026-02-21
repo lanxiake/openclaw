@@ -26,6 +26,7 @@ import { channelsHandlers } from "./server-methods/channels.js";
 import { chatHandlers } from "./server-methods/chat.js";
 import { chatTodoHandlers } from "./server-methods/chat-todo.js";
 import { chatQueueHandlers } from "./server-methods/chat-queue.js";
+import { chatCheckpointHandlers } from "./server-methods/chat-checkpoint.js";
 import { configHandlers } from "./server-methods/config.js";
 import { connectHandlers } from "./server-methods/connect.js";
 import { cronHandlers } from "./server-methods/cron.js";
@@ -163,6 +164,14 @@ const READ_METHODS = new Set([
   "memory.episodic.search",
   "memory.episodic.timeline",
   "memory.health",
+  // Chat todo methods (read-only)
+  "chat.todo.list",
+  "chat.todo.get",
+  // Chat queue methods (read-only)
+  "chat.queue.list",
+  // Chat checkpoint methods (read-only)
+  "chat.checkpoint.list",
+  "chat.checkpoint.load",
 ]);
 const WRITE_METHODS = new Set([
   "send",
@@ -243,6 +252,15 @@ const WRITE_METHODS = new Set([
   "memory.episodic.event.add",
   "memory.episodic.event.update",
   "memory.episodic.event.delete",
+  // Chat queue methods (write)
+  "chat.queue.enqueue",
+  "chat.queue.dequeue",
+  "chat.queue.remove",
+  "chat.queue.clear",
+  // Chat checkpoint methods (write)
+  "chat.checkpoint.save",
+  "chat.checkpoint.delete",
+  "chat.checkpoint.resume",
 ]);
 
 function authorizeGatewayMethod(method: string, client: GatewayRequestOptions["client"]) {
@@ -331,6 +349,7 @@ export const coreGatewayHandlers: GatewayRequestHandlers = {
   ...chatHandlers,
   ...chatTodoHandlers,
   ...chatQueueHandlers,
+  ...chatCheckpointHandlers,
   ...cronHandlers,
   ...deviceHandlers,
   ...execApprovalsHandlers,

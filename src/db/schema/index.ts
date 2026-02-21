@@ -77,6 +77,25 @@ export {
 // Agent Todo 相关类型
 export type { AgentTodo, NewAgentTodo, TodoItem } from "./agent-todos.js";
 
+// Agent Checkpoint 相关表
+export {
+  agentCheckpoints,
+  agentCheckpointsRelations,
+  // Zod schemas
+  insertAgentCheckpointSchema,
+  selectAgentCheckpointSchema,
+} from "./agent-checkpoints.js";
+
+// Agent Checkpoint 相关类型
+export type {
+  AgentCheckpoint,
+  NewAgentCheckpoint,
+  AbortReason,
+  AgentStateSnapshot,
+  ConversationSnapshot,
+  CheckpointMetadata,
+} from "./agent-checkpoints.js";
+
 // 用户记忆相关表
 export {
   userMemories,

@@ -1,4 +1,8 @@
 import { isAbortTrigger } from "../auto-reply/reply/abort.js";
+import { saveCheckpoint } from "./checkpoint-persistence.js";
+import { getLogger } from "../logging/logger.js";
+
+const logger = getLogger();
 
 export type ChatAbortControllerEntry = {
   controller: AbortController;
@@ -84,12 +88,26 @@ export function abortChatRunById(
   }
 
   ops.chatAbortedRuns.set(runId, Date.now());
+
+  /** 在 abort 前获取部分回复文本（abort 后 buffer 被清空） */
+  const partialText = ops.chatRunBuffers.get(runId)?.trim() ?? "";
+
   active.controller.abort();
   ops.chatAbortControllers.delete(runId);
   ops.chatRunBuffers.delete(runId);
   ops.chatDeltaSentAt.delete(runId);
   ops.removeChatRun(runId, runId, sessionKey);
   broadcastChatAborted(ops, { runId, sessionKey, stopReason });
+
+  /** 异步保存断点到 DB（不阻塞 abort 流程） */
+  void saveCheckpoint(sessionKey, runId, "user_interrupt", {
+    conversationSnapshot: partialText
+      ? { lastAssistantPartialText: partialText, todoSnapshot: [] }
+      : undefined,
+  }).catch((err) => {
+    logger.error("[chat-abort] 自动保存断点失败:", err);
+  });
+
   return { aborted: true };
 }
 

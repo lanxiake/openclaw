@@ -6,6 +6,7 @@ import { loadSessionEntry } from "./session-utils.js";
 import { formatForLog } from "./ws-log.js";
 import { persistAssistantMessage } from "./chat-persistence.js";
 import { parseTodoItemsFromArgs, persistTodoSnapshot } from "./todo-persistence.js";
+import { saveCheckpoint } from "./checkpoint-persistence.js";
 
 /**
  * Check if webchat broadcasts should be suppressed for heartbeat runs.
@@ -221,6 +222,14 @@ export function createAgentEventHandler({
     };
     broadcast("chat", payload);
     nodeSendToSession(sessionKey, "chat", payload);
+
+    /** 错误中断时自动保存断点（异步，不阻塞广播） */
+    void saveCheckpoint(sessionKey, clientRunId, "error", {
+      conversationSnapshot: text ? { lastAssistantPartialText: text, todoSnapshot: [] } : undefined,
+      metadata: {
+        errorMessage: error ? formatForLog(error) : undefined,
+      },
+    });
   };
 
   const shouldEmitToolEvents = (runId: string, sessionKey?: string) => {
