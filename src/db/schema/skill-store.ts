@@ -118,6 +118,30 @@ export const skillStoreItems = pgTable(
     /** 技能配置 (JSON) */
     config: jsonb("config").$type<Record<string, unknown>>(),
 
+    /** 技能来源类型: system=系统技能(管理员创建), user=用户上传 */
+    sourceType: text("source_type", {
+      enum: ["system", "user"],
+    })
+      .notNull()
+      .default("user"),
+
+    /** 技能包在 MinIO 中的存储键 */
+    packageStorageKey: text("package_storage_key"),
+
+    /** 技能包 SHA-256 哈希 (完整性校验) */
+    packageHash: text("package_hash"),
+
+    /** 技能包大小 (字节) */
+    packageSize: integer("package_size"),
+
+    /** 创建此技能的管理员 ID (仅系统技能有值) */
+    createdByAdminId: text("created_by_admin_id").references(() => admins.id, {
+      onDelete: "set null",
+    }),
+
+    /** 是否系统技能 (快速过滤标记) */
+    isSystem: boolean("is_system").default(false).notNull(),
+
     /** 审核备注 */
     reviewNote: text("review_note"),
 
@@ -151,6 +175,8 @@ export const skillStoreItems = pgTable(
     index("skill_store_items_download_count_idx").on(table.downloadCount),
     index("skill_store_items_rating_avg_idx").on(table.ratingAvg),
     index("skill_store_items_created_at_idx").on(table.createdAt),
+    index("skill_store_items_source_type_idx").on(table.sourceType),
+    index("skill_store_items_is_system_idx").on(table.isSystem),
   ],
 );
 
@@ -240,6 +266,12 @@ export const skillStoreItemsRelations = relations(skillStoreItems, ({ one, many 
   reviewer: one(admins, {
     fields: [skillStoreItems.reviewedBy],
     references: [admins.id],
+    relationName: "reviewer",
+  }),
+  createdByAdmin: one(admins, {
+    fields: [skillStoreItems.createdByAdminId],
+    references: [admins.id],
+    relationName: "createdByAdmin",
   }),
   reviews: many(skillReviews),
   installedBy: many(userInstalledSkills),
@@ -296,3 +328,8 @@ export type SkillStatus = "pending" | "published" | "unpublished" | "rejected";
  * 订阅级别类型
  */
 export type SubscriptionLevel = "free" | "pro" | "team" | "enterprise";
+
+/**
+ * 技能来源类型
+ */
+export type SkillSourceType = "system" | "user";

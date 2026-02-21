@@ -270,6 +270,7 @@ export type {
   NewUserInstalledSkill,
   SkillStatus,
   SubscriptionLevel,
+  SkillSourceType,
 } from "./skill-store.js";
 
 // 系统配置相关表

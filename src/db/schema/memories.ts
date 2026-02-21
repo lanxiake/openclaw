@@ -5,8 +5,9 @@
  * user_memories 存储用户的各层级记忆数据：
  * - L2 情景记忆 (episodic): 对话摘要、交互事件
  * - L3 档案记忆 (profile/preference/fact): 用户画像、偏好、事实知识
+ * - L4 知识记忆 (knowledge): 文档、知识库内容
  *
- * embedding 字段使用 pgvector 的 vector(1536) 类型，支持语义搜索。
+ * embedding 字段使用 pgvector 的 vector(1024) 类型，支持语义搜索。
  */
 
 import {
@@ -29,11 +30,11 @@ import { users } from "./users.js";
 /**
  * pgvector vector 类型
  *
- * 用于存储向量嵌入，支持语义搜索
+ * 用于存储向量嵌入，支持语义搜索（1024 维，匹配 Qwen3-Embedding-0.6B 模型）
  */
 const vector = customType<{ data: number[]; driverData: string }>({
   dataType() {
-    return "vector(1536)";
+    return "vector(1024)";
   },
   toDriver(value: number[]): string {
     return `[${value.join(",")}]`;
@@ -65,7 +66,7 @@ export const userMemories = pgTable(
       .notNull(),
     /** 记忆类型 */
     type: text("type", {
-      enum: ["episodic", "profile", "preference", "fact"],
+      enum: ["episodic", "profile", "preference", "fact", "knowledge"],
     }).notNull(),
     /** 记忆分类（如 work, personal, skill） */
     category: text("category"),
@@ -73,13 +74,13 @@ export const userMemories = pgTable(
     content: text("content").notNull(),
     /** 记忆摘要（用于展示） */
     summary: text("summary"),
-    /** 向量嵌入（pgvector vector(1536)，用于语义搜索） */
+    /** 向量嵌入（pgvector vector(1024)，用于语义搜索） */
     embedding: vector("embedding"),
     /** 重要性 1-10（影响检索权重） */
     importance: integer("importance").default(5).notNull(),
     /** 来源类型 */
     sourceType: text("source_type", {
-      enum: ["conversation", "file", "manual", "system"],
+      enum: ["conversation", "file", "manual", "system", "upload", "web", "integration"],
     }),
     /** 来源 ID（conversationId / fileId） */
     sourceId: text("source_id"),

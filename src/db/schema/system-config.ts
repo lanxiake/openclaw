@@ -189,6 +189,7 @@ export const CONFIG_GROUPS = {
   NOTIFICATION: "notification",
   SUBSCRIPTION: "subscription",
   MAINTENANCE: "maintenance",
+  MEMORY: "memory",
 } as const;
 
 export type ConfigGroup = (typeof CONFIG_GROUPS)[keyof typeof CONFIG_GROUPS];
@@ -241,6 +242,10 @@ export const CONFIG_KEYS = {
   PRO_QUOTA: "pro_quota",
   TEAM_QUOTA: "team_quota",
   ENTERPRISE_QUOTA: "enterprise_quota",
+
+  // 记忆系统配置
+  MEMORY_EMBEDDING: "memory_embedding",
+  MEMORY_LLM: "memory_llm",
 } as const;
 
 export type ConfigKey = (typeof CONFIG_KEYS)[keyof typeof CONFIG_KEYS];

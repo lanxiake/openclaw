@@ -75,7 +75,9 @@ export const agentConfigs = pgTable(
     userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
 
     // 默认模型
-    primaryModel: varchar("primary_model", { length: 100 }).default("claude-opus-4-5-20251101"),
+    primaryModel: varchar("primary_model", { length: 100 }).default(
+      "anthropic/claude-opus-4-5-20251101",
+    ),
 
     // 工作空间
     workspacePath: varchar("workspace_path", { length: 500 }),

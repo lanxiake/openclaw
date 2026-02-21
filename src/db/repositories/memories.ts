@@ -87,7 +87,7 @@ export class MemoryRepository extends TenantScopedRepository {
   async findAll(options?: {
     limit?: number;
     offset?: number;
-    type?: "episodic" | "profile" | "preference" | "fact";
+    type?: "episodic" | "profile" | "preference" | "fact" | "knowledge";
     category?: string;
     activeOnly?: boolean;
     orderByImportance?: boolean;
@@ -177,6 +177,78 @@ export class MemoryRepository extends TenantScopedRepository {
         updatedAt: new Date(),
       })
       .where(and(eq(userMemories.id, id), eq(userMemories.userId, this.tenantId)));
+  }
+
+  /**
+   * 向量相似度搜索
+   *
+   * 使用 pgvector 的余弦距离操作符 (<=>) 搜索最相似的记忆。
+   * score = 1 - cosine_distance（范围 0-1，越高越相似）
+   *
+   * @param embedding - 查询向量（1536 维）
+   * @param options - 搜索选项
+   * @returns 按相似度降序排列的记忆列表（附带 score 字段）
+   */
+  async searchByVector(
+    embedding: number[],
+    options?: {
+      type?: "episodic" | "profile" | "preference" | "fact" | "knowledge";
+      category?: string;
+      limit?: number;
+      minScore?: number;
+    },
+  ): Promise<Array<UserMemory & { score: number }>> {
+    const limit = options?.limit ?? 10;
+    const minScore = options?.minScore ?? 0;
+
+    logger.debug(
+      `[MemoryRepository] 向量搜索, userId=${this.tenantId}, limit=${limit}, minScore=${minScore}`,
+    );
+
+    const vectorStr = `[${embedding.join(",")}]`;
+
+    // 构建条件
+    const conditions = [
+      eq(userMemories.userId, this.tenantId),
+      eq(userMemories.isActive, true),
+      sql`${userMemories.embedding} IS NOT NULL`,
+    ];
+
+    if (options?.type) {
+      conditions.push(eq(userMemories.type, options.type));
+    }
+
+    if (options?.category) {
+      conditions.push(eq(userMemories.category, options.category));
+    }
+
+    // 使用 pgvector 余弦距离，score = 1 - distance
+    const results = await this.db
+      .select({
+        id: userMemories.id,
+        userId: userMemories.userId,
+        type: userMemories.type,
+        category: userMemories.category,
+        content: userMemories.content,
+        summary: userMemories.summary,
+        embedding: userMemories.embedding,
+        importance: userMemories.importance,
+        sourceType: userMemories.sourceType,
+        sourceId: userMemories.sourceId,
+        metadata: userMemories.metadata,
+        expiresAt: userMemories.expiresAt,
+        isActive: userMemories.isActive,
+        createdAt: userMemories.createdAt,
+        updatedAt: userMemories.updatedAt,
+        score: sql<number>`1 - (${userMemories.embedding} <=> ${vectorStr}::vector)`,
+      })
+      .from(userMemories)
+      .where(and(...conditions))
+      .orderBy(sql`${userMemories.embedding} <=> ${vectorStr}::vector`)
+      .limit(limit);
+
+    // 过滤低于 minScore 的结果
+    return results.filter((r) => r.score >= minScore) as Array<UserMemory & { score: number }>;
   }
 }
 
