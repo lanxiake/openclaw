@@ -58,6 +58,10 @@ export const ROUTES = {
   CONFIG_FEATURES: '/config/features',
   CONFIG_SECURITY: '/config/security',
   CONFIG_NOTIFICATIONS: '/config/notifications',
+  CONFIG_MODEL_PROVIDERS: '/config/model-providers',
+  CONFIG_AUTH_PROFILES: '/config/auth-profiles',
+  CONFIG_AGENT: '/config/agent',
+  CONFIG_GATEWAY: '/config/gateway',
 
   // 数据分析
   ANALYTICS: '/analytics',

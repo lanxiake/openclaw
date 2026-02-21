@@ -644,3 +644,149 @@ export interface ApiMonitorData {
     avgTime: number;
   }>;
 }
+
+// ============ Auth Profile ============
+
+/**
+ * Auth Profile 凭证配置
+ *
+ * 存储 AI 提供商的认证凭据（API Key / Token / OAuth）
+ */
+export interface AuthProfile {
+  id: string;
+  configType: string;
+  userId?: string;
+  /** Profile 标识，如 "anthropic-main", "openai-backup" */
+  profileId: string;
+  /** 提供商标识，如 "anthropic", "openai", "google" */
+  provider: string;
+  /** 凭据类型 */
+  credentialMode: "api_key" | "token" | "oauth";
+  /** API Key（脱敏后仅显示最后 4 位） */
+  apiKey?: string;
+  /** 静态 Token（脱敏后仅显示最后 4 位） */
+  token?: string;
+  /** Token 过期时间 */
+  tokenExpires?: string;
+  /** OAuth 凭据（脱敏后显示为 { "***": "redacted" }） */
+  oauthCredentials?: Record<string, unknown>;
+  /** 关联邮箱 */
+  email?: string;
+  /** 是否启用 */
+  enabled: boolean;
+  /** 优先级（数值越小越优先） */
+  priority: number;
+  /** 模型绑定列表 */
+  modelBindings?: unknown;
+  /** 冷却配置 */
+  cooldownConfig?: unknown;
+  /** 扩展配置 */
+  extraConfig?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 创建 Auth Profile 请求
+ */
+export interface UpsertAuthProfileRequest {
+  profileId: string;
+  provider: string;
+  credentialMode: "api_key" | "token" | "oauth";
+  apiKey?: string;
+  token?: string;
+  tokenExpires?: string;
+  oauthCredentials?: Record<string, unknown>;
+  email?: string;
+  enabled?: boolean;
+  priority?: number;
+  modelBindings?: unknown;
+  cooldownConfig?: unknown;
+  extraConfig?: Record<string, unknown>;
+}
+
+/**
+ * 更新 Auth Profile 请求
+ */
+export interface UpdateAuthProfileRequest {
+  apiKey?: string;
+  token?: string;
+  tokenExpires?: string;
+  oauthCredentials?: Record<string, unknown>;
+  email?: string;
+  enabled?: boolean;
+  priority?: number;
+  modelBindings?: unknown;
+  cooldownConfig?: unknown;
+  extraConfig?: Record<string, unknown>;
+}
+
+/**
+ * Auth Profile 优先级排序记录
+ */
+export interface AuthProfileOrder {
+  id: string;
+  configType: string;
+  /** Agent 标识，"default" 代表全局默认 */
+  agentKey: string;
+  /** 有序的 profileId 列表 */
+  profileIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============ Gateway 配置 ============
+
+/**
+ * Gateway 配置
+ *
+ * 包含网关基础配置、认证配置、Control UI、Tailscale 等
+ */
+export interface GatewayConfig {
+  id: string;
+  configType: string;
+  /** 网关模式 */
+  gatewayMode: string;
+  /** 网关端口 */
+  gatewayPort: number;
+  /** 绑定地址 */
+  gatewayBind: string;
+  /** 认证模式 */
+  authMode: string;
+  /** 认证令牌（脱敏后仅显示最后 4 位） */
+  authToken?: string;
+  /** 认证密码（脱敏后仅显示最后 4 位） */
+  authPassword?: string;
+  /** 是否允许 Tailscale 认证 */
+  authAllowTailscale: boolean;
+  /** 是否启用 Control UI */
+  controlUiEnabled: boolean;
+  /** 是否允许不安全认证 */
+  controlUiAllowInsecureAuth: boolean;
+  /** Tailscale 模式 */
+  tailscaleMode: string;
+  /** 退出时重置 Tailscale */
+  tailscaleResetOnExit: boolean;
+  /** 扩展配置 */
+  extraConfig?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 更新 Gateway 配置请求
+ */
+export interface UpdateGatewayConfigRequest {
+  gatewayMode?: string;
+  gatewayPort?: number;
+  gatewayBind?: string;
+  authMode?: string;
+  authToken?: string;
+  authPassword?: string;
+  authAllowTailscale?: boolean;
+  controlUiEnabled?: boolean;
+  controlUiAllowInsecureAuth?: boolean;
+  tailscaleMode?: string;
+  tailscaleResetOnExit?: boolean;
+  extraConfig?: Record<string, unknown>;
+}

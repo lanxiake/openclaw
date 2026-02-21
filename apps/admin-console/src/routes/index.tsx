@@ -40,6 +40,10 @@ const SiteConfigPage = lazy(() => import('@/pages/config/SiteConfigPage'))
 const FeaturesConfigPage = lazy(() => import('@/pages/config/FeaturesConfigPage'))
 const SecurityConfigPage = lazy(() => import('@/pages/config/SecurityConfigPage'))
 const NotificationsConfigPage = lazy(() => import('@/pages/config/NotificationsConfigPage'))
+const ModelProvidersConfigPage = lazy(() => import('@/pages/config/ModelProvidersConfigPage'))
+const AuthProfilesConfigPage = lazy(() => import('@/pages/config/AuthProfilesConfigPage'))
+const AgentConfigPage = lazy(() => import('@/pages/config/AgentConfigPage'))
+const GatewayConfigPage = lazy(() => import('@/pages/config/GatewayConfigPage'))
 
 // 数据分析
 const AnalyticsPage = lazy(() => import('@/pages/analytics/AnalyticsPage'))
@@ -152,6 +156,10 @@ export const router = createBrowserRouter([
           { path: 'features', element: withSuspense(FeaturesConfigPage) },
           { path: 'security', element: withSuspense(SecurityConfigPage) },
           { path: 'notifications', element: withSuspense(NotificationsConfigPage) },
+          { path: 'model-providers', element: withSuspense(ModelProvidersConfigPage) },
+          { path: 'auth-profiles', element: withSuspense(AuthProfilesConfigPage) },
+          { path: 'agent', element: withSuspense(AgentConfigPage) },
+          { path: 'gateway', element: withSuspense(GatewayConfigPage) },
         ],
       },
 

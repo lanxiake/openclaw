@@ -6,6 +6,10 @@ import {
   Shield,
   Bell,
   ChevronRight,
+  Database,
+  KeyRound,
+  Bot,
+  Network,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -100,36 +104,69 @@ export default function ConfigPage() {
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ConfigCard
-            title="站点配置"
-            description="站点名称、Logo、联系方式等基础信息"
-            icon={Globe}
-            href="/config/site"
-          />
-          <ConfigCard
-            title="功能开关"
-            description="注册、支付、技能商店等功能的开启与关闭"
-            icon={ToggleLeft}
-            href="/config/features"
-            status={maintenanceMode ? 'warning' : undefined}
-            statusText={maintenanceMode ? '维护模式已开启' : undefined}
-          />
-          <ConfigCard
-            title="安全配置"
-            description="密码策略、登录策略、IP 白名单等安全相关设置"
-            icon={Shield}
-            href="/config/security"
-            status={weakPassword ? 'warning' : undefined}
-            statusText={weakPassword ? '密码策略较弱' : undefined}
-          />
-          <ConfigCard
-            title="通知模板"
-            description="邮件、短信、推送通知的消息模板管理"
-            icon={Bell}
-            href="/config/notifications"
-          />
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ConfigCard
+              title="站点配置"
+              description="站点名称、Logo、联系方式等基础信息"
+              icon={Globe}
+              href="/config/site"
+            />
+            <ConfigCard
+              title="功能开关"
+              description="注册、支付、技能商店等功能的开启与关闭"
+              icon={ToggleLeft}
+              href="/config/features"
+              status={maintenanceMode ? 'warning' : undefined}
+              statusText={maintenanceMode ? '维护模式已开启' : undefined}
+            />
+            <ConfigCard
+              title="安全配置"
+              description="密码策略、登录策略、IP 白名单等安全相关设置"
+              icon={Shield}
+              href="/config/security"
+              status={weakPassword ? 'warning' : undefined}
+              statusText={weakPassword ? '密码策略较弱' : undefined}
+            />
+            <ConfigCard
+              title="通知模板"
+              description="邮件、短信、推送通知的消息模板管理"
+              icon={Bell}
+              href="/config/notifications"
+            />
+          </div>
+
+          {/* AI 与网关配置 */}
+          <div>
+            <h2 className="text-lg font-semibold mb-3">AI 与网关配置</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ConfigCard
+                title="模型提供商"
+                description="管理 AI 模型提供商（Anthropic、OpenAI 等）的 API 连接"
+                icon={Database}
+                href="/config/model-providers"
+              />
+              <ConfigCard
+                title="Auth Profile"
+                description="管理 AI 提供商的认证凭据（API Key、OAuth 等）"
+                icon={KeyRound}
+                href="/config/auth-profiles"
+              />
+              <ConfigCard
+                title="Agent 配置"
+                description="默认模型、并发数、压缩模式等 Agent 运行参数"
+                icon={Bot}
+                href="/config/agent"
+              />
+              <ConfigCard
+                title="Gateway 配置"
+                description="网关端口、认证模式、Tailscale 等基础设施配置"
+                icon={Network}
+                href="/config/gateway"
+              />
+            </div>
+          </div>
+        </>
       )}
 
       {/* 配置说明 */}

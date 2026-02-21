@@ -53,6 +53,12 @@ import type {
   UpsertModelProviderRequest,
   AgentConfig,
   UpdateAgentConfigRequest,
+  AuthProfile,
+  UpsertAuthProfileRequest,
+  UpdateAuthProfileRequest,
+  AuthProfileOrder,
+  GatewayConfig,
+  UpdateGatewayConfigRequest,
 } from "./types.js";
 
 /**
@@ -598,6 +604,78 @@ export class AdminApiClient {
    */
   async resetAgentConfig(): Promise<AgentConfig> {
     return this.http.post<AgentConfig>("/api/admin/agent-config/reset");
+  }
+
+  // ============ Auth Profile API ============
+
+  /**
+   * 获取 Auth Profile 列表
+   */
+  async getAuthProfiles(): Promise<AuthProfile[]> {
+    return this.http.get<AuthProfile[]>("/api/admin/auth-profiles");
+  }
+
+  /**
+   * 获取 Auth Profile 详情
+   */
+  async getAuthProfile(profileId: string): Promise<AuthProfile> {
+    return this.http.get<AuthProfile>(`/api/admin/auth-profiles/${profileId}`);
+  }
+
+  /**
+   * 创建 Auth Profile
+   */
+  async upsertAuthProfile(request: UpsertAuthProfileRequest): Promise<AuthProfile> {
+    return this.http.post<AuthProfile>("/api/admin/auth-profiles", request);
+  }
+
+  /**
+   * 更新 Auth Profile
+   */
+  async updateAuthProfile(
+    profileId: string,
+    request: UpdateAuthProfileRequest,
+  ): Promise<AuthProfile> {
+    return this.http.put<AuthProfile>(`/api/admin/auth-profiles/${profileId}`, request);
+  }
+
+  /**
+   * 删除 Auth Profile
+   */
+  async deleteAuthProfile(profileId: string): Promise<void> {
+    await this.http.delete(`/api/admin/auth-profiles/${profileId}`);
+  }
+
+  /**
+   * 获取 Auth Profile 优先级列表
+   */
+  async getAuthProfileOrders(): Promise<AuthProfileOrder[]> {
+    return this.http.get<AuthProfileOrder[]>("/api/admin/auth-profiles/orders");
+  }
+
+  /**
+   * 更新 Agent 的 Auth Profile 优先级
+   */
+  async updateAuthProfileOrder(agentKey: string, profileIds: string[]): Promise<AuthProfileOrder> {
+    return this.http.put<AuthProfileOrder>(`/api/admin/auth-profiles/orders/${agentKey}`, {
+      profileIds,
+    });
+  }
+
+  // ============ Gateway 配置 API ============
+
+  /**
+   * 获取系统 Gateway 配置
+   */
+  async getGatewayConfig(): Promise<GatewayConfig> {
+    return this.http.get<GatewayConfig>("/api/admin/gateway-config");
+  }
+
+  /**
+   * 更新系统 Gateway 配置
+   */
+  async updateGatewayConfig(request: UpdateGatewayConfigRequest): Promise<GatewayConfig> {
+    return this.http.put<GatewayConfig>("/api/admin/gateway-config", request);
   }
 }
 
