@@ -162,11 +162,12 @@ export default function UsersPage() {
         case 'activate':
           await activateMutation.mutateAsync(user.id)
           break
-        case 'reset':
-          // TODO: 后端需要实现此 API，返回临时密码
-          await resetPasswordMutation.mutateAsync(user.id)
-          alert('密码重置功能暂未实现')
+        case 'reset': {
+          const tempPassword = `Tmp${Math.random().toString(36).slice(2, 10)}!`
+          await resetPasswordMutation.mutateAsync({ userId: user.id, newPassword: tempPassword })
+          alert(`密码已重置，临时密码: ${tempPassword}\n请通知用户尽快修改密码。`)
           break
+        }
         case 'logout':
           await forceLogoutMutation.mutateAsync(user.id)
           break

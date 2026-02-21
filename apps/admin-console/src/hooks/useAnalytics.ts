@@ -34,11 +34,11 @@ export function useAnalyticsOverview() {
       // 使用仪表盘统计作为临时替代
       const stats = await apiClient.instance.getDashboardStats()
       return {
-        totalUsers: stats.users?.total ?? 0,
-        activeUsers: stats.users?.active ?? 0,
-        newUsersToday: stats.users?.newToday ?? 0,
-        totalRevenue: stats.subscriptions?.revenue ?? 0,
-        revenueGrowth: 0,
+        totalUsers: stats.totalUsers ?? 0,
+        activeUsers: stats.activeUsers7d ?? 0,
+        newUsersToday: stats.newUsersToday ?? 0,
+        totalRevenue: stats.revenueThisMonth ?? 0,
+        revenueGrowth: stats.changes?.revenue ?? 0,
         avgSessionDuration: 0,
         conversionRate: 0,
       }
@@ -58,11 +58,11 @@ export function useUserGrowthTrend(period: AnalyticsPeriod = 'month') {
     queryFn: async (): Promise<UserGrowthTrend> => {
       console.log('[useAnalytics] 获取用户增长趋势:', period)
       // 使用仪表盘趋势数据作为临时替代
-      const daysMap: Record<AnalyticsPeriod, number> = { day: 1, week: 7, month: 30, quarter: 90, year: 365 }
-      const trends = await apiClient.instance.getDashboardTrends(daysMap[period])
+      const periodMap: Record<AnalyticsPeriod, '7d' | '30d' | '90d'> = { day: '7d', week: '7d', month: '30d', quarter: '90d', year: '90d' }
+      const trends = await apiClient.instance.getDashboardTrends('users', periodMap[period])
       return {
         labels: trends.labels,
-        data: trends.datasets[0]?.data ?? [],
+        data: trends.values ?? [],
         total: 0,
         growth: 0,
       }

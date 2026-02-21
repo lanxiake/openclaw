@@ -26,6 +26,7 @@ const AuditLogsPage = lazy(() => import('@/pages/audit/AuditLogsPage'))
 
 // 技能管理
 const SkillsPage = lazy(() => import('@/pages/skills/SkillsPage'))
+const SkillUploadPage = lazy(() => import('@/pages/skills/SkillUploadPage'))
 const CategoriesPage = lazy(() => import('@/pages/skills/CategoriesPage'))
 const FeaturedPage = lazy(() => import('@/pages/skills/FeaturedPage'))
 
@@ -40,8 +41,7 @@ const SiteConfigPage = lazy(() => import('@/pages/config/SiteConfigPage'))
 const FeaturesConfigPage = lazy(() => import('@/pages/config/FeaturesConfigPage'))
 const SecurityConfigPage = lazy(() => import('@/pages/config/SecurityConfigPage'))
 const NotificationsConfigPage = lazy(() => import('@/pages/config/NotificationsConfigPage'))
-const ModelProvidersConfigPage = lazy(() => import('@/pages/config/ModelProvidersConfigPage'))
-const AuthProfilesConfigPage = lazy(() => import('@/pages/config/AuthProfilesConfigPage'))
+const AIConfigPage = lazy(() => import('@/pages/config/AIConfigPage'))
 const AgentConfigPage = lazy(() => import('@/pages/config/AgentConfigPage'))
 const GatewayConfigPage = lazy(() => import('@/pages/config/GatewayConfigPage'))
 
@@ -132,6 +132,7 @@ export const router = createBrowserRouter([
         path: 'skills',
         children: [
           { index: true, element: withSuspense(SkillsPage) },
+          { path: 'upload', element: withSuspense(SkillUploadPage) },
           { path: 'categories', element: withSuspense(CategoriesPage) },
           { path: 'featured', element: withSuspense(FeaturedPage) },
         ],
@@ -156,8 +157,10 @@ export const router = createBrowserRouter([
           { path: 'features', element: withSuspense(FeaturesConfigPage) },
           { path: 'security', element: withSuspense(SecurityConfigPage) },
           { path: 'notifications', element: withSuspense(NotificationsConfigPage) },
-          { path: 'model-providers', element: withSuspense(ModelProvidersConfigPage) },
-          { path: 'auth-profiles', element: withSuspense(AuthProfilesConfigPage) },
+          { path: 'ai', element: withSuspense(AIConfigPage) },
+          // 保留旧路由作为重定向（向后兼容）
+          { path: 'model-providers', element: <Navigate to="/config/ai" replace /> },
+          { path: 'auth-profiles', element: <Navigate to="/config/ai" replace /> },
           { path: 'agent', element: withSuspense(AgentConfigPage) },
           { path: 'gateway', element: withSuspense(GatewayConfigPage) },
         ],

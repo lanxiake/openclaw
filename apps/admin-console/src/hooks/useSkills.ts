@@ -78,14 +78,16 @@ export function useSkillStats() {
   return useQuery({
     queryKey: ["admin", "skills", "stats"],
     queryFn: async (): Promise<SkillStats> => {
-      // TODO: 后端需要实现此 API
+      const client = getApiClient();
+      const stats = await client.getSkillStats();
+
       return {
-        totalSkills: 0,
-        publishedSkills: 0,
-        pendingSkills: 0,
-        unpublishedSkills: 0,
-        rejectedSkills: 0,
-        featuredSkills: 0,
+        totalSkills: stats.total,
+        publishedSkills: stats.published,
+        pendingSkills: stats.pending,
+        unpublishedSkills: stats.unpublished,
+        rejectedSkills: stats.rejected,
+        featuredSkills: stats.featured,
         totalInstalls: 0,
         totalCategories: 0,
         categoryDistribution: [],
@@ -174,7 +176,6 @@ export function useReviewSkill() {
       return { success: true };
     },
     onSuccess: () => {
-      // 刷新技能列表和统计
       queryClient.invalidateQueries({ queryKey: ["admin", "skills", "list"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "skills", "stats"] });
     },
@@ -189,10 +190,12 @@ export function usePublishSkill() {
 
   return useMutation({
     mutationFn: async (action: SkillPublishAction) => {
-      // TODO: 后端需要实现此 API
-      // const client = getApiClient();
-      // await client.publishSkill(action.skillId, action.action, action.reason);
-      console.log("publishSkill", action);
+      const client = getApiClient();
+      if (action.action === "publish") {
+        await client.publishSkill(action.skillId);
+      } else {
+        await client.unpublishSkill(action.skillId);
+      }
       return { success: true };
     },
     onSuccess: () => {
@@ -250,9 +253,7 @@ export function useReorderFeatured() {
 
   return useMutation({
     mutationFn: async (_skillIds: string[]) => {
-      // TODO: 后端需要实现此 API
-      // const client = getApiClient();
-      // await client.reorderFeaturedSkills(skillIds);
+      // TODO: 后端批量排序 API 暂未实现
       return { success: true };
     },
     onSuccess: () => {
@@ -289,9 +290,7 @@ export function useCreateCategory() {
 
   return useMutation({
     mutationFn: async (_input: CategoryCreateInput) => {
-      // TODO: 后端需要实现此 API
-      // const client = getApiClient();
-      // return client.createSkillCategory(input);
+      // TODO: 后端分类 CRUD API 暂未实现
       return null;
     },
     onSuccess: () => {
@@ -311,9 +310,7 @@ export function useUpdateCategory() {
 
   return useMutation({
     mutationFn: async (_input: CategoryUpdateInput) => {
-      // TODO: 后端需要实现此 API
-      // const client = getApiClient();
-      // return client.updateSkillCategory(input.id, input);
+      // TODO: 后端分类 CRUD API 暂未实现
       return null;
     },
     onSuccess: () => {
@@ -342,21 +339,119 @@ export interface CreateSkillInput {
 }
 
 /**
- * 管理员创建技能（直接发布，跳过审核）
+ * 管理员创建系统技能
  */
 export function useCreateSkill() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (_input: CreateSkillInput) => {
-      // TODO: 后端需要实现此 API
-      // const client = getApiClient();
-      // return client.createSkill(input);
-      return null;
+    mutationFn: async (input: CreateSkillInput) => {
+      const client = getApiClient();
+      const skill = await client.createSkill({
+        name: input.name,
+        description: input.description,
+        version: input.version,
+        categoryId: input.categoryId,
+        subscriptionLevel: input.subscriptionLevel as
+          | "free"
+          | "pro"
+          | "team"
+          | "enterprise"
+          | undefined,
+        iconUrl: input.iconUrl,
+        tags: input.tags,
+        readme: input.readme,
+        config: input.config,
+      });
+      return skill;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "skills", "list"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "skills", "stats"] });
+    },
+  });
+}
+
+/**
+ * 更新技能的输入参数
+ */
+export interface UpdateSkillInput {
+  skillId: string;
+  name?: string;
+  description?: string;
+  version?: string;
+  categoryId?: string;
+  subscriptionLevel?: string;
+  iconUrl?: string;
+  tags?: string[];
+  readme?: string;
+  config?: Record<string, unknown>;
+}
+
+/**
+ * 管理员更新技能
+ */
+export function useUpdateSkill() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: UpdateSkillInput) => {
+      const { skillId, ...data } = input;
+      const client = getApiClient();
+      const skill = await client.updateSkill(skillId, {
+        ...data,
+        subscriptionLevel: data.subscriptionLevel as
+          | "free"
+          | "pro"
+          | "team"
+          | "enterprise"
+          | undefined,
+      });
+      return skill;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "stats"] });
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "skills", "detail", variables.skillId],
+      });
+    },
+  });
+}
+
+/**
+ * 管理员删除技能
+ */
+export function useDeleteSkill() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (skillId: string) => {
+      const client = getApiClient();
+      await client.deleteSkill(skillId);
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "stats"] });
+    },
+  });
+}
+
+/**
+ * 上传技能包
+ */
+export function useUploadSkillPackage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ skillId, file }: { skillId: string; file: File }) => {
+      const client = getApiClient();
+      const result = await client.uploadSkillPackage(skillId, file, file.name);
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "skills", "list"] });
     },
   });
 }
@@ -369,9 +464,7 @@ export function useDeleteCategory() {
 
   return useMutation({
     mutationFn: async (_categoryId: string) => {
-      // TODO: 后端需要实现此 API
-      // const client = getApiClient();
-      // await client.deleteSkillCategory(categoryId);
+      // TODO: 后端分类 CRUD API 暂未实现
       return { success: true };
     },
     onSuccess: () => {

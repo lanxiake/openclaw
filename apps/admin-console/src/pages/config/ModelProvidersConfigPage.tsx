@@ -61,7 +61,8 @@ import {
 import { cn } from '@/lib/utils'
 import {
   useModelProviders,
-  useUpsertModelProvider,
+  useCreateModelProvider,
+  useUpdateModelProvider,
   useDeleteModelProvider,
 } from '@/hooks/useModelProviders'
 import type { ModelProvider } from '@openclaw/api-client/admin'
@@ -102,7 +103,8 @@ const API_TYPE_OPTIONS = [
  */
 export default function ModelProvidersConfigPage() {
   const { data: providers, isLoading, isFetching, refetch } = useModelProviders()
-  const upsertMutation = useUpsertModelProvider()
+  const createMutation = useCreateModelProvider()
+  const updateMutation = useUpdateModelProvider()
   const deleteMutation = useDeleteModelProvider()
 
   /** Dialog 状态 */
@@ -194,33 +196,48 @@ export default function ModelProvidersConfigPage() {
   )
 
   /**
-   * 保存提供商
+   * 保存提供商（创建用 POST，编辑用 PUT）
    */
   const handleSave = useCallback(async () => {
     if (!formData.providerKey.trim() || !formData.baseUrl.trim()) {
       return
     }
-    /** 编辑模式下如果未填写 apiKey 则不传（保持原值） */
     const isEditing = !!editingProvider
-    const apiKeyValue =
-      formData.apiKey.trim() || (isEditing ? undefined : formData.apiKey)
 
     try {
-      await upsertMutation.mutateAsync({
-        providerKey: formData.providerKey.trim(),
-        providerName: formData.providerName.trim() || undefined,
-        baseUrl: formData.baseUrl.trim(),
-        apiKey: apiKeyValue ?? '',
-        apiType: formData.apiType || undefined,
-        models: formData.models,
-        enabled: formData.enabled,
-        priority: formData.priority,
-      })
+      if (isEditing) {
+        // 编辑模式：使用 PUT，apiKey 为空时不传（保持原值）
+        const apiKeyValue = formData.apiKey.trim() || undefined
+        await updateMutation.mutateAsync({
+          providerKey: formData.providerKey.trim(),
+          request: {
+            providerName: formData.providerName.trim() || undefined,
+            baseUrl: formData.baseUrl.trim(),
+            ...(apiKeyValue ? { apiKey: apiKeyValue } : {}),
+            apiType: formData.apiType || undefined,
+            models: formData.models,
+            enabled: formData.enabled,
+            priority: formData.priority,
+          },
+        })
+      } else {
+        // 创建模式：使用 POST，apiKey 必填
+        await createMutation.mutateAsync({
+          providerKey: formData.providerKey.trim(),
+          providerName: formData.providerName.trim() || undefined,
+          baseUrl: formData.baseUrl.trim(),
+          apiKey: formData.apiKey.trim(),
+          apiType: formData.apiType || undefined,
+          models: formData.models,
+          enabled: formData.enabled,
+          priority: formData.priority,
+        })
+      }
       handleCloseDialog()
     } catch (error) {
       console.error('[ModelProviders] 保存失败:', error)
     }
-  }, [formData, editingProvider, upsertMutation, handleCloseDialog])
+  }, [formData, editingProvider, createMutation, updateMutation, handleCloseDialog])
 
   /**
    * 确认删除
@@ -554,13 +571,14 @@ export default function ModelProvidersConfigPage() {
             <Button
               onClick={handleSave}
               disabled={
-                upsertMutation.isPending ||
+                createMutation.isPending ||
+                updateMutation.isPending ||
                 !formData.providerKey.trim() ||
                 !formData.baseUrl.trim() ||
                 (!isEditing && !formData.apiKey.trim())
               }
             >
-              {upsertMutation.isPending && (
+              {(createMutation.isPending || updateMutation.isPending) && (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
               )}
               <Save className="mr-2 h-4 w-4" />

@@ -6,8 +6,7 @@ import {
   Shield,
   Bell,
   ChevronRight,
-  Database,
-  KeyRound,
+  Cpu,
   Bot,
   Network,
 } from 'lucide-react'
@@ -141,16 +140,10 @@ export default function ConfigPage() {
             <h2 className="text-lg font-semibold mb-3">AI 与网关配置</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <ConfigCard
-                title="模型提供商"
-                description="管理 AI 模型提供商（Anthropic、OpenAI 等）的 API 连接"
-                icon={Database}
-                href="/config/model-providers"
-              />
-              <ConfigCard
-                title="Auth Profile"
-                description="管理 AI 提供商的认证凭据（API Key、OAuth 等）"
-                icon={KeyRound}
-                href="/config/auth-profiles"
+                title="AI 模型配置"
+                description="管理 AI 模型提供商、API Key 凭据和 Embedding 配置"
+                icon={Cpu}
+                href="/config/ai"
               />
               <ConfigCard
                 title="Agent 配置"

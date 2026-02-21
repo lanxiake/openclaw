@@ -1,11 +1,10 @@
 /**
  * Agent 配置页面
  *
- * 管理 Agent 运行参数：模型选择、并发数、压缩模式、工作空间等
- * 参考 SiteConfigPage 的表单编辑模式
+ * 管理 Agent 运行参数：模型选择（两级联动：提供商→模型）、并发数、压缩模式、工作空间等
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Save, RefreshCw, RotateCcw, Bot, Cpu, FolderOpen } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
@@ -32,24 +31,14 @@ import {
 } from '@/components/ui/alert-dialog'
 import { cn } from '@/lib/utils'
 import { useAgentConfig, useUpdateAgentConfig, useResetAgentConfig } from '@/hooks/useAgentConfig'
-import type { UpdateAgentConfigRequest } from '@openclaw/api-client/admin'
+import { useModelProviders } from '@/hooks/useModelProviders'
+import type { ModelProvider, UpdateAgentConfigRequest } from '@openclaw/api-client/admin'
 
 /** 压缩模式选项 */
 const COMPACTION_MODES = [
   { value: 'safeguard', label: 'Safeguard（保守）' },
   { value: 'aggressive', label: 'Aggressive（激进）' },
   { value: 'none', label: 'None（不压缩）' },
-] as const
-
-/** 常用模型列表 */
-const COMMON_MODELS = [
-  { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4' },
-  { value: 'claude-opus-4-20250514', label: 'Claude Opus 4' },
-  { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet' },
-  { value: 'gpt-4o', label: 'GPT-4o' },
-  { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-  { value: 'deepseek-chat', label: 'DeepSeek Chat' },
-  { value: 'deepseek-reasoner', label: 'DeepSeek Reasoner' },
 ] as const
 
 /** 表单数据类型 */
@@ -71,16 +60,68 @@ const DEFAULT_FORM: AgentFormData = {
 }
 
 /**
+ * 从 primaryModel 字符串解析出 providerKey 和 modelId
+ *
+ * 格式："{providerKey}/{modelId}" 或裸模型 ID（兼容旧数据）
+ */
+function parsePrimaryModel(primaryModel: string): { providerKey: string; modelId: string } {
+  const slashIndex = primaryModel.indexOf('/')
+  if (slashIndex > 0) {
+    return {
+      providerKey: primaryModel.slice(0, slashIndex),
+      modelId: primaryModel.slice(slashIndex + 1),
+    }
+  }
+  return { providerKey: '', modelId: primaryModel }
+}
+
+/**
+ * 根据 primaryModel 和已配置提供商列表，推断模型选择状态
+ *
+ * 返回两级联动的选中状态，用于 useEffect 初始化和撤销操作
+ */
+function resolveModelSelectionState(
+  primaryModel: string,
+  providers: ModelProvider[] | undefined,
+): { selectedProvider: string; selectedModel: string; useCustomModel: boolean } {
+  const { providerKey, modelId } = parsePrimaryModel(primaryModel)
+  const hasMatchingProvider =
+    providerKey !== '' && providers?.some((p) => p.providerKey === providerKey)
+
+  if (hasMatchingProvider) {
+    return { selectedProvider: providerKey, selectedModel: modelId, useCustomModel: false }
+  }
+  if (primaryModel !== '') {
+    return { selectedProvider: '', selectedModel: '', useCustomModel: true }
+  }
+  return { selectedProvider: '', selectedModel: '', useCustomModel: false }
+}
+
+/**
  * Agent 配置页面组件
  */
 export default function AgentConfigPage() {
   const { data: config, isLoading, isFetching, refetch } = useAgentConfig()
   const updateConfig = useUpdateAgentConfig()
   const resetConfig = useResetAgentConfig()
+  const { data: providers } = useModelProviders()
 
   const [formData, setFormData] = useState<AgentFormData>(DEFAULT_FORM)
   const [hasChanges, setHasChanges] = useState(false)
   const [useCustomModel, setUseCustomModel] = useState(false)
+
+  /** 两级联动的选中状态 */
+  const [selectedProvider, setSelectedProvider] = useState<string>('')
+  const [selectedModel, setSelectedModel] = useState<string>('')
+
+  /** 当前选中提供商下的模型列表（过滤非字符串值保证类型安全） */
+  const availableModels = useMemo((): string[] => {
+    if (!selectedProvider || !providers) return []
+    const provider = providers.find((p) => p.providerKey === selectedProvider)
+    const raw = provider?.models
+    if (!Array.isArray(raw)) return []
+    return raw.filter((m): m is string => typeof m === 'string')
+  }, [selectedProvider, providers])
 
   /** 从 API 数据初始化表单 */
   useEffect(() => {
@@ -95,11 +136,12 @@ export default function AgentConfigPage() {
       setFormData(data)
       setHasChanges(false)
 
-      // 判断当前模型是否在常用列表中
-      const isCommon = COMMON_MODELS.some((m) => m.value === data.primaryModel)
-      setUseCustomModel(data.primaryModel !== '' && !isCommon)
+      const state = resolveModelSelectionState(data.primaryModel, providers)
+      setSelectedProvider(state.selectedProvider)
+      setSelectedModel(state.selectedModel)
+      setUseCustomModel(state.useCustomModel)
     }
-  }, [config])
+  }, [config, providers])
 
   /**
    * 更新表单字段
@@ -110,16 +152,30 @@ export default function AgentConfigPage() {
   }
 
   /**
-   * 处理模型选择
+   * 处理提供商选择变化
    */
-  const handleModelSelect = (value: string) => {
-    if (value === '__custom__') {
+  const handleProviderChange = (providerKey: string) => {
+    if (providerKey === '__custom__') {
       setUseCustomModel(true)
+      setSelectedProvider('')
+      setSelectedModel('')
       handleChange('primaryModel', '')
-    } else {
-      setUseCustomModel(false)
-      handleChange('primaryModel', value)
+      return
     }
+    setSelectedProvider(providerKey)
+    setSelectedModel('')
+    // 清空 primaryModel，等用户选择具体模型后再拼接
+    handleChange('primaryModel', '')
+  }
+
+  /**
+   * 处理模型选择变化
+   */
+  const handleModelChange = (modelId: string) => {
+    setSelectedModel(modelId)
+    // 拼接为 provider/model 格式存入 formData
+    const fullModelRef = `${selectedProvider}/${modelId}`
+    handleChange('primaryModel', fullModelRef)
   }
 
   /**
@@ -137,8 +193,8 @@ export default function AgentConfigPage() {
     try {
       await updateConfig.mutateAsync(request)
       setHasChanges(false)
-    } catch (error) {
-      console.error('保存 Agent 配置失败:', error)
+    } catch {
+      // 错误由 React Query 的 error state 处理
     }
   }
 
@@ -149,8 +205,8 @@ export default function AgentConfigPage() {
     try {
       await resetConfig.mutateAsync()
       setHasChanges(false)
-    } catch (error) {
-      console.error('重置 Agent 配置失败:', error)
+    } catch {
+      // 错误由 React Query 的 error state 处理
     }
   }
 
@@ -159,8 +215,9 @@ export default function AgentConfigPage() {
    */
   const handleDiscard = () => {
     if (config) {
+      const pm = config.primaryModel ?? ''
       setFormData({
-        primaryModel: config.primaryModel ?? '',
+        primaryModel: pm,
         compactionMode: config.compactionMode ?? 'safeguard',
         maxConcurrent: config.maxConcurrent ?? 1,
         subagentsMaxConcurrent: config.subagentsMaxConcurrent ?? 1,
@@ -168,8 +225,10 @@ export default function AgentConfigPage() {
       })
       setHasChanges(false)
 
-      const isCommon = COMMON_MODELS.some((m) => m.value === config.primaryModel)
-      setUseCustomModel(config.primaryModel !== '' && config.primaryModel != null && !isCommon)
+      const state = resolveModelSelectionState(pm, providers)
+      setSelectedProvider(state.selectedProvider)
+      setSelectedModel(state.selectedModel)
+      setUseCustomModel(state.useCustomModel)
     }
   }
 
@@ -247,52 +306,118 @@ export default function AgentConfigPage() {
                 <Bot className="h-5 w-5" />
                 模型选择
               </CardTitle>
-              <CardDescription>设置 Agent 使用的默认 AI 模型</CardDescription>
+              <CardDescription>
+                从已配置的模型提供商中选择模型，或手动输入 provider/model 格式
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="primaryModel">主模型</Label>
-                {!useCustomModel ? (
-                  <Select
-                    value={formData.primaryModel || undefined}
-                    onValueChange={handleModelSelect}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择模型" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COMMON_MODELS.map((model) => (
-                        <SelectItem key={model.value} value={model.value}>
-                          {model.label}
-                        </SelectItem>
-                      ))}
-                      <SelectItem value="__custom__">自定义模型...</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
+              {!useCustomModel ? (
+                <>
+                  {/* 第一级：选择提供商 */}
+                  <div className="space-y-2">
+                    <Label>模型提供商</Label>
+                    {providers && providers.length > 0 ? (
+                      <Select
+                        value={selectedProvider || undefined}
+                        onValueChange={handleProviderChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="选择模型提供商" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {providers
+                            .filter((p) => p.enabled)
+                            .map((provider) => (
+                              <SelectItem key={provider.providerKey} value={provider.providerKey}>
+                                {provider.providerName || provider.providerKey}
+                              </SelectItem>
+                            ))}
+                          <SelectItem value="__custom__">自定义输入...</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-muted-foreground">
+                          尚未配置模型提供商，请先在
+                          <Link to="/config/model-providers" className="text-primary underline mx-1">
+                            模型提供商管理
+                          </Link>
+                          中添加
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setUseCustomModel(true)}
+                        >
+                          手动输入
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 第二级：选择模型 */}
+                  {selectedProvider && (
+                    <div className="space-y-2">
+                      <Label>模型</Label>
+                      {availableModels.length > 0 ? (
+                        <Select
+                          value={selectedModel || undefined}
+                          onValueChange={handleModelChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="选择模型" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableModels.map((modelId) => (
+                              <SelectItem key={modelId} value={modelId}>
+                                {modelId}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          该提供商未配置模型列表，请在模型提供商管理中添加模型
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 显示当前值 */}
+                  {formData.primaryModel && (
+                    <p className="text-xs text-muted-foreground">
+                      当前值: <code className="bg-muted px-1 rounded">{formData.primaryModel}</code>
+                    </p>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="primaryModel">自定义模型</Label>
                   <div className="flex gap-2">
                     <Input
                       id="primaryModel"
                       value={formData.primaryModel}
                       onChange={(e) => handleChange('primaryModel', e.target.value)}
-                      placeholder="输入自定义模型名称，如 claude-opus-4-20250514"
+                      placeholder="provider/model-id，如 new-api/claude-opus-4-5-20251101"
                     />
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => {
                         setUseCustomModel(false)
+                        setSelectedProvider('')
+                        setSelectedModel('')
                         handleChange('primaryModel', '')
                       }}
                     >
                       切换选择
                     </Button>
                   </div>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Agent 默认使用的 AI 模型，可从常用列表选择或输入自定义模型名称
-                </p>
-              </div>
+                  <p className="text-xs text-muted-foreground">
+                    格式: provider-key/model-id（如 anthropic/claude-opus-4-5-20251101）
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

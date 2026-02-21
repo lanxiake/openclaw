@@ -165,7 +165,7 @@ export default function MonitorPage() {
                 <div className="h-8 w-24 bg-muted animate-pulse rounded" />
               ) : (
                 <div className="text-2xl font-bold">
-                  {stats?.requestsPerMinute?.toLocaleString()}
+                  {(stats?.requestsPerMinute ?? 0).toLocaleString()}
                 </div>
               )}
             </div>
@@ -298,12 +298,12 @@ export default function MonitorPage() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">CPU</span>
-                    <span className="text-sm text-muted-foreground">{resources.cpu.usage.toFixed(1)}%</span>
+                    <span className="text-sm text-muted-foreground">{(resources.cpu?.usage ?? 0).toFixed(1)}%</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-blue-500 transition-all"
-                      style={{ width: `${resources.cpu.usage}%` }}
+                      style={{ width: `${resources.cpu?.usage ?? 0}%` }}
                     />
                   </div>
                 </div>
@@ -313,13 +313,13 @@ export default function MonitorPage() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">内存</span>
                     <span className="text-sm text-muted-foreground">
-                      {formatBytes(resources.memory.used)} / {formatBytes(resources.memory.total)}
+                      {formatBytes(resources.memory?.used ?? 0)} / {formatBytes(resources.memory?.total ?? 0)}
                     </span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-green-500 transition-all"
-                      style={{ width: `${resources.memory.percentage}%` }}
+                      style={{ width: `${resources.memory?.percentage ?? 0}%` }}
                     />
                   </div>
                 </div>
@@ -329,13 +329,13 @@ export default function MonitorPage() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">磁盘</span>
                     <span className="text-sm text-muted-foreground">
-                      {formatBytes(resources.disk.used)} / {formatBytes(resources.disk.total)}
+                      {formatBytes(resources.disk?.used ?? 0)} / {formatBytes(resources.disk?.total ?? 0)}
                     </span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-yellow-500 transition-all"
-                      style={{ width: `${resources.disk.percentage}%` }}
+                      style={{ width: `${resources.disk?.percentage ?? 0}%` }}
                     />
                   </div>
                 </div>
@@ -405,19 +405,19 @@ export default function MonitorPage() {
               <div className="grid gap-4 md:grid-cols-4">
                 <div className="p-4 border rounded-lg">
                   <p className="text-sm text-muted-foreground">总请求数</p>
-                  <p className="text-2xl font-bold">{apiData.summary.totalRequests.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{(apiData.summary?.totalRequests ?? 0).toLocaleString()}</p>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <p className="text-sm text-muted-foreground">成功率</p>
-                  <p className="text-2xl font-bold">{apiData.summary.successRate.toFixed(2)}%</p>
+                  <p className="text-2xl font-bold">{(apiData.summary?.successRate ?? 0).toFixed(2)}%</p>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <p className="text-sm text-muted-foreground">平均响应时间</p>
-                  <p className="text-2xl font-bold">{apiData.summary.avgResponseTime}ms</p>
+                  <p className="text-2xl font-bold">{apiData.summary?.avgResponseTime ?? 0}ms</p>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <p className="text-sm text-muted-foreground">每秒请求数</p>
-                  <p className="text-2xl font-bold">{apiData.summary.requestsPerSecond.toFixed(1)}</p>
+                  <p className="text-2xl font-bold">{(apiData.summary?.requestsPerSecond ?? 0).toFixed(1)}</p>
                 </div>
               </div>
 
@@ -427,7 +427,7 @@ export default function MonitorPage() {
                   <h4 className="text-sm font-medium mb-4">请求趋势</h4>
                   <div className="h-48">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={apiData.timeline}>
+                      <LineChart data={apiData.timeline ?? []}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                         <XAxis
                           dataKey="timestamp"
@@ -454,7 +454,7 @@ export default function MonitorPage() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={Object.entries(apiData.byStatusCode).map(([code, count]) => ({
+                          data={Object.entries(apiData.byStatusCode ?? {}).map(([code, count]) => ({
                             code: Number(code),
                             count,
                           }))}
@@ -466,7 +466,7 @@ export default function MonitorPage() {
                           outerRadius={70}
                           paddingAngle={2}
                         >
-                          {Object.entries(apiData.byStatusCode).map(([code]) => (
+                          {Object.entries(apiData.byStatusCode ?? {}).map(([code]) => (
                             <Cell
                               key={code}
                               fill={STATUS_CODE_COLORS[Number(code)] || '#6b7280'}
@@ -480,7 +480,7 @@ export default function MonitorPage() {
                     </ResponsiveContainer>
                   </div>
                   <div className="flex flex-wrap justify-center gap-4 mt-2">
-                    {Object.entries(apiData.byStatusCode).map(([code, count]) => (
+                    {Object.entries(apiData.byStatusCode ?? {}).map(([code, count]) => (
                       <div key={code} className="flex items-center gap-2 text-xs">
                         <div
                           className="w-3 h-3 rounded-full"
@@ -508,17 +508,17 @@ export default function MonitorPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {apiData.byEndpoint.map((ep) => (
+                      {(apiData.byEndpoint ?? []).map((ep) => (
                         <tr key={`${ep.method}-${ep.endpoint}`}>
                           <td>
                             <Badge variant="outline">{ep.method}</Badge>
                           </td>
                           <td className="font-mono text-sm">{ep.endpoint}</td>
-                          <td className="text-right">{ep.count.toLocaleString()}</td>
-                          <td className="text-right">{ep.avgTime}ms</td>
+                          <td className="text-right">{(ep.count ?? 0).toLocaleString()}</td>
+                          <td className="text-right">{ep.avgTime ?? 0}ms</td>
                           <td className="text-right">
-                            <span className={cn(ep.errorRate > 1 ? 'text-red-500' : 'text-muted-foreground')}>
-                              {ep.errorRate.toFixed(1)}%
+                            <span className={cn((ep.errorRate ?? 0) > 1 ? 'text-red-500' : 'text-muted-foreground')}>
+                              {(ep.errorRate ?? 0).toFixed(1)}%
                             </span>
                           </td>
                         </tr>

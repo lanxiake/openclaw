@@ -32,19 +32,15 @@ export function useDashboardStats() {
  * @param period - 时间周期 (7d | 30d | 90d)
  */
 export function useTrends(
-  _type: 'users' | 'revenue' | 'subscriptions',
+  type: 'users' | 'revenue' | 'subscriptions',
   period: '7d' | '30d' | '90d' = '30d'
 ) {
   return useQuery({
-    queryKey: ['admin', 'dashboard', 'trends', _type, period],
+    queryKey: ['admin', 'dashboard', 'trends', type, period],
     queryFn: async (): Promise<TrendData> => {
-      console.log('[useDashboard] 获取趋势数据:', _type, period)
-      // TODO: API Server 需要实现 /api/admin/dashboard/trends 路由
-      // 暂时返回空数据
-      return {
-        labels: [],
-        values: [],
-      }
+      console.log('[useDashboard] 获取趋势数据:', type, period)
+      const data = await apiClient.instance.getDashboardTrends(type, period)
+      return data as unknown as TrendData
     },
     staleTime: 5 * 60 * 1000, // 5 分钟后过期
   })
@@ -58,9 +54,8 @@ export function useSubscriptionDistribution() {
     queryKey: ['admin', 'dashboard', 'subscriptionDistribution'],
     queryFn: async (): Promise<SubscriptionDistribution[]> => {
       console.log('[useDashboard] 获取订阅分布数据')
-      // TODO: API Server 需要实现 /api/admin/dashboard/distribution 路由
-      // 暂时返回空数据
-      return []
+      const data = await apiClient.instance.getDashboardDistribution()
+      return data as unknown as SubscriptionDistribution[]
     },
     staleTime: 5 * 60 * 1000, // 5 分钟后过期
   })
@@ -76,9 +71,8 @@ export function useActivities(limit = 10) {
     queryKey: ['admin', 'dashboard', 'activities', limit],
     queryFn: async (): Promise<Activity[]> => {
       console.log('[useDashboard] 获取最近活动:', limit)
-      // TODO: API Server 需要实现 /api/admin/dashboard/activities 路由
-      // 暂时返回空数据
-      return []
+      const data = await apiClient.instance.getDashboardActivities(limit)
+      return data as unknown as Activity[]
     },
     staleTime: 30 * 1000, // 30 秒后过期
     refetchInterval: 60 * 1000, // 每分钟自动刷新

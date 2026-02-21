@@ -189,13 +189,16 @@ export function useActivateUser() {
  * 重置用户密码
  */
 export function useResetPassword() {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (_userId: string) => {
-      // TODO: 后端需要实现此 API
-      // const client = getApiClient();
-      // const result = await client.resetUserPassword(userId);
-      // return result;
-      throw new Error("API not implemented");
+    mutationFn: async ({ userId, newPassword }: { userId: string; newPassword: string }) => {
+      const client = getApiClient();
+      await client.resetUserPassword(userId, newPassword);
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
     },
   });
 }
@@ -234,10 +237,9 @@ export function useForceLogout() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (_userId: string) => {
-      // TODO: 后端需要实现此 API
-      // const client = getApiClient();
-      // await client.forceLogoutUser(userId);
+    mutationFn: async (userId: string) => {
+      const client = getApiClient();
+      await client.forceLogoutUser(userId);
       return { success: true };
     },
     onSuccess: () => {
