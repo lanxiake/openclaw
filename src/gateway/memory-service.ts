@@ -165,6 +165,74 @@ export class GatewayMemoryService {
       // 构建记忆管理器配置
       let memoryConfig = this.config.memoryConfig ?? { ...DEFAULT_DEV_CONFIG };
 
+      // 注入 OpenClawConfig 到 episodic 和 profile provider，启用 LLM 功能
+      const openclawConfig = this.config.openclawConfig;
+
+      // 从 openclawConfig 中提取数据库记忆系统配置（通过 system_configs 合并进来的）
+      const cfgAny = openclawConfig as Record<string, unknown>;
+      const memoryEmbeddingConfig = cfgAny.memory_embedding as
+        | { provider?: string; model?: string; dimensions?: number; baseUrl?: string }
+        | undefined;
+      const memoryLlmConfig = cfgAny.memory_llm as
+        | {
+            enabled?: boolean;
+            provider?: string;
+            model?: string;
+            maxTokens?: number;
+            temperature?: number;
+            timeoutMs?: number;
+          }
+        | undefined;
+
+      if (memoryEmbeddingConfig) {
+        logger.info("检测到数据库记忆 embedding 配置", {
+          model: memoryEmbeddingConfig.model,
+          dimensions: memoryEmbeddingConfig.dimensions,
+          baseUrl: memoryEmbeddingConfig.baseUrl,
+        });
+      }
+      if (memoryLlmConfig) {
+        logger.info("检测到数据库记忆 LLM 配置", {
+          provider: memoryLlmConfig.provider,
+          model: memoryLlmConfig.model,
+        });
+      }
+
+      // 如果数据库中有 LLM 配置，注入到 memoryConfig.llm
+      if (memoryLlmConfig?.enabled !== false) {
+        memoryConfig = {
+          ...memoryConfig,
+          llm: {
+            enabled: memoryLlmConfig?.enabled ?? true,
+            provider: memoryLlmConfig?.provider ?? "anthropic",
+            model: memoryLlmConfig?.model ?? "anyrouter/claude-opus-4-6",
+            maxTokens: memoryLlmConfig?.maxTokens ?? 1024,
+            temperature: memoryLlmConfig?.temperature ?? 0.3,
+            timeoutMs: memoryLlmConfig?.timeoutMs ?? 30_000,
+          },
+        };
+      }
+
+      memoryConfig = {
+        ...memoryConfig,
+        episodic: {
+          ...memoryConfig.episodic,
+          options: {
+            ...memoryConfig.episodic.options,
+            cfg: openclawConfig,
+          },
+        },
+        profile: {
+          ...memoryConfig.profile,
+          options: {
+            ...memoryConfig.profile.options,
+            cfg: openclawConfig,
+          },
+        },
+      };
+
+      logger.info("已注入 OpenClawConfig 到 episodic/profile provider");
+
       // 如果启用 SQLite 知识适配器，替换知识记忆提供者
       if (this.config.useSQLiteKnowledge) {
         logger.info("启用 SQLite 知识适配器");
@@ -185,6 +253,27 @@ export class GatewayMemoryService {
             provider: "sqlite",
             options: {
               indexManager: this.sqliteAdapter,
+            },
+          },
+        };
+      } else if (memoryConfig.knowledge.provider === "postgres") {
+        // 使用 PostgreSQL 知识记忆 provider 时，注入 cfg 和 embeddingConfig
+        logger.info("启用 PostgreSQL 知识记忆 provider（含 pgvector）");
+        memoryConfig = {
+          ...memoryConfig,
+          knowledge: {
+            ...memoryConfig.knowledge,
+            options: {
+              ...memoryConfig.knowledge.options,
+              cfg: openclawConfig,
+              embeddingConfig: memoryEmbeddingConfig
+                ? {
+                    provider: memoryEmbeddingConfig.provider ?? "openai",
+                    model: memoryEmbeddingConfig.model ?? "Qwen3-Embedding-0.6B",
+                    dimensions: memoryEmbeddingConfig.dimensions ?? 1024,
+                    baseUrl: memoryEmbeddingConfig.baseUrl ?? "",
+                  }
+                : undefined,
             },
           },
         };

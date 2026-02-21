@@ -11,6 +11,7 @@ import { eq, inArray } from "drizzle-orm";
 
 import { getLogger } from "../logging/logger.js";
 import { getDatabase } from "../db/connection.js";
+import { generateId } from "../db/utils/id.js";
 import { GatewayConfigRepository } from "../db/repositories/gateway-configs.js";
 import {
   ModelProviderRepository,
@@ -236,6 +237,8 @@ const SYSTEM_CONFIG_KEYS = [
   "talk",
   "ui",
   "tools",
+  "memory_embedding",
+  "memory_llm",
 ] as const;
 
 /**
@@ -320,5 +323,98 @@ async function loadSystemConfigEntries(
   } catch (error) {
     logger.warn("[ConfigLoader] system_configs 查询失败:", error);
     return {};
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 记忆系统默认配置初始化
+// ---------------------------------------------------------------------------
+
+/** 记忆系统 embedding 默认配置 */
+const DEFAULT_MEMORY_EMBEDDING_CONFIG = {
+  provider: "openai",
+  model: "Qwen3-Embedding-0.6B",
+  dimensions: 1024,
+  baseUrl: "https://wss.sczxsc.cn:35031/v1",
+};
+
+/** 记忆系统 LLM 默认配置 */
+const DEFAULT_MEMORY_LLM_CONFIG = {
+  enabled: true,
+  provider: "anthropic",
+  model: "anyrouter/claude-opus-4-6",
+  maxTokens: 1024,
+  temperature: 0.3,
+  timeoutMs: 30_000,
+};
+
+/**
+ * 确保数据库中存在记忆系统默认配置
+ *
+ * 在 Gateway 启动时调用，检查 system_configs 表中是否已存在
+ * memory_embedding 和 memory_llm 配置。如果不存在则插入默认值。
+ * 已存在的配置不会被覆盖。
+ *
+ * @param db - 数据库实例
+ */
+export async function ensureMemorySystemConfigs(db: ReturnType<typeof getDatabase>): Promise<void> {
+  try {
+    const existingRows = await db
+      .select({ key: systemConfigs.key })
+      .from(systemConfigs)
+      .where(inArray(systemConfigs.key, ["memory_embedding", "memory_llm"]));
+
+    const existingKeys = new Set(existingRows.map((r) => r.key));
+
+    const toInsert: Array<{
+      id: string;
+      key: string;
+      value: unknown;
+      valueType: "json";
+      group: string;
+      description: string;
+      isReadonly: boolean;
+      isSensitive: boolean;
+      requiresRestart: boolean;
+    }> = [];
+
+    if (!existingKeys.has("memory_embedding")) {
+      toInsert.push({
+        id: generateId(),
+        key: "memory_embedding",
+        value: DEFAULT_MEMORY_EMBEDDING_CONFIG,
+        valueType: "json",
+        group: "memory",
+        description: "记忆系统向量嵌入服务配置（provider, model, dimensions, baseUrl）",
+        isReadonly: false,
+        isSensitive: false,
+        requiresRestart: false,
+      });
+    }
+
+    if (!existingKeys.has("memory_llm")) {
+      toInsert.push({
+        id: generateId(),
+        key: "memory_llm",
+        value: DEFAULT_MEMORY_LLM_CONFIG,
+        valueType: "json",
+        group: "memory",
+        description: "记忆系统 LLM 服务配置（provider, model, maxTokens, temperature）",
+        isReadonly: false,
+        isSensitive: false,
+        requiresRestart: false,
+      });
+    }
+
+    if (toInsert.length > 0) {
+      await db.insert(systemConfigs).values(toInsert);
+      logger.info("[ConfigLoader] 已插入记忆系统默认配置", {
+        keys: toInsert.map((r) => r.key),
+      });
+    } else {
+      logger.debug("[ConfigLoader] 记忆系统配置已存在，跳过插入");
+    }
+  } catch (error) {
+    logger.warn("[ConfigLoader] 记忆系统默认配置初始化失败:", error);
   }
 }

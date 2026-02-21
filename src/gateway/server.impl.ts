@@ -13,7 +13,7 @@ import {
   readConfigFileSnapshot,
   writeConfigFile,
 } from "../config/config.js";
-import { loadAllDatabaseConfigs } from "./config-loader.js";
+import { loadAllDatabaseConfigs, ensureMemorySystemConfigs } from "./config-loader.js";
 import { mergeFileAndDbConfigs } from "./config-merger.js";
 import { isDiagnosticsEnabled } from "../infra/diagnostic-events.js";
 import { logAcceptedEnvOption } from "../infra/env.js";
@@ -218,10 +218,22 @@ export async function startGatewayServer(
   // 优先级: 数据库 > 文件 > 环境变量 > 默认值
   // 数据库不可用时自动 fallback 到纯文件配置
   const fileConfig = loadConfig();
+
+  // 确保记忆系统默认配置存在于数据库中（在加载配置之前执行，以便 merge 包含记忆配置）
+  try {
+    const db = (await import("../db/connection.js")).getDatabase();
+    await ensureMemorySystemConfigs(db);
+  } catch (err) {
+    log.debug("gateway: ensureMemorySystemConfigs skipped (db may be unavailable)", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+
   const dbConfigs = await loadAllDatabaseConfigs();
   const cfgAtStart = dbConfigs ? mergeFileAndDbConfigs(fileConfig, dbConfigs) : fileConfig;
   if (dbConfigs) {
     log.info("gateway: config loaded from file + database merge");
+    // Agent 运行时直接从数据库读取 auth profiles，不再需要 DB→File 同步
   } else {
     log.info("gateway: config loaded from file only (database unavailable or empty)");
   }
@@ -618,6 +630,8 @@ export async function startGatewayServer(
               }
               const freshFileConfig = loadConfig();
               const nextConfig = mergeFileAndDbConfigs(freshFileConfig, freshDbConfigs);
+
+              // Agent 运行时直接从数据库读取 auth profiles，无需 DB→File 同步
 
               await applyHotReload(
                 {

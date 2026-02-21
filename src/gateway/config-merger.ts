@@ -125,6 +125,10 @@ function mergeGatewayConfig(fileConfig: OpenClawConfig, dbGw: DbGatewayConfig): 
  * 将数据库 model_providers 行列表合并到文件配置的 models.providers 段
  *
  * 策略：按 providerKey 合并，数据库存在则覆盖文件的同名 provider
+ *
+ * 注意：数据库中 models 字段存储为字符串数组 ["model-id-1", "model-id-2"]，
+ * 但 OpenClawConfig 期望 ModelDefinitionConfig[]（对象数组）。
+ * 此函数负责将字符串数组转换为最小化的 ModelDefinitionConfig 格式。
  */
 function mergeModelProviders(
   fileConfig: OpenClawConfig,
@@ -138,11 +142,15 @@ function mergeModelProviders(
 
   // 数据库 provider 覆盖
   for (const dbProv of dbProviders) {
+    // DB 中 models 可能是字符串数组或对象数组，统一转换为 ModelDefinitionConfig[] 格式
+    const rawModels = dbProv.models;
+    const normalizedModels = normalizeDbModels(rawModels);
+
     merged[dbProv.providerKey] = {
       baseUrl: dbProv.baseUrl,
       apiKey: dbProv.apiKey,
       api: dbProv.apiType,
-      models: dbProv.models,
+      models: normalizedModels,
     };
   }
 
@@ -153,6 +161,47 @@ function mergeModelProviders(
       providers: merged as OpenClawConfig["models"] extends { providers?: infer P } ? P : never,
     },
   };
+}
+
+/**
+ * 将数据库中的 models 字段标准化为 ModelDefinitionConfig[] 格式
+ *
+ * 数据库存储格式可能是：
+ * - 字符串数组: ["claude-opus-4-6", "claude-sonnet-4-5"]
+ * - 对象数组: [{ id: "claude-opus-4-6", ... }]
+ * - 其他格式: 返回空数组
+ *
+ * 对于字符串数组，自动生成最小化的 ModelDefinitionConfig 对象。
+ */
+function normalizeDbModels(raw: unknown): Array<Record<string, unknown>> {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  return raw
+    .map((item) => {
+      if (typeof item === "string") {
+        const trimmed = item.trim();
+        if (!trimmed) {
+          return null;
+        }
+        // 字符串模型 ID → 最小化 ModelDefinitionConfig
+        return {
+          id: trimmed,
+          name: trimmed,
+          reasoning: false,
+          input: ["text"],
+          cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+          contextWindow: 200000,
+          maxTokens: 16000,
+        };
+      }
+      if (isPlainObject(item) && typeof (item as Record<string, unknown>).id === "string") {
+        // 已经是对象格式，直接使用
+        return item;
+      }
+      return null;
+    })
+    .filter((item): item is Record<string, unknown> => item != null);
 }
 
 // ---------------------------------------------------------------------------

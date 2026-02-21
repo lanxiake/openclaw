@@ -101,6 +101,8 @@ const SYSTEM_CONFIG_KEY_RELOAD_MAP: Record<string, DbReloadAction> = {
   talk: "none",
   ui: "none",
   tools: "none",
+  memory_embedding: "hot",
+  memory_llm: "hot",
 };
 
 // ---------------------------------------------------------------------------

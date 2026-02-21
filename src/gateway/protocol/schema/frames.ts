@@ -57,6 +57,8 @@ export const ConnectParamsSchema = Type.Object(
         {
           token: Type.Optional(Type.String()),
           password: Type.Optional(Type.String()),
+          /** 设备 ID，用于 device token 回退验证 */
+          deviceId: Type.Optional(Type.String()),
         },
         { additionalProperties: false },
       ),

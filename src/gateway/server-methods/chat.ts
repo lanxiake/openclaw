@@ -43,7 +43,12 @@ import {
 } from "../session-utils.js";
 import { stripEnvelopeFromMessages } from "../chat-sanitize.js";
 import { formatForLog } from "../ws-log.js";
+import { loadAllDatabaseConfigs } from "../config-loader.js";
+import { mergeFileAndDbConfigs } from "../config-merger.js";
+import { createSubsystemLogger } from "../../logging/subsystem.js";
 import type { GatewayRequestContext, GatewayRequestHandlers } from "./types.js";
+
+const log = createSubsystemLogger("chat/config");
 
 type TranscriptAppendResult = {
   ok: boolean;
@@ -370,7 +375,25 @@ export const chatHandlers: GatewayRequestHandlers = {
         return;
       }
     }
-    const { cfg, entry } = loadSessionEntry(p.sessionKey);
+    const { cfg: fileConfig, entry } = loadSessionEntry(p.sessionKey);
+
+    // 合并数据库配置到文件配置，确保 DB 中的模型/提供商/agent 配置
+    // 在请求时生效（而不是只在 Gateway 启动时生效）
+    let cfg = fileConfig;
+    try {
+      const dbConfigs = await loadAllDatabaseConfigs();
+      if (dbConfigs) {
+        cfg = mergeFileAndDbConfigs(fileConfig, dbConfigs);
+        log.debug(
+          `[chat.send] merged DB config: agents.defaults.model=${JSON.stringify(cfg.agents?.defaults?.model ?? "unset")}`,
+        );
+      }
+    } catch (err) {
+      log.debug(
+        `[chat.send] DB config merge failed, using file config: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+
     const timeoutMs = resolveAgentTimeoutMs({
       cfg,
       overrideMs: p.timeoutMs,

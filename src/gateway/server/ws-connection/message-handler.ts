@@ -584,8 +584,18 @@ export function attachGatewayWsMessageHandler(params: {
           const tokenCheck = await verifyDeviceToken({
             deviceId: device.id,
             token: connectParams.auth.token,
-            role,
-            scopes,
+          });
+          if (tokenCheck.ok) {
+            authOk = true;
+            authMethod = "device-token";
+          }
+        }
+        // 无 device 身份但提供了 deviceId + token 的回退验证
+        // 允许已登录用户通过 API 获取的 device token 连接 Gateway
+        if (!authOk && !device && connectParams.auth?.token && connectParams.auth?.deviceId) {
+          const tokenCheck = await verifyDeviceToken({
+            deviceId: connectParams.auth.deviceId,
+            token: connectParams.auth.token,
           });
           if (tokenCheck.ok) {
             authOk = true;

@@ -101,6 +101,7 @@ const READ_METHODS = new Set([
   "assistant.info",
   "assistant.capabilities",
   "assistant.heartbeat",
+  "heartbeat",
   // Assistant skill system methods
   "assistant.skills.list",
   "assistant.skills.get",

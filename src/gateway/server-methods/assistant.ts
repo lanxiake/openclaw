@@ -119,6 +119,24 @@ interface CommandExecutionResult {
 }
 
 /**
+ * 心跳检测处理器（共享实现，供 assistant.heartbeat 和 heartbeat 别名使用）
+ */
+const heartbeatHandler: GatewayRequestHandlers[string] = ({ params, respond }) => {
+  const timestamp =
+    validateNumberParam(params, "timestamp") ?? validateNumberParam(params, "ts") ?? Date.now();
+
+  respond(
+    true,
+    {
+      timestamp,
+      serverTime: Date.now(),
+      status: "ok",
+    },
+    undefined,
+  );
+};
+
+/**
  * Assistant RPC 方法处理器
  */
 export const assistantHandlers: GatewayRequestHandlers = {
@@ -332,21 +350,10 @@ export const assistantHandlers: GatewayRequestHandlers = {
   },
 
   /**
-   * 心跳检测
+   * 心跳检测（同时注册 assistant.heartbeat 和 heartbeat 别名，兼容 Windows 客户端）
    */
-  "assistant.heartbeat": ({ params, respond }) => {
-    const timestamp = validateNumberParam(params, "timestamp") ?? Date.now();
-
-    respond(
-      true,
-      {
-        timestamp,
-        serverTime: Date.now(),
-        status: "ok",
-      },
-      undefined,
-    );
-  },
+  "assistant.heartbeat": heartbeatHandler,
+  heartbeat: heartbeatHandler,
 
   /**
    * 远程命令执行
