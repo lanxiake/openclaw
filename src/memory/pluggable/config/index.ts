@@ -9,11 +9,13 @@ export {
   ProviderConfigSchema,
   PostgresConfigSchema,
   EmbeddingConfigSchema,
+  LLMConfigSchema,
   MemoryManagerConfigSchema,
 
   // 类型
   type PostgresConfig,
   type EmbeddingConfig,
+  type LLMConfig,
   type MemoryManagerConfig,
 
   // 默认配置

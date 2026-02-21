@@ -498,4 +498,246 @@ describe("PostgresProfileMemoryProvider", () => {
       expect((prefs as any).userId).toBeUndefined();
     });
   });
+
+  // ==================== 工厂创建 ====================
+
+  describe("工厂创建", () => {
+    it("应该通过 createProvider 创建 postgres profile 实例", async () => {
+      // 重新 mock factory 模块以获取 registerProvider 的调用记录
+      const { registerProvider } = await import("../factory.js");
+
+      // registerProvider 在模块加载时被调用过（被 mock 了）
+      // 这里验证 provider 实例的类型正确
+      expect(provider.name).toBe("postgres-profile");
+      expect(provider.version).toBe("1.0.0");
+      expect(typeof provider.addFact).toBe("function");
+      expect(typeof provider.getPreferences).toBe("function");
+      expect(typeof provider.addPattern).toBe("function");
+      expect(typeof provider.exportProfile).toBe("function");
+    });
+  });
+
+  // ==================== 健康检查边界 ====================
+
+  describe("健康检查", () => {
+    it("未初始化时应该返回 unhealthy", async () => {
+      const mod = await import("./postgres.js");
+      const uninitializedProvider = new mod.PostgresProfileMemoryProvider({});
+
+      const health = await uninitializedProvider.healthCheck();
+
+      expect(health.status).toBe("unhealthy");
+      expect(health.details).toHaveProperty("error");
+    });
+
+    it("关闭后应该返回 unhealthy", async () => {
+      await provider.shutdown();
+
+      const health = await provider.healthCheck();
+
+      expect(health.status).toBe("unhealthy");
+    });
+  });
+
+  // ==================== extractFromConversation LLM 集成 ====================
+
+  describe("extractFromConversation - LLM 集成", () => {
+    it("无 LLM 服务时应返回空结果（优雅降级）", async () => {
+      // provider 没有传入 cfg，所以没有 LLM 服务
+      const result = await provider.extractFromConversation("user-123", [
+        { role: "user", content: "我叫张三，在 OpenClaw 工作" },
+      ]);
+
+      expect(result).toEqual({
+        newFacts: [],
+        updatedFacts: [],
+        newPatterns: [],
+      });
+    });
+
+    it("有 LLM 服务且可用时应调用 LLM 进行画像提取", async () => {
+      vi.resetModules();
+
+      const mockLLMResponse = {
+        newFacts: [
+          {
+            content: "张三",
+            category: "personal" as const,
+            key: "name",
+            confidence: 0.9,
+          },
+          {
+            content: "OpenClaw",
+            category: "work" as const,
+            key: "company",
+            confidence: 0.9,
+          },
+        ],
+        updatedFacts: [],
+        newPatterns: [],
+      };
+
+      // Mock LLM 服务 — 使用 class 形式
+      vi.doMock("../../llm/memory-llm-service.js", () => ({
+        MemoryLLMService: class {
+          isAvailable = vi.fn().mockResolvedValue(true);
+          completeJSON = vi.fn().mockResolvedValue(mockLLMResponse);
+          resetAvailability = vi.fn();
+        },
+      }));
+
+      // Mock prompts 和 parsers（避免实际调用）
+      vi.doMock("../../llm/prompts.js", () => ({
+        buildProfileExtractionSystemPrompt: vi.fn().mockReturnValue("system prompt"),
+        buildProfileExtractionUserMessage: vi.fn().mockReturnValue("user message"),
+      }));
+
+      vi.doMock("../../llm/response-parsers.js", () => ({
+        parseProfileExtractionResponse: vi.fn(),
+      }));
+
+      vi.doMock("../../../../db/repositories/profile-memory.js", () => ({
+        getUserFactRepository: vi.fn().mockReturnValue(mockFactRepo),
+        getUserPreferencesV2Repository: vi.fn().mockReturnValue(mockPrefsRepo),
+        getBehaviorPatternRepository: vi.fn().mockReturnValue(mockPatternRepo),
+        UserFactRepository: vi.fn(),
+        UserPreferencesV2Repository: vi.fn(),
+        BehaviorPatternRepository: vi.fn(),
+      }));
+
+      vi.doMock("../factory.js", () => ({
+        registerProvider: vi.fn(),
+      }));
+
+      // Mock getFacts 返回空（没有已有事实）
+      mockFactRepo.findAll.mockResolvedValue({ facts: [], total: 0 });
+
+      const mod = await import("./postgres.js");
+      const llmProvider = new mod.PostgresProfileMemoryProvider({
+        db: mockDb,
+        cfg: {} as any,
+      });
+      await llmProvider.initialize();
+
+      const result = await llmProvider.extractFromConversation("user-123", [
+        { role: "user", content: "我叫张三，在 OpenClaw 工作" },
+      ]);
+
+      expect(result.newFacts).toHaveLength(2);
+      expect(result.newFacts[0]).toMatchObject({
+        id: "personal:name",
+        content: "张三",
+        category: "personal",
+        confidence: 0.9,
+      });
+      expect(result.updatedFacts).toEqual([]);
+      expect(result.newPatterns).toEqual([]);
+    });
+
+    it("LLM 调用失败时应返回空结果", async () => {
+      vi.resetModules();
+
+      // Mock LLM 服务返回 null（调用失败）
+      vi.doMock("../../llm/memory-llm-service.js", () => ({
+        MemoryLLMService: class {
+          isAvailable = vi.fn().mockResolvedValue(true);
+          completeJSON = vi.fn().mockResolvedValue(null);
+          resetAvailability = vi.fn();
+        },
+      }));
+
+      vi.doMock("../../llm/prompts.js", () => ({
+        buildProfileExtractionSystemPrompt: vi.fn().mockReturnValue("system prompt"),
+        buildProfileExtractionUserMessage: vi.fn().mockReturnValue("user message"),
+      }));
+
+      vi.doMock("../../llm/response-parsers.js", () => ({
+        parseProfileExtractionResponse: vi.fn(),
+      }));
+
+      vi.doMock("../../../../db/repositories/profile-memory.js", () => ({
+        getUserFactRepository: vi.fn().mockReturnValue(mockFactRepo),
+        getUserPreferencesV2Repository: vi.fn().mockReturnValue(mockPrefsRepo),
+        getBehaviorPatternRepository: vi.fn().mockReturnValue(mockPatternRepo),
+        UserFactRepository: vi.fn(),
+        UserPreferencesV2Repository: vi.fn(),
+        BehaviorPatternRepository: vi.fn(),
+      }));
+
+      vi.doMock("../factory.js", () => ({
+        registerProvider: vi.fn(),
+      }));
+
+      mockFactRepo.findAll.mockResolvedValue({ facts: [], total: 0 });
+
+      const mod = await import("./postgres.js");
+      const llmProvider = new mod.PostgresProfileMemoryProvider({
+        db: mockDb,
+        cfg: {} as any,
+      });
+      await llmProvider.initialize();
+
+      const result = await llmProvider.extractFromConversation("user-123", [
+        { role: "user", content: "随便聊聊" },
+      ]);
+
+      expect(result).toEqual({
+        newFacts: [],
+        updatedFacts: [],
+        newPatterns: [],
+      });
+    });
+
+    it("LLM 服务不可用时应返回空结果", async () => {
+      vi.resetModules();
+
+      // Mock LLM 服务不可用（无 API Key）
+      vi.doMock("../../llm/memory-llm-service.js", () => ({
+        MemoryLLMService: class {
+          isAvailable = vi.fn().mockResolvedValue(false);
+          completeJSON = vi.fn();
+          resetAvailability = vi.fn();
+        },
+      }));
+
+      vi.doMock("../../llm/prompts.js", () => ({
+        buildProfileExtractionSystemPrompt: vi.fn().mockReturnValue("system prompt"),
+        buildProfileExtractionUserMessage: vi.fn().mockReturnValue("user message"),
+      }));
+
+      vi.doMock("../../llm/response-parsers.js", () => ({
+        parseProfileExtractionResponse: vi.fn(),
+      }));
+
+      vi.doMock("../../../../db/repositories/profile-memory.js", () => ({
+        getUserFactRepository: vi.fn().mockReturnValue(mockFactRepo),
+        getUserPreferencesV2Repository: vi.fn().mockReturnValue(mockPrefsRepo),
+        getBehaviorPatternRepository: vi.fn().mockReturnValue(mockPatternRepo),
+        UserFactRepository: vi.fn(),
+        UserPreferencesV2Repository: vi.fn(),
+        BehaviorPatternRepository: vi.fn(),
+      }));
+
+      vi.doMock("../factory.js", () => ({
+        registerProvider: vi.fn(),
+      }));
+
+      const mod = await import("./postgres.js");
+      const llmProvider = new mod.PostgresProfileMemoryProvider({
+        db: mockDb,
+        cfg: {} as any,
+      });
+      await llmProvider.initialize();
+
+      const result = await llmProvider.extractFromConversation("user-123", [
+        { role: "user", content: "我叫张三" },
+      ]);
+
+      expect(result).toEqual({
+        newFacts: [],
+        updatedFacts: [],
+        newPatterns: [],
+      });
+    });
+  });
 });

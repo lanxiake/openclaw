@@ -12,6 +12,7 @@
  */
 
 import { getLogger } from "../../../../logging/logger.js";
+import type { OpenClawConfig } from "../../../../config/config.js";
 import type { Database } from "../../../../db/connection.js";
 import type { UserMemory } from "../../../../db/schema/memories.js";
 import {
@@ -30,6 +31,12 @@ import type {
   KeyEventType,
   TimelineEntry,
 } from "../../interfaces/episodic-memory.js";
+import { MemoryLLMService } from "../../llm/memory-llm-service.js";
+import {
+  buildSummarizationSystemPrompt,
+  buildSummarizationUserMessage,
+} from "../../llm/prompts.js";
+import { parseSummarizationResponse } from "../../llm/response-parsers.js";
 import { registerProvider } from "../factory.js";
 
 const logger = getLogger();
@@ -113,6 +120,27 @@ function textMatchScore(text: string, query: string): number {
 }
 
 /**
+ * 反序列化存储的对话内容为 Message 数组
+ *
+ * 解析格式: "[role] content\n[role] content\n..."
+ *
+ * @param content - 存储的对话内容字符串
+ * @returns 解析后的消息数组
+ */
+function deserializeMessages(content: string): Message[] {
+  return content
+    .split("\n")
+    .map((line) => {
+      const match = line.match(/^\[(\w+)\]\s(.*)$/);
+      if (match) {
+        return { role: match[1] as Message["role"], content: match[2] };
+      }
+      return null;
+    })
+    .filter((m): m is Message => m !== null);
+}
+
+/**
  * 估算 token 数量
  *
  * 中文约 1.5 字/token，英文约 4 字符/token
@@ -131,6 +159,8 @@ function estimateTokens(text: string): number {
 interface PostgresEpisodicConfig extends ProviderConfig {
   /** 已有的 DB 实例（优先于自动获取） */
   db?: Database;
+  /** OpenClaw 配置（用于 LLM 服务初始化） */
+  cfg?: OpenClawConfig;
 }
 
 // ==================== Provider 实现 ====================
@@ -158,6 +188,7 @@ export class PostgresEpisodicMemoryProvider implements IEpisodicMemoryProvider {
 
   private db: Database | null = null;
   private readonly config: PostgresEpisodicConfig;
+  private llmService: MemoryLLMService | null = null;
 
   /**
    * 创建 PostgreSQL 情节记忆提供者
@@ -181,6 +212,14 @@ export class PostgresEpisodicMemoryProvider implements IEpisodicMemoryProvider {
       this.db = getDatabase();
     }
 
+    // 初始化 LLM 服务（用于对话摘要生成）
+    if (this.config.cfg) {
+      this.llmService = new MemoryLLMService({ cfg: this.config.cfg });
+      logger.info("[postgres-episodic] LLM 服务已初始化");
+    } else {
+      logger.debug("[postgres-episodic] 未提供 cfg，LLM 摘要功能将降级");
+    }
+
     logger.info("[postgres-episodic] 初始化完成");
   }
 
@@ -190,6 +229,7 @@ export class PostgresEpisodicMemoryProvider implements IEpisodicMemoryProvider {
   async shutdown(): Promise<void> {
     logger.info("[postgres-episodic] 关闭提供者");
     this.db = null;
+    this.llmService = null;
     logger.info("[postgres-episodic] 已关闭");
   }
 
@@ -283,8 +323,12 @@ export class PostgresEpisodicMemoryProvider implements IEpisodicMemoryProvider {
   /**
    * 生成对话摘要
    *
-   * 从 DB 查找已有的对话记录并返回摘要。
-   * 当前返回保存时生成的简单摘要，后续可接入 LLM。
+   * 优先使用 LLM 生成高质量摘要，失败时回退到保存时的简单摘要。
+   * LLM 生成成功后会更新 DB 中的 summary 和 metadata。
+   *
+   * @param userId - 用户 ID
+   * @param sessionId - 会话 ID
+   * @returns 对话摘要
    */
   async summarizeConversation(userId: string, sessionId: string): Promise<ConversationSummary> {
     logger.debug(`[postgres-episodic] 获取摘要: ${sessionId} (用户: ${userId})`);
@@ -304,6 +348,61 @@ export class PostgresEpisodicMemoryProvider implements IEpisodicMemoryProvider {
       throw new Error(`对话不存在: ${sessionId}`);
     }
 
+    // 尝试使用 LLM 生成高质量摘要
+    if (this.llmService && (await this.llmService.isAvailable())) {
+      try {
+        // 从存储的内容反序列化消息
+        const messages = deserializeMessages(record.content);
+
+        if (messages.length > 0) {
+          const systemPrompt = buildSummarizationSystemPrompt();
+          const userMessage = buildSummarizationUserMessage(messages);
+
+          const parsed = await this.llmService.completeJSON(
+            systemPrompt,
+            userMessage,
+            parseSummarizationResponse,
+          );
+
+          if (parsed && parsed.summary) {
+            logger.info("[postgres-episodic] LLM 摘要生成成功", {
+              sessionId,
+              keyTopicsCount: parsed.keyTopics.length,
+              decisionsCount: parsed.decisions.length,
+            });
+
+            // 更新 DB 中的摘要
+            const meta = (record.metadata ?? {}) as Record<string, unknown>;
+            await repo.update(record.id, {
+              summary: parsed.summary,
+              metadata: {
+                ...meta,
+                keyTopics: parsed.keyTopics,
+                decisions: parsed.decisions,
+              },
+            });
+
+            return {
+              id: record.id,
+              sessionId: (meta.sessionId as string) ?? record.sourceId ?? "",
+              summary: parsed.summary,
+              keyTopics: parsed.keyTopics,
+              decisions: parsed.decisions,
+              messageCount: (meta.messageCount as number) ?? 0,
+              tokenCount: (meta.tokenCount as number) ?? 0,
+              timestamp: record.createdAt,
+            };
+          }
+        }
+      } catch (error) {
+        logger.warn("[postgres-episodic] LLM 摘要生成失败，回退到简单摘要", {
+          error: error instanceof Error ? error.message : String(error),
+          sessionId,
+        });
+      }
+    }
+
+    // 回退：返回保存时的简单摘要
     return toConversationSummary(record);
   }
 

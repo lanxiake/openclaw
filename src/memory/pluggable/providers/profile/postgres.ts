@@ -9,6 +9,7 @@
  */
 
 import { getLogger } from "../../../../logging/logger.js";
+import type { OpenClawConfig } from "../../../../config/config.js";
 import type { Database } from "../../../../db/connection.js";
 import {
   getUserFactRepository,
@@ -34,6 +35,12 @@ import type {
   UserPreferences,
 } from "../../interfaces/profile-memory.js";
 import { DEFAULT_USER_PREFERENCES } from "../../interfaces/profile-memory.js";
+import { MemoryLLMService } from "../../llm/memory-llm-service.js";
+import {
+  buildProfileExtractionSystemPrompt,
+  buildProfileExtractionUserMessage,
+} from "../../llm/prompts.js";
+import { parseProfileExtractionResponse } from "../../llm/response-parsers.js";
 import { registerProvider } from "../factory.js";
 
 const logger = getLogger();
@@ -107,6 +114,8 @@ interface PostgresProfileConfig extends ProviderConfig {
   url?: string;
   /** 已有的 DB 实例（优先于 url） */
   db?: Database;
+  /** OpenClaw 配置（用于 LLM 服务初始化） */
+  cfg?: OpenClawConfig;
 }
 
 // ==================== Provider 实现 ====================
@@ -141,6 +150,7 @@ export class PostgresProfileMemoryProvider implements IProfileMemoryProvider {
 
   private db: Database | null = null;
   private readonly config: PostgresProfileConfig;
+  private llmService: MemoryLLMService | null = null;
 
   /**
    * 创建 PostgreSQL 画像记忆提供者
@@ -169,6 +179,14 @@ export class PostgresProfileMemoryProvider implements IProfileMemoryProvider {
       this.db = getDatabase();
     }
 
+    // 初始化 LLM 服务（用于画像自动提取）
+    if (this.config.cfg) {
+      this.llmService = new MemoryLLMService({ cfg: this.config.cfg });
+      logger.info("[postgres-profile] LLM 服务已初始化");
+    } else {
+      logger.debug("[postgres-profile] 未提供 cfg，LLM 画像提取功能将降级");
+    }
+
     logger.info("[postgres-profile] 初始化完成");
   }
 
@@ -180,6 +198,7 @@ export class PostgresProfileMemoryProvider implements IProfileMemoryProvider {
   async shutdown(): Promise<void> {
     logger.info("[postgres-profile] 关闭提供者");
     this.db = null;
+    this.llmService = null;
     logger.info("[postgres-profile] 已关闭");
   }
 
@@ -453,18 +472,90 @@ export class PostgresProfileMemoryProvider implements IProfileMemoryProvider {
   /**
    * 从对话中提取画像
    *
-   * 当前返回空结果。需要 LLM 集成，后续实现。
+   * 使用 LLM 分析对话内容，自动提取用户事实、更新已有事实、发现行为模式。
+   * 无 LLM 服务或调用失败时优雅降级为空结果。
    *
-   * @future 集成 AI 进行自动画像提取
+   * @param userId - 用户 ID
+   * @param messages - 对话消息列表
+   * @returns 提取的画像信息（newFacts, updatedFacts, newPatterns）
    */
-  async extractFromConversation(_userId: string, _messages: Message[]): Promise<ExtractedProfile> {
-    logger.debug("[postgres-profile] extractFromConversation: 返回空结果（LLM 待实现）");
+  async extractFromConversation(userId: string, messages: Message[]): Promise<ExtractedProfile> {
+    logger.debug("[postgres-profile] 从对话提取画像", {
+      userId,
+      messageCount: messages.length,
+    });
 
-    return {
+    const emptyResult: ExtractedProfile = {
       newFacts: [],
       updatedFacts: [],
       newPatterns: [],
     };
+
+    // 无 LLM 服务时优雅降级
+    if (!this.llmService) {
+      logger.debug("[postgres-profile] LLM 服务未配置，返回空结果");
+      return emptyResult;
+    }
+
+    // 检查 LLM 服务可用性
+    const available = await this.llmService.isAvailable();
+    if (!available) {
+      logger.debug("[postgres-profile] LLM 服务不可用（无 API Key），返回空结果");
+      return emptyResult;
+    }
+
+    try {
+      // 获取用户已有事实，避免重复提取
+      const existingFacts = await this.getFacts(userId);
+
+      // 构建 prompt
+      const systemPrompt = buildProfileExtractionSystemPrompt(existingFacts);
+      const userMessage = buildProfileExtractionUserMessage(messages);
+
+      // 调用 LLM 提取画像
+      const result = await this.llmService.completeJSON(
+        systemPrompt,
+        userMessage,
+        parseProfileExtractionResponse,
+      );
+
+      // LLM 调用失败或解析失败
+      if (!result) {
+        logger.warn("[postgres-profile] LLM 调用失败或响应解析失败");
+        return emptyResult;
+      }
+
+      logger.info("[postgres-profile] 画像提取完成", {
+        newFactsCount: result.newFacts.length,
+        updatedFactsCount: result.updatedFacts.length,
+        newPatternsCount: result.newPatterns.length,
+      });
+
+      // 转换 LLM 响应为 ExtractedProfile 格式
+      return {
+        newFacts: result.newFacts.map((f) => ({
+          id: `${f.category}:${f.key}`,
+          content: f.content,
+          category: f.category as FactCategory,
+          confidence: f.confidence,
+        })),
+        updatedFacts: result.updatedFacts.map((f) => ({
+          id: f.id,
+          content: f.content,
+          previousValue: f.previousValue,
+        })),
+        newPatterns: result.newPatterns.map((p) => ({
+          type: p.type as BehaviorPattern["type"],
+          pattern: p.pattern,
+          confidence: p.confidence,
+        })),
+      };
+    } catch (error) {
+      logger.error("[postgres-profile] 画像提取异常", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return emptyResult;
+    }
   }
 
   // ==================== 导出 ====================

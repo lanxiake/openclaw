@@ -119,10 +119,13 @@ export {
 // 内置提供者
 export {
   MemoryEpisodicMemoryProvider,
+  PostgresEpisodicMemoryProvider,
   MemoryProfileMemoryProvider,
+  PostgresProfileMemoryProvider,
   SimpleKnowledgeMemoryProvider,
   SQLiteKnowledgeMemoryAdapter,
   type SQLiteKnowledgeConfig,
+  PostgresKnowledgeMemoryProvider,
 } from "./providers/index.js";
 
 // ==================== 配置 ====================
@@ -132,11 +135,13 @@ export {
   ProviderConfigSchema,
   PostgresConfigSchema,
   EmbeddingConfigSchema,
+  LLMConfigSchema,
   MemoryManagerConfigSchema,
 
   // 类型
   type PostgresConfig,
   type EmbeddingConfig,
+  type LLMConfig,
   type MemoryManagerConfig,
 
   // 默认配置
@@ -157,3 +162,21 @@ export {
   MemoryManager,
   createMemoryManager,
 } from "./manager.js";
+
+// ==================== LLM 集成 ====================
+
+export {
+  type MemoryLLMServiceConfig,
+  type LLMCompletionResult,
+  DEFAULT_LLM_CONFIG,
+  MemoryLLMService,
+  buildSummarizationSystemPrompt,
+  buildSummarizationUserMessage,
+  buildProfileExtractionSystemPrompt,
+  buildProfileExtractionUserMessage,
+  extractJSON,
+  type SummarizationResponse,
+  type ProfileExtractionResponse,
+  parseSummarizationResponse,
+  parseProfileExtractionResponse,
+} from "./llm/index.js";

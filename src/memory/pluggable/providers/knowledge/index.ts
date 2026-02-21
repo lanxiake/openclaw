@@ -6,3 +6,4 @@
 
 export { SimpleKnowledgeMemoryProvider } from "./simple.js";
 export { SQLiteKnowledgeMemoryAdapter, type SQLiteKnowledgeConfig } from "./sqlite-adapter.js";
+export { PostgresKnowledgeMemoryProvider } from "./postgres.js";

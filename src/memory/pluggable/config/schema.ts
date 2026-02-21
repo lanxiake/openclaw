@@ -63,6 +63,31 @@ export const EmbeddingConfigSchema = z.object({
 
 export type EmbeddingConfig = z.infer<typeof EmbeddingConfigSchema>;
 
+// ==================== LLM 配置模式 ====================
+
+/**
+ * LLM 调用配置
+ *
+ * 用于对话摘要、画像提取等需要 LLM 能力的功能。
+ * 如果未配置或 API Key 不可用，相关功能将回退到朴素实现。
+ */
+export const LLMConfigSchema = z.object({
+  /** 是否启用 LLM 功能 */
+  enabled: z.boolean().default(true),
+  /** LLM 提供者（如 "anthropic"） */
+  provider: z.string().default("anthropic"),
+  /** 模型名称 */
+  model: z.string().default("anyrouter/claude-opus-4-6"),
+  /** 最大生成 token 数 */
+  maxTokens: z.number().positive().default(1024),
+  /** 温度参数 (0-1) */
+  temperature: z.number().min(0).max(1).default(0.3),
+  /** 超时时间（毫秒） */
+  timeoutMs: z.number().positive().default(30_000),
+});
+
+export type LLMConfig = z.infer<typeof LLMConfigSchema>;
+
 // ==================== 记忆管理器配置模式 ====================
 
 /**
@@ -75,6 +100,8 @@ export const MemoryManagerConfigSchema = z.object({
   profile: ProviderConfigSchema,
   /** 知识记忆配置 */
   knowledge: ProviderConfigSchema,
+  /** LLM 配置（可选，未配置时回退朴素实现） */
+  llm: LLMConfigSchema.optional(),
 });
 
 export type MemoryManagerConfig = z.infer<typeof MemoryManagerConfigSchema>;
@@ -120,8 +147,10 @@ export const PRODUCTION_CONFIG_TEMPLATE: MemoryManagerConfig = {
     },
   },
   knowledge: {
-    provider: "simple",
-    options: {},
+    provider: "postgres",
+    options: {
+      url: "${DATABASE_URL}",
+    },
   },
 };
 

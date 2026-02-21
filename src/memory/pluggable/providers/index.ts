@@ -30,6 +30,7 @@ export {
   SimpleKnowledgeMemoryProvider,
   SQLiteKnowledgeMemoryAdapter,
   type SQLiteKnowledgeConfig,
+  PostgresKnowledgeMemoryProvider,
 } from "./knowledge/index.js";
 
 // 自动注册内置提供者

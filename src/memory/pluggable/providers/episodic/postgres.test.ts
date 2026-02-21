@@ -426,6 +426,66 @@ describe("PostgresEpisodicMemoryProvider", () => {
     });
   });
 
+  // ==================== 工厂创建 ====================
+
+  describe("工厂创建", () => {
+    it("实例应该具有正确的 name 和 version", () => {
+      expect(provider.name).toBe("postgres-episodic");
+      expect(provider.version).toBe("1.0.0");
+    });
+
+    it("实例应该实现 IEpisodicMemoryProvider 接口所有方法", () => {
+      const requiredMethods = [
+        "addConversation",
+        "summarizeConversation",
+        "getConversationHistory",
+        "deleteConversation",
+        "addKeyEvent",
+        "getKeyEvents",
+        "updateKeyEvent",
+        "deleteKeyEvent",
+        "searchEpisodes",
+        "getTimeline",
+      ];
+
+      for (const method of requiredMethods) {
+        expect(typeof provider[method]).toBe("function");
+      }
+    });
+  });
+
+  // ==================== 健康检查边界 ====================
+
+  describe("健康检查边界", () => {
+    it("未初始化的提供者健康检查应返回 unhealthy", async () => {
+      vi.resetModules();
+
+      vi.doMock("../../../../db/repositories/memories.js", () => ({
+        getMemoryRepository: vi.fn().mockReturnValue(createMockMemoryRepo()),
+        MemoryRepository: vi.fn(),
+      }));
+
+      vi.doMock("../factory.js", () => ({
+        registerProvider: vi.fn(),
+      }));
+
+      const mod = await import("./postgres.js");
+      const uninitProvider = new mod.PostgresEpisodicMemoryProvider({ db: {} });
+
+      const health = await uninitProvider.healthCheck();
+
+      expect(health.status).toBe("unhealthy");
+    });
+
+    it("shutdown 后的提供者健康检查应返回 unhealthy", async () => {
+      await provider.shutdown();
+
+      const health = await provider.healthCheck();
+
+      expect(health.status).toBe("unhealthy");
+    });
+  });
+
   // ==================== 类型转换 ====================
 
   describe("DB Record → 接口类型转换", () => {
@@ -472,6 +532,145 @@ describe("PostgresEpisodicMemoryProvider", () => {
       // DB 专有字段不应出现
       expect((events[0] as any).userId).toBeUndefined();
       expect((events[0] as any).isActive).toBeUndefined();
+    });
+  });
+
+  // ==================== summarizeConversation LLM 集成 ====================
+
+  describe("summarizeConversation - LLM 集成", () => {
+    it("无 LLM 服务时应返回保存时的简单摘要", async () => {
+      const record = createMockConversationRecord();
+      mockMemoryRepo.findAll.mockResolvedValue({
+        memories: [record],
+        total: 1,
+      });
+
+      const summary = await provider.summarizeConversation("user-123", "session-001");
+
+      expect(summary.summary).toBe("关于微服务 vs 单体架构的讨论");
+      expect(summary.keyTopics).toEqual(["架构", "微服务"]);
+    });
+
+    it("有 LLM 服务且可用时应调用 LLM 生成高质量摘要", async () => {
+      vi.resetModules();
+
+      const mockLLMSummary = {
+        summary: "用户讨论了微服务架构的优劣，最终决定采用微服务方案部署后端服务",
+        keyTopics: ["微服务架构", "部署方案", "后端服务"],
+        decisions: ["采用微服务架构", "使用 Docker 部署"],
+      };
+
+      // Mock LLM 服务
+      vi.doMock("../../llm/memory-llm-service.js", () => ({
+        MemoryLLMService: class {
+          isAvailable = vi.fn().mockResolvedValue(true);
+          completeJSON = vi.fn().mockResolvedValue(mockLLMSummary);
+          resetAvailability = vi.fn();
+        },
+      }));
+
+      vi.doMock("../../llm/prompts.js", () => ({
+        buildSummarizationSystemPrompt: vi.fn().mockReturnValue("system prompt"),
+        buildSummarizationUserMessage: vi.fn().mockReturnValue("user message"),
+      }));
+
+      vi.doMock("../../llm/response-parsers.js", () => ({
+        parseSummarizationResponse: vi.fn(),
+      }));
+
+      const updatedRecord = createMockConversationRecord({
+        content: "[user] 我们讨论一下架构方案\n[assistant] 好的，微服务和单体各有优劣",
+      });
+
+      const localMockRepo = createMockMemoryRepo();
+      localMockRepo.findAll.mockResolvedValue({
+        memories: [updatedRecord],
+        total: 1,
+      });
+      localMockRepo.update.mockResolvedValue(updatedRecord);
+
+      vi.doMock("../../../../db/repositories/memories.js", () => ({
+        getMemoryRepository: vi.fn().mockReturnValue(localMockRepo),
+        MemoryRepository: vi.fn(),
+      }));
+
+      vi.doMock("../factory.js", () => ({
+        registerProvider: vi.fn(),
+      }));
+
+      const mod = await import("./postgres.js");
+      const llmProvider = new mod.PostgresEpisodicMemoryProvider({
+        db: mockDb,
+        cfg: {} as any,
+      });
+      await llmProvider.initialize();
+
+      const summary = await llmProvider.summarizeConversation("user-123", "session-001");
+
+      // 应使用 LLM 生成的摘要
+      expect(summary.summary).toBe(
+        "用户讨论了微服务架构的优劣，最终决定采用微服务方案部署后端服务",
+      );
+      expect(summary.keyTopics).toEqual(["微服务架构", "部署方案", "后端服务"]);
+      expect(summary.decisions).toEqual(["采用微服务架构", "使用 Docker 部署"]);
+
+      // 应更新 DB
+      expect(localMockRepo.update).toHaveBeenCalled();
+    });
+
+    it("LLM 调用失败时应回退到保存时的简单摘要", async () => {
+      vi.resetModules();
+
+      // Mock LLM 服务返回 null（失败）
+      vi.doMock("../../llm/memory-llm-service.js", () => ({
+        MemoryLLMService: class {
+          isAvailable = vi.fn().mockResolvedValue(true);
+          completeJSON = vi.fn().mockResolvedValue(null);
+          resetAvailability = vi.fn();
+        },
+      }));
+
+      vi.doMock("../../llm/prompts.js", () => ({
+        buildSummarizationSystemPrompt: vi.fn().mockReturnValue("system prompt"),
+        buildSummarizationUserMessage: vi.fn().mockReturnValue("user message"),
+      }));
+
+      vi.doMock("../../llm/response-parsers.js", () => ({
+        parseSummarizationResponse: vi.fn(),
+      }));
+
+      const record = createMockConversationRecord({
+        content: "[user] 测试内容\n[assistant] 回复",
+      });
+
+      const localMockRepo = createMockMemoryRepo();
+      localMockRepo.findAll.mockResolvedValue({
+        memories: [record],
+        total: 1,
+      });
+
+      vi.doMock("../../../../db/repositories/memories.js", () => ({
+        getMemoryRepository: vi.fn().mockReturnValue(localMockRepo),
+        MemoryRepository: vi.fn(),
+      }));
+
+      vi.doMock("../factory.js", () => ({
+        registerProvider: vi.fn(),
+      }));
+
+      const mod = await import("./postgres.js");
+      const llmProvider = new mod.PostgresEpisodicMemoryProvider({
+        db: mockDb,
+        cfg: {} as any,
+      });
+      await llmProvider.initialize();
+
+      const summary = await llmProvider.summarizeConversation("user-123", "session-001");
+
+      // 应回退到保存时的简单摘要
+      expect(summary.summary).toBe("关于微服务 vs 单体架构的讨论");
+      // 不应更新 DB
+      expect(localMockRepo.update).not.toHaveBeenCalled();
     });
   });
 });
