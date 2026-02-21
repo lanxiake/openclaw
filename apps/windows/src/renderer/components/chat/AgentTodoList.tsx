@@ -2,10 +2,10 @@
  * AgentTodoList - Agent 任务列表组件
  *
  * 显示在消息列表和输入框之间，展示 Agent 当前的任务清单
- * 包含状态图标、进度条和实时更新
+ * 包含状态图标、进度条、实时更新、可收起/展开
  */
 
-import React, { memo } from 'react'
+import React, { useState, useCallback, memo } from 'react'
 import type { TodoItem } from '../../hooks/useAgentTodo'
 import './AgentTodoList.css'
 
@@ -75,6 +75,12 @@ export const AgentTodoList = memo<AgentTodoListProps>(({
   completedCount,
   totalCount,
 }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
+  const handleToggle = useCallback(() => {
+    setIsCollapsed((prev) => !prev)
+  }, [])
+
   if (totalCount === 0) return null
 
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
@@ -82,8 +88,9 @@ export const AgentTodoList = memo<AgentTodoListProps>(({
 
   return (
     <div className="agent-todo-list">
-      {/* 头部 */}
-      <div className="agent-todo-header">
+      {/* 头部（可点击折叠） */}
+      <div className="agent-todo-header" onClick={handleToggle}>
+        <span className="agent-todo-toggle">{isCollapsed ? '\u25B8' : '\u25BC'}</span>
         <span className="agent-todo-label">
           任务进度 ({completedCount}/{totalCount})
         </span>
@@ -92,7 +99,7 @@ export const AgentTodoList = memo<AgentTodoListProps>(({
         )}
       </div>
 
-      {/* 进度条 */}
+      {/* 进度条（始终显示） */}
       <div className="agent-todo-progress">
         <div
           className={`agent-todo-progress-bar ${hasInProgress ? 'running' : ''}`}
@@ -100,12 +107,14 @@ export const AgentTodoList = memo<AgentTodoListProps>(({
         />
       </div>
 
-      {/* 待办项列表 */}
-      <div className="agent-todo-items">
-        {todos.map((item, index) => (
-          <TodoItemRow key={`${item.content}-${index}`} item={item} />
-        ))}
-      </div>
+      {/* 待办项列表（可折叠） */}
+      {!isCollapsed && (
+        <div className="agent-todo-items">
+          {todos.map((item, index) => (
+            <TodoItemRow key={`${item.content}-${index}`} item={item} />
+          ))}
+        </div>
+      )}
     </div>
   )
 })

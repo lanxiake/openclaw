@@ -636,21 +636,43 @@ export function useChatHistory() {
 
   /**
    * 更新消息内容
+   *
+   * 使用浅比较避免不必要的状态更新（防止 streaming delta 时无限循环）。
+   * 只有当消息字段实际变化时才更新 session，且 streaming 中不修改 updatedAt。
    */
   const updateMessage = useCallback((messageId: string, updates: Partial<ChatMessage>) => {
-    setSessions((prev) =>
-      prev.map((session) => {
-        if (session.id !== activeSessionId) return session
+    setSessions((prev) => {
+      const sessionIdx = prev.findIndex((s) => s.id === activeSessionId)
+      if (sessionIdx === -1) return prev
 
-        return {
-          ...session,
-          messages: session.messages.map((msg) =>
-            msg.id === messageId ? { ...msg, ...updates } : msg
-          ),
-          updatedAt: new Date(),
-        }
-      })
-    )
+      const session = prev[sessionIdx]
+      const msgIdx = session.messages.findIndex((m) => m.id === messageId)
+      if (msgIdx === -1) return prev
+
+      const oldMsg = session.messages[msgIdx]
+
+      /** 浅比较：如果所有更新字段值都和旧值相同，跳过更新 */
+      const hasChanged = Object.keys(updates).some(
+        (key) => (oldMsg as Record<string, unknown>)[key] !== (updates as Record<string, unknown>)[key]
+      )
+      if (!hasChanged) return prev
+
+      const newMsg = { ...oldMsg, ...updates }
+      const newMessages = [...session.messages]
+      newMessages[msgIdx] = newMsg
+
+      /** streaming 期间不更新 updatedAt，避免触发防抖保存和连锁重渲染 */
+      const isStreamingUpdate = updates.isStreaming === true || (oldMsg.isStreaming && !('isStreaming' in updates && updates.isStreaming === false))
+      const newSession = {
+        ...session,
+        messages: newMessages,
+        updatedAt: isStreamingUpdate ? session.updatedAt : new Date(),
+      }
+
+      const newSessions = [...prev]
+      newSessions[sessionIdx] = newSession
+      return newSessions
+    })
   }, [activeSessionId])
 
   /**

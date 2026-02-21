@@ -15,11 +15,25 @@
 
 .agent-todo-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: var(--spacing-xs);
   padding: var(--spacing-xs) var(--spacing-md);
   background-color: var(--bg-tertiary);
   border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  user-select: none;
+}
+
+.agent-todo-header:hover {
+  background-color: var(--bg-hover, rgba(0, 0, 0, 0.05));
+}
+
+.agent-todo-toggle {
+  font-size: 10px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
 }
 
 .agent-todo-label {
