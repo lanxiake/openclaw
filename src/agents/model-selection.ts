@@ -3,6 +3,9 @@ import type { ModelCatalogEntry } from "./model-catalog.js";
 import { normalizeGoogleModelId } from "./models-config.providers.js";
 import { resolveAgentModelPrimary } from "./agent-scope.js";
 import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "./defaults.js";
+import { createSubsystemLogger } from "../logging/subsystem.js";
+
+const log = createSubsystemLogger("model-selection");
 
 export type ModelRef = {
   provider: string;
@@ -157,6 +160,9 @@ export function resolveConfiguredModelRef(params: {
 }): ModelRef {
   const rawModel = (() => {
     const raw = params.cfg.agents?.defaults?.model as { primary?: string } | string | undefined;
+    log.debug(
+      `[resolveConfiguredModelRef] raw cfg.agents.defaults.model=${JSON.stringify(raw)} type=${typeof raw}`,
+    );
     if (typeof raw === "string") {
       return raw.trim();
     }
@@ -172,6 +178,9 @@ export function resolveConfiguredModelRef(params: {
       const aliasKey = normalizeAliasKey(trimmed);
       const aliasMatch = aliasIndex.byAlias.get(aliasKey);
       if (aliasMatch) {
+        log.debug(
+          `[resolveConfiguredModelRef] alias match: ${trimmed} → ${aliasMatch.ref.provider}/${aliasMatch.ref.model}`,
+        );
         return aliasMatch.ref;
       }
 
@@ -179,6 +188,7 @@ export function resolveConfiguredModelRef(params: {
       console.warn(
         `[openclaw] Model "${trimmed}" specified without provider. Falling back to "anthropic/${trimmed}". Please use "anthropic/${trimmed}" in your config.`,
       );
+      log.debug(`[resolveConfiguredModelRef] no-provider fallback: anthropic/${trimmed}`);
       return { provider: "anthropic", model: trimmed };
     }
 
@@ -188,9 +198,15 @@ export function resolveConfiguredModelRef(params: {
       aliasIndex,
     });
     if (resolved) {
+      log.debug(
+        `[resolveConfiguredModelRef] resolved: ${resolved.ref.provider}/${resolved.ref.model}`,
+      );
       return resolved.ref;
     }
   }
+  log.debug(
+    `[resolveConfiguredModelRef] using defaults: ${params.defaultProvider}/${params.defaultModel}`,
+  );
   return { provider: params.defaultProvider, model: params.defaultModel };
 }
 
@@ -201,6 +217,9 @@ export function resolveDefaultModelForAgent(params: {
   const agentModelOverride = params.agentId
     ? resolveAgentModelPrimary(params.cfg, params.agentId)
     : undefined;
+  log.debug(
+    `[resolveDefaultModelForAgent] agentId=${params.agentId ?? "none"} agentModelOverride=${agentModelOverride ?? "none"}`,
+  );
   const cfg =
     agentModelOverride && agentModelOverride.length > 0
       ? {

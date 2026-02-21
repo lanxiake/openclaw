@@ -4,6 +4,7 @@ import { enqueueCommandInLane } from "../../process/command-queue.js";
 import { resolveUserPath } from "../../utils.js";
 import { isMarkdownCapableMessageChannel } from "../../utils/message-channel.js";
 import { resolveOpenClawAgentDir } from "../agent-paths.js";
+import { loadDbAuthProfileStore, mergeAuthStores } from "../auth-profiles/db-store.js";
 import {
   isProfileInCooldown,
   markAuthProfileFailure,
@@ -138,7 +139,48 @@ export async function runEmbeddedPiAgent(
         );
       }
 
-      const authStore = ensureAuthProfileStore(agentDir, { allowKeychainPrompt: false });
+      // 1. 先加载文件 store 作为基础
+      let authStore = ensureAuthProfileStore(agentDir, { allowKeychainPrompt: false });
+
+      // 2. 从数据库加载凭据，DB store 优先覆盖 file store
+      const userId = params.userId;
+      if (userId && userId !== "default") {
+        try {
+          const dbStore = await loadDbAuthProfileStore(userId);
+          if (dbStore && Object.keys(dbStore.profiles).length > 0) {
+            log.debug(
+              `merging DB auth profiles for user=${userId}, dbProfiles=${Object.keys(dbStore.profiles).length}`,
+            );
+            authStore = mergeAuthStores(authStore, dbStore);
+          } else {
+            log.debug(`no DB auth profiles found for user=${userId}`);
+          }
+        } catch (err) {
+          log.debug(
+            `failed to load DB auth profiles for user=${userId}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+          // 降级使用文件 store
+        }
+      } else {
+        // 无特定用户 ID（旧格式 sessionKey 或 CLI 调用），尝试加载系统级 DB profiles
+        try {
+          const dbStore = await loadDbAuthProfileStore();
+          if (dbStore && Object.keys(dbStore.profiles).length > 0) {
+            log.debug(
+              `merging system-level DB auth profiles, dbProfiles=${Object.keys(dbStore.profiles).length}`,
+            );
+            authStore = mergeAuthStores(authStore, dbStore);
+          } else {
+            log.debug(
+              `no system-level DB auth profiles found, using file store only (userId=${userId ?? "none"})`,
+            );
+          }
+        } catch (err) {
+          log.debug(
+            `failed to load system DB auth profiles: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
       const preferredProfileId = params.authProfileId?.trim();
       let lockedProfileId = params.authProfileIdSource === "user" ? preferredProfileId : undefined;
       if (lockedProfileId) {
@@ -646,7 +688,12 @@ export async function runEmbeddedPiAgent(
           });
 
           log.debug(
-            `embedded run done: runId=${params.runId} sessionId=${params.sessionId} durationMs=${Date.now() - started} aborted=${aborted}`,
+            `embedded run done: runId=${params.runId} sessionId=${params.sessionId} durationMs=${Date.now() - started} aborted=${aborted}` +
+              ` payloads=${payloads.length} assistantTexts=${attempt.assistantTexts.length}` +
+              ` promptError=${attempt.promptError ? String(attempt.promptError) : "none"}` +
+              ` lastAssistantError=${attempt.lastAssistant?.errorMessage ?? "none"}` +
+              ` lastAssistantRole=${attempt.lastAssistant?.role ?? "none"}` +
+              ` profileId=${lastProfileId ?? "none"}`,
           );
           if (lastProfileId) {
             await markAuthProfileGood({

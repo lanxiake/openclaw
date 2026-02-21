@@ -14,6 +14,7 @@ import { SILENT_REPLY_TOKEN } from "../tokens.js";
 import { applyMediaUnderstanding } from "../../media-understanding/apply.js";
 import { applyLinkUnderstanding } from "../../link-understanding/apply.js";
 import type { GetReplyOptions, ReplyPayload } from "../types.js";
+import { createSubsystemLogger } from "../../logging/subsystem.js";
 import { resolveDefaultModel } from "./directive-handling.js";
 import { resolveReplyDirectives } from "./get-reply-directives.js";
 import { handleInlineActions } from "./get-reply-inline-actions.js";
@@ -23,6 +24,8 @@ import { initSessionState } from "./session.js";
 import { applyResetModelOverride } from "./session-reset-model.js";
 import { stageSandboxMedia } from "./stage-sandbox-media.js";
 import { createTypingController } from "./typing.js";
+
+const log = createSubsystemLogger("reply/model-trace");
 
 export async function getReplyFromConfig(
   ctx: MsgContext,
@@ -46,6 +49,9 @@ export async function getReplyFromConfig(
   });
   let provider = defaultProvider;
   let model = defaultModel;
+  log.debug(
+    `[model-trace] resolveDefaultModel: provider=${defaultProvider} model=${defaultModel} agentId=${agentId ?? "none"} cfg.agents.defaults.model=${JSON.stringify(cfg.agents?.defaults?.model ?? "unset")}`,
+  );
   if (opts?.isHeartbeat) {
     const heartbeatRaw = agentCfg?.heartbeat?.model?.trim() ?? "";
     const heartbeatRef = heartbeatRaw
@@ -201,6 +207,7 @@ export async function getReplyFromConfig(
   } = directiveResult.result;
   provider = resolvedProvider;
   model = resolvedModel;
+  log.debug(`[model-trace] after directives: provider=${provider} model=${model}`);
 
   const inlineActionResult = await handleInlineActions({
     ctx,

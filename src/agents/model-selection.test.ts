@@ -136,5 +136,63 @@ describe("model-selection", () => {
       });
       expect(result).toEqual({ provider: "openai", model: "gpt-4" });
     });
+
+    it("should correctly parse custom provider/model format like new-api/model-id", () => {
+      const cfg: Partial<OpenClawConfig> = {
+        agents: {
+          defaults: {
+            model: "new-api/claude-opus-4-5-20251101",
+          },
+        },
+      };
+
+      const result = resolveConfiguredModelRef({
+        cfg: cfg as OpenClawConfig,
+        defaultProvider: "anthropic",
+        defaultModel: "claude-sonnet-4-20250514",
+      });
+
+      expect(result).toEqual({
+        provider: "new-api",
+        model: "claude-opus-4-5-20251101",
+      });
+    });
+
+    it("should correctly parse anthropic/model format", () => {
+      const cfg: Partial<OpenClawConfig> = {
+        agents: {
+          defaults: {
+            model: "anthropic/claude-opus-4-5-20251101",
+          },
+        },
+      };
+
+      const result = resolveConfiguredModelRef({
+        cfg: cfg as OpenClawConfig,
+        defaultProvider: "anthropic",
+        defaultModel: "claude-sonnet-4-20250514",
+      });
+
+      expect(result).toEqual({
+        provider: "anthropic",
+        model: "claude-opus-4-5-20251101",
+      });
+    });
+  });
+
+  describe("parseModelRef - custom provider", () => {
+    it("should parse custom provider key with model id", () => {
+      expect(parseModelRef("new-api/claude-opus-4-5-20251101", "anthropic")).toEqual({
+        provider: "new-api",
+        model: "claude-opus-4-5-20251101",
+      });
+    });
+
+    it("should parse provider key with hyphenated model id", () => {
+      expect(parseModelRef("my-provider/deepseek-chat-v3", "anthropic")).toEqual({
+        provider: "my-provider",
+        model: "deepseek-chat-v3",
+      });
+    });
   });
 });

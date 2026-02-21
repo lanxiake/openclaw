@@ -127,4 +127,62 @@ describe("resolveModel", () => {
     expect(result.model?.provider).toBe("custom");
     expect(result.model?.id).toBe("missing-model");
   });
+
+  it("should resolve custom provider (new-api) with model id correctly", () => {
+    /** 模拟 new-api 提供商配置（类似数据库 model_providers 合并后的 cfg） */
+    const cfg = {
+      models: {
+        providers: {
+          "new-api": {
+            baseUrl: "http://localhost:35019",
+            api: "openai-completions",
+            models: [],
+          },
+        },
+      },
+    } as OpenClawConfig;
+
+    const result = resolveModel("new-api", "claude-opus-4-5-20251101", "/tmp/agent", cfg);
+
+    expect(result.error).toBeUndefined();
+    expect(result.model).toBeDefined();
+    expect(result.model?.id).toBe("claude-opus-4-5-20251101");
+    expect(result.model?.provider).toBe("new-api");
+    expect(result.model?.baseUrl).toBe("http://localhost:35019");
+    expect(result.model?.api).toBe("openai-completions");
+  });
+
+  it("should return Unknown model error when provider not in config", () => {
+    /** 提供商不存在于 cfg.models.providers */
+    const cfg = {
+      models: {
+        providers: {},
+      },
+    } as OpenClawConfig;
+
+    const result = resolveModel("nonexistent", "some-model", "/tmp/agent", cfg);
+
+    expect(result.error).toBe("Unknown model: nonexistent/some-model");
+    expect(result.model).toBeUndefined();
+  });
+
+  it("should use provider-level api type in fallback model", () => {
+    const cfg = {
+      models: {
+        providers: {
+          "my-relay": {
+            baseUrl: "http://relay.local:8080",
+            api: "anthropic-messages",
+            models: [makeModel("claude-sonnet-4-20250514")],
+          },
+        },
+      },
+    } as OpenClawConfig;
+
+    const result = resolveModel("my-relay", "claude-sonnet-4-20250514", "/tmp/agent", cfg);
+
+    expect(result.error).toBeUndefined();
+    expect(result.model?.api).toBe("anthropic-messages");
+    expect(result.model?.baseUrl).toBe("http://relay.local:8080");
+  });
 });

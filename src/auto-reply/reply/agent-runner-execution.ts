@@ -19,6 +19,7 @@ import {
   type SessionEntry,
   updateSessionStore,
 } from "../../config/sessions.js";
+import { extractUserIdFromSessionKey } from "../../routing/session-key.js";
 import { logVerbose } from "../../globals.js";
 import { emitAgentEvent, registerAgentRunContext } from "../../infra/agent-events.js";
 import { defaultRuntime } from "../../runtime.js";
@@ -232,6 +233,7 @@ export async function runAgentTurnWithFallback(params: {
           return runEmbeddedPiAgent({
             sessionId: params.followupRun.run.sessionId,
             sessionKey: params.sessionKey,
+            userId: extractUserIdFromSessionKey(params.sessionKey),
             messageProvider: params.sessionCtx.Provider?.trim().toLowerCase() || undefined,
             agentAccountId: params.sessionCtx.AccountId,
             messageTo: params.sessionCtx.OriginatingTo ?? params.sessionCtx.To,

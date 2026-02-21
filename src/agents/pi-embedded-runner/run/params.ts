@@ -58,6 +58,8 @@ export type RunEmbeddedPiAgentParams = {
   clientTools?: ClientToolDefinition[];
   /** Disable built-in tools for this run (LLM-only mode). */
   disableTools?: boolean;
+  /** 用户 ID，用于从数据库加载租户级 auth profile 配置 */
+  userId?: string;
   provider?: string;
   model?: string;
   authProfileId?: string;
