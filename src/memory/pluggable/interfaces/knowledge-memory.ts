@@ -1,8 +1,7 @@
 /**
  * 知识记忆接口
  *
- * 知识记忆管理用户的结构化知识库，支持文档上传、向量索引、
- * 知识图谱构建和智能检索。
+ * 知识记忆管理用户的结构化知识库，支持文档上传、向量索引和智能检索。
  *
  * @module memory/pluggable/interfaces
  */
@@ -96,10 +95,12 @@ export interface KnowledgeDocument {
   processedAt?: Date;
 }
 
-// ==================== 知识图谱类型 ====================
+// ==================== 知识图谱类型（@future） ====================
 
 /**
  * 实体
+ *
+ * @future 知识图谱功能，后续版本实现
  */
 export interface Entity {
   /** 实体 ID */
@@ -122,6 +123,8 @@ export interface Entity {
 
 /**
  * 关系
+ *
+ * @future 知识图谱功能，后续版本实现
  */
 export interface Relationship {
   /** 关系 ID */
@@ -146,6 +149,8 @@ export interface Relationship {
 
 /**
  * 社区（GraphRAG）
+ *
+ * @future 知识图谱功能，后续版本实现
  */
 export interface Community {
   /** 社区 ID */
@@ -206,10 +211,12 @@ export interface HybridSearchOptions extends VectorSearchOptions {
   rerank?: boolean;
 }
 
-// ==================== 图查询类型 ====================
+// ==================== 图查询类型（@future） ====================
 
 /**
  * 图查询
+ *
+ * @future 知识图谱功能，后续版本实现
  */
 export interface GraphQuery {
   /** Cypher 查询语句 */
@@ -301,14 +308,11 @@ export interface DocumentListOptions {
 /**
  * 知识记忆提供者接口
  *
- * 管理知识文档、向量索引、知识图谱，支持智能问答。
+ * 管理知识文档、向量索引，支持智能检索。
  *
  * @example
  * ```typescript
- * const provider = new GraphitiKnowledgeProvider({
- *   milvus: { address: 'localhost:19530' },
- *   neo4j: { uri: 'bolt://localhost:7687', ... },
- * })
+ * const provider = new SimpleKnowledgeProvider({})
  * await provider.initialize()
  *
  * // 添加文档
@@ -321,9 +325,6 @@ export interface DocumentListOptions {
  *
  * // 搜索知识
  * const results = await provider.searchHybrid('user-123', '产品优势')
- *
- * // 基于图谱回答
- * const answer = await provider.answerWithGraph('user-123', '张三的领导是谁？')
  *
  * await provider.shutdown()
  * ```

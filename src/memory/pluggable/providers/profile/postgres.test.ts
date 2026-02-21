@@ -425,12 +425,6 @@ describe("PostgresProfileMemoryProvider", () => {
         newPatterns: [],
       });
     });
-
-    it("confirmExtraction 应该不抛出错误（空操作）", async () => {
-      await expect(
-        provider.confirmExtraction("user-123", "extraction-001", true),
-      ).resolves.not.toThrow();
-    });
   });
 
   // ==================== 导出 ====================

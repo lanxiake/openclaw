@@ -329,17 +329,6 @@ export interface IProfileMemoryProvider extends IMemoryProvider {
    */
   extractFromConversation(userId: string, messages: Message[]): Promise<ExtractedProfile>;
 
-  /**
-   * 确认提取结果
-   *
-   * 用户确认或否定自动提取的信息
-   *
-   * @param userId - 用户 ID
-   * @param extractionId - 提取 ID
-   * @param confirmed - 是否确认
-   */
-  confirmExtraction(userId: string, extractionId: string, confirmed: boolean): Promise<void>;
-
   // ==================== 导出 ====================
 
   /**

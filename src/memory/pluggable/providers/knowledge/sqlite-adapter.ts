@@ -11,32 +11,23 @@
  * - 混合搜索（向量 + BM25）
  * - 文件内容读取
  *
- * 对于文档管理、实体关系、图谱等高级功能，该适配器提供基础存根实现，
- * 可在未来逐步扩展或通过其他提供者实现。
+ * 文档管理功能提供基础内存实现，可在未来逐步扩展。
  *
  * @module memory/pluggable/providers/knowledge
  */
 
 import { randomUUID } from "node:crypto";
-import type { HealthStatus, ProviderConfig } from "../../interfaces/memory-provider.js";
+import type { HealthStatus } from "../../interfaces/memory-provider.js";
 import type {
-  Community,
   DocumentInput,
   DocumentListOptions,
   DocumentStatus,
-  Entity,
-  EntityContext,
-  GraphAnswer,
-  GraphQuery,
-  GraphQueryResult,
   HybridSearchOptions,
   IKnowledgeMemoryProvider,
   KnowledgeDocument,
-  Relationship,
   SearchResult,
   VectorSearchOptions,
 } from "../../interfaces/knowledge-memory.js";
-import type { Message } from "../../interfaces/types.js";
 import { registerProvider } from "../factory.js";
 import { createSubsystemLogger } from "../../../../logging/subsystem.js";
 
@@ -182,12 +173,6 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
   /** 文档存储（内存中的简单实现） */
   private documents = new Map<string, Map<string, KnowledgeDocument>>();
 
-  /** 实体存储 */
-  private entities = new Map<string, Map<string, Entity>>();
-
-  /** 关系存储 */
-  private relationships = new Map<string, Map<string, Relationship>>();
-
   /**
    * 创建适配器
    *
@@ -264,8 +249,6 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
     this.indexManager = null;
     this.initialized = false;
     this.documents.clear();
-    this.entities.clear();
-    this.relationships.clear();
 
     logger.info("已关闭");
   }
@@ -521,261 +504,6 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
       minScore: options?.minScore,
       filter: options?.filter,
     });
-  }
-
-  // ==================== 知识图谱（基础实现） ====================
-
-  /**
-   * 添加实体
-   */
-  async addEntity(
-    userId: string,
-    entity: Omit<Entity, "id" | "createdAt" | "updatedAt" | "mentionCount">,
-  ): Promise<string> {
-    const id = randomUUID();
-    const now = new Date();
-
-    const newEntity: Entity = {
-      ...entity,
-      id,
-      mentionCount: 0,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    if (!this.entities.has(userId)) {
-      this.entities.set(userId, new Map());
-    }
-    this.entities.get(userId)!.set(id, newEntity);
-
-    return id;
-  }
-
-  /**
-   * 获取实体
-   */
-  async getEntity(userId: string, entityId: string): Promise<Entity | null> {
-    return this.entities.get(userId)?.get(entityId) ?? null;
-  }
-
-  /**
-   * 更新实体
-   */
-  async updateEntity(userId: string, entityId: string, updates: Partial<Entity>): Promise<void> {
-    const entity = this.entities.get(userId)?.get(entityId);
-    if (entity) {
-      Object.assign(entity, updates, { updatedAt: new Date() });
-    }
-  }
-
-  /**
-   * 删除实体
-   */
-  async deleteEntity(userId: string, entityId: string): Promise<void> {
-    this.entities.get(userId)?.delete(entityId);
-
-    // 删除相关关系
-    const userRels = this.relationships.get(userId);
-    if (userRels) {
-      for (const [relId, rel] of userRels) {
-        if (rel.sourceId === entityId || rel.targetId === entityId) {
-          userRels.delete(relId);
-        }
-      }
-    }
-  }
-
-  /**
-   * 添加关系
-   */
-  async addRelationship(
-    userId: string,
-    relationship: Omit<Relationship, "id" | "createdAt">,
-  ): Promise<string> {
-    const id = randomUUID();
-
-    const newRel: Relationship = {
-      ...relationship,
-      id,
-      createdAt: new Date(),
-    };
-
-    if (!this.relationships.has(userId)) {
-      this.relationships.set(userId, new Map());
-    }
-    this.relationships.get(userId)!.set(id, newRel);
-
-    return id;
-  }
-
-  /**
-   * 获取关系
-   */
-  async getRelationship(userId: string, relationshipId: string): Promise<Relationship | null> {
-    return this.relationships.get(userId)?.get(relationshipId) ?? null;
-  }
-
-  /**
-   * 更新关系
-   */
-  async updateRelationship(
-    userId: string,
-    relationshipId: string,
-    updates: Partial<Relationship>,
-  ): Promise<void> {
-    const rel = this.relationships.get(userId)?.get(relationshipId);
-    if (rel) {
-      Object.assign(rel, updates);
-    }
-  }
-
-  /**
-   * 删除关系
-   */
-  async deleteRelationship(userId: string, relationshipId: string): Promise<void> {
-    this.relationships.get(userId)?.delete(relationshipId);
-  }
-
-  /**
-   * 查询图谱
-   *
-   * 基础实现：返回所有实体和关系
-   */
-  async queryGraph(userId: string, query: GraphQuery): Promise<GraphQueryResult> {
-    const nodes = Array.from(this.entities.get(userId)?.values() ?? []);
-    const edges = Array.from(this.relationships.get(userId)?.values() ?? []);
-
-    // 简单的模式匹配过滤
-    if (query.pattern?.entityType) {
-      const filteredNodes = nodes.filter((n) => n.type === query.pattern!.entityType);
-      const nodeIds = new Set(filteredNodes.map((n) => n.id));
-      const filteredEdges = edges.filter((e) => nodeIds.has(e.sourceId) || nodeIds.has(e.targetId));
-      return { nodes: filteredNodes, edges: filteredEdges };
-    }
-
-    return { nodes, edges };
-  }
-
-  /**
-   * 获取实体上下文
-   */
-  async getEntityContext(userId: string, entityId: string, depth?: number): Promise<EntityContext> {
-    const entity = await this.getEntity(userId, entityId);
-    if (!entity) {
-      throw new Error(`实体不存在: ${entityId}`);
-    }
-
-    const userRels = this.relationships.get(userId);
-    const relationships: Relationship[] = [];
-    const neighborIds = new Set<string>();
-
-    if (userRels) {
-      for (const rel of userRels.values()) {
-        if (rel.sourceId === entityId) {
-          relationships.push(rel);
-          neighborIds.add(rel.targetId);
-        } else if (rel.targetId === entityId) {
-          relationships.push(rel);
-          neighborIds.add(rel.sourceId);
-        }
-      }
-    }
-
-    const neighbors: Entity[] = [];
-    const userEntities = this.entities.get(userId);
-    if (userEntities) {
-      for (const id of neighborIds) {
-        const neighbor = userEntities.get(id);
-        if (neighbor) {
-          neighbors.push(neighbor);
-        }
-      }
-    }
-
-    return {
-      entity,
-      neighbors,
-      relationships,
-      relatedDocuments: [],
-    };
-  }
-
-  // ==================== GraphRAG（存根实现） ====================
-
-  /**
-   * 构建社区
-   *
-   * 当前为存根实现，需要图数据库支持
-   */
-  async buildCommunities(userId: string): Promise<void> {
-    logger.debug("buildCommunities 尚未实现", { userId });
-  }
-
-  /**
-   * 获取社区
-   */
-  async getCommunities(userId: string, level?: number): Promise<Community[]> {
-    logger.debug("getCommunities 尚未实现");
-    return [];
-  }
-
-  /**
-   * 基于图谱回答问题
-   *
-   * 当前实现：使用搜索结果生成简单回答
-   */
-  async answerWithGraph(userId: string, question: string): Promise<GraphAnswer> {
-    const searchResults = await this.searchHybrid(userId, question, { limit: 5 });
-
-    const sources = searchResults.map((r) => ({
-      type: "document" as const,
-      id: r.id,
-      content: r.content,
-      relevance: r.score,
-    }));
-
-    return {
-      answer:
-        searchResults.length > 0
-          ? `根据相关文档，找到 ${searchResults.length} 条相关信息。`
-          : "未找到相关信息。",
-      sources,
-      entities: [],
-      confidence: searchResults.length > 0 ? 0.6 : 0.1,
-    };
-  }
-
-  // ==================== 对话转知识 ====================
-
-  /**
-   * 导入对话为知识
-   *
-   * 当前为基础实现
-   */
-  async importConversation(
-    userId: string,
-    sessionId: string,
-    messages: Message[],
-  ): Promise<{
-    documentId: string;
-    entities: string[];
-    relationships: string[];
-  }> {
-    // 创建对话文档
-    const content = messages.map((m) => `[${m.role}]: ${m.content}`).join("\n\n");
-
-    const docId = await this.addDocument(userId, {
-      title: `对话 ${sessionId}`,
-      mimeType: "text/plain",
-      source: "conversation",
-      metadata: { sessionId, messageCount: messages.length },
-    });
-
-    return {
-      documentId: docId,
-      entities: [],
-      relationships: [],
-    };
   }
 }
 

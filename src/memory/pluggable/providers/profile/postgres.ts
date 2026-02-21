@@ -467,19 +467,6 @@ export class PostgresProfileMemoryProvider implements IProfileMemoryProvider {
     };
   }
 
-  /**
-   * 确认提取结果
-   *
-   * 当前为空操作。与 extractFromConversation 一起后续实现。
-   */
-  async confirmExtraction(
-    _userId: string,
-    _extractionId: string,
-    _confirmed: boolean,
-  ): Promise<void> {
-    logger.debug("[postgres-profile] confirmExtraction: 空操作（LLM 待实现）");
-  }
-
   // ==================== 导出 ====================
 
   /**

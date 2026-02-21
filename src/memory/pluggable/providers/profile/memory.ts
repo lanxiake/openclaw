@@ -462,16 +462,6 @@ export class MemoryProfileMemoryProvider implements IProfileMemoryProvider {
     return result;
   }
 
-  /**
-   * 确认提取结果
-   *
-   * 注意：简化版本，直接忽略确认操作
-   */
-  async confirmExtraction(userId: string, extractionId: string, confirmed: boolean): Promise<void> {
-    logger.debug("确认提取", { extractionId, confirmed, userId });
-    // 简化版本：不做任何操作
-  }
-
   // ==================== 导出 ====================
 
   /**

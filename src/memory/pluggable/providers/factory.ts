@@ -135,8 +135,8 @@ export function createProvider<T extends IMemoryProvider>(
  *
  * @example
  * ```typescript
- * const workingProviders = getAvailableProviders('working')
- * // => ['mem0', 'redis', 'memory']
+ * const episodicProviders = getAvailableProviders('episodic')
+ * // => ['memory', 'postgres']
  * ```
  */
 export function getAvailableProviders(type: MemoryType): string[] {
