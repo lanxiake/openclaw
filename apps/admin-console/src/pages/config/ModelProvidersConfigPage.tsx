@@ -91,12 +91,26 @@ const defaultFormData: ProviderFormData = {
   priority: 100,
 }
 
-/** API 类型选项 */
+/** API 类型选项（值必须与 pi-ai 的 registerApiProvider 注册名一致） */
 const API_TYPE_OPTIONS = [
   { value: 'openai-completions', label: 'OpenAI Completions' },
-  { value: 'anthropic', label: 'Anthropic Messages' },
-  { value: 'google-gemini', label: 'Google Gemini' },
+  { value: 'openai-responses', label: 'OpenAI Responses' },
+  { value: 'anthropic-messages', label: 'Anthropic Messages' },
+  { value: 'google-generative-ai', label: 'Google Generative AI' },
+  { value: 'bedrock-converse-stream', label: 'AWS Bedrock' },
 ]
+
+/** 旧版 API 类型到标准名称的映射，用于兼容数据库中已有的错误值 */
+const API_TYPE_COMPAT: Record<string, string> = {
+  anthropic: 'anthropic-messages',
+  'google-gemini': 'google-generative-ai',
+}
+
+/** 将可能不规范的 apiType 标准化为 pi-ai 注册名 */
+function normalizeApiType(apiType: string | null | undefined): string {
+  const raw = apiType ?? 'openai-completions'
+  return API_TYPE_COMPAT[raw] ?? raw
+}
 
 /**
  * 模型提供商管理页面
@@ -152,7 +166,7 @@ export default function ModelProvidersConfigPage() {
       providerName: provider.providerName ?? '',
       baseUrl: provider.baseUrl,
       apiKey: '',
-      apiType: provider.apiType ?? 'openai-completions',
+      apiType: normalizeApiType(provider.apiType),
       models: Array.isArray(provider.models) ? provider.models : [],
       enabled: provider.enabled,
       priority: provider.priority,
