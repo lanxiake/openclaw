@@ -1,0 +1,145 @@
+/**
+ * AgentTodoList Styles - Agent 任务列表样式
+ */
+
+/* === 任务列表容器 === */
+
+.agent-todo-list {
+  margin: 0;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  overflow: hidden;
+}
+
+/* === 头部 === */
+
+.agent-todo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.agent-todo-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.agent-todo-running {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  font-weight: 600;
+  animation: todo-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes todo-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* === 进度条 === */
+
+.agent-todo-progress {
+  height: 2px;
+  background-color: var(--bg-tertiary);
+  overflow: hidden;
+}
+
+.agent-todo-progress-bar {
+  height: 100%;
+  background-color: var(--color-success, #22c55e);
+  transition: width 0.3s ease;
+}
+
+.agent-todo-progress-bar.running {
+  background-color: var(--color-primary);
+  background-image: linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 20px 20px;
+  animation: todo-stripe 1s linear infinite;
+}
+
+@keyframes todo-stripe {
+  from { background-position: 20px 0; }
+  to { background-position: 0 0; }
+}
+
+/* === 待办项列表 === */
+
+.agent-todo-items {
+  padding: var(--spacing-xs) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* === 单个待办项 === */
+
+.agent-todo-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 2px 0;
+  min-height: 24px;
+}
+
+/* === 状态图标 === */
+
+.agent-todo-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.agent-todo-icon.completed {
+  color: var(--color-success, #22c55e);
+  background-color: rgba(34, 197, 94, 0.15);
+}
+
+.agent-todo-icon.in-progress {
+  color: var(--color-primary);
+  background-color: rgba(99, 102, 241, 0.15);
+  animation: todo-pulse 1.5s ease-in-out infinite;
+}
+
+.agent-todo-icon.pending {
+  color: var(--text-muted);
+  background-color: var(--bg-tertiary);
+}
+
+/* === 待办文本 === */
+
+.agent-todo-text {
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.agent-todo-item.completed .agent-todo-text {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.agent-todo-item.in-progress .agent-todo-text {
+  color: var(--color-primary);
+  font-weight: 500;
+}

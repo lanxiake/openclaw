@@ -1,0 +1,195 @@
+/**
+ * SessionSidebar Styles - 会话列表侧边栏样式
+ */
+
+.session-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.session-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.session-sidebar-header h3 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.new-session-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.new-session-btn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.session-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-xs);
+}
+
+.no-sessions {
+  padding: var(--spacing-lg);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: var(--spacing-xs);
+}
+
+.session-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.session-item.active {
+  background-color: rgba(99, 102, 241, 0.2);
+  border: 1px solid var(--color-primary);
+}
+
+.session-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.session-title {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-time {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.session-actions {
+  display: none;
+  gap: var(--spacing-xs);
+}
+
+.session-item:hover .session-actions {
+  display: flex;
+}
+
+.session-action-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border-radius: var(--border-radius);
+  font-size: 12px;
+}
+
+.session-action-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.session-action-btn.danger:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+.session-edit {
+  display: flex;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.session-edit input {
+  flex: 1;
+  padding: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  min-width: 0;
+}
+
+.session-edit button {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+  font-size: 12px;
+}
+
+.session-edit button:hover {
+  background-color: var(--bg-hover);
+}
+
+/* === 会话分组标签 === */
+
+.session-group-label {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+.session-group-label:first-child {
+  margin-top: 0;
+  border-top: none;
+}
+
+/* === 服务端会话来源标记 === */
+
+.session-source-badge {
+  margin-right: 4px;
+  font-size: 10px;
+  vertical-align: middle;
+}
+
+.session-source-badge.server {
+  color: var(--color-primary);
+  opacity: 0.8;
+}
+
+/* === 同步中提示 === */
+
+.session-sync-hint {
+  padding: var(--spacing-md);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-style: italic;
+}

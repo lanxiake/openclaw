@@ -3,13 +3,16 @@
  *
  * 在聊天消息中展示 AI 使用的工具调用信息
  * 支持三个阶段的可视化：
- * - start: 显示工具名称和参数（执行中状态）
+ * - start: 显示工具名称和参数（执行中状态 + 实时计时）
  * - update: 显示部分结果（流式更新）
- * - result: 显示最终结果（成功/失败）
+ * - result: 显示最终结果（成功/失败 + 耗时）
+ *
+ * 增强功能：实时计时器、完成耗时展示、连续同类工具分组折叠
  */
 
-import React, { useState, useCallback, memo } from 'react'
+import React, { useState, useCallback, useEffect, memo } from 'react'
 import type { ToolCall } from '../hooks/useToolStream'
+import './ToolCallBlock.css'
 
 /**
  * 工具名称到友好显示名称的映射
@@ -68,12 +71,22 @@ function formatValue(value: unknown, maxLength: number = 200): string {
 }
 
 /**
+ * 格式化耗时为人类可读字符串
+ */
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms}ms`
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
+  const minutes = Math.floor(ms / 60000)
+  const seconds = Math.floor((ms % 60000) / 1000)
+  return `${minutes}m${seconds}s`
+}
+
+/**
  * 从工具参数中提取简短摘要
  */
 function getArgsSummary(name: string, args?: Record<string, unknown>): string {
   if (!args) return ''
 
-  // 根据工具类型提取关键参数
   if (name === 'exec' || name === 'shell') {
     return typeof args.command === 'string' ? args.command : ''
   }
@@ -87,10 +100,30 @@ function getArgsSummary(name: string, args?: Record<string, unknown>): string {
     return typeof args.url === 'string' ? args.url : ''
   }
 
-  // 通用：取第一个字符串参数
   const firstString = Object.values(args).find((v) => typeof v === 'string')
   return typeof firstString === 'string' ? firstString : ''
 }
+
+/**
+ * 实时计时器组件
+ * 工具执行中时每秒更新显示的运行时间
+ */
+const LiveTimer = memo<{ startTime: number }>(({ startTime }) => {
+  const [elapsed, setElapsed] = useState(() => Date.now() - startTime)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsed(Date.now() - startTime)
+    }, 100)
+    return () => clearInterval(timer)
+  }, [startTime])
+
+  return (
+    <span className="tool-call-timer running">{formatDuration(elapsed)}</span>
+  )
+})
+
+LiveTimer.displayName = 'LiveTimer'
 
 /**
  * 单个 Tool 调用块
@@ -120,6 +153,11 @@ const SingleToolCall = memo<{ toolCall: ToolCall }>(({ toolCall }) => {
         <span className="tool-call-name">{displayName}</span>
         {argsSummary && (
           <span className="tool-call-summary">{truncateText(argsSummary, 60)}</span>
+        )}
+        {/* 计时显示 */}
+        {isRunning && <LiveTimer startTime={toolCall.startTime} />}
+        {toolCall.phase === 'result' && toolCall.durationMs !== undefined && (
+          <span className="tool-call-timer completed">{formatDuration(toolCall.durationMs)}</span>
         )}
         <span className="tool-call-expand">{isExpanded ? '\u25BC' : '\u25B8'}</span>
       </div>
@@ -168,6 +206,83 @@ const SingleToolCall = memo<{ toolCall: ToolCall }>(({ toolCall }) => {
 SingleToolCall.displayName = 'SingleToolCall'
 
 /**
+ * 工具调用分组：将连续的同名工具调用合并为一组
+ */
+interface ToolCallGroup {
+  /** 组内工具名称 */
+  name: string
+  /** 组内的工具调用 */
+  calls: ToolCall[]
+}
+
+/**
+ * 将工具调用列表按连续同名分组
+ */
+function groupToolCalls(toolCalls: ToolCall[]): ToolCallGroup[] {
+  const groups: ToolCallGroup[] = []
+
+  for (const tc of toolCalls) {
+    const lastGroup = groups[groups.length - 1]
+    if (lastGroup && lastGroup.name === tc.name) {
+      lastGroup.calls.push(tc)
+    } else {
+      groups.push({ name: tc.name, calls: [tc] })
+    }
+  }
+
+  return groups
+}
+
+/**
+ * 工具调用分组组件 - 可折叠的同类工具组
+ */
+const ToolCallGroupBlock = memo<{ group: ToolCallGroup }>(({ group }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
+  /** 单项直接渲染，不需要分组折叠 */
+  if (group.calls.length === 1) {
+    return <SingleToolCall toolCall={group.calls[0]} />
+  }
+
+  const completedCount = group.calls.filter((tc) => tc.phase === 'result').length
+  const errorCount = group.calls.filter((tc) => tc.isError).length
+  const totalCount = group.calls.length
+  const displayName = getToolDisplayName(group.name)
+
+  /** 计算组的总耗时 */
+  const totalDuration = group.calls.reduce((sum, tc) => sum + (tc.durationMs || 0), 0)
+  const hasRunning = group.calls.some((tc) => tc.phase !== 'result')
+
+  return (
+    <div className="tool-call-group">
+      <div
+        className="tool-call-group-header"
+        onClick={() => setIsCollapsed((prev) => !prev)}
+      >
+        <span className="tool-call-group-icon">{isCollapsed ? '\u25B8' : '\u25BC'}</span>
+        <span className="tool-call-group-name">{displayName}</span>
+        <span className="tool-call-group-count">
+          {completedCount}/{totalCount}
+          {errorCount > 0 && <span className="tool-call-group-errors"> ({errorCount} 错误)</span>}
+        </span>
+        {!hasRunning && totalDuration > 0 && (
+          <span className="tool-call-timer completed">{formatDuration(totalDuration)}</span>
+        )}
+      </div>
+      {!isCollapsed && (
+        <div className="tool-call-group-list">
+          {group.calls.map((tc) => (
+            <SingleToolCall key={tc.toolCallId} toolCall={tc} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+})
+
+ToolCallGroupBlock.displayName = 'ToolCallGroupBlock'
+
+/**
  * Tool 调用块组件 Props
  */
 interface ToolCallBlockProps {
@@ -178,7 +293,7 @@ interface ToolCallBlockProps {
 /**
  * Tool 调用块组件
  *
- * 展示一组关联的工具调用，通常显示在 assistant 消息之前或之中
+ * 展示一组关联的工具调用，支持实时计时、耗时展示和分组折叠
  */
 export const ToolCallBlock = memo<ToolCallBlockProps>(({ toolCalls }) => {
   if (toolCalls.length === 0) return null
@@ -187,19 +302,43 @@ export const ToolCallBlock = memo<ToolCallBlockProps>(({ toolCalls }) => {
   const errorCount = toolCalls.filter((tc) => tc.isError).length
   const totalCount = toolCalls.length
 
+  /** 计算总耗时 */
+  const totalDuration = toolCalls.reduce((sum, tc) => sum + (tc.durationMs || 0), 0)
+  const hasRunning = toolCalls.some((tc) => tc.phase !== 'result')
+
+  /** 将连续同名工具调用分组 */
+  const groups = groupToolCalls(toolCalls)
+
   return (
     <div className="tool-call-block">
       <div className="tool-call-block-header">
         <span className="tool-call-block-label">
           工具调用 ({completedCount}/{totalCount})
         </span>
-        {errorCount > 0 && (
-          <span className="tool-call-block-errors">{errorCount} 个错误</span>
-        )}
+        <div className="tool-call-block-meta">
+          {!hasRunning && totalDuration > 0 && (
+            <span className="tool-call-block-duration">总耗时 {formatDuration(totalDuration)}</span>
+          )}
+          {hasRunning && (
+            <span className="tool-call-block-running">执行中...</span>
+          )}
+          {errorCount > 0 && (
+            <span className="tool-call-block-errors">{errorCount} 个错误</span>
+          )}
+        </div>
       </div>
+
+      {/* 进度条 */}
+      <div className="tool-call-progress">
+        <div
+          className={`tool-call-progress-bar ${hasRunning ? 'running' : ''} ${errorCount > 0 ? 'has-errors' : ''}`}
+          style={{ width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%` }}
+        />
+      </div>
+
       <div className="tool-call-block-list">
-        {toolCalls.map((tc) => (
-          <SingleToolCall key={tc.toolCallId} toolCall={tc} />
+        {groups.map((group, index) => (
+          <ToolCallGroupBlock key={`${group.name}-${index}`} group={group} />
         ))}
       </div>
     </div>

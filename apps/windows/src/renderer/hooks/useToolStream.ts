@@ -35,6 +35,12 @@ export interface ToolCall {
   isError?: boolean
   /** 时间戳 */
   timestamp: number
+  /** 工具开始执行的时间（ms since epoch） */
+  startTime: number
+  /** 工具执行结束的时间（ms since epoch），仅 phase=result 时有值 */
+  endTime?: number
+  /** 工具执行耗时（ms），仅 phase=result 时有值 */
+  durationMs?: number
 }
 
 /**
@@ -99,12 +105,14 @@ export function useToolStream(): UseToolStreamReturn {
       switch (phase) {
         case 'start': {
           // 新 tool 调用开始
+          const now = Date.now()
           const newCall: ToolCall = {
             toolCallId,
             name: name || 'unknown',
             args,
             phase: 'start',
             timestamp: ts,
+            startTime: now,
           }
           newMap.set(runId, [...existing, newCall])
           break
@@ -120,12 +128,21 @@ export function useToolStream(): UseToolStreamReturn {
           break
         }
         case 'result': {
-          // tool 调用完成
-          const completed = existing.map((call) =>
-            call.toolCallId === toolCallId
-              ? { ...call, phase: 'result' as const, result, meta, isError }
-              : call
-          )
+          // tool 调用完成，计算耗时
+          const now = Date.now()
+          const completed = existing.map((call) => {
+            if (call.toolCallId !== toolCallId) return call
+            const durationMs = now - call.startTime
+            return {
+              ...call,
+              phase: 'result' as const,
+              result,
+              meta,
+              isError,
+              endTime: now,
+              durationMs,
+            }
+          })
           newMap.set(runId, completed)
           break
         }

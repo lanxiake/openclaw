@@ -33,6 +33,8 @@ export interface ChatMessage {
   content: string
   timestamp: Date
   isStreaming?: boolean
+  /** 消息是否因用户中断而终止 */
+  isAborted?: boolean
   attachments?: MessageAttachment[]
 }
 

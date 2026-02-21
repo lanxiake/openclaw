@@ -1,389 +1,33 @@
 /**
- * ChatView Component - 对话视图
+ * ChatView - 对话视图 Orchestrator
  *
- * 与 AI 助手进行对话的主界面
- * 支持 Markdown 渲染、代码复制、消息历史持久化、会话管理、流式响应等功能
- *
- * 性能优化:
- * - 使用 React.memo 避免不必要的重渲染
- * - 使用 useMemo 缓存 Markdown 渲染结果
- * - 使用 useCallback 稳定回调引用
+ * 编排对话界面各子组件：SessionSidebar、ChatToolbar、MessageItem、ChatInput
+ * 管理会话状态、流式响应、消息发送、消息排队等核心逻辑
  */
 
-import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react'
-import { useChatHistory, type ChatMessage, type ChatSession, type MessageAttachment, type SessionSource } from '../hooks/useChatHistory'
-import { useChatStream, type ChatEventPayload } from '../hooks/useChatStream'
-import { useToolStream, type ToolCall } from '../hooks/useToolStream'
-import { ToolCallBlock } from './ToolCallBlock'
-import { AttachmentPreview, type Attachment } from './AttachmentPreview'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { useChatHistory, type ChatMessage, type MessageAttachment } from '../hooks/useChatHistory'
+import { useChatStream } from '../hooks/useChatStream'
+import { useToolStream } from '../hooks/useToolStream'
+import { useAgentTodo } from '../hooks/useAgentTodo'
+import { useMessageQueue } from '../hooks/useMessageQueue'
+import { useChatCheckpoint } from '../hooks/useChatCheckpoint'
+import { SessionSidebar, ChatToolbar, ChatInput, MessageItem, AgentTodoList, MessageQueuePanel, CheckpointResumeDialog } from './chat'
 import './ChatView.css'
-
-/**
- * 最大附件数量
- */
-const MAX_ATTACHMENTS = 5
-
-/**
- * 最大单个文件大小 (5MB)
- */
-const MAX_FILE_SIZE = 5 * 1024 * 1024
-
-/**
- * 允许的图片类型
- */
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 interface ChatViewProps {
   isConnected: boolean
 }
 
 /**
- * 简单的 Markdown 渲染
- * 支持代码块、粗体、斜体、链接等基础语法
- */
-function renderMarkdownContent(text: string): React.ReactNode {
-  // 防御性检查：确保 text 是字符串
-  if (typeof text !== 'string') {
-    console.warn('[ChatView] renderMarkdownContent 收到非字符串内容:', typeof text)
-    return String(text ?? '')
-  }
-  // 处理代码块 (```code```)
-  const parts = text.split(/(```[\s\S]*?```)/g)
-
-  return parts.map((part, index) => {
-    // 代码块处理
-    if (part.startsWith('```') && part.endsWith('```')) {
-      const codeContent = part.slice(3, -3)
-      const firstNewline = codeContent.indexOf('\n')
-      let language = ''
-      let code = codeContent
-
-      if (firstNewline > 0 && firstNewline < 20) {
-        language = codeContent.slice(0, firstNewline).trim()
-        code = codeContent.slice(firstNewline + 1)
-      }
-
-      return (
-        <CodeBlock key={index} language={language} code={code} />
-      )
-    }
-
-    // 行内代码处理 (`code`)
-    const inlineParts = part.split(/(`[^`]+`)/g)
-    return (
-      <span key={index}>
-        {inlineParts.map((inlinePart, inlineIndex) => {
-          if (inlinePart.startsWith('`') && inlinePart.endsWith('`')) {
-            return (
-              <code key={inlineIndex} className="inline-code">
-                {inlinePart.slice(1, -1)}
-              </code>
-            )
-          }
-
-          // 处理粗体 (**text**)
-          const boldParts = inlinePart.split(/(\*\*[^*]+\*\*)/g)
-          return boldParts.map((boldPart, boldIndex) => {
-            if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
-              return <strong key={`${inlineIndex}-${boldIndex}`}>{boldPart.slice(2, -2)}</strong>
-            }
-            return <span key={`${inlineIndex}-${boldIndex}`}>{boldPart}</span>
-          })
-        })}
-      </span>
-    )
-  })
-}
-
-/**
- * 代码块组件 - 带复制功能
- * 使用 React.memo 优化，避免不必要的重渲染
- */
-const CodeBlock = memo<{ language: string; code: string }>(({ language, code }) => {
-  const [copied, setCopied] = useState(false)
-
-  /**
-   * 复制代码到剪贴板
-   */
-  const handleCopy = useCallback(async () => {
-    try {
-      await window.electronAPI.clipboard.writeText(code)
-      setCopied(true)
-      console.log('[CodeBlock] 代码已复制到剪贴板')
-      setTimeout(() => setCopied(false), 2000)
-    } catch (error) {
-      console.error('[CodeBlock] 复制失败:', error)
-    }
-  }, [code])
-
-  return (
-    <div className="code-block">
-      <div className="code-block-header">
-        <span className="code-block-language">{language || 'code'}</span>
-        <button className="code-block-copy" onClick={handleCopy}>
-          {copied ? '✓ 已复制' : '复制'}
-        </button>
-      </div>
-      <pre className="code-block-content">
-        <code>{code}</code>
-      </pre>
-    </div>
-  )
-})
-
-CodeBlock.displayName = 'CodeBlock'
-
-/**
- * 缓存的 Markdown 渲染组件
- * 使用 useMemo 缓存渲染结果，避免重复计算
- */
-const MemoizedMarkdown = memo<{ content: string }>(({ content }) => {
-  const rendered = useMemo(() => renderMarkdownContent(content), [content])
-  return <>{rendered}</>
-})
-
-MemoizedMarkdown.displayName = 'MemoizedMarkdown'
-
-/**
- * 单条消息组件
- * 使用 memo 避免列表重渲染时的性能问题
- */
-const MessageItem = memo<{
-  message: ChatMessage
-  formatTime: (date: Date) => string
-  toolCalls?: ToolCall[]
-}>(({ message, formatTime, toolCalls }) => {
-  return (
-    <div className={`message ${message.role}`}>
-      <div className="message-avatar">
-        {message.role === 'user' ? '👤' : message.role === 'assistant' ? '🤖' : 'ℹ️'}
-      </div>
-      <div className="message-content">
-        {/* 显示附件图片 */}
-        {message.attachments && message.attachments.length > 0 && (
-          <div className="message-attachments">
-            {message.attachments.map((att, index) => (
-              <div key={index} className="message-attachment">
-                {att.type === 'image' || att.mimeType.startsWith('image/') ? (
-                  <img
-                    src={att.preview || `data:${att.mimeType};base64,${att.content}`}
-                    alt={att.fileName}
-                    className="message-attachment-image"
-                  />
-                ) : (
-                  <div className="message-attachment-file">
-                    <span className="message-attachment-icon">📄</span>
-                    <span className="message-attachment-name">{att.fileName}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Tool 调用可视化 - 显示在 assistant 消息文本之前 */}
-        {message.role === 'assistant' && toolCalls && toolCalls.length > 0 && (
-          <ToolCallBlock toolCalls={toolCalls} />
-        )}
-
-        <div className="message-text">
-          {message.role === 'assistant'
-            ? <MemoizedMarkdown content={message.content} />
-            : message.content}
-          {message.isStreaming && <span className="cursor-blink">▋</span>}
-        </div>
-        <div className="message-time">{formatTime(message.timestamp)}</div>
-      </div>
-    </div>
-  )
-})
-
-MessageItem.displayName = 'MessageItem'
-
-/**
- * 会话列表侧边栏
- * 使用 memo 避免父组件重渲染时不必要的更新
- */
-const SessionSidebar = memo<{
-  sessions: ChatSession[]
-  activeSessionId: string | null
-  isSyncing?: boolean
-  onSelect: (id: string) => void
-  onNew: () => void
-  onDelete: (id: string) => void
-  onRename: (id: string, title: string) => void
-}>(({ sessions, activeSessionId, isSyncing, onSelect, onNew, onDelete, onRename }) => {
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editTitle, setEditTitle] = useState('')
-
-  /**
-   * 开始编辑标题
-   */
-  const handleStartEdit = (session: ChatSession) => {
-    setEditingId(session.id)
-    setEditTitle(session.title)
-  }
-
-  /**
-   * 保存标题
-   */
-  const handleSaveEdit = () => {
-    if (editingId && editTitle.trim()) {
-      onRename(editingId, editTitle.trim())
-    }
-    setEditingId(null)
-    setEditTitle('')
-  }
-
-  /**
-   * 取消编辑
-   */
-  const handleCancelEdit = () => {
-    setEditingId(null)
-    setEditTitle('')
-  }
-
-  /**
-   * 格式化日期
-   */
-  const formatDate = (date: Date): string => {
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-
-    if (diffDays === 0) {
-      return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-    } else if (diffDays === 1) {
-      return '昨天'
-    } else if (diffDays < 7) {
-      return `${diffDays}天前`
-    } else {
-      return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
-    }
-  }
-
-  // 分组会话：本地在前，服务端在后
-  const localSessions = sessions.filter((s) => s.source === 'local')
-  const serverSessions = sessions.filter((s) => s.source === 'server')
-
-  /**
-   * 渲染单个会话条目
-   */
-  const renderSessionItem = (session: ChatSession) => (
-    <div
-      key={session.id}
-      className={`session-item ${session.id === activeSessionId ? 'active' : ''}`}
-      onClick={() => onSelect(session.id)}
-    >
-      {editingId === session.id ? (
-        <div className="session-edit">
-          <input
-            type="text"
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSaveEdit()
-              if (e.key === 'Escape') handleCancelEdit()
-            }}
-            onClick={(e) => e.stopPropagation()}
-            autoFocus
-          />
-          <button onClick={(e) => { e.stopPropagation(); handleSaveEdit() }}>✓</button>
-          <button onClick={(e) => { e.stopPropagation(); handleCancelEdit() }}>✕</button>
-        </div>
-      ) : (
-        <>
-          <div className="session-info">
-            <span className="session-title">
-              {session.source === 'server' && (
-                <span className="session-source-badge server" title="服务端会话">&#9729;</span>
-              )}
-              {session.title}
-            </span>
-            <span className="session-time">{formatDate(session.updatedAt)}</span>
-          </div>
-          <div className="session-actions">
-            <button
-              className="session-action-btn"
-              onClick={(e) => { e.stopPropagation(); handleStartEdit(session) }}
-              title="重命名"
-            >
-              ✏️
-            </button>
-            <button
-              className="session-action-btn danger"
-              onClick={(e) => {
-                e.stopPropagation()
-                if (window.confirm('确定要删除这个对话吗？')) {
-                  onDelete(session.id)
-                }
-              }}
-              title="删除"
-            >
-              🗑️
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  )
-
-  return (
-    <div className="session-sidebar">
-      <div className="session-sidebar-header">
-        <h3>对话历史</h3>
-        <button className="new-session-btn" onClick={onNew} title="新建对话">
-          +
-        </button>
-      </div>
-
-      <div className="session-list">
-        {sessions.length === 0 && !isSyncing ? (
-          <div className="no-sessions">暂无历史对话</div>
-        ) : (
-          <>
-            {/* 本地会话 */}
-            {localSessions.length > 0 && (
-              <>
-                {serverSessions.length > 0 && (
-                  <div className="session-group-label">本地对话</div>
-                )}
-                {localSessions.map(renderSessionItem)}
-              </>
-            )}
-
-            {/* 服务端会话 */}
-            {serverSessions.length > 0 && (
-              <>
-                <div className="session-group-label">
-                  {isSyncing ? '同步中...' : '服务端对话'}
-                </div>
-                {serverSessions.map(renderSessionItem)}
-              </>
-            )}
-
-            {/* 同步中但尚无服务端会话 */}
-            {isSyncing && serverSessions.length === 0 && (
-              <div className="session-sync-hint">正在同步服务端会话...</div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  )
-})
-
-SessionSidebar.displayName = 'SessionSidebar'
-
-/**
- * 生成消息 ID
+ * 生成消息唯一 ID
  */
 function generateMessageId(): string {
   return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
 /**
- * 对话视图组件
+ * 对话视图组件 - 顶层 orchestrator
  */
 export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
   const {
@@ -405,21 +49,26 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
     loadServerMessages,
   } = useChatHistory()
 
-  // 流式响应 Hook
-  const { streamingMessage, isStreaming: isStreamingResponse, startStream, reset: resetStream } = useChatStream()
+  const { streamingMessage, startStream } = useChatStream()
+  const { getToolCalls } = useToolStream()
+  const { todos, completedCount, totalCount } = useAgentTodo()
+  const { queue, queueLength, enqueue, dequeue, remove: removeFromQueue, clear: clearQueue } = useMessageQueue()
+  const {
+    checkpoints,
+    isLoading: isLoadingCheckpoints,
+    error: checkpointError,
+    saveCheckpoint,
+    resumeFromCheckpoint,
+    loadCheckpoints,
+    clearError: clearCheckpointError,
+  } = useChatCheckpoint()
 
-  // Tool 执行事件流 Hook
-  const { getToolCalls, clearRun } = useToolStream()
-
-  const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showSidebar, setShowSidebar] = useState(true)
+  const [showResumeDialog, setShowResumeDialog] = useState(false)
   const [currentRunId, setCurrentRunId] = useState<string | null>(null)
   const [currentAssistantMessageId, setCurrentAssistantMessageId] = useState<string | null>(null)
-  const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   /**
    * 滚动到最新消息
@@ -461,185 +110,37 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
   }, [activeSessionId, activeSession, loadServerMessages])
 
   /**
-   * 监听流式响应更新，同步到消息
+   * 发送消息到 Gateway 的核心逻辑
+   * 不包含排队判断，直接执行发送
    */
-  useEffect(() => {
-    if (!streamingMessage || !currentAssistantMessageId) {
-      return
-    }
+  const doSend = useCallback(async (content: string, attachments: MessageAttachment[]) => {
+    if (!isConnected) return
 
-    // 检查 runId 是否匹配
-    if (streamingMessage.runId !== currentRunId) {
-      return
-    }
-
-    // 更新助手消息内容
-    updateMessage(currentAssistantMessageId, {
-      content: streamingMessage.content || '',
-      isStreaming: streamingMessage.isStreaming,
-    })
-
-    // 流式完成后清理状态
-    if (streamingMessage.isComplete) {
-      console.log('[ChatView] 流式响应完成')
-      setIsLoading(false)
-      setCurrentRunId(null)
-      setCurrentAssistantMessageId(null)
-
-      // 处理错误情况
-      if (streamingMessage.error) {
-        updateMessage(currentAssistantMessageId, {
-          content: `错误: ${streamingMessage.error}`,
-          role: 'system',
-          isStreaming: false,
-        })
-      }
-    }
-  }, [streamingMessage, currentAssistantMessageId, currentRunId, updateMessage])
-
-  /**
-   * 自动调整输入框高度
-   */
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
-    }
-  }, [inputValue])
-
-  /**
-   * 处理新建会话
-   */
-  const handleNewSession = useCallback(() => {
-    console.log('[ChatView] 创建新会话')
-    createSession()
-    setPendingAttachments([])
-  }, [createSession])
-
-  /**
-   * 处理文件选择
-   */
-  const handleFileSelect = useCallback(async () => {
-    try {
-      const result = await window.electronAPI.dialog.showOpenDialog({
-        properties: ['openFile', 'multiSelections'],
-        filters: [
-          { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'] },
-        ],
-      })
-
-      if (result.canceled || !result.filePaths.length) {
-        return
-      }
-
-      console.log('[ChatView] 选择的文件:', result.filePaths)
-
-      // 检查附件数量限制
-      const remainingSlots = MAX_ATTACHMENTS - pendingAttachments.length
-      if (remainingSlots <= 0) {
-        console.warn('[ChatView] 已达到最大附件数量')
-        return
-      }
-
-      const filesToProcess = result.filePaths.slice(0, remainingSlots)
-      const newAttachments: Attachment[] = []
-
-      for (const filePath of filesToProcess) {
-        try {
-          const fileData = await window.electronAPI.file.readAsBase64(filePath)
-
-          // 验证文件大小
-          if (fileData.size > MAX_FILE_SIZE) {
-            console.warn(`[ChatView] 文件过大: ${fileData.fileName} (${fileData.size} 字节)`)
-            continue
-          }
-
-          // 验证文件类型
-          if (!ALLOWED_IMAGE_TYPES.includes(fileData.mimeType)) {
-            console.warn(`[ChatView] 不支持的文件类型: ${fileData.mimeType}`)
-            continue
-          }
-
-          const attachment: Attachment = {
-            id: `att-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            fileName: fileData.fileName,
-            mimeType: fileData.mimeType,
-            content: fileData.content,
-            size: fileData.size,
-            preview: `data:${fileData.mimeType};base64,${fileData.content}`,
-          }
-
-          newAttachments.push(attachment)
-          console.log('[ChatView] 添加附件:', attachment.fileName)
-        } catch (error) {
-          console.error('[ChatView] 读取文件失败:', filePath, error)
-        }
-      }
-
-      if (newAttachments.length > 0) {
-        setPendingAttachments((prev) => [...prev, ...newAttachments])
-      }
-    } catch (error) {
-      console.error('[ChatView] 文件选择失败:', error)
-    }
-  }, [pendingAttachments.length])
-
-  /**
-   * 移除附件
-   */
-  const handleRemoveAttachment = useCallback((id: string) => {
-    console.log('[ChatView] 移除附件:', id)
-    setPendingAttachments((prev) => prev.filter((att) => att.id !== id))
-  }, [])
-
-  /**
-   * 发送消息 - 使用 chat.send 方法支持流式响应和附件
-   */
-  const handleSend = useCallback(async () => {
-    if ((!inputValue.trim() && pendingAttachments.length === 0) || !isConnected || isLoading) {
-      return
-    }
-
-    // 如果没有激活会话，创建一个新的
     let sessionKey: string = activeSessionId || ''
     if (!sessionKey) {
       const newSession = createSession()
       sessionKey = newSession.id
     }
 
-    // 服务端会话使用 serverKey 作为 sessionKey
     if (activeSession?.source === 'server' && activeSession.serverKey) {
       sessionKey = activeSession.serverKey
     }
 
-    // 转换附件格式
-    const attachments: MessageAttachment[] = pendingAttachments.map((att) => ({
-      type: att.mimeType.startsWith('image/') ? 'image' : 'file',
-      mimeType: att.mimeType,
-      fileName: att.fileName,
-      content: att.content,
-      preview: att.preview,
-    }))
-
     const userMessage: ChatMessage = {
       id: generateMessageId(),
       role: 'user',
-      content: inputValue.trim(),
+      content,
       timestamp: new Date(),
       attachments: attachments.length > 0 ? attachments : undefined,
     }
 
     console.log('[ChatView] 发送消息:', userMessage.content, '附件数量:', attachments.length)
     addMessage(userMessage)
-    setInputValue('')
-    setPendingAttachments([])
     setIsLoading(true)
 
-    // 生成运行 ID（用于匹配流式响应）
     const runId = `run-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     setCurrentRunId(runId)
 
-    // 添加一个空的助手消息用于流式输出
     const assistantMessageId = generateMessageId()
     const assistantMessage: ChatMessage = {
       id: assistantMessageId,
@@ -651,39 +152,32 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
     addMessage(assistantMessage)
     setCurrentAssistantMessageId(assistantMessageId)
 
-    // 启动流式消息监听
     startStream(runId, sessionKey)
 
     try {
-      // 尝试使用 chat.send 方法（支持流式响应）
       console.log('[ChatView] 调用 chat.send:', { sessionKey, runId })
       await window.electronAPI.gateway.call('chat.send', {
         sessionKey,
-        message: userMessage.content,
+        message: content,
         idempotencyKey: runId,
         attachments: attachments.length > 0 ? attachments : undefined,
       })
-
       console.log('[ChatView] chat.send 调用成功，等待流式响应')
-      // 流式响应会通过 useChatStream hook 处理
     } catch (error: unknown) {
       console.warn('[ChatView] chat.send 失败，回退到 assistant.chat:', error)
 
-      // 回退到原有的 assistant.chat 方法
       try {
         const response = await window.electronAPI.gateway.call<{
           content: string
           sessionId: string
           timestamp: number
         }>('assistant.chat', {
-          message: userMessage.content,
+          message: content,
           sessionId: sessionKey,
           attachments: attachments.length > 0 ? attachments : undefined,
         })
 
         console.log('[ChatView] 收到响应:', response)
-
-        // 更新助手消息
         updateMessage(assistantMessageId, {
           content: response.content || '抱歉，我没有收到有效的回复。',
           isStreaming: false,
@@ -693,8 +187,6 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
         setCurrentAssistantMessageId(null)
       } catch (fallbackError) {
         console.error('[ChatView] assistant.chat 也失败:', fallbackError)
-
-        // 更新为错误消息
         updateMessage(assistantMessageId, {
           content: '消息发送失败，请检查连接状态后重试。',
           role: 'system',
@@ -705,20 +197,161 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
         setCurrentAssistantMessageId(null)
       }
     }
-  }, [inputValue, pendingAttachments, isConnected, isLoading, activeSessionId, activeSession, createSession, addMessage, updateMessage, startStream])
+  }, [isConnected, activeSessionId, activeSession, createSession, addMessage, updateMessage, startStream])
 
   /**
-   * 处理键盘事件
+   * 监听流式响应更新，同步到消息
+   * 当 run 完成后，自动从队列中取出下一条消息发送
    */
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
+  useEffect(() => {
+    if (!streamingMessage || !currentAssistantMessageId) {
+      return
     }
-  }, [handleSend])
+
+    if (streamingMessage.runId !== currentRunId) {
+      return
+    }
+
+    updateMessage(currentAssistantMessageId, {
+      content: streamingMessage.content || '',
+      isStreaming: streamingMessage.isStreaming,
+    })
+
+    if (streamingMessage.isComplete) {
+      console.log('[ChatView] 流式响应完成, isAborted:', streamingMessage.isAborted)
+      setIsLoading(false)
+      setCurrentRunId(null)
+      setCurrentAssistantMessageId(null)
+
+      if (streamingMessage.isAborted) {
+        updateMessage(currentAssistantMessageId, {
+          content: streamingMessage.content || '',
+          isStreaming: false,
+          isAborted: true,
+        })
+      } else if (streamingMessage.error) {
+        updateMessage(currentAssistantMessageId, {
+          content: `错误: ${streamingMessage.error}`,
+          role: 'system',
+          isStreaming: false,
+        })
+      }
+
+      /** 自动派发队列中的下一条消息（中断时不自动派发） */
+      if (!streamingMessage.isAborted) {
+        const next = dequeue()
+        if (next) {
+          console.log('[ChatView] 自动派发队列消息:', next.content)
+          /** 使用 setTimeout 避免在 setState 回调中嵌套 setState */
+          setTimeout(() => {
+            doSend(next.content, next.attachments)
+          }, 100)
+        }
+      }
+    }
+  }, [streamingMessage, currentAssistantMessageId, currentRunId, updateMessage, dequeue, doSend])
 
   /**
-   * 格式化时间 - 使用 useCallback 稳定引用
+   * 处理新建会话
+   */
+  const handleNewSession = useCallback(() => {
+    console.log('[ChatView] 创建新会话')
+    createSession()
+  }, [createSession])
+
+  /**
+   * 中断当前执行
+   */
+  const handleAbort = useCallback(async () => {
+    if (!currentRunId || !activeSessionId) return
+
+    const sessionKey = activeSession?.source === 'server' && activeSession.serverKey
+      ? activeSession.serverKey
+      : activeSessionId
+
+    try {
+      console.log('[ChatView] 中断执行:', { sessionKey, runId: currentRunId })
+      await window.electronAPI.gateway.call('chat.abort', {
+        sessionKey,
+        runId: currentRunId,
+      })
+      console.log('[ChatView] 中断请求已发送')
+    } catch (error) {
+      console.error('[ChatView] 中断失败:', error)
+    }
+  }, [currentRunId, activeSessionId, activeSession])
+
+  /**
+   * 存档并停止：保存检查点后中断执行
+   */
+  const handleCheckpoint = useCallback(async () => {
+    if (!activeSessionId) return
+
+    const sessionKey = activeSession?.source === 'server' && activeSession.serverKey
+      ? activeSession.serverKey
+      : activeSessionId
+
+    console.log('[ChatView] 存档并停止:', sessionKey)
+    const checkpoint = await saveCheckpoint(sessionKey)
+    if (checkpoint) {
+      console.log('[ChatView] 检查点已保存:', checkpoint.checkpointId)
+      // 保存成功后中断执行
+      await handleAbort()
+    }
+  }, [activeSessionId, activeSession, saveCheckpoint, handleAbort])
+
+  /**
+   * 打开恢复对话框并加载检查点列表
+   */
+  const handleShowResumeDialog = useCallback(() => {
+    if (!activeSessionId) return
+
+    const sessionKey = activeSession?.source === 'server' && activeSession.serverKey
+      ? activeSession.serverKey
+      : activeSessionId
+
+    console.log('[ChatView] 打开恢复对话框:', sessionKey)
+    setShowResumeDialog(true)
+    loadCheckpoints(sessionKey)
+  }, [activeSessionId, activeSession, loadCheckpoints])
+
+  /**
+   * 从检查点恢复对话
+   */
+  const handleResumeFromCheckpoint = useCallback(async (checkpointId: string) => {
+    if (!activeSessionId) return
+
+    const sessionKey = activeSession?.source === 'server' && activeSession.serverKey
+      ? activeSession.serverKey
+      : activeSessionId
+
+    console.log('[ChatView] 从检查点恢复:', { sessionKey, checkpointId })
+    const success = await resumeFromCheckpoint(sessionKey, checkpointId)
+    if (success) {
+      setShowResumeDialog(false)
+      console.log('[ChatView] 恢复成功')
+    }
+  }, [activeSessionId, activeSession, resumeFromCheckpoint])
+
+  /**
+   * 处理用户发送消息
+   * 空闲时直接发送，执行中时加入队列
+   */
+  const handleSend = useCallback(async (content: string, attachments: MessageAttachment[]) => {
+    if (!isConnected) return
+
+    if (isLoading) {
+      /** agent 正在执行，加入队列 */
+      console.log('[ChatView] Agent 执行中，消息加入队列:', content)
+      enqueue(content, attachments)
+      return
+    }
+
+    await doSend(content, attachments)
+  }, [isConnected, isLoading, enqueue, doSend])
+
+  /**
+   * 格式化时间
    */
   const formatTime = useCallback((date: Date): string => {
     return date.toLocaleTimeString('zh-CN', {
@@ -727,6 +360,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
     })
   }, [])
 
+  /** 加载状态 */
   if (isLoadingHistory) {
     return (
       <div className="chat-view loading">
@@ -756,43 +390,18 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
       {/* 主对话区域 */}
       <div className="chat-main">
         {/* 对话工具栏 */}
-        <div className="chat-toolbar">
-          <div className="chat-toolbar-left">
-            <button
-              className="toolbar-button toggle-sidebar"
-              onClick={() => setShowSidebar(!showSidebar)}
-              title={showSidebar ? '隐藏侧边栏' : '显示侧边栏'}
-            >
-              {showSidebar ? '◀' : '▶'}
-            </button>
-            <span className="chat-title">
-              {activeSession?.title || 'AI 助手对话'}
-            </span>
-          </div>
-          <div className="chat-toolbar-right">
-            <button
-              className="toolbar-button"
-              onClick={handleNewSession}
-              title="新建对话"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 1a1 1 0 011 1v5h5a1 1 0 110 2H9v5a1 1 0 11-2 0V9H2a1 1 0 110-2h5V2a1 1 0 011-1z"/>
-              </svg>
-              新对话
-            </button>
-            <button
-              className="toolbar-button"
-              onClick={clearCurrentSession}
-              title="清空当前对话"
-              disabled={currentMessages.length <= 1}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zM4 4v9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4H4z"/>
-              </svg>
-              清空
-            </button>
-          </div>
-        </div>
+        <ChatToolbar
+          title={activeSession?.title || 'AI 助手对话'}
+          showSidebar={showSidebar}
+          canClear={currentMessages.length > 1}
+          isLoading={isLoading}
+          hasCheckpoints={checkpoints.length > 0}
+          onToggleSidebar={() => setShowSidebar((prev) => !prev)}
+          onNewSession={handleNewSession}
+          onClear={clearCurrentSession}
+          onCheckpoint={handleCheckpoint}
+          onShowResumeDialog={handleShowResumeDialog}
+        />
 
         {/* 消息列表 */}
         <div className="messages-container">
@@ -806,7 +415,6 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
           )}
 
           {currentMessages.map((message) => {
-            // 将当前运行的 tool 调用关联到对应的 assistant 消息
             const messageToolCalls =
               currentRunId && message.id === currentAssistantMessageId
                 ? getToolCalls(currentRunId)
@@ -838,66 +446,43 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Agent 任务列表 */}
+        <AgentTodoList
+          todos={todos}
+          completedCount={completedCount}
+          totalCount={totalCount}
+        />
+
+        {/* 消息排队面板 */}
+        <MessageQueuePanel
+          queue={queue}
+          onRemove={removeFromQueue}
+          onClear={clearQueue}
+        />
+
         {/* 输入区域 */}
-        <div className="input-container">
-          {!isConnected && (
-            <div className="connection-hint">请先连接 Gateway 后再发送消息</div>
-          )}
-
-          {/* 附件预览 */}
-          {pendingAttachments.length > 0 && (
-            <AttachmentPreview
-              attachments={pendingAttachments}
-              onRemove={handleRemoveAttachment}
-              disabled={isLoading}
-            />
-          )}
-
-          <div className="input-wrapper">
-            {/* 附件按钮 */}
-            <button
-              className="attachment-button"
-              onClick={handleFileSelect}
-              disabled={!isConnected || isLoading || pendingAttachments.length >= MAX_ATTACHMENTS}
-              title={pendingAttachments.length >= MAX_ATTACHMENTS ? `最多 ${MAX_ATTACHMENTS} 个附件` : '添加图片'}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M4 3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
-              </svg>
-            </button>
-
-            <textarea
-              ref={textareaRef}
-              className="message-input"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={isConnected ? '输入消息... (Enter 发送, Shift+Enter 换行)' : '未连接 Gateway'}
-              disabled={!isConnected || isLoading}
-              rows={1}
-            />
-
-            <button
-              className="send-button"
-              onClick={handleSend}
-              disabled={!isConnected || (!inputValue.trim() && pendingAttachments.length === 0) || isLoading}
-              title="发送消息 (Enter)"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M2.01 18L20 10 2.01 2 2 8l12 2-12 2z" />
-              </svg>
-            </button>
-          </div>
-
-          <div className="input-hint">
-            <span>Shift + Enter 换行</span>
-            <span>
-              {pendingAttachments.length > 0 && `${pendingAttachments.length} 个附件 | `}
-              共 {sessions.length} 个对话
-            </span>
-          </div>
-        </div>
+        <ChatInput
+          isConnected={isConnected}
+          isLoading={isLoading}
+          sessionCount={sessions.length}
+          queueLength={queueLength}
+          onSend={handleSend}
+          onAbort={handleAbort}
+        />
       </div>
+
+      {/* 检查点恢复对话框 */}
+      <CheckpointResumeDialog
+        isOpen={showResumeDialog}
+        checkpoints={checkpoints}
+        isLoading={isLoadingCheckpoints}
+        error={checkpointError}
+        onResume={handleResumeFromCheckpoint}
+        onClose={() => {
+          setShowResumeDialog(false)
+          clearCheckpointError()
+        }}
+      />
     </div>
   )
 }

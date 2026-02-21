@@ -18,9 +18,11 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 export interface ChatEventPayload {
   runId: string
   sessionKey: string
-  state: 'delta' | 'final' | 'error'
+  state: 'delta' | 'final' | 'error' | 'aborted'
   message?: Record<string, unknown>
   errorMessage?: string
+  /** 中断原因（state='aborted' 时由 Gateway 提供） */
+  stopReason?: string
 }
 
 /**
@@ -62,6 +64,8 @@ export interface StreamingMessage {
   isStreaming: boolean
   /** 是否已完成 */
   isComplete: boolean
+  /** 是否被用户中断 */
+  isAborted?: boolean
   /** 错误信息 */
   error?: string
 }
@@ -118,7 +122,7 @@ export function useChatStream(): UseChatStreamReturn {
    * 处理 chat 事件
    */
   const handleChatEvent = useCallback((payload: ChatEventPayload) => {
-    const { runId, state, message, errorMessage } = payload
+    const { runId, state, message, errorMessage, stopReason } = payload
     console.log('[useChatStream] 收到 chat 事件:', { runId, state })
 
     setStreamingMessage((prev) => {
@@ -154,6 +158,18 @@ export function useChatStream(): UseChatStreamReturn {
             content: finalContent,
             isStreaming: false,
             isComplete: true,
+          }
+        }
+
+        case 'aborted': {
+          // 用户中断
+          console.log('[useChatStream] 流式被中断, stopReason:', stopReason)
+          return {
+            ...prev,
+            content: contentRef.current,
+            isStreaming: false,
+            isComplete: true,
+            isAborted: true,
           }
         }
 
