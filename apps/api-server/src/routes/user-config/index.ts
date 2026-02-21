@@ -29,6 +29,80 @@ import {
 } from "../../../../../src/db/repositories/auth-profile-configs.js";
 
 // ---------------------------------------------------------------------------
+// 租户字段白名单（§5.2.3 安全边界）
+// ---------------------------------------------------------------------------
+
+/**
+ * 模型提供商：租户可覆盖的字段白名单
+ *
+ * 租户用户只能修改这些字段，基础设施级字段（configType, userId, id 等）
+ * 由系统自动管理，不接受用户输入。
+ */
+export const TENANT_MODEL_PROVIDER_FIELDS: ReadonlySet<string> = new Set([
+  "providerName",
+  "baseUrl",
+  "apiKey",
+  "apiType",
+  "models",
+  "enabled",
+  "priority",
+]);
+
+/**
+ * Agent 默认配置：租户可覆盖的字段白名单
+ *
+ * 租户只能调整模型选择和基本运行参数，
+ * workspacePath、subagentsMaxConcurrent 等系统级字段仅管理员可改。
+ */
+export const TENANT_AGENT_CONFIG_FIELDS: ReadonlySet<string> = new Set([
+  "primaryModel",
+  "compactionMode",
+  "maxConcurrent",
+]);
+
+/**
+ * Auth Profile：租户允许完整 CRUD，无字段级限制
+ *
+ * 但 configType / userId / id 等内部字段仍由系统管理，
+ * 下面定义 auth profile 用户可提交的字段白名单。
+ */
+export const TENANT_AUTH_PROFILE_FIELDS: ReadonlySet<string> = new Set([
+  "provider",
+  "credentialMode",
+  "apiKey",
+  "token",
+  "tokenExpires",
+  "oauthCredentials",
+  "email",
+  "enabled",
+  "priority",
+  "modelBindings",
+  "cooldownConfig",
+  "extraConfig",
+]);
+
+/**
+ * 验证请求体是否只包含白名单中的字段
+ *
+ * @param body - 请求体对象
+ * @param allowedFields - 允许的字段集合
+ * @returns 验证结果，包含是否通过和非法字段列表
+ */
+export function validateTenantFields(
+  body: Record<string, unknown>,
+  allowedFields: ReadonlySet<string>,
+): { valid: boolean; forbiddenFields: string[] } {
+  const forbiddenFields = Object.keys(body).filter(
+    (key) => !allowedFields.has(key),
+  );
+
+  return {
+    valid: forbiddenFields.length === 0,
+    forbiddenFields,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -202,6 +276,23 @@ export function registerUserConfigRoutes(server: FastifyInstance): void {
         });
       }
 
+      /** 租户安全边界：只允许白名单字段 */
+      const fieldCheck = validateTenantFields(
+        body as Record<string, unknown>,
+        TENANT_MODEL_PROVIDER_FIELDS,
+      );
+      if (!fieldCheck.valid) {
+        request.log.warn(
+          { userId: user.userId, forbiddenFields: fieldCheck.forbiddenFields },
+          "[user-config] 租户尝试修改受限字段",
+        );
+        return reply.code(403).send({
+          success: false,
+          error: `Forbidden fields for tenant override: ${fieldCheck.forbiddenFields.join(", ")}`,
+          code: "FORBIDDEN_FIELDS",
+        });
+      }
+
       request.log.info(
         { userId: user.userId, providerKey: key },
         "[user-config] 覆盖用户模型提供商配置",
@@ -303,14 +394,27 @@ export function registerUserConfigRoutes(server: FastifyInstance): void {
       if (!user) return replyUnauthorized(reply);
 
       const body = request.body as {
-        defaultModel?: string;
-        defaultProvider?: string;
-        systemPrompt?: string;
-        temperature?: number;
-        maxTokens?: number;
-        topP?: number;
-        extraConfig?: unknown;
+        primaryModel?: string;
+        compactionMode?: string;
+        maxConcurrent?: number;
       };
+
+      /** 租户安全边界：只允许白名单字段 */
+      const fieldCheck = validateTenantFields(
+        body as Record<string, unknown>,
+        TENANT_AGENT_CONFIG_FIELDS,
+      );
+      if (!fieldCheck.valid) {
+        request.log.warn(
+          { userId: user.userId, forbiddenFields: fieldCheck.forbiddenFields },
+          "[user-config] 租户尝试修改受限 Agent 配置字段",
+        );
+        return reply.code(403).send({
+          success: false,
+          error: `Forbidden fields for tenant override: ${fieldCheck.forbiddenFields.join(", ")}`,
+          code: "FORBIDDEN_FIELDS",
+        });
+      }
 
       request.log.info(
         { userId: user.userId },
@@ -390,6 +494,23 @@ export function registerUserConfigRoutes(server: FastifyInstance): void {
           success: false,
           error: "Missing required fields: provider, credentialMode",
           code: "VALIDATION_ERROR",
+        });
+      }
+
+      /** 租户安全边界：只允许白名单字段 */
+      const fieldCheck = validateTenantFields(
+        body as Record<string, unknown>,
+        TENANT_AUTH_PROFILE_FIELDS,
+      );
+      if (!fieldCheck.valid) {
+        request.log.warn(
+          { userId: user.userId, profileId, forbiddenFields: fieldCheck.forbiddenFields },
+          "[user-config] 租户尝试修改受限 Auth Profile 字段",
+        );
+        return reply.code(403).send({
+          success: false,
+          error: `Forbidden fields for tenant override: ${fieldCheck.forbiddenFields.join(", ")}`,
+          code: "FORBIDDEN_FIELDS",
         });
       }
 
