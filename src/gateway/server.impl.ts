@@ -36,6 +36,7 @@ import type { PluginServicesHandle } from "../plugins/services.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { runOnboardingWizard } from "../wizard/onboarding.js";
 import { startGatewayConfigReloader } from "./config-reload.js";
+import { startConfigDbWatcher, type ConfigDbWatcher } from "./config-db-watcher.js";
 import {
   getHealthCache,
   getHealthVersion,
@@ -578,6 +579,78 @@ export async function startGatewayServer(
     });
   }
 
+  // Phase 3: 数据库配置变更监听 (LISTEN/NOTIFY)
+  let configDbWatcher: ConfigDbWatcher | null = null;
+  if (dbConfigs) {
+    configDbWatcher = startConfigDbWatcher({
+      onConfigChanged: (notification, action) => {
+        logReload.info(
+          `db config change: ${notification.table}.${notification.operation} → ${action}`,
+        );
+
+        if (action === "restart") {
+          // gateway_configs 变更需要重启
+          requestGatewayRestart(
+            {
+              changedPaths: [`db:${notification.table}`],
+              restartGateway: true,
+              restartReasons: [`db:${notification.table}.${notification.operation}`],
+              hotReasons: [],
+              reloadHooks: false,
+              restartGmailWatcher: false,
+              restartBrowserControl: false,
+              restartCron: false,
+              restartHeartbeat: false,
+              restartChannels: new Set(),
+              noopPaths: [],
+            },
+            cfgAtStart,
+          );
+        } else if (action === "hot") {
+          // model_providers / agent_configs / auth_profiles 等可热更新
+          // 重新从数据库加载配置，合并后执行热重载
+          void (async () => {
+            try {
+              const freshDbConfigs = await loadAllDatabaseConfigs();
+              if (!freshDbConfigs) {
+                logReload.warn("db config hot reload: database unavailable, skipping");
+                return;
+              }
+              const freshFileConfig = loadConfig();
+              const nextConfig = mergeFileAndDbConfigs(freshFileConfig, freshDbConfigs);
+
+              await applyHotReload(
+                {
+                  changedPaths: [`db:${notification.table}`],
+                  restartGateway: false,
+                  restartReasons: [],
+                  hotReasons: [`db:${notification.table}.${notification.operation}`],
+                  reloadHooks:
+                    notification.table === "system_configs" && notification.key === "hooks",
+                  restartGmailWatcher: false,
+                  restartBrowserControl: false,
+                  restartCron:
+                    notification.table === "system_configs" && notification.key === "cron",
+                  restartHeartbeat: notification.table === "agent_configs",
+                  restartChannels: new Set(),
+                  noopPaths: [],
+                },
+                nextConfig,
+              );
+            } catch (err) {
+              logReload.error(`db config hot reload failed: ${String(err)}`);
+            }
+          })();
+        }
+      },
+      log: {
+        info: (msg) => logReload.info(msg),
+        warn: (msg) => logReload.warn(msg),
+        error: (msg) => logReload.error(msg),
+      },
+    });
+  }
+
   const close = createGatewayCloseHandler({
     bonjourStop,
     tailscaleCleanup,
@@ -597,6 +670,7 @@ export async function startGatewayServer(
     chatRunState,
     clients,
     configReloader,
+    configDbWatcher,
     browserControl,
     wss,
     httpServer,
