@@ -7,11 +7,26 @@ import {
 } from "../pi-model-discovery.js";
 
 import type { OpenClawConfig } from "../../config/config.js";
-import type { ModelDefinitionConfig } from "../../config/types.js";
+import type { ModelApi, ModelDefinitionConfig } from "../../config/types.js";
 import { resolveOpenClawAgentDir } from "../agent-paths.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../defaults.js";
 import { normalizeModelCompat } from "../model-compat.js";
 import { normalizeProviderId } from "../model-selection.js";
+
+/**
+ * 将可能不规范的 API 类型标识符映射为 pi-ai 注册的标准名称
+ *
+ * 兼容旧版 Admin Console 保存的错误值（如 "anthropic" → "anthropic-messages"）
+ */
+const API_TYPE_COMPAT_MAP: Record<string, ModelApi> = {
+  anthropic: "anthropic-messages",
+  "google-gemini": "google-generative-ai",
+};
+
+function normalizeApiType(api: ModelApi | string | undefined): ModelApi | undefined {
+  if (!api) return undefined;
+  return API_TYPE_COMPAT_MAP[api] ?? (api as ModelApi);
+}
 
 type InlineModelEntry = ModelDefinitionConfig & { provider: string; baseUrl?: string };
 type InlineProviderConfig = {
@@ -32,7 +47,7 @@ export function buildInlineProviderModels(
       ...model,
       provider: trimmed,
       baseUrl: entry?.baseUrl,
-      api: model.api ?? entry?.api,
+      api: normalizeApiType(model.api ?? entry?.api),
     }));
   });
 }
@@ -91,7 +106,7 @@ export function resolveModel(
       const fallbackModel: Model<Api> = normalizeModelCompat({
         id: modelId,
         name: modelId,
-        api: providerCfg?.api ?? "openai-responses",
+        api: normalizeApiType(providerCfg?.api) ?? "openai-responses",
         provider,
         baseUrl: providerCfg?.baseUrl,
         reasoning: false,

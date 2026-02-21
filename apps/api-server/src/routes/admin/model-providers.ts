@@ -463,7 +463,7 @@ function buildTestRequest(
 ): { url: string; headers: Record<string, string>; body: string } {
   const trimmedUrl = baseUrl.replace(/\/+$/, "");
 
-  if (apiType === "anthropic") {
+  if (apiType === "anthropic-messages" || apiType === "anthropic") {
     return {
       url: `${trimmedUrl}/v1/messages`,
       headers: {
@@ -511,7 +511,7 @@ function buildTestRequest(
     };
   }
 
-  if (apiType === "google-gemini") {
+  if (apiType === "google-generative-ai" || apiType === "google-gemini") {
     return {
       url: `${trimmedUrl}/v1beta/models/${model}:generateContent?key=${apiKey}`,
       headers: { "Content-Type": "application/json" },
@@ -690,8 +690,10 @@ function parseApiError(status: number, body: string): string {
  */
 function getDefaultModel(apiType: string): string {
   switch (apiType) {
+    case "anthropic-messages":
     case "anthropic":
       return "claude-3-haiku-20240307";
+    case "google-generative-ai":
     case "google-gemini":
       return "gemini-1.5-flash";
     default:

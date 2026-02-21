@@ -106,6 +106,21 @@ describe("buildInlineProviderModels", () => {
       name: "claude-opus-4.5",
     });
   });
+
+  it("normalizes legacy api type 'anthropic' to 'anthropic-messages' in inline models", () => {
+    const providers = {
+      relay: {
+        baseUrl: "http://localhost:8080",
+        api: "anthropic",
+        models: [makeModel("claude-opus-4-5")],
+      },
+    };
+
+    const result = buildInlineProviderModels(providers);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].api).toBe("anthropic-messages");
+  });
 });
 
 describe("resolveModel", () => {
@@ -184,5 +199,44 @@ describe("resolveModel", () => {
     expect(result.error).toBeUndefined();
     expect(result.model?.api).toBe("anthropic-messages");
     expect(result.model?.baseUrl).toBe("http://relay.local:8080");
+  });
+
+  it("should normalize legacy api type 'anthropic' to 'anthropic-messages'", () => {
+    /** 模拟旧版 Admin Console 保存了错误的 apiType="anthropic" */
+    const cfg = {
+      models: {
+        providers: {
+          "new-api": {
+            baseUrl: "http://localhost:35019",
+            api: "anthropic",
+            models: [],
+          },
+        },
+      },
+    } as OpenClawConfig;
+
+    const result = resolveModel("new-api", "claude-opus-4-5-20251101", "/tmp/agent", cfg);
+
+    expect(result.error).toBeUndefined();
+    expect(result.model?.api).toBe("anthropic-messages");
+  });
+
+  it("should normalize legacy api type 'google-gemini' to 'google-generative-ai'", () => {
+    const cfg = {
+      models: {
+        providers: {
+          "google-relay": {
+            baseUrl: "http://localhost:8080",
+            api: "google-gemini",
+            models: [],
+          },
+        },
+      },
+    } as OpenClawConfig;
+
+    const result = resolveModel("google-relay", "gemini-pro", "/tmp/agent", cfg);
+
+    expect(result.error).toBeUndefined();
+    expect(result.model?.api).toBe("google-generative-ai");
   });
 });
