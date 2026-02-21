@@ -5,6 +5,7 @@ import { resolveHeartbeatVisibility } from "../infra/heartbeat-visibility.js";
 import { loadSessionEntry } from "./session-utils.js";
 import { formatForLog } from "./ws-log.js";
 import { persistAssistantMessage } from "./chat-persistence.js";
+import { parseTodoItemsFromArgs, persistTodoSnapshot } from "./todo-persistence.js";
 
 /**
  * Check if webchat broadcasts should be suppressed for heartbeat runs.
@@ -253,6 +254,22 @@ export function createAgentEventHandler({
     // Include sessionKey so Control UI can filter tool streams per session.
     const agentPayload = sessionKey ? { ...evt, sessionKey } : evt;
     const last = agentRunSeq.get(evt.runId) ?? 0;
+
+    /** 拦截 TodoWrite 工具调用，持久化到 DB（不受 verbose 设置影响） */
+    if (
+      sessionKey &&
+      evt.stream === "tool" &&
+      typeof evt.data?.name === "string" &&
+      evt.data.name.toLowerCase().includes("todowrite") &&
+      evt.data.phase === "start" &&
+      evt.data.args
+    ) {
+      const items = parseTodoItemsFromArgs(evt.data.args);
+      if (items) {
+        void persistTodoSnapshot(sessionKey, clientRunId, items);
+      }
+    }
+
     if (evt.stream === "tool" && !shouldEmitToolEvents(evt.runId, sessionKey)) {
       agentRunSeq.set(evt.runId, evt.seq);
       return;

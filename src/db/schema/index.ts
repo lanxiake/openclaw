@@ -65,6 +65,18 @@ export type {
   MessageAttachment,
 } from "./conversations.js";
 
+// Agent Todo 相关表
+export {
+  agentTodos,
+  agentTodosRelations,
+  // Zod schemas
+  insertAgentTodoSchema,
+  selectAgentTodoSchema,
+} from "./agent-todos.js";
+
+// Agent Todo 相关类型
+export type { AgentTodo, NewAgentTodo, TodoItem } from "./agent-todos.js";
+
 // 用户记忆相关表
 export {
   userMemories,

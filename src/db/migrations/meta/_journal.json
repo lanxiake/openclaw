@@ -71,6 +71,13 @@
       "when": 1771705103202,
       "tag": "0009_thankful_masked_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1771705845569,
+      "tag": "0010_flaky_hydra",
+      "breakpoints": true
     }
   ]
 }
