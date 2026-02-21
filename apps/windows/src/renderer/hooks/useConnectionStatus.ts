@@ -12,6 +12,8 @@ import { useState, useEffect, useCallback } from 'react'
 interface ConnectOptions {
   /** 认证 Token */
   token?: string
+  /** 设备 ID（用于 device token 验证） */
+  deviceId?: string
 }
 
 interface UseConnectionStatusReturn {
@@ -35,6 +37,12 @@ export function useConnectionStatus(): UseConnectionStatusReturn {
    */
   useEffect(() => {
     console.log('[useConnectionStatus] 注册状态监听')
+
+    // 安全检查：electronAPI 可能在渲染进程初始化时尚未就绪
+    if (!window.electronAPI?.gateway) {
+      console.warn('[useConnectionStatus] electronAPI.gateway 不可用，跳过状态监听')
+      return
+    }
 
     const unsubscribe = window.electronAPI.gateway.onStatusChange((connected: boolean) => {
       console.log('[useConnectionStatus] 状态变化:', connected)
@@ -64,6 +72,11 @@ export function useConnectionStatus(): UseConnectionStatusReturn {
   const connect = useCallback(async (url: string, options?: ConnectOptions) => {
     console.log('[useConnectionStatus] 开始连接:', url, options?.token ? '(带 Token)' : '(无 Token)')
 
+    if (!window.electronAPI?.gateway) {
+      setError('electronAPI.gateway 不可用')
+      return
+    }
+
     setIsConnecting(true)
     setError(null)
 
@@ -83,6 +96,10 @@ export function useConnectionStatus(): UseConnectionStatusReturn {
    */
   const disconnect = useCallback(async () => {
     console.log('[useConnectionStatus] 断开连接')
+
+    if (!window.electronAPI?.gateway) {
+      return
+    }
 
     try {
       await window.electronAPI.gateway.disconnect()

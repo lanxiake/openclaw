@@ -8,6 +8,27 @@
  * - 处理 IPC 通信
  */
 
+/**
+ * 全局 EPIPE 错误保护
+ *
+ * 当父进程终端关闭后，stdout/stderr 管道断开，
+ * Node.js 的 SyncWriteStream.writeSync 会抛出 EPIPE 同步异常，
+ * 导致 Electron 弹出 "A JavaScript error occurred in the main process" 崩溃对话框。
+ *
+ * 此处通过 uncaughtException 过滤 EPIPE 错误，仅静默忽略管道断开，
+ * 其他未捕获异常仍正常传播。
+ */
+process.on('uncaughtException', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EPIPE' || err.code === 'ERR_STREAM_DESTROYED') {
+    // 管道断开不可恢复，静默忽略即可
+    return
+  }
+  // 非 EPIPE 异常：保留默认行为（打印 + 退出）
+  // eslint-disable-next-line no-console
+  process.stderr?.write?.(`Uncaught exception: ${err.stack ?? err.message}\n`)
+  process.exit(1)
+})
+
 import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, dialog, shell, clipboard } from 'electron'
 import { join, extname } from 'path'
 import { promises as fs } from 'fs'
@@ -439,7 +460,7 @@ function setupIpcHandlers(): void {
   ipcMain.handle('window:isMaximized', () => mainWindow?.isMaximized() ?? false)
 
   // === Gateway 操作 ===
-  ipcMain.handle('gateway:connect', async (_event, url: string, options?: { token?: string }) => {
+  ipcMain.handle('gateway:connect', async (_event, url: string, options?: { token?: string; deviceId?: string }) => {
     // 验证 URL
     const safeUrl = validateUrl(url, { allowedProtocols: ['ws:', 'wss:', 'http:', 'https:'] })
 
@@ -451,6 +472,9 @@ function setupIpcHandlers(): void {
           throw new Error('无效的认证 Token')
         }
         gatewayClient.setToken(options.token)
+      }
+      if (options?.deviceId) {
+        gatewayClient.setDeviceId(options.deviceId)
       }
       return gatewayClient.connect()
     }
@@ -1342,6 +1366,25 @@ function setupApiIpcHandlers(): void {
     }
     log.info('安装商店技能', { skillId })
     return apiClient.installStoreSkill(skillId)
+  })
+
+  ipcMain.handle('api:uninstallStoreSkill', async (_event, skillId: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof skillId !== 'string' || skillId.length > 200) {
+      throw new Error('无效的技能 ID')
+    }
+    log.info('卸载商店技能', { skillId })
+    return apiClient.uninstallStoreSkill(skillId)
+  })
+
+  ipcMain.handle('api:getInstalledSkills', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取已安装技能列表')
+    return apiClient.getInstalledSkills()
   })
 
   ipcMain.handle('api:createUserSkill', async (_event, data: {

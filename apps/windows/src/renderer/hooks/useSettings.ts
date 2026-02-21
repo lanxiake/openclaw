@@ -18,6 +18,8 @@ export interface GatewayConfig {
   url: string
   /** 认证 Token */
   token?: string
+  /** 设备 ID（用于 device token 验证） */
+  deviceId?: string
   /** 是否自动连接 */
   autoConnect: boolean
   /** 重连间隔 (毫秒) */

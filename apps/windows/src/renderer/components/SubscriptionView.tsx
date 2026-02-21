@@ -11,7 +11,8 @@ import { useSubscription, type SubscriptionPlan, type BillingPeriod } from '../h
 import './SubscriptionView.css'
 
 interface SubscriptionViewProps {
-  isConnected: boolean
+  /** Gateway 连接状态（保留兼容但订阅页面不再依赖此状态） */
+  isConnected?: boolean
 }
 
 /**
@@ -37,13 +38,11 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ isConnected 
   const [cancelReason, setCancelReason] = useState('')
 
   /**
-   * 初始化加载
+   * 初始化加载（不依赖 Gateway 连接，通过 REST API 获取数据）
    */
   useEffect(() => {
-    if (isConnected) {
-      refresh()
-    }
-  }, [isConnected, refresh])
+    refresh()
+  }, [refresh])
 
   /**
    * 处理订阅
@@ -150,9 +149,10 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ isConnected 
    */
   const renderUsageItem = (
     label: string,
-    item: { used: number; limit: number; percent: number; unit?: string },
+    item: { used: number; limit: number; percent: number; unit?: string } | undefined | null,
     unit?: string
   ) => {
+    if (!item) return null
     const level = getUsageLevel(item.percent)
     const displayUnit = unit || (item as { unit?: string }).unit || ''
     const limitText = item.limit === -1 ? '∞' : `${item.limit}${displayUnit}`
@@ -255,17 +255,19 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ isConnected 
           )}
         </div>
 
-        <div className="subscription-features">
-          <h4>已启用功能</h4>
-          <div className="feature-tags">
-            {features.premiumSkills && <span className="feature-tag">高级技能</span>}
-            {features.prioritySupport && <span className="feature-tag">优先支持</span>}
-            {features.apiAccess && <span className="feature-tag">API 访问</span>}
-            {!features.premiumSkills && !features.prioritySupport && !features.apiAccess && (
-              <span className="feature-tag basic">基础功能</span>
-            )}
+        {features && (
+          <div className="subscription-features">
+            <h4>已启用功能</h4>
+            <div className="feature-tags">
+              {features.premiumSkills && <span className="feature-tag">高级技能</span>}
+              {features.prioritySupport && <span className="feature-tag">优先支持</span>}
+              {features.apiAccess && <span className="feature-tag">API 访问</span>}
+              {!features.premiumSkills && !features.prioritySupport && !features.apiAccess && (
+                <span className="feature-tag basic">基础功能</span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     )
   }
@@ -307,19 +309,6 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ isConnected 
               确认取消
             </button>
           </div>
-        </div>
-      </div>
-    )
-  }
-
-  // 未连接状态
-  if (!isConnected) {
-    return (
-      <div className="subscription-view disconnected">
-        <div className="empty-state">
-          <div className="empty-icon">💳</div>
-          <h3>未连接到服务器</h3>
-          <p>请先连接到 Gateway 服务器以查看订阅信息</p>
         </div>
       </div>
     )

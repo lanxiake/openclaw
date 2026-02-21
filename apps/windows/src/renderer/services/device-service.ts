@@ -56,12 +56,23 @@ export class DeviceService {
   }
 
   /**
-   * 获取认证头
+   * 获取认证头（含 Content-Type）
    */
   private getAuthHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
+    if (this.accessToken) {
+      headers['Authorization'] = `Bearer ${this.accessToken}`
+    }
+    return headers
+  }
+
+  /**
+   * 获取仅含认证信息的请求头（不含 Content-Type，用于无 body 的请求如 DELETE）
+   */
+  private getAuthOnlyHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {}
     if (this.accessToken) {
       headers['Authorization'] = `Bearer ${this.accessToken}`
     }
@@ -76,7 +87,7 @@ export class DeviceService {
     console.log('[device-service] accessToken:', this.accessToken ? `${this.accessToken.substring(0, 20)}...` : '无')
 
     try {
-      const headers = this.getAuthHeaders()
+      const headers = this.getAuthOnlyHeaders()
       console.log('[device-service] 请求头:', headers)
 
       const response = await fetch(`${this.baseUrl}/api/devices`, {
@@ -275,7 +286,7 @@ export class DeviceService {
     try {
       const response = await fetch(`${this.baseUrl}/api/devices/${deviceId}`, {
         method: 'DELETE',
-        headers: this.getAuthHeaders(),
+        headers: this.getAuthOnlyHeaders(),
       })
 
       const data = await response.json()
@@ -293,6 +304,45 @@ export class DeviceService {
       return {
         success: false,
         error: error instanceof Error ? error.message : '删除失败',
+      }
+    }
+  }
+  /**
+   * 获取设备的 Gateway 连接 Token
+   */
+  async getDeviceToken(deviceId: string): Promise<{
+    success: boolean
+    data?: { deviceId: string; token: string; role: string; scopes: string[] }
+    error?: string
+  }> {
+    console.log('[device-service] 获取设备 Token', { deviceId })
+
+    try {
+      const response = await fetch(`${this.baseUrl}/api/devices/${deviceId}/token`, {
+        method: 'GET',
+        headers: this.getAuthOnlyHeaders(),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        console.error('[device-service] 获取设备 Token 失败:', { status: response.status, data })
+        return {
+          success: false,
+          error: data.error || `HTTP ${response.status}`,
+        }
+      }
+
+      console.log('[device-service] 设备 Token 获取成功')
+      return {
+        success: true,
+        data: data.data,
+      }
+    } catch (error) {
+      console.error('[device-service] 获取设备 Token 请求失败', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '获取失败',
       }
     }
   }

@@ -87,9 +87,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   }
 
   // 获取使用量数据（有默认值）
-  const deviceLimit = usage?.devices.limit ?? 0
-  const dailyCalls = usage?.conversations.daily ?? 0
-  const dailyCallLimit = usage?.conversations.limit ?? 0
+  const deviceLimit = usage?.devices?.limit ?? 0
+  const dailyCalls = usage?.conversations?.daily ?? 0
+  const dailyCallLimit = usage?.conversations?.limit ?? 0
 
   return (
     <div className="dashboard-view">

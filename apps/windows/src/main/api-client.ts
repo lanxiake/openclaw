@@ -948,6 +948,24 @@ export class ApiClient {
   }
 
   /**
+   * 卸载商店技能
+   */
+  async uninstallStoreSkill(skillId: string): Promise<ApiResponse<unknown>> {
+    log.info('卸载商店技能', { skillId })
+
+    return this.request<ApiResponse<unknown>>('DELETE', `/api/store/skills/${skillId}/install`)
+  }
+
+  /**
+   * 获取已安装技能列表
+   */
+  async getInstalledSkills(): Promise<ApiResponse<unknown>> {
+    log.info('获取已安装技能列表')
+
+    return this.request<ApiResponse<unknown>>('GET', '/api/store/skills/installed')
+  }
+
+  /**
    * 创建用户自建技能
    */
   async createUserSkill(data: {

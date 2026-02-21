@@ -47,12 +47,16 @@ export function useConfirmRequests() {
       console.log('[useConfirmRequests] 处理用户响应:', { requestId, approved })
 
       try {
-        // 调用 IPC 发送响应到 Gateway
-        const result = await window.electronAPI.gateway.call('assistant.confirm.response', {
-          requestId,
-          approved,
-        })
-        console.log('[useConfirmRequests] 响应发送成功:', result)
+        if (!window.electronAPI?.gateway) {
+          console.error('[useConfirmRequests] electronAPI.gateway 不可用')
+        } else {
+          // 调用 IPC 发送响应到 Gateway
+          const result = await window.electronAPI.gateway.call('assistant.confirm.response', {
+            requestId,
+            approved,
+          })
+          console.log('[useConfirmRequests] 响应发送成功:', result)
+        }
       } catch (error) {
         console.error('[useConfirmRequests] 响应发送失败:', error)
       }
@@ -66,6 +70,12 @@ export function useConfirmRequests() {
   // 监听来自主进程的确认请求
   useEffect(() => {
     console.log('[useConfirmRequests] 初始化确认请求监听')
+
+    // 安全检查：electronAPI 可能在渲染进程初始化时尚未就绪
+    if (!window.electronAPI?.gateway) {
+      console.warn('[useConfirmRequests] electronAPI.gateway 不可用，跳过确认请求监听')
+      return
+    }
 
     // 设置 IPC 监听器
     const removeListener = window.electronAPI.gateway.onConfirmRequest((request: ConfirmRequest) => {

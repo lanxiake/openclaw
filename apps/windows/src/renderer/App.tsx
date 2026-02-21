@@ -117,17 +117,21 @@ const App: React.FC = () => {
 
     const gatewayUrl = settings.gateway.url || 'ws://localhost:18789'
     const gatewayToken = settings.gateway.token
+    const gatewayDeviceId = settings.gateway.deviceId
 
     console.log('[App] 用户已认证,尝试连接 Gateway:', {
       url: gatewayUrl,
       hasGatewayToken: !!gatewayToken,
+      hasDeviceId: !!gatewayDeviceId,
       hasAccessToken: !!accessToken
     })
 
     // 连接选项:
     // - 如果配置了 gateway.token,使用它作为连接层认证
+    // - 如果有 deviceId, 传递给 Gateway 用于 device token 验证
     // - accessToken 会在 RPC 调用时自动添加到请求参数中
-    const connectOptions = gatewayToken ? { token: gatewayToken } : undefined
+    const connectOptions: { token?: string; deviceId?: string } | undefined =
+      gatewayToken ? { token: gatewayToken, ...(gatewayDeviceId ? { deviceId: gatewayDeviceId } : {}) } : undefined
 
     // 立即尝试连接
     connect(gatewayUrl, connectOptions).catch(err => {

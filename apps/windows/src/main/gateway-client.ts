@@ -70,6 +70,8 @@ interface ConnectParams {
   auth?: {
     token?: string
     password?: string
+    /** 设备 ID，用于 device token 验证 */
+    deviceId?: string
   }
   role: string
   scopes: string[]
@@ -83,6 +85,8 @@ export interface GatewayClientConfig {
   url: string
   /** 认证 Token */
   token?: string
+  /** 设备 ID（用于 device token 验证） */
+  deviceId?: string
   /** 重连间隔 (毫秒) */
   reconnectInterval?: number
   /** 最大重连次数 */
@@ -162,6 +166,7 @@ export class GatewayClient extends EventEmitter {
     this.config = {
       url: config.url,
       token: config.token ?? '',
+      deviceId: config.deviceId ?? '',
       reconnectInterval: config.reconnectInterval ?? 3000,
       maxReconnectAttempts: config.maxReconnectAttempts ?? 10,
       heartbeatInterval: config.heartbeatInterval ?? 30000,
@@ -329,7 +334,12 @@ export class GatewayClient extends EventEmitter {
         'file.ops',       // 支持文件操作
         'system.cmd',     // 支持系统命令
       ],
-      auth: this.config.token ? { token: this.config.token } : undefined,
+      auth: this.config.token
+        ? {
+            token: this.config.token,
+            ...(this.config.deviceId ? { deviceId: this.config.deviceId } : {}),
+          }
+        : undefined,
       role: 'operator',
       scopes: ['operator.admin'],
     }
@@ -593,6 +603,13 @@ export class GatewayClient extends EventEmitter {
    */
   setToken(token: string): void {
     this.config.token = token
+  }
+
+  /**
+   * 设置设备 ID（用于 device token 验证）
+   */
+  setDeviceId(deviceId: string): void {
+    this.config.deviceId = deviceId
   }
 
   /**

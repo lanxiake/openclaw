@@ -221,7 +221,7 @@ export interface ElectronAPI {
 
   // Gateway 相关
   gateway: {
-    connect: (url: string, options?: { token?: string }) => Promise<void>
+    connect: (url: string, options?: { token?: string; deviceId?: string }) => Promise<void>
     disconnect: () => Promise<void>
     isConnected: () => Promise<boolean>
     call: <T>(method: string, params?: unknown) => Promise<T>
@@ -497,6 +497,10 @@ export interface ElectronAPI {
     getStoreSkillDetail: (skillId: string) => Promise<unknown>
     /** 安装商店技能 */
     installStoreSkill: (skillId: string) => Promise<unknown>
+    /** 卸载商店技能 */
+    uninstallStoreSkill: (skillId: string) => Promise<unknown>
+    /** 获取已安装技能列表 */
+    getInstalledSkills: () => Promise<unknown>
     /** 创建用户自建技能 */
     createUserSkill: (data: {
       name: string
@@ -821,6 +825,10 @@ const electronAPI: ElectronAPI = {
       ipcRenderer.invoke('api:getStoreSkillDetail', skillId),
     installStoreSkill: (skillId: string) =>
       ipcRenderer.invoke('api:installStoreSkill', skillId),
+    uninstallStoreSkill: (skillId: string) =>
+      ipcRenderer.invoke('api:uninstallStoreSkill', skillId),
+    getInstalledSkills: () =>
+      ipcRenderer.invoke('api:getInstalledSkills'),
     createUserSkill: (data: {
       name: string
       description?: string

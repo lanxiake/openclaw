@@ -196,21 +196,46 @@ class FileLogger {
   }
 
   /**
+   * 安全写入控制台
+   *
+   * 当父进程管道已关闭（如终端窗口被关闭）时，
+   * Node.js 的 SyncWriteStream.write 会抛出 EPIPE 同步异常。
+   * 捕获后标记 stdoutBroken，后续调用只写文件不再尝试 stdout。
+   */
+  private stdoutBroken = false
+
+  private safeConsoleWrite(
+    originalFn: (...args: unknown[]) => void,
+    ...args: unknown[]
+  ): void {
+    if (this.stdoutBroken) return
+    try {
+      originalFn(...args)
+    } catch (err: unknown) {
+      const code = (err as NodeJS.ErrnoException)?.code
+      if (code === 'EPIPE' || code === 'ERR_STREAM_DESTROYED') {
+        this.stdoutBroken = true
+      }
+      // 静默忽略控制台写入失败，日志仍会写入文件
+    }
+  }
+
+  /**
    * 拦截 console 方法，同时写入文件和控制台
    */
   private interceptConsole(): void {
     console.log = (...args: unknown[]) => {
-      this.originalConsoleLog(...args)
+      this.safeConsoleWrite(this.originalConsoleLog, ...args)
       this.writeLog('INFO', ...args)
     }
 
     console.error = (...args: unknown[]) => {
-      this.originalConsoleError(...args)
+      this.safeConsoleWrite(this.originalConsoleError, ...args)
       this.writeLog('ERROR', ...args)
     }
 
     console.warn = (...args: unknown[]) => {
-      this.originalConsoleWarn(...args)
+      this.safeConsoleWrite(this.originalConsoleWarn, ...args)
       this.writeLog('WARN', ...args)
     }
   }

@@ -164,6 +164,8 @@ interface UseSkillStoreReturn {
   getSkillDetail: (skillId: string) => Promise<StoreSkillInfo | null>;
   /** 安装技能 */
   installSkill: (skillId: string) => Promise<{ success: boolean; error?: string }>;
+  /** 卸载技能（从商店取消安装） */
+  uninstallSkill: (skillId: string) => Promise<{ success: boolean; error?: string }>;
   /** 上传技能 */
   uploadSkill: (
     data: SkillUploadData,
@@ -470,6 +472,34 @@ export function useSkillStore(): UseSkillStoreReturn {
   );
 
   /**
+   * 卸载技能（从商店取消安装）
+   */
+  const uninstallSkill = useCallback(
+    async (skillId: string): Promise<{ success: boolean; error?: string }> => {
+      console.log("[useSkillStore] 卸载技能:", skillId);
+      try {
+        const result = (await window.electronAPI.api.uninstallStoreSkill(skillId)) as {
+          success: boolean;
+          data?: { skillId: string; message: string };
+          error?: string;
+        };
+
+        if (result.success) {
+          // 刷新商店列表以更新安装状态
+          await loadStoreSkills();
+        }
+
+        return { success: result.success, error: result.error };
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "卸载失败";
+        console.error("[useSkillStore] 卸载失败:", errorMessage);
+        return { success: false, error: errorMessage };
+      }
+    },
+    [loadStoreSkills],
+  );
+
+  /**
    * 上传技能（创建用户自建技能）
    */
   const uploadSkill = useCallback(
@@ -587,6 +617,7 @@ export function useSkillStore(): UseSkillStoreReturn {
     setFilters,
     getSkillDetail,
     installSkill,
+    uninstallSkill,
     uploadSkill,
     checkUpdates,
     refreshStore,

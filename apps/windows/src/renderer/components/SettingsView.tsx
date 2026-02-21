@@ -8,13 +8,14 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useSettings, type AppSettings } from '../hooks/useSettings'
 import { useAuth } from '../contexts/AuthContext'
 import { UpdaterView } from './UpdaterView'
+import { deviceService } from '../services/device-service'
 import './SettingsView.css'
 
 interface SettingsViewProps {
   isConnected: boolean
   isConnecting?: boolean
   connectionError?: string | null
-  onConnect?: (url: string, options?: { token?: string }) => void
+  onConnect?: (url: string, options?: { token?: string; deviceId?: string }) => void
   onDisconnect?: () => void
   onClose?: () => void
 }
@@ -73,7 +74,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
     importSettings,
   } = useSettings()
 
-  const { user, updateUserProfile, changePassword } = useAuth()
+  const { user, accessToken, updateUserProfile, changePassword } = useAuth()
 
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('account')
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -185,7 +186,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
       onDisconnect?.()
     } else {
       const token = settings.gateway.token || undefined
-      onConnect?.(settings.gateway.url, token ? { token } : undefined)
+      const deviceId = settings.gateway.deviceId || undefined
+      const options = token ? { token, ...(deviceId ? { deviceId } : {}) } : undefined
+      onConnect?.(settings.gateway.url, options)
     }
   }
 
@@ -209,7 +212,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
       }
 
       const token = settings.gateway.token || undefined
-      await onConnect?.(settings.gateway.url, token ? { token } : undefined)
+      const deviceId = settings.gateway.deviceId || undefined
+      const options = token ? { token, ...(deviceId ? { deviceId } : {}) } : undefined
+      await onConnect?.(settings.gateway.url, options)
 
       const latency = Date.now() - start
       setTestLatency(latency)
@@ -225,26 +230,54 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
 
   /**
    * 使用设备专属 Token 填充 Gateway Token
+   *
+   * 通过 API 从用户已绑定的设备中获取 Gateway 连接 Token，
+   * 而非依赖本地 pairing 服务状态。
    */
   const handleUseDeviceToken = useCallback(async () => {
-    console.log('[SettingsView] 获取设备 Token')
+    console.log('[SettingsView] 获取设备 Token（通过 API）')
     setDeviceTokenLoading(true)
     try {
-      const pairingState = await window.electronAPI.pairing.getStatus()
-      if (pairingState?.token) {
-        updateGateway({ token: pairingState.token })
-        console.log('[SettingsView] 已填入设备 Token')
-      } else {
-        alert('设备尚未配对或无可用 Token，请先完成设备配对')
-        console.warn('[SettingsView] 设备未配对，无法获取 Token')
+      // 确保 deviceService 有最新的 accessToken
+      deviceService.setAccessToken(accessToken)
+
+      // 1. 获取用户设备列表
+      const devicesResult = await deviceService.getDevices()
+      if (!devicesResult.success || !devicesResult.devices?.length) {
+        alert('未找到已绑定的设备，请先完成设备配对')
+        console.warn('[SettingsView] 无已绑定设备')
+        return
       }
+
+      // 2. 优先选择主设备，否则取第一个
+      const targetDevice = devicesResult.devices.find(d => d.isPrimary) || devicesResult.devices[0]
+      console.log('[SettingsView] 目标设备:', targetDevice.deviceId, targetDevice.alias || targetDevice.displayName)
+
+      // 3. 通过 API 获取设备的 Gateway Token
+      const tokenResult = await deviceService.getDeviceToken(targetDevice.deviceId)
+      if (!tokenResult.success || !tokenResult.data?.token) {
+        alert(tokenResult.error || '获取设备 Token 失败')
+        console.error('[SettingsView] 获取设备 Token 失败:', tokenResult.error)
+        return
+      }
+
+      // 4. 填入 Gateway Token 和 deviceId，并自动保存
+      updateGateway({ token: tokenResult.data.token, deviceId: targetDevice.deviceId })
+      console.log('[SettingsView] 已填入设备 Token (deviceId: %s)', targetDevice.deviceId)
+
+      // 延迟保存，等待 React 状态更新完成
+      setTimeout(() => {
+        saveSettings().catch((err: unknown) => {
+          console.error('[SettingsView] 自动保存设置失败:', err)
+        })
+      }, 100)
     } catch (err) {
       console.error('[SettingsView] 获取设备 Token 失败:', err)
       alert('获取设备 Token 失败')
     } finally {
       setDeviceTokenLoading(false)
     }
-  }, [updateGateway])
+  }, [updateGateway, accessToken, saveSettings])
 
   /**
    * 保存用户显示名称
