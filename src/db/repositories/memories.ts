@@ -15,7 +15,6 @@ import { TenantScopedRepository } from "./tenant-scope.js";
 import {
   search as milvusSearch,
   upsertVector as milvusUpsert,
-  deleteVector as milvusDelete,
 } from "../../infrastructure/milvus/vector-store.js";
 import { isMilvusConnected } from "../../infrastructure/milvus/connection.js";
 
