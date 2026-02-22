@@ -93,3 +93,31 @@ export { GatewayConfigRepository } from "./gateway-configs.js";
 
 // 模型配置仓库
 export { ModelProviderRepository, AgentDefaultConfigRepository } from "./model-configs.js";
+
+// 系统告警仓库
+export { AlertRepository, getAlertRepository } from "./alerts.js";
+
+// 系统日志仓库
+export {
+  SystemLogsRepository,
+  getSystemLogsRepository,
+  generateLogId,
+} from "./system-logs.js";
+
+// 系统日志相关类型
+export type { SystemLogQueryParams, SystemLogStats } from "./system-logs.js";
+
+// 系统指标仓库
+export {
+  SystemMetricsRepository,
+  getSystemMetricsRepository,
+  generateMetricId,
+} from "./system-metrics.js";
+
+// 频道配对仓库
+export {
+  ChannelPairingRequestRepository,
+  ChannelBindingRepository,
+  getChannelPairingRequestRepository,
+  getChannelBindingRepository,
+} from "./channel-pairing.js";

@@ -435,3 +435,115 @@ export type {
   VerboseLevelEnum,
   BehaviorPatternTypeEnum,
 } from "./profile-memory.js";
+
+// 系统告警表
+export {
+  systemAlerts,
+  // Zod schemas
+  insertSystemAlertSchema,
+  selectSystemAlertSchema,
+} from "./system-alerts.js";
+
+// 系统告警相关类型
+export type {
+  SystemAlert,
+  NewSystemAlert,
+  AlertType,
+  AlertSeverity,
+} from "./system-alerts.js";
+
+// 系统日志表
+export {
+  systemLogs,
+  // Zod schemas
+  insertSystemLogSchema,
+  selectSystemLogSchema,
+} from "./system-logs.js";
+
+// 系统日志相关类型
+export type {
+  SystemLog,
+  NewSystemLog,
+  LogLevelEnum,
+  SystemLogMetadata,
+} from "./system-logs.js";
+
+// 系统指标表
+export {
+  systemMetrics,
+  // Zod schemas
+  insertSystemMetricSchema,
+  selectSystemMetricSchema,
+} from "./system-metrics.js";
+
+// 系统指标相关类型
+export type {
+  SystemMetric,
+  NewSystemMetric,
+  MetricType,
+} from "./system-metrics.js";
+
+// 积分系统相关表
+export {
+  creditAccounts,
+  creditBatches,
+  creditTransactions,
+  inviteRecords,
+  modelPricing,
+  creditAccountsRelations,
+  creditBatchesRelations,
+  creditTransactionsRelations,
+  inviteRecordsRelations,
+  // Zod schemas
+  insertCreditAccountSchema,
+  selectCreditAccountSchema,
+  insertCreditBatchSchema,
+  selectCreditBatchSchema,
+  insertCreditTransactionSchema,
+  selectCreditTransactionSchema,
+  insertInviteRecordSchema,
+  selectInviteRecordSchema,
+  insertModelPricingSchema,
+  selectModelPricingSchema,
+} from "./credits.js";
+
+// 积分系统相关类型
+export type {
+  CreditAccount,
+  NewCreditAccount,
+  CreditBatch,
+  NewCreditBatch,
+  CreditTransaction,
+  NewCreditTransaction,
+  InviteRecord,
+  NewInviteRecord,
+  ModelPricingRecord,
+  NewModelPricingRecord,
+  CreditSource,
+  CreditTransactionType,
+  TransactionSource,
+  InviteStatus,
+  CreditTransactionMetadata,
+} from "./credits.js";
+
+// 频道配对相关表
+export {
+  channelPairingRequests,
+  userChannelBindings,
+  channelPairingRequestsRelations,
+  userChannelBindingsRelations,
+  // Zod schemas
+  insertChannelPairingRequestSchema,
+  selectChannelPairingRequestSchema,
+  insertUserChannelBindingSchema,
+  selectUserChannelBindingSchema,
+} from "./channel-pairing.js";
+
+// 频道配对相关类型
+export type {
+  ChannelPairingRequest,
+  NewChannelPairingRequest,
+  UserChannelBinding,
+  NewUserChannelBinding,
+  ChannelPairingStatus,
+} from "./channel-pairing.js";
