@@ -10,6 +10,7 @@ export {
 export const DEFAULT_AGENT_ID = "main";
 export const DEFAULT_MAIN_KEY = "main";
 export const DEFAULT_ACCOUNT_ID = "default";
+/** @deprecated Phase 0 后不再使用，所有连接必须有真实 userId */
 export const DEFAULT_USER_ID = "default";
 
 // Pre-compiled regex
@@ -118,45 +119,42 @@ export function normalizeAccountId(value: string | undefined | null): string {
 /**
  * 规范化用户 ID
  *
- * 用于多租户场景下的用户隔离，空值返回 DEFAULT_USER_ID 以保持向后兼容
+ * 多用户模式下，空值抛出错误，强制调用方提供有效的 userId
  */
 export function normalizeUserId(value: string | undefined | null): string {
   const trimmed = (value ?? "").trim();
   if (!trimmed) {
-    return DEFAULT_USER_ID;
+    throw new Error("userId is required in multi-user mode");
   }
   if (VALID_ID_RE.test(trimmed)) {
     return trimmed.toLowerCase();
   }
-  return (
-    trimmed
-      .toLowerCase()
-      .replace(INVALID_CHARS_RE, "-")
-      .replace(LEADING_DASH_RE, "")
-      .replace(TRAILING_DASH_RE, "")
-      .slice(0, 64) || DEFAULT_USER_ID
-  );
+  const normalized = trimmed
+    .toLowerCase()
+    .replace(INVALID_CHARS_RE, "-")
+    .replace(LEADING_DASH_RE, "")
+    .replace(TRAILING_DASH_RE, "")
+    .slice(0, 64);
+  if (!normalized) {
+    throw new Error(`userId "${value}" could not be normalized to a valid ID`);
+  }
+  return normalized;
 }
 
 /**
  * 构建带用户维度的 Agent Session Key
  *
  * 格式: user:{userId}:agent:{agentId}:{mainKey}
- * 向后兼容: userId 为空或 "default" 时返回旧格式 agent:{agentId}:{mainKey}
+ * userId 为空时抛出错误，Phase 0 后所有连接必须有真实 userId
  */
 export function buildUserAgentSessionKey(params: {
-  userId?: string | null;
+  userId: string;
   agentId: string;
   mainKey?: string | undefined;
 }): string {
   const userId = normalizeUserId(params.userId);
   const agentId = normalizeAgentId(params.agentId);
   const mainKey = normalizeMainKey(params.mainKey);
-
-  // 向后兼容：默认用户使用旧格式
-  if (userId === DEFAULT_USER_ID) {
-    return `agent:${agentId}:${mainKey}`;
-  }
 
   return `user:${userId}:agent:${agentId}:${mainKey}`;
 }
@@ -165,12 +163,14 @@ export function buildUserAgentSessionKey(params: {
  * 从 Session Key 解析用户 ID
  *
  * 支持新格式 user:{userId}:agent:... 和旧格式 agent:...
- * 旧格式返回 DEFAULT_USER_ID
+ * 旧格式返回 undefined（Phase 0 后旧格式不应再出现）
  */
-export function extractUserIdFromSessionKey(sessionKey: string | undefined | null): string {
+export function extractUserIdFromSessionKey(
+  sessionKey: string | undefined | null,
+): string | undefined {
   const key = (sessionKey ?? "").trim().toLowerCase();
   if (!key) {
-    return DEFAULT_USER_ID;
+    return undefined;
   }
 
   // 新格式: user:{userId}:agent:...
@@ -181,8 +181,8 @@ export function extractUserIdFromSessionKey(sessionKey: string | undefined | nul
     }
   }
 
-  // 旧格式: agent:... 返回默认用户
-  return DEFAULT_USER_ID;
+  // 旧格式: agent:... 无法提取 userId
+  return undefined;
 }
 
 export function buildAgentMainSessionKey(params: {

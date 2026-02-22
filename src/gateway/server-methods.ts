@@ -265,6 +265,21 @@ const WRITE_METHODS = new Set([
   "chat.checkpoint.resume",
 ]);
 
+/**
+ * 认证豁免方法前缀和名称
+ *
+ * 这些方法不需要用户认证（允许未认证连接调用）
+ */
+const AUTH_EXEMPT_PREFIXES = ["auth.", "admin."];
+const AUTH_EXEMPT_METHODS = new Set(["connect", "heartbeat", "assistant.heartbeat"]);
+
+function isAuthExemptMethod(method: string): boolean {
+  if (AUTH_EXEMPT_METHODS.has(method)) {
+    return true;
+  }
+  return AUTH_EXEMPT_PREFIXES.some((p) => method.startsWith(p));
+}
+
 function authorizeGatewayMethod(method: string, client: GatewayRequestOptions["client"]) {
   // Auth methods are public (no authentication required)
   if (method.startsWith("auth.")) {
@@ -405,14 +420,22 @@ export async function handleGatewayRequest(
     return;
   }
 
-  // 2. 配额检查 (多租户模式)
-  // 从 client 获取已认证用户信息
+  // 1.5 用户认证检查 (Phase 0: 非豁免方法要求已认证用户)
   const authenticatedUser = (client as { authenticatedUser?: { userId: string } })
     ?.authenticatedUser;
   const userId = authenticatedUser?.userId;
 
+  if (!isAuthExemptMethod(req.method) && !userId) {
+    respond(
+      false,
+      undefined,
+      errorShape(ErrorCodes.INVALID_REQUEST, "user authentication required"),
+    );
+    return;
+  }
+
+  // 2. 配额检查 (多租户模式)
   if (userId) {
-    // 创建请求上下文用于配额检查
     const quotaContext = createEmptyRequestContext(req.id);
     const quotaResult = await checkUserQuota(userId, req.method, quotaContext);
 

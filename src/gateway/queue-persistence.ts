@@ -16,7 +16,7 @@ import {
   getMessageRepository,
 } from "../db/repositories/conversations.js";
 import { ensureConversation } from "./chat-persistence.js";
-import { extractUserIdFromSessionKey, DEFAULT_USER_ID } from "../routing/session-key.js";
+import { extractUserIdFromSessionKey } from "../routing/session-key.js";
 import { getLogger } from "../logging/logger.js";
 
 const logger = getLogger();
@@ -81,7 +81,7 @@ export async function enqueueMessage(
   message: QueueableMessage,
 ): Promise<string | null> {
   const userId = extractUserIdFromSessionKey(sessionKey);
-  if (userId === DEFAULT_USER_ID) return null;
+  if (!userId) return null;
 
   const db = tryGetDatabase();
   if (!db) return null;
@@ -127,7 +127,7 @@ export async function listQueuedMessages(
   sessionKey: string,
 ): Promise<QueuedMessageResult[] | null> {
   const userId = extractUserIdFromSessionKey(sessionKey);
-  if (userId === DEFAULT_USER_ID) return null;
+  if (!userId) return null;
 
   const db = tryGetDatabase();
   if (!db) return null;
@@ -161,7 +161,7 @@ export async function listQueuedMessages(
  */
 export async function dequeueMessage(sessionKey: string): Promise<QueuedMessageResult | null> {
   const userId = extractUserIdFromSessionKey(sessionKey);
-  if (userId === DEFAULT_USER_ID) return null;
+  if (!userId) return null;
 
   const db = tryGetDatabase();
   if (!db) return null;
@@ -202,7 +202,7 @@ export async function dequeueMessage(sessionKey: string): Promise<QueuedMessageR
  */
 export async function removeQueuedMessage(sessionKey: string, messageId: string): Promise<boolean> {
   const userId = extractUserIdFromSessionKey(sessionKey);
-  if (userId === DEFAULT_USER_ID) return false;
+  if (!userId) return false;
 
   const db = tryGetDatabase();
   if (!db) return false;
@@ -226,7 +226,7 @@ export async function removeQueuedMessage(sessionKey: string, messageId: string)
  */
 export async function clearQueuedMessages(sessionKey: string): Promise<boolean> {
   const userId = extractUserIdFromSessionKey(sessionKey);
-  if (userId === DEFAULT_USER_ID) return false;
+  if (!userId) return false;
 
   const db = tryGetDatabase();
   if (!db) return false;

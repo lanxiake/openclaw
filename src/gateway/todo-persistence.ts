@@ -15,7 +15,7 @@
 import { type Database, getDatabase } from "../db/connection.js";
 import { getAgentTodoRepository } from "../db/repositories/agent-todos.js";
 import type { TodoItem, AgentTodo } from "../db/schema/agent-todos.js";
-import { extractUserIdFromSessionKey, DEFAULT_USER_ID } from "../routing/session-key.js";
+import { extractUserIdFromSessionKey } from "../routing/session-key.js";
 import { getLogger } from "../logging/logger.js";
 
 const logger = getLogger();
@@ -81,8 +81,8 @@ export async function persistTodoSnapshot(
 ): Promise<void> {
   const userId = extractUserIdFromSessionKey(sessionKey);
 
-  if (userId === DEFAULT_USER_ID) {
-    logger.debug("[todo-persistence] 默认用户，跳过持久化");
+  if (!userId) {
+    logger.debug("[todo-persistence] 无用户 ID，跳过持久化");
     return;
   }
 
@@ -121,7 +121,7 @@ export async function loadTodosFromDb(
 ): Promise<AgentTodo[] | null> {
   const userId = extractUserIdFromSessionKey(sessionKey);
 
-  if (userId === DEFAULT_USER_ID) {
+  if (!userId) {
     return null;
   }
 
@@ -156,7 +156,7 @@ export async function loadTodoByRunId(
 ): Promise<AgentTodo | null> {
   const userId = extractUserIdFromSessionKey(sessionKey);
 
-  if (userId === DEFAULT_USER_ID) {
+  if (!userId) {
     return null;
   }
 

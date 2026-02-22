@@ -13,7 +13,6 @@ import {
   type UserDevice,
   type UserQuota,
 } from "./user-context.js";
-import { DEFAULT_USER_ID } from "../routing/session-key.js";
 
 // Mock 数据库连接和仓库
 vi.mock("../db/connection.js", () => ({
@@ -72,7 +71,7 @@ describe("loadUserAgentContext", () => {
     it("应该为空 userId 返回默认用户上下文", async () => {
       const context = await loadUserAgentContext("");
       expect(context.isDefaultUser).toBe(true);
-      expect(context.userId).toBe(DEFAULT_USER_ID);
+      expect(context.userId).toBe("");
     });
 
     it("应该为 undefined userId 返回默认用户上下文", async () => {
@@ -85,9 +84,10 @@ describe("loadUserAgentContext", () => {
       expect(context.isDefaultUser).toBe(true);
     });
 
-    it("应该为 'default' userId 返回默认用户上下文", async () => {
+    it("应该为 'default' userId 返回非默认用户上下文（多用户模式下 default 是普通 ID）", async () => {
       const context = await loadUserAgentContext("default");
-      expect(context.isDefaultUser).toBe(true);
+      expect(context.isDefaultUser).toBe(false);
+      expect(context.userId).toBe("default");
     });
 
     it("默认用户上下文应该有空的设备和配额列表", async () => {

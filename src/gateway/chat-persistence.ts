@@ -18,7 +18,7 @@ import {
   getMessageRepository,
 } from "../db/repositories/conversations.js";
 
-import { extractUserIdFromSessionKey, DEFAULT_USER_ID } from "../routing/session-key.js";
+import { extractUserIdFromSessionKey } from "../routing/session-key.js";
 import { getLogger } from "../logging/logger.js";
 
 const logger = getLogger();
@@ -97,8 +97,8 @@ export async function ensureConversation(
 ): Promise<{ conversationId: string; userId: string } | null> {
   const userId = extractUserIdFromSessionKey(sessionKey);
 
-  if (userId === DEFAULT_USER_ID) {
-    logger.debug("[chat-persistence] 默认用户，跳过 DB 持久化");
+  if (!userId) {
+    logger.debug("[chat-persistence] 无用户 ID，跳过 DB 持久化");
     return null;
   }
 
@@ -235,7 +235,7 @@ export async function loadMessagesFromDb(
 }> | null> {
   const userId = extractUserIdFromSessionKey(sessionKey);
 
-  if (userId === DEFAULT_USER_ID) {
+  if (!userId) {
     return null;
   }
 

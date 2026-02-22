@@ -21,7 +21,7 @@ import type {
   CheckpointMetadata,
 } from "../db/schema/agent-checkpoints.js";
 import { ensureConversation } from "./chat-persistence.js";
-import { extractUserIdFromSessionKey, DEFAULT_USER_ID } from "../routing/session-key.js";
+import { extractUserIdFromSessionKey } from "../routing/session-key.js";
 import { getLogger } from "../logging/logger.js";
 
 const logger = getLogger();
@@ -61,7 +61,7 @@ export async function saveCheckpoint(
   },
 ): Promise<string | null> {
   const userId = extractUserIdFromSessionKey(sessionKey);
-  if (userId === DEFAULT_USER_ID) return null;
+  if (!userId) return null;
 
   const db = tryGetDatabase();
   if (!db) return null;
@@ -108,7 +108,7 @@ export async function listCheckpoints(
   limit: number = 10,
 ): Promise<AgentCheckpoint[] | null> {
   const userId = extractUserIdFromSessionKey(sessionKey);
-  if (userId === DEFAULT_USER_ID) return null;
+  if (!userId) return null;
 
   const db = tryGetDatabase();
   if (!db) return null;
@@ -143,7 +143,7 @@ export async function loadCheckpoint(
   checkpointId: string,
 ): Promise<AgentCheckpoint | null> {
   const userId = extractUserIdFromSessionKey(sessionKey);
-  if (userId === DEFAULT_USER_ID) return null;
+  if (!userId) return null;
 
   const db = tryGetDatabase();
   if (!db) return null;
@@ -187,7 +187,7 @@ export async function markCheckpointResumed(
   checkpointId: string,
 ): Promise<boolean> {
   const userId = extractUserIdFromSessionKey(sessionKey);
-  if (userId === DEFAULT_USER_ID) return false;
+  if (!userId) return false;
 
   const db = tryGetDatabase();
   if (!db) return false;
@@ -219,7 +219,7 @@ export async function markCheckpointResumed(
  */
 export async function deleteCheckpoint(sessionKey: string, checkpointId: string): Promise<boolean> {
   const userId = extractUserIdFromSessionKey(sessionKey);
-  if (userId === DEFAULT_USER_ID) return false;
+  if (!userId) return false;
 
   const db = tryGetDatabase();
   if (!db) return false;

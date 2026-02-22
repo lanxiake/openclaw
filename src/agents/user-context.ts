@@ -12,7 +12,6 @@ import { getDatabase } from "../db/connection.js";
 import { getAssistantConfigRepository } from "../db/repositories/assistant-configs.js";
 import { getUsageQuotaRepository } from "../db/repositories/usage-quotas.js";
 import { getLogger } from "../logging/logger.js";
-import { DEFAULT_USER_ID } from "../routing/session-key.js";
 
 const logger = getLogger();
 
@@ -76,7 +75,7 @@ export interface UserAgentContext {
  * 加载用户 Agent 上下文
  *
  * 并行查询用户的设备、助手配置和配额信息
- * 如果 userId 为空或 "default"，返回默认上下文（单用户模式）
+ * userId 为空时返回空上下文（无法加载用户数据）
  *
  * @param userId - 用户 ID
  * @returns 用户 Agent 上下文
@@ -84,17 +83,12 @@ export interface UserAgentContext {
 export async function loadUserAgentContext(
   userId: string | undefined | null,
 ): Promise<UserAgentContext> {
-  const normalizedUserId = (userId ?? "").trim().toLowerCase() || DEFAULT_USER_ID;
-  const isDefaultUser = normalizedUserId === DEFAULT_USER_ID;
+  const normalizedUserId = (userId ?? "").trim().toLowerCase();
 
-  logger.debug(
-    `[user-context] 加载用户上下文, userId=${normalizedUserId}, isDefault=${isDefaultUser}`,
-  );
-
-  // 默认用户返回空上下文（向后兼容单用户模式）
-  if (isDefaultUser) {
+  if (!normalizedUserId) {
+    logger.debug("[user-context] 无用户 ID，返回空上下文");
     return {
-      userId: normalizedUserId,
+      userId: "",
       isDefaultUser: true,
       devices: [],
       assistantConfig: undefined,
@@ -102,6 +96,8 @@ export async function loadUserAgentContext(
       loadedAt: new Date(),
     };
   }
+
+  logger.debug(`[user-context] 加载用户上下文, userId=${normalizedUserId}`);
 
   // 并行加载用户数据
   const [assistantConfig, devices, quotas] = await Promise.all([

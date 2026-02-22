@@ -6,6 +6,8 @@ export type NodeSession = {
   nodeId: string;
   connId: string;
   client: GatewayWsClient;
+  /** 该节点所属的用户 ID（多用户模式） */
+  userId?: string;
   displayName?: string;
   platform?: string;
   version?: string;
@@ -60,6 +62,7 @@ export class NodeRegistry {
       nodeId,
       connId: client.connId,
       client,
+      userId: client.authenticatedUser?.userId,
       displayName: connect.client.displayName,
       platform: connect.client.platform,
       version: connect.client.version,
@@ -99,6 +102,13 @@ export class NodeRegistry {
 
   listConnected(): NodeSession[] {
     return [...this.nodesById.values()];
+  }
+
+  /**
+   * 获取指定用户的所有已连接节点
+   */
+  listByUserId(userId: string): NodeSession[] {
+    return [...this.nodesById.values()].filter((s) => s.userId === userId);
   }
 
   get(nodeId: string): NodeSession | undefined {
