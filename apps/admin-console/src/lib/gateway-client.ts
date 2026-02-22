@@ -7,8 +7,18 @@
 
 import { GATEWAY_WS_URL } from './constants'
 
-// Gateway 认证 Token (用于开发环境)
-const GATEWAY_AUTH_TOKEN = import.meta.env.VITE_GATEWAY_AUTH_TOKEN || ''
+// Gateway Admin JWT Token (管理员登录后获取)
+let adminAccessToken: string = ''
+
+/**
+ * 设置 Admin JWT Token
+ *
+ * 管理员登录成功后调用此函数，设置用于网关认证的 JWT token
+ * @param token - Admin JWT Access Token
+ */
+export function setAdminToken(token: string): void {
+  adminAccessToken = token
+}
 
 // 协议版本
 const PROTOCOL_VERSION = 3
@@ -62,6 +72,8 @@ interface ConnectParams {
   caps: string[]
   auth?: {
     token?: string
+    /** Admin JWT Access Token，用于管理员认证 */
+    adminToken?: string
   }
   role: string
   scopes: string[]
@@ -161,8 +173,8 @@ function sendConnectRequest(connectResolve: () => void, connectReject: (error: E
     caps: [],
     role: 'operator',
     scopes: ['operator.admin'],
-    // 添加认证信息 (用于绕过设备配对要求)
-    auth: GATEWAY_AUTH_TOKEN ? { token: GATEWAY_AUTH_TOKEN } : undefined,
+    // 使用 Admin JWT Token 认证
+    auth: adminAccessToken ? { adminToken: adminAccessToken } : undefined,
   }
 
   const message: Message = {
@@ -433,4 +445,5 @@ export const gateway = {
   subscribe,
   getConnectionState,
   onConnectionStateChange,
+  setAdminToken,
 }
