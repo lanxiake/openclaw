@@ -355,12 +355,16 @@ async function initDevicePairingService(): Promise<void> {
   devicePairingService = new DevicePairingService()
   await devicePairingService.initialize()
 
-  // 如果已配对，自动使用保存的 Token
+  // 如果已配对，自动使用保存的 Token 和 DeviceId
   if (devicePairingService.isPaired()) {
     const token = devicePairingService.getToken()
+    const deviceId = devicePairingService.getDeviceId()
     if (token && gatewayClient) {
       gatewayClient.setToken(token)
-      log.info('已加载配对 Token')
+      if (deviceId) {
+        gatewayClient.setDeviceId(deviceId)
+      }
+      log.info('已加载配对 Token 和 DeviceId')
     }
   }
 }
@@ -784,9 +788,13 @@ function setupIpcHandlers(): void {
       gatewayClient!.call(method, params)
     )
 
-    // 配对成功后更新 Gateway 客户端的 Token
+    // 配对成功后更新 Gateway 客户端的 Token 和 DeviceId
     if (result.success && result.token) {
       gatewayClient.setToken(result.token)
+      const deviceId = devicePairingService.getDeviceId()
+      if (deviceId) {
+        gatewayClient.setDeviceId(deviceId)
+      }
     }
 
     return result

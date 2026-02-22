@@ -154,6 +154,13 @@ export class DevicePairingService {
   }
 
   /**
+   * 获取设备 ID
+   */
+  getDeviceId(): string | undefined {
+    return this.state?.device?.deviceId
+  }
+
+  /**
    * 获取 Gateway URL
    */
   getGatewayUrl(): string | undefined {
