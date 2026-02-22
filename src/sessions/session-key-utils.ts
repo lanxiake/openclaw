@@ -3,6 +3,13 @@ export type ParsedAgentSessionKey = {
   rest: string;
 };
 
+/**
+ * 解析 agent session key，提取 agentId 和 rest 部分
+ *
+ * 支持两种格式:
+ * - 旧格式: agent:{agentId}:{rest}
+ * - 新格式: user:{userId}:agent:{agentId}:{rest}
+ */
 export function parseAgentSessionKey(
   sessionKey: string | undefined | null,
 ): ParsedAgentSessionKey | null {
@@ -14,6 +21,18 @@ export function parseAgentSessionKey(
   if (parts.length < 3) {
     return null;
   }
+
+  // 新格式: user:{userId}:agent:{agentId}:{rest}
+  if (parts[0] === "user" && parts.length >= 5 && parts[2] === "agent") {
+    const agentId = parts[3]?.trim();
+    const rest = parts.slice(4).join(":");
+    if (!agentId || !rest) {
+      return null;
+    }
+    return { agentId, rest };
+  }
+
+  // 旧格式: agent:{agentId}:{rest}
   if (parts[0] !== "agent") {
     return null;
   }

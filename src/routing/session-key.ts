@@ -10,8 +10,6 @@ export {
 export const DEFAULT_AGENT_ID = "main";
 export const DEFAULT_MAIN_KEY = "main";
 export const DEFAULT_ACCOUNT_ID = "default";
-/** @deprecated Phase 0 后不再使用，所有连接必须有真实 userId */
-export const DEFAULT_USER_ID = "default";
 
 // Pre-compiled regex
 const VALID_ID_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/i;
@@ -317,4 +315,77 @@ export function resolveThreadSessionKeys(params: {
     ? `${params.baseSessionKey}:thread:${normalizedThreadId}`
     : params.baseSessionKey;
   return { sessionKey, parentSessionKey: params.parentSessionKey };
+}
+
+/**
+ * 将客户端发送的会话键改写为包含用户前缀的格式
+ *
+ * 规则:
+ * 1. userId 为空 → 原样返回（向后兼容）
+ * 2. 已有 user: 前缀且 userId 匹配 → 原样返回
+ * 3. 已有 user: 前缀但 userId 不匹配 → 拒绝
+ * 4. 旧格式 agent:xxx:yyy → 改写为 user:{userId}:agent:xxx:yyy
+ * 5. global/unknown/空值 → 原样返回（不作用户隔离）
+ */
+export function rewriteSessionKeyForUser(params: {
+  sessionKey: string;
+  userId: string | undefined;
+}): { ok: true; sessionKey: string } | { ok: false; reason: string } {
+  const key = params.sessionKey.trim();
+  const { userId } = params;
+
+  // 无 userId → 向后兼容，不改写
+  if (!userId) {
+    return { ok: true, sessionKey: key };
+  }
+
+  // 空键、global、unknown → 不作用户隔离
+  if (!key || key === "global" || key === "unknown") {
+    return { ok: true, sessionKey: key };
+  }
+
+  const normalizedUserId = normalizeUserId(userId);
+  const keyLower = key.toLowerCase();
+
+  // 已有 user: 前缀
+  if (keyLower.startsWith("user:")) {
+    const existingUserId = extractUserIdFromSessionKey(key);
+    if (existingUserId === normalizedUserId) {
+      return { ok: true, sessionKey: keyLower };
+    }
+    return {
+      ok: false,
+      reason: `session key userId mismatch: expected ${normalizedUserId}, got ${existingUserId}`,
+    };
+  }
+
+  // 旧格式 agent:xxx:yyy → 改写为 user:{userId}:agent:xxx:yyy
+  if (keyLower.startsWith("agent:")) {
+    return { ok: true, sessionKey: `user:${normalizedUserId}:${keyLower}` };
+  }
+
+  // 其他未识别格式 → 包裹为默认 agent 键
+  return {
+    ok: true,
+    sessionKey: `user:${normalizedUserId}:agent:${normalizeAgentId(undefined)}:${keyLower}`,
+  };
+}
+
+/**
+ * 剥离 user: 前缀，返回底层 agent 键
+ *
+ * user:alice:agent:main:main → agent:main:main
+ * agent:main:main → agent:main:main (原样)
+ */
+export function stripUserPrefix(sessionKey: string): string {
+  const key = sessionKey.trim().toLowerCase();
+  if (!key.startsWith("user:")) {
+    return key;
+  }
+  const agentIdx = key.indexOf(":agent:");
+  if (agentIdx < 0) {
+    return key;
+  }
+  // 跳过 ":agent:" 前面的冒号，返回 "agent:..."
+  return key.slice(agentIdx + 1);
 }
