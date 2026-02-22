@@ -468,6 +468,50 @@ export async function listDevicesByUserId(userId: string): Promise<PairedDeviceC
 }
 
 /**
+ * 按用户 ID 查询设备列表和待审批配对请求
+ *
+ * 与 listDevicePairing() 不同，仅返回属于指定用户的设备和请求。
+ */
+export async function listDevicePairingByUserId(userId: string): Promise<DevicePairingList> {
+  const deviceRepo = getDeviceRepository();
+  const pairingRepo = getDevicePairingRequestRepository();
+
+  const userDevices = await deviceRepo.findByUserId(userId);
+  await pairingRepo.cleanupExpired();
+  const pendingRequests = await pairingRepo.findPendingByUserId(userId);
+
+  const paired = userDevices.map(deviceToCompat);
+  const pending = pendingRequests.map(pairingRequestToCompat);
+
+  return { pending, paired };
+}
+
+/**
+ * 验证设备属于指定用户
+ *
+ * 检查 devices 表中 deviceId 对应记录的 userId 是否匹配。
+ */
+export async function verifyDeviceOwnership(deviceId: string, userId: string): Promise<boolean> {
+  const deviceRepo = getDeviceRepository();
+  const device = await deviceRepo.findByDeviceId(deviceId);
+  return device?.userId === userId;
+}
+
+/**
+ * 验证配对请求属于指定用户
+ *
+ * 检查 device_pairing_requests 表中 requestId 对应记录的 userId 是否匹配。
+ */
+export async function verifyPairingRequestOwnership(
+  requestId: string,
+  userId: string,
+): Promise<boolean> {
+  const pairingRepo = getDevicePairingRequestRepository();
+  const request = await pairingRepo.findByRequestId(requestId);
+  return request?.userId === userId;
+}
+
+/**
  * 根据设备 ID 查询所属用户
  */
 export async function getUserIdByDeviceId(deviceId: string): Promise<string | null> {

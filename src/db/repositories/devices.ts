@@ -373,6 +373,26 @@ export class DevicePairingRequestRepository {
   }
 
   /**
+   * 按 userId 查找待处理请求 (未过期)
+   *
+   * 仅返回 userId 匹配的请求，userId 为 null 的旧请求不会被返回。
+   */
+  async findPendingByUserId(userId: string): Promise<DevicePairingRequest[]> {
+    const now = new Date();
+    return this.db
+      .select()
+      .from(devicePairingRequests)
+      .where(
+        and(
+          eq(devicePairingRequests.userId, userId),
+          eq(devicePairingRequests.status, "pending"),
+          gt(devicePairingRequests.expiresAt, now),
+        ),
+      )
+      .orderBy(desc(devicePairingRequests.createdAt));
+  }
+
+  /**
    * 批准配对请求
    */
   async approve(
