@@ -20,6 +20,7 @@ import {
 } from "../protocol/index.js";
 import { formatForLog } from "../ws-log.js";
 import type { GatewayRequestContext, GatewayRequestHandlers } from "./types.js";
+import { resolveEffectiveSessionKey } from "./session-key-rewrite.js";
 
 type InflightResult = {
   ok: boolean;
@@ -43,7 +44,7 @@ const getInflightMap = (context: GatewayRequestContext) => {
 };
 
 export const sendHandlers: GatewayRequestHandlers = {
-  send: async ({ params, respond, context }) => {
+  send: async ({ params, respond, context, client }) => {
     const p = params;
     if (!validateSendParams(p)) {
       respond(
@@ -141,10 +142,20 @@ export const sendHandlers: GatewayRequestHandlers = {
         const mirrorMediaUrls = mirrorPayloads.flatMap(
           (payload) => payload.mediaUrls ?? (payload.mediaUrl ? [payload.mediaUrl] : []),
         );
-        const providedSessionKey =
+        const providedSessionKeyRaw =
           typeof request.sessionKey === "string" && request.sessionKey.trim()
             ? request.sessionKey.trim().toLowerCase()
             : undefined;
+
+        /** 会话键用户隔离改写（send mirror key） */
+        let providedSessionKey = providedSessionKeyRaw;
+        if (providedSessionKey) {
+          const rewritten = resolveEffectiveSessionKey({ sessionKey: providedSessionKey, client });
+          if (rewritten.ok) {
+            providedSessionKey = rewritten.sessionKey;
+          }
+          // send 的 sessionKey 是可选的 mirror 参数，改写失败时保持原样
+        }
         const derivedAgentId = resolveSessionAgentId({ config: cfg });
         // If callers omit sessionKey, derive a target session key from the outbound route.
         const derivedRoute = !providedSessionKey

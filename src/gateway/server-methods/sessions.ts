@@ -38,6 +38,7 @@ import {
 } from "../session-utils.js";
 import { applySessionsPatchToStore } from "../sessions-patch.js";
 import { resolveSessionKeyFromResolveParams } from "../sessions-resolve.js";
+import { resolveEffectiveSessionKey } from "./session-key-rewrite.js";
 import type { GatewayRequestHandlers } from "./types.js";
 
 export const sessionsHandlers: GatewayRequestHandlers = {
@@ -64,7 +65,7 @@ export const sessionsHandlers: GatewayRequestHandlers = {
     });
     respond(true, result, undefined);
   },
-  "sessions.preview": ({ params, respond }) => {
+  "sessions.preview": ({ params, respond, client }) => {
     if (!validateSessionsPreviewParams(params)) {
       respond(
         false,
@@ -84,6 +85,12 @@ export const sessionsHandlers: GatewayRequestHandlers = {
       .map((key) => String(key ?? "").trim())
       .filter(Boolean)
       .slice(0, 64);
+
+    /** 会话键用户隔离改写（批量） */
+    const rewrittenKeys = keys.map((key) => {
+      const rewritten = resolveEffectiveSessionKey({ sessionKey: key, client });
+      return rewritten.ok ? rewritten.sessionKey : key;
+    });
     const limit =
       typeof p.limit === "number" && Number.isFinite(p.limit) ? Math.max(1, p.limit) : 12;
     const maxChars =
@@ -91,7 +98,7 @@ export const sessionsHandlers: GatewayRequestHandlers = {
         ? Math.max(20, p.maxChars)
         : 240;
 
-    if (keys.length === 0) {
+    if (rewrittenKeys.length === 0) {
       respond(true, { ts: Date.now(), previews: [] } satisfies SessionsPreviewResult, undefined);
       return;
     }
@@ -100,7 +107,7 @@ export const sessionsHandlers: GatewayRequestHandlers = {
     const storeCache = new Map<string, Record<string, SessionEntry>>();
     const previews: SessionsPreviewEntry[] = [];
 
-    for (const key of keys) {
+    for (const key of rewrittenKeys) {
       try {
         const target = resolveGatewaySessionStoreTarget({ cfg, key });
         const store = storeCache.get(target.storePath) ?? loadSessionStore(target.storePath);
@@ -154,7 +161,7 @@ export const sessionsHandlers: GatewayRequestHandlers = {
     }
     respond(true, { ok: true, key: resolved.key }, undefined);
   },
-  "sessions.patch": async ({ params, respond, context }) => {
+  "sessions.patch": async ({ params, respond, context, client }) => {
     if (!validateSessionsPatchParams(params)) {
       respond(
         false,
@@ -167,11 +174,19 @@ export const sessionsHandlers: GatewayRequestHandlers = {
       return;
     }
     const p = params;
-    const key = String(p.key ?? "").trim();
-    if (!key) {
+    const keyRaw = String(p.key ?? "").trim();
+    if (!keyRaw) {
       respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "key required"));
       return;
     }
+
+    /** 会话键用户隔离改写 */
+    const rewritten = resolveEffectiveSessionKey({ sessionKey: keyRaw, client });
+    if (!rewritten.ok) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, rewritten.reason));
+      return;
+    }
+    const key = rewritten.sessionKey;
 
     const cfg = loadConfig();
     const target = resolveGatewaySessionStoreTarget({ cfg, key });
@@ -203,7 +218,7 @@ export const sessionsHandlers: GatewayRequestHandlers = {
     };
     respond(true, result, undefined);
   },
-  "sessions.reset": async ({ params, respond }) => {
+  "sessions.reset": async ({ params, respond, client }) => {
     if (!validateSessionsResetParams(params)) {
       respond(
         false,
@@ -216,11 +231,19 @@ export const sessionsHandlers: GatewayRequestHandlers = {
       return;
     }
     const p = params;
-    const key = String(p.key ?? "").trim();
-    if (!key) {
+    const keyRaw = String(p.key ?? "").trim();
+    if (!keyRaw) {
       respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "key required"));
       return;
     }
+
+    /** 会话键用户隔离改写 */
+    const rewritten = resolveEffectiveSessionKey({ sessionKey: keyRaw, client });
+    if (!rewritten.ok) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, rewritten.reason));
+      return;
+    }
+    const key = rewritten.sessionKey;
 
     const cfg = loadConfig();
     const target = resolveGatewaySessionStoreTarget({ cfg, key });
@@ -261,7 +284,7 @@ export const sessionsHandlers: GatewayRequestHandlers = {
     });
     respond(true, { ok: true, key: target.canonicalKey, entry: next }, undefined);
   },
-  "sessions.delete": async ({ params, respond }) => {
+  "sessions.delete": async ({ params, respond, client }) => {
     if (!validateSessionsDeleteParams(params)) {
       respond(
         false,
@@ -274,11 +297,19 @@ export const sessionsHandlers: GatewayRequestHandlers = {
       return;
     }
     const p = params;
-    const key = String(p.key ?? "").trim();
-    if (!key) {
+    const keyRaw = String(p.key ?? "").trim();
+    if (!keyRaw) {
       respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "key required"));
       return;
     }
+
+    /** 会话键用户隔离改写 */
+    const rewritten = resolveEffectiveSessionKey({ sessionKey: keyRaw, client });
+    if (!rewritten.ok) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, rewritten.reason));
+      return;
+    }
+    const key = rewritten.sessionKey;
 
     const cfg = loadConfig();
     const mainKey = resolveMainSessionKey(cfg);
@@ -353,7 +384,7 @@ export const sessionsHandlers: GatewayRequestHandlers = {
 
     respond(true, { ok: true, key: target.canonicalKey, deleted: existed, archived }, undefined);
   },
-  "sessions.compact": async ({ params, respond }) => {
+  "sessions.compact": async ({ params, respond, client }) => {
     if (!validateSessionsCompactParams(params)) {
       respond(
         false,
@@ -366,11 +397,19 @@ export const sessionsHandlers: GatewayRequestHandlers = {
       return;
     }
     const p = params;
-    const key = String(p.key ?? "").trim();
-    if (!key) {
+    const keyRaw = String(p.key ?? "").trim();
+    if (!keyRaw) {
       respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "key required"));
       return;
     }
+
+    /** 会话键用户隔离改写 */
+    const rewritten = resolveEffectiveSessionKey({ sessionKey: keyRaw, client });
+    if (!rewritten.ok) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, rewritten.reason));
+      return;
+    }
+    const key = rewritten.sessionKey;
 
     const maxLines =
       typeof p.maxLines === "number" && Number.isFinite(p.maxLines)

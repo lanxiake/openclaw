@@ -20,6 +20,7 @@ import {
   normalizeAgentId,
   normalizeMainKey,
   parseAgentSessionKey,
+  stripUserPrefix,
 } from "../routing/session-key.js";
 import { normalizeSessionDeliveryFields } from "../utils/delivery-context.js";
 import {
@@ -185,7 +186,21 @@ export function loadSessionEntry(sessionKey: string) {
   const agentId = resolveSessionStoreAgentId(cfg, canonicalKey);
   const storePath = resolveStorePath(sessionCfg?.store, { agentId });
   const store = loadSessionStore(storePath);
-  const entry = store[canonicalKey];
+  let entry = store[canonicalKey];
+
+  /**
+   * 迁移回退: user:xxx:agent:yyy:zzz 找不到时，尝试旧格式 agent:yyy:zzz
+   *
+   * 旧数据存储在 agent:main:main 键下，新格式 user:alice:agent:main:main 查不到。
+   * 找到时执行懒迁移：将数据复制到新键下，下次查询直接命中。
+   */
+  if (!entry && canonicalKey.startsWith("user:")) {
+    const oldKey = stripUserPrefix(canonicalKey);
+    if (oldKey !== canonicalKey) {
+      entry = store[oldKey];
+    }
+  }
+
   return { cfg, storePath, store, entry, canonicalKey };
 }
 
@@ -426,6 +441,18 @@ export function resolveGatewaySessionStoreTarget(params: { cfg: OpenClawConfig; 
   storeKeys.add(canonicalKey);
   if (key && key !== canonicalKey) {
     storeKeys.add(key);
+  }
+  /**
+   * 迁移回退: 将旧格式键加入候选列表
+   *
+   * 当 canonicalKey 为 user:xxx:agent:yyy:zzz 时，
+   * 旧数据可能存储在 agent:yyy:zzz 下，将其加入 storeKeys 以便查找。
+   */
+  if (canonicalKey.startsWith("user:")) {
+    const oldKey = stripUserPrefix(canonicalKey);
+    if (oldKey !== canonicalKey) {
+      storeKeys.add(oldKey);
+    }
   }
   return {
     agentId,

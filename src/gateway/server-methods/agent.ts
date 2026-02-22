@@ -39,9 +39,10 @@ import { resolveAssistantIdentity } from "../assistant-identity.js";
 import { resolveAssistantAvatarUrl } from "../control-ui-shared.js";
 import { waitForAgentJob } from "./agent-job.js";
 import type { GatewayRequestHandlers } from "./types.js";
+import { resolveEffectiveSessionKey } from "./session-key-rewrite.js";
 
 export const agentHandlers: GatewayRequestHandlers = {
-  agent: async ({ params, respond, context }) => {
+  agent: async ({ params, respond, context, client }) => {
     const p = params;
     if (!validateAgentParams(p)) {
       respond(
@@ -177,12 +178,22 @@ export const agentHandlers: GatewayRequestHandlers = {
       typeof request.sessionKey === "string" && request.sessionKey.trim()
         ? request.sessionKey.trim()
         : undefined;
-    const requestedSessionKey =
+    let requestedSessionKey =
       requestedSessionKeyRaw ??
       resolveExplicitAgentSessionKey({
         cfg,
         agentId,
       });
+
+    /** 会话键用户隔离改写 */
+    if (requestedSessionKey) {
+      const rewritten = resolveEffectiveSessionKey({ sessionKey: requestedSessionKey, client });
+      if (!rewritten.ok) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, rewritten.reason));
+        return;
+      }
+      requestedSessionKey = rewritten.sessionKey;
+    }
     if (agentId && requestedSessionKeyRaw) {
       const sessionAgentId = resolveAgentIdFromSessionKey(requestedSessionKeyRaw);
       if (sessionAgentId !== agentId) {

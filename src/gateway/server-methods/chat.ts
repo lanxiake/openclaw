@@ -47,6 +47,7 @@ import { loadAllDatabaseConfigs } from "../config-loader.js";
 import { mergeFileAndDbConfigs } from "../config-merger.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
 import type { GatewayRequestContext, GatewayRequestHandlers } from "./types.js";
+import { resolveEffectiveSessionKey } from "./session-key-rewrite.js";
 import {
   persistUserMessage,
   persistAssistantMessage,
@@ -199,7 +200,7 @@ function broadcastChatError(params: {
 }
 
 export const chatHandlers: GatewayRequestHandlers = {
-  "chat.history": async ({ params, respond, context }) => {
+  "chat.history": async ({ params, respond, context, client }) => {
     if (!validateChatHistoryParams(params)) {
       respond(
         false,
@@ -211,10 +212,18 @@ export const chatHandlers: GatewayRequestHandlers = {
       );
       return;
     }
-    const { sessionKey, limit } = params as {
+    const { sessionKey: rawSessionKey, limit } = params as {
       sessionKey: string;
       limit?: number;
     };
+
+    /** 会话键用户隔离改写 */
+    const rewritten = resolveEffectiveSessionKey({ sessionKey: rawSessionKey, client });
+    if (!rewritten.ok) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, rewritten.reason));
+      return;
+    }
+    const sessionKey = rewritten.sessionKey;
     const hardMax = 1000;
     const defaultLimit = 200;
     const requested = typeof limit === "number" ? limit : defaultLimit;
@@ -268,7 +277,7 @@ export const chatHandlers: GatewayRequestHandlers = {
       thinkingLevel,
     });
   },
-  "chat.abort": ({ params, respond, context }) => {
+  "chat.abort": ({ params, respond, context, client }) => {
     if (!validateChatAbortParams(params)) {
       respond(
         false,
@@ -280,10 +289,18 @@ export const chatHandlers: GatewayRequestHandlers = {
       );
       return;
     }
-    const { sessionKey, runId } = params as {
+    const { sessionKey: rawSessionKey, runId } = params as {
       sessionKey: string;
       runId?: string;
     };
+
+    /** 会话键用户隔离改写 */
+    const rewritten = resolveEffectiveSessionKey({ sessionKey: rawSessionKey, client });
+    if (!rewritten.ok) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, rewritten.reason));
+      return;
+    }
+    const sessionKey = rewritten.sessionKey;
 
     const ops = {
       chatAbortControllers: context.chatAbortControllers,
@@ -356,6 +373,15 @@ export const chatHandlers: GatewayRequestHandlers = {
       timeoutMs?: number;
       idempotencyKey: string;
     };
+
+    /** 会话键用户隔离改写 */
+    const rewrittenKey = resolveEffectiveSessionKey({ sessionKey: p.sessionKey, client });
+    if (!rewrittenKey.ok) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, rewrittenKey.reason));
+      return;
+    }
+    /** 使用改写后的 sessionKey 替换原始值，后续所有引用自动生效 */
+    p.sessionKey = rewrittenKey.sessionKey;
     const stopCommand = isChatStopCommandText(p.message);
     const normalizedAttachments =
       p.attachments
@@ -709,7 +735,7 @@ export const chatHandlers: GatewayRequestHandlers = {
       });
     }
   },
-  "chat.inject": async ({ params, respond, context }) => {
+  "chat.inject": async ({ params, respond, context, client }) => {
     if (!validateChatInjectParams(params)) {
       respond(
         false,
@@ -726,6 +752,14 @@ export const chatHandlers: GatewayRequestHandlers = {
       message: string;
       label?: string;
     };
+
+    /** 会话键用户隔离改写 */
+    const rewrittenKey = resolveEffectiveSessionKey({ sessionKey: p.sessionKey, client });
+    if (!rewrittenKey.ok) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, rewrittenKey.reason));
+      return;
+    }
+    p.sessionKey = rewrittenKey.sessionKey;
 
     // Load session to find transcript file
     const { storePath, entry } = loadSessionEntry(p.sessionKey);
