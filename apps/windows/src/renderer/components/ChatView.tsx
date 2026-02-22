@@ -224,14 +224,16 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
       setCurrentAssistantMessageId(null)
 
       if (streamingMessage.isAborted) {
-        /** 中断完成：标记消息并检查暂存的"立即发送"消息 */
+        const pending = pendingSendImmediatelyRef.current
+        const isSendImmediatelyAbort = pending !== null
+
+        /** 中断完成：仅在用户手动中断时标记 isAborted，立即发送引起的中断不标记 */
         updateMessage(currentAssistantMessageId, {
           content: streamingMessage.content || '',
           isStreaming: false,
-          isAborted: true,
+          isAborted: !isSendImmediatelyAbort,
         })
 
-        const pending = pendingSendImmediatelyRef.current
         if (pending) {
           console.log('[ChatView] 中断完成，发送暂存的立即发送消息:', pending.content)
           pendingSendImmediatelyRef.current = null
