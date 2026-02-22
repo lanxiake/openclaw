@@ -17,6 +17,8 @@
 export interface AuthenticatedUser {
   /** 用户 ID */
   userId: string;
+  /** 已认证设备的 ID */
+  deviceId?: string;
   /** 用户显示名称 */
   displayName?: string;
   /** 用户邮箱 */

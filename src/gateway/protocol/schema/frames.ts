@@ -57,8 +57,10 @@ export const ConnectParamsSchema = Type.Object(
         {
           token: Type.Optional(Type.String()),
           password: Type.Optional(Type.String()),
-          /** 设备 ID，用于 device token 回退验证 */
+          /** 设备 ID，用于 device token 验证 */
           deviceId: Type.Optional(Type.String()),
+          /** Admin JWT Access Token，用于 Admin Console 连接 */
+          adminToken: Type.Optional(Type.String()),
         },
         { additionalProperties: false },
       ),

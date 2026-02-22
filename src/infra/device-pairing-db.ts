@@ -307,13 +307,15 @@ export async function updatePairedDeviceMetadata(
 
 /**
  * 验证设备令牌
+ *
+ * 成功时返回 deviceId 和 userId（如果设备已绑定用户）。
  */
 export async function verifyDeviceToken(params: {
   deviceId: string;
   token: string;
   role?: string;
   scopes?: string[];
-}): Promise<{ ok: boolean; reason?: string }> {
+}): Promise<{ ok: boolean; reason?: string; userId?: string; deviceId?: string }> {
   const deviceRepo = getDeviceRepository();
   const result = await deviceRepo.verifyToken(params.deviceId, params.token, params.role);
 
@@ -330,7 +332,11 @@ export async function verifyDeviceToken(params: {
     }
   }
 
-  return { ok: true };
+  return {
+    ok: true,
+    deviceId: params.deviceId,
+    userId: result.device?.userId ?? undefined,
+  };
 }
 
 /**

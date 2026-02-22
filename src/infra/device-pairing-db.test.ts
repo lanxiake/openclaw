@@ -5,6 +5,7 @@ import {
   getPairedDevice,
   requestDevicePairing,
   rotateDeviceToken,
+  verifyDeviceToken,
 } from "./device-pairing-db.js";
 
 describe("device-pairing-db adapter", () => {
@@ -73,5 +74,63 @@ describe("device-pairing-db adapter", () => {
   test("approveDevicePairing returns null for non-existent request", async () => {
     const result = await approveDevicePairing("non-existent-request-id");
     expect(result).toBeNull();
+  });
+
+  describe("verifyDeviceToken", () => {
+    test("valid token returns ok with deviceId", async () => {
+      // 配对设备并获取 token
+      const result = await requestDevicePairing({
+        deviceId: "device-verify-1",
+        publicKey: "pk-verify-1",
+        role: "operator",
+        scopes: ["operator.admin"],
+      });
+      const approved = await approveDevicePairing(result.request.requestId);
+      expect(approved).not.toBeNull();
+
+      // 获取设备 token
+      const device = await getPairedDevice("device-verify-1");
+      expect(device).not.toBeNull();
+      const tokenInfo = device!.tokens?.["operator"];
+      expect(tokenInfo).toBeTruthy();
+
+      // 验证 token — 应返回 ok + deviceId（设备未绑定用户，userId 应为 undefined）
+      const verifyResult = await verifyDeviceToken({
+        deviceId: "device-verify-1",
+        token: tokenInfo!.token,
+        role: "operator",
+      });
+      expect(verifyResult.ok).toBe(true);
+      expect(verifyResult.deviceId).toBe("device-verify-1");
+      expect(verifyResult.userId).toBeUndefined();
+    });
+
+    test("invalid token returns not ok", async () => {
+      // 配对设备
+      const result = await requestDevicePairing({
+        deviceId: "device-verify-2",
+        publicKey: "pk-verify-2",
+        role: "operator",
+        scopes: ["operator.admin"],
+      });
+      await approveDevicePairing(result.request.requestId);
+
+      // 使用错误 token 验证
+      const verifyResult = await verifyDeviceToken({
+        deviceId: "device-verify-2",
+        token: "wrong-token",
+        role: "operator",
+      });
+      expect(verifyResult.ok).toBe(false);
+      expect(verifyResult.reason).toBeTruthy();
+    });
+
+    test("non-existent device returns not ok", async () => {
+      const verifyResult = await verifyDeviceToken({
+        deviceId: "non-existent-device",
+        token: "any-token",
+      });
+      expect(verifyResult.ok).toBe(false);
+    });
   });
 });

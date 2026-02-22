@@ -118,6 +118,7 @@ export class DeviceRepository {
         | "lastActiveAt"
         | "isActive"
         | "revokedAt"
+        | "userId"
       >
     >,
   ): Promise<Device | null> {

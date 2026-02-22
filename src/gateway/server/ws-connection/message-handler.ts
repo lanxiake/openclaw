@@ -13,7 +13,6 @@ import {
   getPairedDevice,
   requestDevicePairing,
   updatePairedDeviceMetadata,
-  verifyDeviceToken,
 } from "../../../infra/device-pairing-db.js";
 import { updatePairedNodeMetadata } from "../../../infra/node-pairing.js";
 import { recordRemoteNodeInfo, refreshRemoteNodeBins } from "../../../infra/skills-remote.js";
@@ -23,7 +22,12 @@ import { rawDataToString } from "../../../infra/ws.js";
 import type { createSubsystemLogger } from "../../../logging/subsystem.js";
 import { isGatewayCliClient, isWebchatClient } from "../../../utils/message-channel.js";
 import type { ResolvedGatewayAuth } from "../../auth.js";
-import { authorizeGatewayConnect, isLocalDirectRequest } from "../../auth.js";
+import {
+  authorizeAdminConnect,
+  authorizeDeviceConnect,
+  authorizeGatewayConnect,
+  isLocalDirectRequest,
+} from "../../auth.js";
 import { loadConfig } from "../../../config/config.js";
 import { buildDeviceAuthPayload } from "../../device-auth.js";
 import { isLoopbackAddress, isTrustedProxyAddress, resolveGatewayClientIp } from "../../net.js";
@@ -571,37 +575,62 @@ export function attachGatewayWsMessageHandler(params: {
           }
         }
 
-        const authResult = await authorizeGatewayConnect({
-          auth: resolvedAuth,
-          connectAuth: connectParams.auth,
-          req: upgradeReq,
-          trustedProxies,
-        });
-        let authOk = authResult.ok;
-        let authMethod =
-          authResult.method ?? (resolvedAuth.mode === "password" ? "password" : "token");
-        if (!authOk && connectParams.auth?.token && device) {
-          const tokenCheck = await verifyDeviceToken({
+        // ============================================================================
+        // 多路径认证
+        //
+        // 路径 1: device 签名 + auth.token → authorizeDeviceConnect
+        // 路径 2: auth.deviceId + auth.token → authorizeDeviceConnect
+        // 路径 3: auth.adminToken → authorizeAdminConnect (Admin Console)
+        // 回退: authorizeGatewayConnect (全局 token/password/tailscale)
+        // ============================================================================
+        let authResult: {
+          ok: boolean;
+          method?: string;
+          reason?: string;
+          userId?: string;
+          deviceId?: string;
+        };
+        let resolvedUserId: string | undefined;
+        let resolvedDeviceId: string | undefined;
+
+        if (connectParams.auth?.token && device) {
+          // 路径 1: 设备签名 + Device Token
+          authResult = await authorizeDeviceConnect({
             deviceId: device.id,
             token: connectParams.auth.token,
+            role,
+            scopes,
           });
-          if (tokenCheck.ok) {
-            authOk = true;
-            authMethod = "device-token";
-          }
-        }
-        // 无 device 身份但提供了 deviceId + token 的回退验证
-        // 允许已登录用户通过 API 获取的 device token 连接 Gateway
-        if (!authOk && !device && connectParams.auth?.token && connectParams.auth?.deviceId) {
-          const tokenCheck = await verifyDeviceToken({
+          resolvedUserId = authResult.userId;
+          resolvedDeviceId = authResult.deviceId;
+        } else if (connectParams.auth?.token && connectParams.auth?.deviceId && !device) {
+          // 路径 2: 无设备签名，但提供了 deviceId + token
+          authResult = await authorizeDeviceConnect({
             deviceId: connectParams.auth.deviceId,
             token: connectParams.auth.token,
+            role,
+            scopes,
           });
-          if (tokenCheck.ok) {
-            authOk = true;
-            authMethod = "device-token";
-          }
+          resolvedUserId = authResult.userId;
+          resolvedDeviceId = authResult.deviceId;
+        } else if (connectParams.auth?.adminToken) {
+          // 路径 3: Admin Console 通过 Admin JWT 连接
+          authResult = await authorizeAdminConnect(connectParams.auth.adminToken);
+          resolvedUserId = authResult.userId;
+        } else {
+          // 回退: 全局 token/password/tailscale 认证
+          authResult = await authorizeGatewayConnect({
+            auth: resolvedAuth,
+            connectAuth: connectParams.auth,
+            req: upgradeReq,
+            trustedProxies,
+          });
         }
+
+        const authOk = authResult.ok;
+        const authMethod =
+          authResult.method ?? (resolvedAuth.mode === "password" ? "password" : "token");
+
         if (!authOk) {
           setHandshakeState("failed");
           logWsControl.warn(
@@ -754,26 +783,40 @@ export function attachGatewayWsMessageHandler(params: {
           : null;
 
         // ============================================================================
-        // 用户认证 (多租户模式)
-        // 如果客户端提供了 userAuth.accessToken，验证并提取用户信息
+        // 构建 authenticatedUser
+        // 优先使用认证流程中解析的 userId（来自 Device Token 或 Admin JWT）
+        // 回退到 userAuth.accessToken JWT 验证（兼容旧客户端）
         // ============================================================================
         let authenticatedUser: AuthenticatedUser | undefined;
-        const userAuthParams = (connectParams as { userAuth?: { accessToken?: string } }).userAuth;
-        if (userAuthParams?.accessToken) {
-          const tokenPayload = verifyAccessToken(userAuthParams.accessToken);
-          if (tokenPayload) {
-            authenticatedUser = {
-              userId: tokenPayload.sub,
-              authenticatedAt: new Date(tokenPayload.iat * 1000),
-              tokenExpiresAt: new Date(tokenPayload.exp * 1000),
-            };
-            logWsControl.info(`user authenticated conn=${connId} userId=${tokenPayload.sub}`);
-          } else {
-            // Token 无效，但不阻止连接 (向后兼容)
-            // 只是不设置 authenticatedUser，后续配额检查会拒绝需要认证的操作
-            logWsControl.warn(
-              `user auth failed conn=${connId} remote=${remoteAddr ?? "?"} client=${clientLabel} - invalid or expired token`,
-            );
+        if (resolvedUserId) {
+          authenticatedUser = {
+            userId: resolvedUserId,
+            deviceId: resolvedDeviceId,
+            authenticatedAt: new Date(),
+          };
+          logWsControl.info(
+            `user authenticated conn=${connId} userId=${resolvedUserId} method=${authMethod}`,
+          );
+        } else {
+          // 回退: userAuth.accessToken JWT 验证（兼容旧客户端过渡期）
+          const userAuthParams = (connectParams as { userAuth?: { accessToken?: string } })
+            .userAuth;
+          if (userAuthParams?.accessToken) {
+            const tokenPayload = verifyAccessToken(userAuthParams.accessToken);
+            if (tokenPayload) {
+              authenticatedUser = {
+                userId: tokenPayload.sub,
+                authenticatedAt: new Date(tokenPayload.iat * 1000),
+                tokenExpiresAt: new Date(tokenPayload.exp * 1000),
+              };
+              logWsControl.info(
+                `user authenticated conn=${connId} userId=${tokenPayload.sub} method=jwt`,
+              );
+            } else {
+              logWsControl.warn(
+                `user auth failed conn=${connId} remote=${remoteAddr ?? "?"} client=${clientLabel} - invalid or expired token`,
+              );
+            }
           }
         }
 
@@ -877,6 +920,7 @@ export function attachGatewayWsMessageHandler(params: {
           connect: connectParams,
           connId,
           presenceKey,
+          deviceId: resolvedDeviceId,
           authenticatedUser,
           capabilities,
         };

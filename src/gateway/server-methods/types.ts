@@ -21,7 +21,9 @@ type SubsystemLogger = ReturnType<typeof createSubsystemLogger>;
 export type GatewayClient = {
   /** 连接参数 */
   connect: ConnectParams;
-  /** 已认证的用户信息 (多租户模式) */
+  /** 已认证设备的 ID */
+  deviceId?: string;
+  /** 已认证的用户信息 (多用户模式) */
   authenticatedUser?: AuthenticatedUser;
   /** 客户端能力声明 */
   capabilities?: {

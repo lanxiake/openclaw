@@ -14,8 +14,12 @@ export type ResolvedGatewayAuth = {
 
 export type GatewayAuthResult = {
   ok: boolean;
-  method?: "token" | "password" | "tailscale" | "device-token";
+  method?: "token" | "password" | "tailscale" | "device-token" | "admin-token";
   user?: string;
+  /** 已认证用户的 ID（多用户模式） */
+  userId?: string;
+  /** 已认证设备的 ID */
+  deviceId?: string;
   reason?: string;
 };
 
@@ -298,4 +302,85 @@ export async function authorizeGatewayConnect(params: {
   }
 
   return { ok: false, reason: "unauthorized" };
+}
+
+/**
+ * 通过 Device Token 认证设备连接
+ *
+ * 验证设备令牌并从数据库查询关联的 userId。
+ * 设备必须已绑定用户（device.userId 存在）才允许连接。
+ *
+ * @param params.deviceId - 设备 ID
+ * @param params.token - 设备令牌
+ * @param params.role - 设备角色（可选）
+ * @param params.scopes - 请求的权限范围（可选）
+ * @returns GatewayAuthResult 包含 userId 和 deviceId
+ */
+export async function authorizeDeviceConnect(params: {
+  deviceId: string;
+  token: string;
+  role?: string;
+  scopes?: string[];
+}): Promise<GatewayAuthResult> {
+  const { verifyDeviceToken } = await import("../infra/device-pairing-db.js");
+
+  const result = await verifyDeviceToken({
+    deviceId: params.deviceId,
+    token: params.token,
+    role: params.role,
+    scopes: params.scopes,
+  });
+
+  if (!result.ok) {
+    return {
+      ok: false,
+      method: "device-token",
+      reason: result.reason ?? "device-token-invalid",
+    };
+  }
+
+  // 设备必须已绑定用户
+  if (!result.userId) {
+    return {
+      ok: false,
+      method: "device-token",
+      reason: "device-not-bound",
+    };
+  }
+
+  return {
+    ok: true,
+    method: "device-token",
+    userId: result.userId,
+    deviceId: result.deviceId,
+  };
+}
+
+/**
+ * 通过 Admin JWT 认证管理端连接
+ *
+ * 验证 Admin Access Token（JWT），提取管理员 ID 作为 userId。
+ * 用于 Admin Console 连接网关。
+ *
+ * @param adminToken - Admin JWT Access Token 字符串
+ * @returns GatewayAuthResult 包含 userId（管理员 ID）
+ */
+export async function authorizeAdminConnect(adminToken: string): Promise<GatewayAuthResult> {
+  const { verifyAdminAccessToken } = await import("../assistant/admin-auth/admin-jwt.js");
+
+  const payload = verifyAdminAccessToken(adminToken);
+
+  if (!payload) {
+    return {
+      ok: false,
+      method: "admin-token",
+      reason: "admin-token-invalid",
+    };
+  }
+
+  return {
+    ok: true,
+    method: "admin-token",
+    userId: payload.sub,
+  };
 }
