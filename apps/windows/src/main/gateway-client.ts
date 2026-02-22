@@ -215,7 +215,10 @@ export class GatewayClient extends EventEmitter {
           headers['Authorization'] = `Bearer ${this.config.token}`
         }
 
-        this.ws = new WebSocket(this.config.url, { headers })
+        this.ws = new WebSocket(this.config.url, {
+          headers,
+          maxPayload: 25 * 1024 * 1024, // 25MB，与主客户端保持一致
+        })
 
         this.ws.on('open', () => {
           log.info('WebSocket 连接已建立，等待握手...')

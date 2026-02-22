@@ -15,10 +15,14 @@ import './MessageQueuePanel.css'
 interface MessageQueuePanelProps {
   /** 排队消息列表 */
   queue: QueuedMessage[]
+  /** 是否正在执行中（用于判断是否显示"立即发送"按钮） */
+  isLoading?: boolean
   /** 移除单条消息 */
   onRemove: (id: string) => void
   /** 清空队列 */
   onClear: () => void
+  /** 立即发送：中断当前对话并发送指定队列消息 */
+  onSendImmediately?: (item: QueuedMessage) => void
 }
 
 /**
@@ -34,8 +38,10 @@ function truncatePreview(text: string, maxLen: number = 60): string {
  */
 export const MessageQueuePanel = memo<MessageQueuePanelProps>(({
   queue,
+  isLoading,
   onRemove,
   onClear,
+  onSendImmediately,
 }) => {
   if (queue.length === 0) return null
 
@@ -63,6 +69,15 @@ export const MessageQueuePanel = memo<MessageQueuePanelProps>(({
                 <span className="message-queue-att"> +{item.attachments.length} 附件</span>
               )}
             </span>
+            {isLoading && onSendImmediately && (
+              <button
+                className="message-queue-send-now"
+                onClick={() => onSendImmediately(item)}
+                title="中断当前对话并立即发送此消息"
+              >
+                立即发送
+              </button>
+            )}
             <button
               className="message-queue-remove"
               onClick={() => onRemove(item.id)}

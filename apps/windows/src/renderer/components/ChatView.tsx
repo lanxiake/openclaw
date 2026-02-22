@@ -10,7 +10,7 @@ import { useChatHistory, type ChatMessage, type MessageAttachment } from '../hoo
 import { useChatStream } from '../hooks/useChatStream'
 import { useToolStream } from '../hooks/useToolStream'
 import { useAgentTodo } from '../hooks/useAgentTodo'
-import { useMessageQueue } from '../hooks/useMessageQueue'
+import { useMessageQueue, type QueuedMessage } from '../hooks/useMessageQueue'
 import { useChatCheckpoint } from '../hooks/useChatCheckpoint'
 import { SessionSidebar, ChatToolbar, ChatInput, MessageItem, AgentTodoList, MessageQueuePanel, CheckpointResumeDialog } from './chat'
 import './ChatView.css'
@@ -217,11 +217,6 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
       return
     }
 
-    updateMessage(currentAssistantMessageId, {
-      content: streamingMessage.content || '',
-      isStreaming: streamingMessage.isStreaming,
-    })
-
     if (streamingMessage.isComplete) {
       console.log('[ChatView] 流式响应完成, isAborted:', streamingMessage.isAborted)
       setIsLoading(false)
@@ -229,30 +224,52 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
       setCurrentAssistantMessageId(null)
 
       if (streamingMessage.isAborted) {
+        /** 中断完成：标记消息并检查暂存的"立即发送"消息 */
         updateMessage(currentAssistantMessageId, {
           content: streamingMessage.content || '',
           isStreaming: false,
           isAborted: true,
         })
+
+        const pending = pendingSendImmediatelyRef.current
+        if (pending) {
+          console.log('[ChatView] 中断完成，发送暂存的立即发送消息:', pending.content)
+          pendingSendImmediatelyRef.current = null
+          clearSendImmediatelyTimeout()
+          queueMicrotask(() => {
+            doSend(pending.content, pending.attachments)
+          })
+        }
       } else if (streamingMessage.error) {
         updateMessage(currentAssistantMessageId, {
           content: `错误: ${streamingMessage.error}`,
           role: 'system',
           isStreaming: false,
         })
+      } else {
+        /** 正常完成 */
+        updateMessage(currentAssistantMessageId, {
+          content: streamingMessage.content || '',
+          isStreaming: false,
+        })
       }
 
-      /** 自动派发队列中的下一条消息（中断时不自动派发） */
+      /** 自动派发队列中的下一条消息（中断时不自动派发，除非有暂存的立即发送消息） */
       if (!streamingMessage.isAborted) {
         const next = dequeue()
         if (next) {
           console.log('[ChatView] 自动派发队列消息:', next.content)
-          /** 使用 setTimeout 避免在 setState 回调中嵌套 setState */
-          setTimeout(() => {
+          queueMicrotask(() => {
             doSend(next.content, next.attachments)
-          }, 100)
+          })
         }
       }
+    } else {
+      /** 仍在流式传输中，更新消息内容 */
+      updateMessage(currentAssistantMessageId, {
+        content: streamingMessage.content || '',
+        isStreaming: streamingMessage.isStreaming,
+      })
     }
   }, [streamingMessage, currentAssistantMessageId, currentRunId, updateMessage, dequeue, doSend])
 
@@ -266,9 +283,10 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
 
   /**
    * 中断当前执行
+   * @returns 是否成功发送中断请求
    */
-  const handleAbort = useCallback(async () => {
-    if (!currentRunId || !activeSessionId) return
+  const handleAbort = useCallback(async (): Promise<boolean> => {
+    if (!currentRunId || !activeSessionId) return false
 
     const sessionKey = activeSession?.source === 'server' && activeSession.serverKey
       ? activeSession.serverKey
@@ -281,10 +299,72 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
         runId: currentRunId,
       })
       console.log('[ChatView] 中断请求已发送')
+      return true
     } catch (error) {
       console.error('[ChatView] 中断失败:', error)
+      return false
     }
   }, [currentRunId, activeSessionId, activeSession])
+
+  /**
+   * 立即发送队列中的指定消息
+   *
+   * 流程：中断当前对话 → 从队列移除 → 等待中断完成 → 发送消息
+   * 使用 ref 暂存待发送消息，由 streamingMessage effect 在中断完成时触发实际发送。
+   * 包含 5 秒超时兜底：若 abort 事件未到达，直接发送暂存消息。
+   */
+  const pendingSendImmediatelyRef = useRef<QueuedMessage | null>(null)
+  const sendImmediatelyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  /** 清理超时定时器 */
+  const clearSendImmediatelyTimeout = useCallback(() => {
+    if (sendImmediatelyTimeoutRef.current) {
+      clearTimeout(sendImmediatelyTimeoutRef.current)
+      sendImmediatelyTimeoutRef.current = null
+    }
+  }, [])
+
+  /** session 切换或组件卸载时清理暂存状态 */
+  useEffect(() => {
+    pendingSendImmediatelyRef.current = null
+    clearSendImmediatelyTimeout()
+  }, [activeSessionId, clearSendImmediatelyTimeout])
+
+  const handleSendImmediately = useCallback(async (target: QueuedMessage) => {
+    console.log('[ChatView] 立即发送：中断当前对话并发送消息:', target.content)
+
+    /** 从队列移除 */
+    removeFromQueue(target.id)
+
+    if (!isLoading) {
+      /** 未在执行中，直接发送 */
+      await doSend(target.content, target.attachments)
+      return
+    }
+
+    /** 暂存消息到 ref，等中断完成后由 effect 发送 */
+    pendingSendImmediatelyRef.current = { ...target }
+
+    /** 设置 5 秒超时兜底：若中断事件未到达则直接发送 */
+    clearSendImmediatelyTimeout()
+    sendImmediatelyTimeoutRef.current = setTimeout(() => {
+      const pending = pendingSendImmediatelyRef.current
+      if (pending) {
+        console.warn('[ChatView] 立即发送超时兜底：中断事件未到达，直接发送消息')
+        pendingSendImmediatelyRef.current = null
+        doSend(pending.content, pending.attachments)
+      }
+    }, 5000)
+
+    /** 中断当前执行；若 abort 失败则清除 ref 直接发送 */
+    const aborted = await handleAbort()
+    if (!aborted) {
+      console.warn('[ChatView] 立即发送：中断失败，直接发送消息')
+      pendingSendImmediatelyRef.current = null
+      clearSendImmediatelyTimeout()
+      await doSend(target.content, target.attachments)
+    }
+  }, [isLoading, handleAbort, removeFromQueue, doSend, clearSendImmediatelyTimeout])
 
   /**
    * 存档并停止：保存检查点后中断执行
@@ -340,7 +420,11 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
 
   /**
    * 处理用户发送消息
-   * 空闲时直接发送，执行中时加入队列
+   *
+   * 逻辑：
+   * 1. 空闲时 + 队列有消息 → 先出队发送队列头部消息，当前输入加入队列尾部
+   * 2. 空闲时 + 队列为空 → 直接发送
+   * 3. 执行中 → 加入队列
    */
   const handleSend = useCallback(async (content: string, attachments: MessageAttachment[]) => {
     if (!isConnected) return
@@ -352,8 +436,19 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
       return
     }
 
+    /** 空闲时检查队列，有排队消息则优先发送队首 */
+    if (queueLength > 0) {
+      console.log('[ChatView] 队列有待发送消息，优先发送队首，当前输入入队')
+      enqueue(content, attachments)
+      const next = dequeue()
+      if (next) {
+        await doSend(next.content, next.attachments)
+      }
+      return
+    }
+
     await doSend(content, attachments)
-  }, [isConnected, isLoading, enqueue, doSend])
+  }, [isConnected, isLoading, queueLength, enqueue, dequeue, doSend])
 
   /**
    * 格式化时间
@@ -461,8 +556,10 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
         {/* 消息排队面板 */}
         <MessageQueuePanel
           queue={queue}
+          isLoading={isLoading}
           onRemove={removeFromQueue}
           onClear={clearQueue}
+          onSendImmediately={handleSendImmediately}
         />
 
         {/* 输入区域 */}
