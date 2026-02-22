@@ -1,12 +1,13 @@
 import {
   approveDevicePairing,
-  listDevicePairing,
-  type DeviceAuthToken,
   type PairedDeviceCompat,
   rejectDevicePairing,
   revokeDeviceToken,
   rotateDeviceToken,
   summarizeDeviceTokens,
+  listDevicePairingByUserId,
+  verifyDeviceOwnership,
+  verifyPairingRequestOwnership,
 } from "../../infra/device-pairing-db.js";
 import {
   ErrorCodes,
@@ -19,7 +20,11 @@ import {
   validateDeviceTokenRotateParams,
 } from "../protocol/index.js";
 import type { GatewayRequestHandlers } from "./types.js";
+import { requireDeviceAuth } from "./device-auth.js";
 
+/**
+ * 脱敏设备信息，移除 token 原文
+ */
 function redactPairedDevice(device: PairedDeviceCompat) {
   const { tokens, ...rest } = device;
   return {
@@ -29,7 +34,10 @@ function redactPairedDevice(device: PairedDeviceCompat) {
 }
 
 export const deviceHandlers: GatewayRequestHandlers = {
-  "device.pair.list": async ({ params, respond }) => {
+  /**
+   * 列出当前用户的已配对设备和待审批请求
+   */
+  "device.pair.list": async ({ params, respond, client }) => {
     if (!validateDevicePairListParams(params)) {
       respond(
         false,
@@ -43,7 +51,11 @@ export const deviceHandlers: GatewayRequestHandlers = {
       );
       return;
     }
-    const list = await listDevicePairing();
+
+    const userId = requireDeviceAuth(client, respond);
+    if (!userId) return;
+
+    const list = await listDevicePairingByUserId(userId);
     respond(
       true,
       {
@@ -53,7 +65,11 @@ export const deviceHandlers: GatewayRequestHandlers = {
       undefined,
     );
   },
-  "device.pair.approve": async ({ params, respond, context }) => {
+
+  /**
+   * 审批配对请求（需要验证请求归属当前用户）
+   */
+  "device.pair.approve": async ({ params, respond, context, client }) => {
     if (!validateDevicePairApproveParams(params)) {
       respond(
         false,
@@ -67,7 +83,19 @@ export const deviceHandlers: GatewayRequestHandlers = {
       );
       return;
     }
+
+    const userId = requireDeviceAuth(client, respond);
+    if (!userId) return;
+
     const { requestId } = params as { requestId: string };
+
+    /** 归属校验: 验证配对请求属于当前用户 */
+    const isOwner = await verifyPairingRequestOwnership(requestId, userId);
+    if (!isOwner) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "无权操作此配对请求"));
+      return;
+    }
+
     const approved = await approveDevicePairing(requestId);
     if (!approved) {
       respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "unknown requestId"));
@@ -88,7 +116,11 @@ export const deviceHandlers: GatewayRequestHandlers = {
     );
     respond(true, { requestId, device: redactPairedDevice(approved.device) }, undefined);
   },
-  "device.pair.reject": async ({ params, respond, context }) => {
+
+  /**
+   * 拒绝配对请求（需要验证请求归属当前用户）
+   */
+  "device.pair.reject": async ({ params, respond, context, client }) => {
     if (!validateDevicePairRejectParams(params)) {
       respond(
         false,
@@ -102,7 +134,19 @@ export const deviceHandlers: GatewayRequestHandlers = {
       );
       return;
     }
+
+    const userId = requireDeviceAuth(client, respond);
+    if (!userId) return;
+
     const { requestId } = params as { requestId: string };
+
+    /** 归属校验: 验证配对请求属于当前用户 */
+    const isOwner = await verifyPairingRequestOwnership(requestId, userId);
+    if (!isOwner) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "无权操作此配对请求"));
+      return;
+    }
+
     const rejected = await rejectDevicePairing(requestId);
     if (!rejected) {
       respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "unknown requestId"));
@@ -120,7 +164,11 @@ export const deviceHandlers: GatewayRequestHandlers = {
     );
     respond(true, rejected, undefined);
   },
-  "device.token.rotate": async ({ params, respond, context }) => {
+
+  /**
+   * 轮换设备 token（需要验证设备归属当前用户）
+   */
+  "device.token.rotate": async ({ params, respond, context, client }) => {
     if (!validateDeviceTokenRotateParams(params)) {
       respond(
         false,
@@ -134,11 +182,23 @@ export const deviceHandlers: GatewayRequestHandlers = {
       );
       return;
     }
+
+    const userId = requireDeviceAuth(client, respond);
+    if (!userId) return;
+
     const { deviceId, role, scopes } = params as {
       deviceId: string;
       role: string;
       scopes?: string[];
     };
+
+    /** 归属校验: 验证设备属于当前用户 */
+    const isOwner = await verifyDeviceOwnership(deviceId, userId);
+    if (!isOwner) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "无权操作此设备"));
+      return;
+    }
+
     const entry = await rotateDeviceToken({ deviceId, role, scopes });
     if (!entry) {
       respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "unknown deviceId/role"));
@@ -159,7 +219,11 @@ export const deviceHandlers: GatewayRequestHandlers = {
       undefined,
     );
   },
-  "device.token.revoke": async ({ params, respond, context }) => {
+
+  /**
+   * 撤销设备 token（需要验证设备归属当前用户）
+   */
+  "device.token.revoke": async ({ params, respond, context, client }) => {
     if (!validateDeviceTokenRevokeParams(params)) {
       respond(
         false,
@@ -173,7 +237,19 @@ export const deviceHandlers: GatewayRequestHandlers = {
       );
       return;
     }
+
+    const userId = requireDeviceAuth(client, respond);
+    if (!userId) return;
+
     const { deviceId, role } = params as { deviceId: string; role: string };
+
+    /** 归属校验: 验证设备属于当前用户 */
+    const isOwner = await verifyDeviceOwnership(deviceId, userId);
+    if (!isOwner) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "无权操作此设备"));
+      return;
+    }
+
     const entry = await revokeDeviceToken({ deviceId, role });
     if (!entry) {
       respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "unknown deviceId/role"));

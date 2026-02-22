@@ -3,10 +3,14 @@
  *
  * 为 Windows 客户端提供设备管理相关的 RPC 方法
  * 包括设备绑定、解绑、列表、配额查询等
+ *
+ * 所有方法使用 client.authenticatedUser.userId（服务端权威来源），
+ * 不信任客户端传入的 params.userId。
  */
 
 import type { GatewayRequestHandlers } from "./types.js";
 import { ErrorCodes, errorShape } from "../protocol/index.js";
+import { requireDeviceAuth } from "./device-auth.js";
 import {
   linkDevice,
   unlinkDevice,
@@ -18,6 +22,7 @@ import {
   getDeviceInfo,
   getUserIdByDeviceId,
 } from "../../assistant/device/index.js";
+import { verifyDeviceOwnership } from "../../infra/device-pairing-db.js";
 
 // 日志标签
 const LOG_TAG = "device";
@@ -64,12 +69,12 @@ export const deviceMethods: GatewayRequestHandlers = {
   /**
    * 获取用户设备列表
    *
-   * 参数:
-   * - userId: string - 用户 ID
+   * userId 从 client.authenticatedUser 自动提取
    */
-  "device.list": async ({ params, respond, context }) => {
+  "device.list": async ({ params: _params, respond, context, client }) => {
     try {
-      const userId = validateStringParam(params, "userId", true)!;
+      const userId = requireDeviceAuth(client, respond);
+      if (!userId) return;
 
       const result = await listUserDevices(userId);
 
@@ -97,14 +102,15 @@ export const deviceMethods: GatewayRequestHandlers = {
    * 绑定设备到用户
    *
    * 参数:
-   * - userId: string - 用户 ID
    * - deviceId: string - 设备 ID
    * - alias?: string - 设备别名
    * - setAsPrimary?: boolean - 是否设为主设备
    */
-  "device.link": async ({ params, respond, context }) => {
+  "device.link": async ({ params, respond, context, client }) => {
     try {
-      const userId = validateStringParam(params, "userId", true)!;
+      const userId = requireDeviceAuth(client, respond);
+      if (!userId) return;
+
       const deviceId = validateStringParam(params, "deviceId", true)!;
       const alias = validateStringParam(params, "alias");
       const setAsPrimary = validateBooleanParam(params, "setAsPrimary");
@@ -153,12 +159,13 @@ export const deviceMethods: GatewayRequestHandlers = {
    * 解绑设备
    *
    * 参数:
-   * - userId: string - 用户 ID
    * - deviceId: string - 设备 ID
    */
-  "device.unlink": async ({ params, respond, context }) => {
+  "device.unlink": async ({ params, respond, context, client }) => {
     try {
-      const userId = validateStringParam(params, "userId", true)!;
+      const userId = requireDeviceAuth(client, respond);
+      if (!userId) return;
+
       const deviceId = validateStringParam(params, "deviceId", true)!;
       const ipAddress = params["ipAddress"] as string | undefined;
       const userAgent = params["userAgent"] as string | undefined;
@@ -202,12 +209,12 @@ export const deviceMethods: GatewayRequestHandlers = {
   /**
    * 获取设备配额
    *
-   * 参数:
-   * - userId: string - 用户 ID
+   * userId 从 client.authenticatedUser 自动提取
    */
-  "device.quota": async ({ params, respond, context }) => {
+  "device.quota": async ({ params: _params, respond, context, client }) => {
     try {
-      const userId = validateStringParam(params, "userId", true)!;
+      const userId = requireDeviceAuth(client, respond);
+      if (!userId) return;
 
       const quota = await getDeviceQuota(userId);
 
@@ -234,12 +241,13 @@ export const deviceMethods: GatewayRequestHandlers = {
    * 设置主设备
    *
    * 参数:
-   * - userId: string - 用户 ID
    * - deviceId: string - 设备 ID
    */
-  "device.setPrimary": async ({ params, respond, context }) => {
+  "device.setPrimary": async ({ params, respond, context, client }) => {
     try {
-      const userId = validateStringParam(params, "userId", true)!;
+      const userId = requireDeviceAuth(client, respond);
+      if (!userId) return;
+
       const deviceId = validateStringParam(params, "deviceId", true)!;
 
       const result = await setPrimaryDevice(userId, deviceId);
@@ -277,13 +285,14 @@ export const deviceMethods: GatewayRequestHandlers = {
    * 更新设备别名
    *
    * 参数:
-   * - userId: string - 用户 ID
    * - deviceId: string - 设备 ID
    * - alias: string - 新别名
    */
-  "device.updateAlias": async ({ params, respond, context }) => {
+  "device.updateAlias": async ({ params, respond, context, client }) => {
     try {
-      const userId = validateStringParam(params, "userId", true)!;
+      const userId = requireDeviceAuth(client, respond);
+      if (!userId) return;
+
       const deviceId = validateStringParam(params, "deviceId", true)!;
       const alias = validateStringParam(params, "alias", true)!;
 
@@ -324,8 +333,11 @@ export const deviceMethods: GatewayRequestHandlers = {
    * 参数:
    * - deviceId: string - 设备 ID
    */
-  "device.checkPaired": async ({ params, respond, context }) => {
+  "device.checkPaired": async ({ params, respond, context, client }) => {
     try {
+      const userId = requireDeviceAuth(client, respond);
+      if (!userId) return;
+
       const deviceId = validateStringParam(params, "deviceId", true)!;
 
       const isPaired = await checkDevicePaired(deviceId);
@@ -350,14 +362,24 @@ export const deviceMethods: GatewayRequestHandlers = {
   },
 
   /**
-   * 获取设备详细信息
+   * 获取设备详细信息（需要归属校验）
    *
    * 参数:
    * - deviceId: string - 设备 ID
    */
-  "device.info": async ({ params, respond, context }) => {
+  "device.info": async ({ params, respond, context, client }) => {
     try {
+      const userId = requireDeviceAuth(client, respond);
+      if (!userId) return;
+
       const deviceId = validateStringParam(params, "deviceId", true)!;
+
+      /** 归属校验: 只能查看自己的设备 */
+      const isOwner = await verifyDeviceOwnership(deviceId, userId);
+      if (!isOwner) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "无权查看此设备信息"));
+        return;
+      }
 
       const deviceInfo = await getDeviceInfo(deviceId);
 
@@ -391,20 +413,30 @@ export const deviceMethods: GatewayRequestHandlers = {
   },
 
   /**
-   * 根据设备 ID 获取关联的用户 ID
+   * 根据设备 ID 获取关联的用户 ID（需要归属校验）
    *
    * 参数:
    * - deviceId: string - 设备 ID
    */
-  "device.getUser": async ({ params, respond, context }) => {
+  "device.getUser": async ({ params, respond, context, client }) => {
     try {
+      const userId = requireDeviceAuth(client, respond);
+      if (!userId) return;
+
       const deviceId = validateStringParam(params, "deviceId", true)!;
 
-      const userId = await getUserIdByDeviceId(deviceId);
+      /** 归属校验: 只能查询自己的设备 */
+      const isOwner = await verifyDeviceOwnership(deviceId, userId);
+      if (!isOwner) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "无权查看此设备信息"));
+        return;
+      }
+
+      const resolvedUserId = await getUserIdByDeviceId(deviceId);
 
       respond(true, {
         success: true,
-        userId,
+        userId: resolvedUserId,
       });
     } catch (error) {
       context.logGateway.error(`[${LOG_TAG}] getUser error`, {
