@@ -52,7 +52,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
   const { streamingMessage, startStream } = useChatStream()
   const { getToolCalls } = useToolStream()
   const { todos, completedCount, totalCount } = useAgentTodo()
-  const { queue, queueLength, enqueue, dequeue, remove: removeFromQueue, clear: clearQueue } = useMessageQueue()
+  const { queue, queueLength, enqueue, dequeue, remove: removeFromQueue, clear: clearQueue } = useMessageQueue(activeSessionId)
   const {
     checkpoints,
     isLoading: isLoadingCheckpoints,
@@ -108,6 +108,21 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
       loadServerMessages(activeSession.id)
     }
   }, [activeSessionId, activeSession, loadServerMessages])
+
+  /**
+   * 切换会话时重置运行状态
+   * 防止会话 A 的 isLoading 状态影响会话 B
+   */
+  const prevSessionIdRef = useRef<string | null>(activeSessionId)
+  useEffect(() => {
+    if (prevSessionIdRef.current !== activeSessionId) {
+      console.log('[ChatView] 会话切换，重置运行状态:', activeSessionId)
+      prevSessionIdRef.current = activeSessionId
+      setIsLoading(false)
+      setCurrentRunId(null)
+      setCurrentAssistantMessageId(null)
+    }
+  }, [activeSessionId])
 
   /**
    * 发送消息到 Gateway 的核心逻辑

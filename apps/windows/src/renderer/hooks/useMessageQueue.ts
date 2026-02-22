@@ -1,14 +1,15 @@
 /**
- * useMessageQueue Hook - 消息排队机制
+ * useMessageQueue Hook - 消息排队机制（按会话隔离）
  *
  * 当 agent 正在执行时，用户发送的消息进入队列而非直接发送
  * 当前 run 完成后，自动发送队列中的下一条消息
  *
  * 功能：
  * - 排队/出队/自动派发
- * - 持久化到 localStorage（防页面刷新丢失）
+ * - 持久化到 localStorage（按 sessionId 隔离）
  * - 最大队列容量 10 条
  * - 支持删除单条队列消息
+ * - 切换会话时自动加载对应会话的队列
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react'
@@ -20,9 +21,9 @@ import type { MessageAttachment } from './useChatHistory'
 const MAX_QUEUE_SIZE = 10
 
 /**
- * localStorage key
+ * localStorage key 前缀
  */
-const STORAGE_KEY = 'openclaw_message_queue'
+const STORAGE_KEY_PREFIX = 'openclaw_message_queue_'
 
 /**
  * 队列消息项
@@ -61,11 +62,20 @@ export interface UseMessageQueueReturn {
 }
 
 /**
- * 从 localStorage 加载队列
+ * 生成会话级 localStorage key
  */
-function loadQueue(): QueuedMessage[] {
+function getStorageKey(sessionId: string | null): string {
+  if (!sessionId) return `${STORAGE_KEY_PREFIX}_default`
+  return `${STORAGE_KEY_PREFIX}${sessionId}`
+}
+
+/**
+ * 从 localStorage 加载指定会话的队列
+ */
+function loadQueue(sessionId: string | null): QueuedMessage[] {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const key = getStorageKey(sessionId)
+    const stored = localStorage.getItem(key)
     if (!stored) return []
     const parsed = JSON.parse(stored)
     if (!Array.isArray(parsed)) return []
@@ -77,11 +87,16 @@ function loadQueue(): QueuedMessage[] {
 }
 
 /**
- * 保存队列到 localStorage
+ * 保存队列到 localStorage（按会话隔离）
  */
-function saveQueue(queue: QueuedMessage[]): void {
+function saveQueue(sessionId: string | null, queue: QueuedMessage[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(queue))
+    const key = getStorageKey(sessionId)
+    if (queue.length === 0) {
+      localStorage.removeItem(key)
+    } else {
+      localStorage.setItem(key, JSON.stringify(queue))
+    }
   } catch (error) {
     console.error('[useMessageQueue] 保存队列失败:', error)
   }
@@ -89,15 +104,29 @@ function saveQueue(queue: QueuedMessage[]): void {
 
 /**
  * 消息排队机制 Hook
+ *
+ * @param sessionId 当前活跃会话 ID，切换会话时自动加载对应队列
  */
-export function useMessageQueue(): UseMessageQueueReturn {
-  const [queue, setQueue] = useState<QueuedMessage[]>(() => loadQueue())
+export function useMessageQueue(sessionId: string | null): UseMessageQueueReturn {
+  const [queue, setQueue] = useState<QueuedMessage[]>(() => loadQueue(sessionId))
   const queueRef = useRef<QueuedMessage[]>(queue)
+  const sessionIdRef = useRef<string | null>(sessionId)
 
   /** 同步 ref */
   useEffect(() => {
     queueRef.current = queue
   }, [queue])
+
+  /** 会话切换时加载对应队列 */
+  useEffect(() => {
+    if (sessionIdRef.current !== sessionId) {
+      console.log('[useMessageQueue] 会话切换，加载队列:', sessionId)
+      sessionIdRef.current = sessionId
+      const loaded = loadQueue(sessionId)
+      setQueue(loaded)
+      queueRef.current = loaded
+    }
+  }, [sessionId])
 
   /**
    * 添加消息到队列尾部
@@ -109,16 +138,16 @@ export function useMessageQueue(): UseMessageQueueReturn {
     }
 
     const item: QueuedMessage = {
-      id: `q-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `q-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       content,
       attachments,
       queuedAt: Date.now(),
     }
 
-    console.log('[useMessageQueue] 消息入队:', item.content)
+    console.log('[useMessageQueue] 消息入队:', item.content, '会话:', sessionIdRef.current)
     setQueue((prev) => {
       const next = [...prev, item]
-      saveQueue(next)
+      saveQueue(sessionIdRef.current, next)
       return next
     })
   }, [])
@@ -133,7 +162,7 @@ export function useMessageQueue(): UseMessageQueueReturn {
     const [first, ...rest] = current
     console.log('[useMessageQueue] 消息出队:', first.content)
     setQueue(rest)
-    saveQueue(rest)
+    saveQueue(sessionIdRef.current, rest)
     return first
   }, [])
 
@@ -151,7 +180,7 @@ export function useMessageQueue(): UseMessageQueueReturn {
     console.log('[useMessageQueue] 移除消息:', id)
     setQueue((prev) => {
       const next = prev.filter((item) => item.id !== id)
-      saveQueue(next)
+      saveQueue(sessionIdRef.current, next)
       return next
     })
   }, [])
@@ -160,9 +189,9 @@ export function useMessageQueue(): UseMessageQueueReturn {
    * 清空队列
    */
   const clear = useCallback(() => {
-    console.log('[useMessageQueue] 清空队列')
+    console.log('[useMessageQueue] 清空队列:', sessionIdRef.current)
     setQueue([])
-    saveQueue([])
+    saveQueue(sessionIdRef.current, [])
   }, [])
 
   return {
