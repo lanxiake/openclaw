@@ -15,8 +15,8 @@ import { TenantScopedRepository } from "./tenant-scope.js";
 import {
   search as milvusSearch,
   upsertVector as milvusUpsert,
+  deleteVector as milvusDelete,
 } from "../../infrastructure/milvus/vector-store.js";
-import { isMilvusConnected } from "../../infrastructure/milvus/connection.js";
 
 const logger = getLogger();
 
@@ -31,7 +31,8 @@ export class MemoryRepository extends TenantScopedRepository {
   /**
    * 创建记忆
    *
-   * userId 由基类自动注入，调用方无需传入
+   * PostgreSQL 存储元数据，Milvus 存储向量。
+   * userId 由基类自动注入，调用方无需传入。
    */
   async create(
     data: Omit<NewUserMemory, "id" | "userId" | "createdAt" | "updatedAt" | "isActive"> & {
@@ -45,6 +46,7 @@ export class MemoryRepository extends TenantScopedRepository {
       `[MemoryRepository] 创建记忆, id=${id}, userId=${this.tenantId}, type=${data.type}`,
     );
 
+    // PostgreSQL 存元数据（不存 embedding）
     const [mem] = await this.db
       .insert(userMemories)
       .values({
@@ -54,7 +56,7 @@ export class MemoryRepository extends TenantScopedRepository {
         category: data.category,
         content: data.content,
         summary: data.summary,
-        embedding: data.embedding,
+        embedding: null,
         importance: data.importance ?? 5,
         sourceType: data.sourceType,
         sourceId: data.sourceId,
@@ -68,21 +70,24 @@ export class MemoryRepository extends TenantScopedRepository {
 
     logger.debug(`[MemoryRepository] 记忆创建成功, id=${id}`);
 
-    // 同步写入 Milvus（如有 embedding 且 Milvus 可用）
-    if (mem.embedding && isMilvusConnected()) {
+    // 向量写入 Milvus
+    if (data.embedding) {
       try {
         await milvusUpsert({
           id: mem.id,
           userId: this.tenantId,
-          embedding: mem.embedding,
+          embedding: data.embedding,
           memoryType: mem.type,
           isActive: mem.isActive ?? true,
         });
-        logger.debug(`[MemoryRepository] 记忆已同步到 Milvus, id=${id}`);
+        logger.debug(`[MemoryRepository] 向量已写入 Milvus, id=${id}`);
       } catch (error) {
-        logger.warn(`[MemoryRepository] Milvus 同步失败, id=${id}`, {
+        logger.error(`[MemoryRepository] Milvus 写入失败, id=${id}`, {
           error: error instanceof Error ? error.message : String(error),
         });
+        throw new Error(
+          `Milvus 向量写入失败: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
@@ -168,7 +173,7 @@ export class MemoryRepository extends TenantScopedRepository {
   /**
    * 更新记忆
    *
-   * 更新 PostgreSQL 后，如 embedding 有变化则同步到 Milvus
+   * PostgreSQL 更新元数据，embedding 变化时更新 Milvus
    */
   async update(
     id: string,
@@ -178,10 +183,13 @@ export class MemoryRepository extends TenantScopedRepository {
   ): Promise<UserMemory | null> {
     logger.debug(`[MemoryRepository] 更新记忆, id=${id}, userId=${this.tenantId}`);
 
+    // 将 embedding 从 PG 更新数据中分离
+    const { embedding, ...pgData } = data;
+
     const [mem] = await this.db
       .update(userMemories)
       .set({
-        ...data,
+        ...pgData,
         updatedAt: new Date(),
       })
       .where(and(eq(userMemories.id, id), eq(userMemories.userId, this.tenantId)))
@@ -191,21 +199,24 @@ export class MemoryRepository extends TenantScopedRepository {
       return null;
     }
 
-    // 如果更新了 embedding，同步到 Milvus
-    if (data.embedding && isMilvusConnected()) {
+    // 如果更新了 embedding，写入 Milvus
+    if (embedding) {
       try {
         await milvusUpsert({
           id: mem.id,
           userId: this.tenantId,
-          embedding: mem.embedding!,
+          embedding,
           memoryType: mem.type,
           isActive: mem.isActive ?? true,
         });
-        logger.debug(`[MemoryRepository] embedding 已同步到 Milvus, id=${id}`);
+        logger.debug(`[MemoryRepository] embedding 已更新到 Milvus, id=${id}`);
       } catch (error) {
-        logger.warn(`[MemoryRepository] Milvus embedding 同步失败, id=${id}`, {
+        logger.error(`[MemoryRepository] Milvus embedding 更新失败, id=${id}`, {
           error: error instanceof Error ? error.message : String(error),
         });
+        throw new Error(
+          `Milvus 向量更新失败: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
@@ -215,12 +226,12 @@ export class MemoryRepository extends TenantScopedRepository {
   /**
    * 停用记忆（设置 isActive = false）
    *
-   * 同步更新 Milvus 中的 is_active 标记，使向量搜索自动排除该记忆
+   * PostgreSQL 标记停用 + Milvus 更新 is_active 标记
    */
   async deactivate(id: string): Promise<void> {
     logger.debug(`[MemoryRepository] 停用记忆, id=${id}, userId=${this.tenantId}`);
 
-    // 先查出记忆数据（需要 embedding 用于 Milvus upsert）
+    // 先查出记忆数据（需要 type 用于 Milvus upsert）
     const [mem] = await this.db
       .select()
       .from(userMemories)
@@ -240,30 +251,23 @@ export class MemoryRepository extends TenantScopedRepository {
       })
       .where(and(eq(userMemories.id, id), eq(userMemories.userId, this.tenantId)));
 
-    // 同步到 Milvus（更新 is_active = false）
-    if (mem.embedding && isMilvusConnected()) {
-      try {
-        await milvusUpsert({
-          id: mem.id,
-          userId: this.tenantId,
-          embedding: mem.embedding,
-          memoryType: mem.type,
-          isActive: false,
-        });
-        logger.debug(`[MemoryRepository] Milvus is_active 已更新为 false, id=${id}`);
-      } catch (error) {
-        logger.warn(`[MemoryRepository] Milvus 停用同步失败, id=${id}`, {
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
+    // 从 Milvus 中删除向量
+    try {
+      await milvusDelete(id);
+      logger.debug(`[MemoryRepository] 已从 Milvus 删除向量, id=${id}`);
+    } catch (error) {
+      logger.warn(`[MemoryRepository] Milvus 删除失败, id=${id}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
   /**
-   * 向量相似度搜索
+   * 向量相似度搜索（Milvus HNSW + COSINE）
    *
-   * 优先使用 Milvus 向量搜索（HNSW + COSINE），
-   * Milvus 不可用时降级为 pgvector 的 <=> 操作符。
+   * 1. Milvus search → 返回 id + score 列表
+   * 2. 用 id 批量回查 PostgreSQL 获取完整元数据
+   * 3. 按 Milvus 返回的相似度排序
    *
    * @param embedding - 查询向量（1024 维）
    * @param options - 搜索选项
@@ -285,38 +289,11 @@ export class MemoryRepository extends TenantScopedRepository {
       `[MemoryRepository] 向量搜索, userId=${this.tenantId}, limit=${limit}, minScore=${minScore}`,
     );
 
-    // 优先使用 Milvus
-    if (isMilvusConnected()) {
-      try {
-        return await this.searchViaMilvus(embedding, { ...options, limit, minScore });
-      } catch (error) {
-        logger.warn(`[MemoryRepository] Milvus 搜索失败，降级到 pgvector`, {
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
-    }
-
-    // 降级：pgvector SQL 查询
-    return this.searchViaPgvector(embedding, { ...options, limit, minScore });
-  }
-
-  /**
-   * 通过 Milvus 执行向量搜索，然后用 id 批量回查 PostgreSQL 获取完整元数据
-   */
-  private async searchViaMilvus(
-    embedding: number[],
-    options: {
-      type?: string;
-      category?: string;
-      limit: number;
-      minScore: number;
-    },
-  ): Promise<Array<UserMemory & { score: number }>> {
     // Step 1: Milvus 向量搜索（返回 id + score）
     const milvusResults = await milvusSearch(embedding, this.tenantId, {
-      limit: options.limit,
-      minScore: options.minScore,
-      memoryType: options.type,
+      limit,
+      minScore,
+      memoryType: options?.type,
       activeOnly: true,
     });
 
@@ -330,7 +307,7 @@ export class MemoryRepository extends TenantScopedRepository {
     const conditions = [inArray(userMemories.id, ids), eq(userMemories.userId, this.tenantId)];
 
     // category 在 PostgreSQL 侧过滤（Milvus 不存储 category）
-    if (options.category) {
+    if (options?.category) {
       conditions.push(eq(userMemories.category, options.category));
     }
 
@@ -339,7 +316,7 @@ export class MemoryRepository extends TenantScopedRepository {
       .from(userMemories)
       .where(and(...conditions));
 
-    // Step 3: 按 Milvus 返回的相似度排序关联元数据
+    // Step 3: 按 Milvus 的相似度排序关联元数据
     const pgMap = new Map(pgRows.map((r) => [r.id, r]));
     const results: Array<UserMemory & { score: number }> = [];
 
@@ -357,68 +334,6 @@ export class MemoryRepository extends TenantScopedRepository {
     });
 
     return results;
-  }
-
-  /**
-   * pgvector 降级搜索（Milvus 不可用时使用）
-   */
-  private async searchViaPgvector(
-    embedding: number[],
-    options: {
-      type?: string;
-      category?: string;
-      limit: number;
-      minScore: number;
-    },
-  ): Promise<Array<UserMemory & { score: number }>> {
-    logger.debug(`[MemoryRepository] 使用 pgvector 降级搜索, userId=${this.tenantId}`);
-
-    const vectorStr = `[${embedding.join(",")}]`;
-
-    // 构建条件
-    const conditions = [
-      eq(userMemories.userId, this.tenantId),
-      eq(userMemories.isActive, true),
-      sql`${userMemories.embedding} IS NOT NULL`,
-    ];
-
-    if (options.type) {
-      conditions.push(eq(userMemories.type, options.type as UserMemory["type"]));
-    }
-
-    if (options.category) {
-      conditions.push(eq(userMemories.category, options.category));
-    }
-
-    // 使用 pgvector 余弦距离，score = 1 - distance
-    const results = await this.db
-      .select({
-        id: userMemories.id,
-        userId: userMemories.userId,
-        type: userMemories.type,
-        category: userMemories.category,
-        content: userMemories.content,
-        summary: userMemories.summary,
-        embedding: userMemories.embedding,
-        importance: userMemories.importance,
-        sourceType: userMemories.sourceType,
-        sourceId: userMemories.sourceId,
-        metadata: userMemories.metadata,
-        expiresAt: userMemories.expiresAt,
-        isActive: userMemories.isActive,
-        createdAt: userMemories.createdAt,
-        updatedAt: userMemories.updatedAt,
-        score: sql<number>`1 - (${userMemories.embedding} <=> ${vectorStr}::vector)`,
-      })
-      .from(userMemories)
-      .where(and(...conditions))
-      .orderBy(sql`${userMemories.embedding} <=> ${vectorStr}::vector`)
-      .limit(options.limit);
-
-    // 过滤低于 minScore 的结果
-    return results.filter((r) => r.score >= options.minScore) as Array<
-      UserMemory & { score: number }
-    >;
   }
 }
 

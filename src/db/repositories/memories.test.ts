@@ -13,6 +13,7 @@ import {
   getMockDatabase,
 } from "../mock-connection.js";
 import { MemoryRepository, getMemoryRepository } from "./memories.js";
+import { enableMilvusMock, disableMilvusMock } from "../../infrastructure/milvus/connection.js";
 
 // ==================== MemoryRepository 测试 ====================
 
@@ -23,6 +24,7 @@ describe("MemoryRepository", () => {
   beforeEach(() => {
     console.log("[TEST] ========== MemoryRepository测试开始 ==========");
     enableMockDatabase();
+    enableMilvusMock();
     const db = getMockDatabase();
     memRepo = getMemoryRepository(db, testUserId);
     clearMockDatabase();
@@ -30,6 +32,7 @@ describe("MemoryRepository", () => {
 
   afterEach(() => {
     console.log("[TEST] ========== MemoryRepository测试结束 ==========\n");
+    disableMilvusMock();
     disableMockDatabase();
   });
 
