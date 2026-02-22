@@ -480,6 +480,8 @@ export async function startGatewayServer(
       incrementPresenceVersion,
       getHealthVersion,
       broadcast,
+      emitToUser: (userId: string, event: string, payload?: unknown) =>
+        nodeRegistry.emitToUser(userId, event, payload),
       nodeSendToSession,
       nodeSendToAllSubscribed,
       nodeSubscribe,

@@ -62,6 +62,8 @@ export type GatewayRequestContext = {
       stateVersion?: { presence?: number; health?: number };
     },
   ) => void;
+  /** 向指定用户的所有在线节点广播事件 */
+  emitToUser: (userId: string, event: string, payload?: unknown) => number;
   nodeSendToSession: (sessionKey: string, event: string, payload: unknown) => void;
   nodeSendToAllSubscribed: (event: string, payload: unknown) => void;
   nodeSubscribe: (nodeId: string, sessionKey: string) => void;

@@ -191,6 +191,21 @@ export class NodeRegistry {
     return true;
   }
 
+  /**
+   * 向指定用户的所有在线节点广播事件
+   * @returns 成功发送的节点数
+   */
+  emitToUser(userId: string, event: string, payload?: unknown): number {
+    const nodes = this.listByUserId(userId);
+    let sent = 0;
+    for (const node of nodes) {
+      if (this.sendEventToSession(node, event, payload)) {
+        sent++;
+      }
+    }
+    return sent;
+  }
+
   sendEvent(nodeId: string, event: string, payload?: unknown): boolean {
     const node = this.nodesById.get(nodeId);
     if (!node) {
