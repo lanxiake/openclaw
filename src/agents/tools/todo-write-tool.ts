@@ -14,23 +14,24 @@
 
 import { Type } from "@sinclair/typebox";
 import { type AnyAgentTool, jsonResult } from "./common.js";
+import { stringEnum } from "../schema/typebox.js";
 
 /**
  * TodoWrite 工具 Schema
  *
  * 参数格式与 Claude Code 的 TodoWrite 工具保持一致，
  * 客户端 useAgentTodo hook 解析 args.todos 数组。
+ *
+ * 注意：status 字段使用 stringEnum 而非 Type.Union，
+ * 避免 anyOf 导致部分 model provider 拒绝工具 schema。
  */
 const TodoWriteSchema = Type.Object({
   todos: Type.Array(
     Type.Object({
       content: Type.String({ description: "任务描述 (祈使语气)" }),
-      status: Type.Union(
-        [Type.Literal("pending"), Type.Literal("in_progress"), Type.Literal("completed")],
-        {
-          description: "任务状态: pending=待处理, in_progress=执行中, completed=已完成",
-        },
-      ),
+      status: stringEnum(["pending", "in_progress", "completed"] as const, {
+        description: "任务状态: pending=待处理, in_progress=执行中, completed=已完成",
+      }),
       activeForm: Type.Optional(Type.String({ description: "执行中显示文本 (进行时态)" })),
     }),
     { description: "完整的任务列表快照（每次调用替换全部任务）" },
