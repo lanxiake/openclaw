@@ -1,13 +1,26 @@
 /**
  * 语义搜索服务模块
  *
- * 基于 pgvector 提供向量相似度搜索功能
- * 用于记忆检索、知识搜索等场景
+ * 基于 Milvus 向量数据库提供相似度搜索功能。
+ * 向量数据存 Milvus，元数据存 PostgreSQL，通过 id 关联。
+ *
+ * 架构:
+ *   searchMemories() → Milvus search → id 列表 → PostgreSQL 批量查询元数据
+ *   storeMemoryWithEmbedding() → PostgreSQL insert + Milvus upsert
  */
+
+import { eq, and, inArray } from "drizzle-orm";
 
 import { getDatabase, getSqlClient } from "../../db/connection.js";
 import { userMemories, type UserMemory } from "../../db/schema/memories.js";
 import { getLogger } from "../../logging/logger.js";
+import {
+  search as milvusSearch,
+  upsertVector,
+  batchUpsert,
+  ensureCollection,
+} from "../milvus/vector-store.js";
+import { isMilvusConnected } from "../milvus/connection.js";
 
 const logger = getLogger();
 
@@ -47,7 +60,7 @@ export interface SearchOptions {
  * 实际使用时需要调用 OpenAI/Anthropic 等 API 生成嵌入向量
  *
  * @param text 文本内容
- * @returns 1536 维向量
+ * @returns 1024 维向量
  */
 export async function embedText(text: string): Promise<number[]> {
   // TODO: 集成实际的嵌入 API（如 OpenAI text-embedding-3-small）
@@ -57,8 +70,7 @@ export async function embedText(text: string): Promise<number[]> {
   // 生成基于文本哈希的伪随机向量（仅用于测试）
   const hash = simpleHash(text);
   const vector: number[] = [];
-  for (let i = 0; i < 1536; i++) {
-    // 使用哈希值生成伪随机数
+  for (let i = 0; i < 1024; i++) {
     const seed = hash + i;
     vector.push(Math.sin(seed) * 0.5 + 0.5);
   }
@@ -82,9 +94,13 @@ function simpleHash(str: string): number {
 }
 
 /**
- * 语义搜索记忆
+ * 语义搜索记忆 (Milvus + PostgreSQL)
  *
- * 使用余弦相似度搜索最相关的记忆
+ * 1. 在 Milvus 中执行向量相似度搜索，获取 id + score
+ * 2. 用 id 批量回查 PostgreSQL 获取完整元数据
+ * 3. 按 Milvus 返回的相似度排序
+ *
+ * 当 Milvus 不可用时，降级为 pgvector SQL 查询。
  *
  * @param queryVector 查询向量
  * @param options 搜索选项
@@ -104,85 +120,174 @@ export async function searchMemories(
     category,
   });
 
+  // 优先使用 Milvus
+  if (isMilvusConnected()) {
+    try {
+      return await searchViaMilvus(queryVector, {
+        userId,
+        limit,
+        minSimilarity,
+        type,
+        category,
+        activeOnly,
+      });
+    } catch (error) {
+      logger.warn("[memory-search] Milvus search failed, falling back to pgvector", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  // 降级：pgvector SQL 查询
+  return await searchViaPgvector(queryVector, {
+    userId,
+    limit,
+    minSimilarity,
+    type,
+    category,
+    activeOnly,
+  });
+}
+
+/**
+ * 通过 Milvus 执行向量搜索 + PostgreSQL 元数据回查
+ */
+async function searchViaMilvus(
+  queryVector: number[],
+  options: {
+    userId: string;
+    limit: number;
+    minSimilarity: number;
+    type?: string;
+    category?: string;
+    activeOnly: boolean;
+  },
+): Promise<SearchResult[]> {
+  const { userId, limit, minSimilarity, type, activeOnly } = options;
+
+  // Step 1: Milvus 向量搜索
+  const milvusResults = await milvusSearch(queryVector, userId, {
+    limit,
+    minScore: minSimilarity,
+    memoryType: type,
+    activeOnly,
+  });
+
+  if (milvusResults.length === 0) {
+    return [];
+  }
+
+  // Step 2: 用 id 批量回查 PostgreSQL 元数据
+  const ids = milvusResults.map((r) => r.id);
+  const db = getDatabase();
+
+  const conditions = [inArray(userMemories.id, ids), eq(userMemories.userId, userId)];
+
+  // 分类过滤在 PostgreSQL 侧执行（Milvus 不存储 category）
+  if (options.category) {
+    conditions.push(eq(userMemories.category, options.category));
+  }
+
+  const pgRows = await db
+    .select()
+    .from(userMemories)
+    .where(and(...conditions));
+
+  // Step 3: 按 Milvus 的相似度排序关联元数据
+  const pgMap = new Map(pgRows.map((r) => [r.id, r]));
+  const results: SearchResult[] = [];
+
+  for (const hit of milvusResults) {
+    const memory = pgMap.get(hit.id);
+    if (memory) {
+      results.push({
+        memory,
+        similarity: hit.score,
+        distance: hit.distance,
+      });
+    }
+  }
+
+  logger.debug("[memory-search] Milvus search completed", {
+    userId,
+    milvusHits: milvusResults.length,
+    pgMatches: results.length,
+  });
+
+  return results;
+}
+
+/**
+ * pgvector 降级搜索（Milvus 不可用时使用）
+ */
+async function searchViaPgvector(
+  queryVector: number[],
+  options: {
+    userId: string;
+    limit: number;
+    minSimilarity: number;
+    type?: string;
+    category?: string;
+    activeOnly: boolean;
+  },
+): Promise<SearchResult[]> {
+  const { userId, limit, minSimilarity, type, category, activeOnly } = options;
+
+  logger.debug("[memory-search] Using pgvector fallback", { userId });
+
   const sqlClient = getSqlClient();
 
-  try {
-    // 构建向量字符串
-    const vectorStr = `[${queryVector.join(",")}]`;
+  const vectorStr = `[${queryVector.join(",")}]`;
 
-    // 构建 WHERE 条件
-    const conditions: string[] = [`user_id = '${userId}'`];
+  const conditions: string[] = [`user_id = '${userId}'`];
+  if (activeOnly) conditions.push("is_active = true");
+  if (type) conditions.push(`type = '${type}'`);
+  if (category) conditions.push(`category = '${category}'`);
+  conditions.push("(expires_at IS NULL OR expires_at > NOW())");
+  conditions.push("embedding IS NOT NULL");
 
-    if (activeOnly) {
-      conditions.push("is_active = true");
-    }
+  const whereClause = conditions.join(" AND ");
 
-    if (type) {
-      conditions.push(`type = '${type}'`);
-    }
+  const query = `
+    SELECT
+      *,
+      1 - (embedding <=> '${vectorStr}'::vector) as similarity,
+      embedding <=> '${vectorStr}'::vector as distance
+    FROM user_memories
+    WHERE ${whereClause}
+      AND 1 - (embedding <=> '${vectorStr}'::vector) >= ${minSimilarity}
+    ORDER BY embedding <=> '${vectorStr}'::vector
+    LIMIT ${limit}
+  `;
 
-    if (category) {
-      conditions.push(`category = '${category}'`);
-    }
+  const rows = await sqlClient.unsafe(query);
 
-    // 添加过期检查
-    conditions.push("(expires_at IS NULL OR expires_at > NOW())");
+  logger.debug("[memory-search] pgvector fallback completed", {
+    userId,
+    resultCount: rows.length,
+  });
 
-    // 添加嵌入非空检查
-    conditions.push("embedding IS NOT NULL");
-
-    const whereClause = conditions.join(" AND ");
-
-    // 执行向量搜索查询
-    // 使用余弦距离 (<=>)，结果范围 0-2，0 表示完全相同
-    // 使用 unsafe 方法构建动态 WHERE 子句
-    const query = `
-      SELECT
-        *,
-        1 - (embedding <=> '${vectorStr}'::vector) as similarity,
-        embedding <=> '${vectorStr}'::vector as distance
-      FROM user_memories
-      WHERE ${whereClause}
-        AND 1 - (embedding <=> '${vectorStr}'::vector) >= ${minSimilarity}
-      ORDER BY embedding <=> '${vectorStr}'::vector
-      LIMIT ${limit}
-    `;
-
-    const results = await sqlClient.unsafe(query);
-
-    logger.debug("[memory-search] Search completed", {
-      userId,
-      resultCount: results.length,
-    });
-
-    return results.map((row) => ({
-      memory: {
-        id: row.id,
-        userId: row.user_id,
-        type: row.type,
-        category: row.category,
-        content: row.content,
-        summary: row.summary,
-        embedding: row.embedding,
-        importance: row.importance,
-        sourceType: row.source_type,
-        sourceId: row.source_id,
-        metadata: row.metadata,
-        expiresAt: row.expires_at,
-        isActive: row.is_active,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      } as UserMemory,
-      similarity: parseFloat(row.similarity),
-      distance: parseFloat(row.distance),
-    }));
-  } catch (error) {
-    logger.error("[memory-search] Search failed", {
-      userId,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    throw error;
-  }
+  return rows.map((row) => ({
+    memory: {
+      id: row.id,
+      userId: row.user_id,
+      type: row.type,
+      category: row.category,
+      content: row.content,
+      summary: row.summary,
+      embedding: row.embedding,
+      importance: row.importance,
+      sourceType: row.source_type,
+      sourceId: row.source_id,
+      metadata: row.metadata,
+      expiresAt: row.expires_at,
+      isActive: row.is_active,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    } as UserMemory,
+    similarity: parseFloat(row.similarity),
+    distance: parseFloat(row.distance),
+  }));
 }
 
 /**
@@ -199,16 +304,16 @@ export async function searchMemoriesByText(
   options: SearchOptions,
 ): Promise<SearchResult[]> {
   logger.debug("[memory-search] Text search", { query, userId: options.userId });
-
-  // 生成查询向量
   const queryVector = await embedText(query);
-
-  // 执行向量搜索
   return searchMemories(queryVector, options);
 }
 
 /**
- * 存储记忆并生成嵌入
+ * 存储记忆并生成嵌入 (PostgreSQL + Milvus 双写)
+ *
+ * 1. 生成嵌入向量
+ * 2. 写入 PostgreSQL (含 embedding 字段)
+ * 3. 同步写入 Milvus (向量索引)
  *
  * @param memory 记忆数据（不含 embedding）
  * @returns 包含 embedding 的完整记忆
@@ -226,7 +331,7 @@ export async function storeMemoryWithEmbedding(
   // 生成嵌入向量
   const embedding = await embedText(memory.content);
 
-  // 插入记忆
+  // 写入 PostgreSQL
   const [result] = await db
     .insert(userMemories)
     .values({
@@ -239,6 +344,25 @@ export async function storeMemoryWithEmbedding(
     throw new Error("Failed to insert memory");
   }
 
+  // 同步写入 Milvus（异步容错，失败不阻塞主流程）
+  try {
+    if (isMilvusConnected()) {
+      await upsertVector({
+        id: result.id,
+        userId: result.userId,
+        embedding,
+        memoryType: result.type,
+        isActive: result.isActive ?? true,
+      });
+      logger.debug("[memory-search] Memory synced to Milvus", { memoryId: result.id });
+    }
+  } catch (error) {
+    logger.warn("[memory-search] Failed to sync memory to Milvus", {
+      memoryId: result.id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
   logger.info("[memory-search] Memory stored with embedding", {
     memoryId: result.id,
     userId: memory.userId,
@@ -248,7 +372,7 @@ export async function storeMemoryWithEmbedding(
 }
 
 /**
- * 更新记忆的嵌入向量
+ * 更新记忆的嵌入向量 (PostgreSQL + Milvus 双写)
  *
  * @param memoryId 记忆 ID
  * @param content 新的内容（用于生成新嵌入）
@@ -262,18 +386,43 @@ export async function updateMemoryEmbedding(memoryId: string, content: string): 
   const embedding = await embedText(content);
   const vectorStr = `[${embedding.join(",")}]`;
 
-  // 更新嵌入
+  // 更新 PostgreSQL
   await sqlClient`
     UPDATE user_memories
     SET embedding = ${vectorStr}::vector, updated_at = NOW()
     WHERE id = ${memoryId}
   `;
 
+  // 同步更新 Milvus
+  try {
+    if (isMilvusConnected()) {
+      // 回查 userId 和 type 用于 Milvus upsert
+      const [row] = await sqlClient`
+        SELECT user_id, type, is_active FROM user_memories WHERE id = ${memoryId}
+      `;
+      if (row) {
+        await upsertVector({
+          id: memoryId,
+          userId: row.user_id as string,
+          embedding,
+          memoryType: row.type as string,
+          isActive: (row.is_active as boolean) ?? true,
+        });
+        logger.debug("[memory-search] Embedding synced to Milvus", { memoryId });
+      }
+    }
+  } catch (error) {
+    logger.warn("[memory-search] Failed to sync embedding to Milvus", {
+      memoryId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
   logger.info("[memory-search] Memory embedding updated", { memoryId });
 }
 
 /**
- * 批量更新记忆嵌入
+ * 批量重建用户记忆嵌入 (PostgreSQL + Milvus 同步)
  *
  * @param userId 用户 ID
  * @param batchSize 批次大小 (默认 100)
@@ -286,14 +435,31 @@ export async function rebuildUserMemoryEmbeddings(
 
   logger.info("[memory-search] Rebuilding user memory embeddings", { userId, batchSize });
 
+  // 确保 Milvus Collection 存在
+  if (isMilvusConnected()) {
+    try {
+      await ensureCollection();
+    } catch (error) {
+      logger.warn("[memory-search] Failed to ensure Milvus collection", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
   let processed = 0;
   let failed = 0;
   let offset = 0;
+  const milvusBatch: Array<{
+    id: string;
+    userId: string;
+    embedding: number[];
+    memoryType: string;
+    isActive: boolean;
+  }> = [];
 
   while (true) {
-    // 获取一批记忆
     const memories = await sqlClient`
-      SELECT id, content
+      SELECT id, content, type, is_active
       FROM user_memories
       WHERE user_id = ${userId}
       ORDER BY created_at
@@ -301,14 +467,29 @@ export async function rebuildUserMemoryEmbeddings(
       OFFSET ${offset}
     `;
 
-    if (memories.length === 0) {
-      break;
-    }
+    if (memories.length === 0) break;
 
-    // 逐个更新嵌入
     for (const memory of memories) {
       try {
-        await updateMemoryEmbedding(memory.id, memory.content);
+        const embedding = await embedText(memory.content as string);
+        const vectorStr = `[${embedding.join(",")}]`;
+
+        // 更新 PostgreSQL
+        await sqlClient`
+          UPDATE user_memories
+          SET embedding = ${vectorStr}::vector, updated_at = NOW()
+          WHERE id = ${memory.id}
+        `;
+
+        // 收集 Milvus 批量数据
+        milvusBatch.push({
+          id: memory.id as string,
+          userId,
+          embedding,
+          memoryType: memory.type as string,
+          isActive: (memory.is_active as boolean) ?? true,
+        });
+
         processed++;
       } catch (error) {
         logger.error("[memory-search] Failed to update embedding", {
@@ -319,12 +500,25 @@ export async function rebuildUserMemoryEmbeddings(
       }
     }
 
+    // 每个批次结束后同步 Milvus
+    if (milvusBatch.length > 0 && isMilvusConnected()) {
+      try {
+        await batchUpsert(milvusBatch);
+        logger.debug("[memory-search] Batch synced to Milvus", { count: milvusBatch.length });
+      } catch (error) {
+        logger.warn("[memory-search] Failed to batch sync to Milvus", {
+          count: milvusBatch.length,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+      milvusBatch.length = 0;
+    }
+
     offset += batchSize;
     logger.debug("[memory-search] Batch processed", { processed, failed, offset });
   }
 
   logger.info("[memory-search] Rebuild completed", { userId, processed, failed });
-
   return { processed, failed };
 }
 
