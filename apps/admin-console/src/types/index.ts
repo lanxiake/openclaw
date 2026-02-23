@@ -111,6 +111,28 @@ export type {
   DashboardData,
 } from './dashboard'
 
+export type {
+  CreditBalance,
+  CreditTransaction,
+  CreditHistoryQuery,
+  CreditHistoryResponse,
+  GrantCreditsRequest,
+  CreditOperationResult,
+  ModelPricing,
+  UpsertModelPricingRequest,
+  CleanupResult,
+} from './credits'
+
+export type {
+  LlmCallStatus,
+  LlmCallLog,
+  LlmLogQuery,
+  LlmLogListResponse,
+  LlmLogStats,
+  LlmModelDistribution,
+  LlmPerformanceStats,
+} from './llm-logs'
+
 /**
  * API 响应通用结构
  */

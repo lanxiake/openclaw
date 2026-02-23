@@ -47,10 +47,15 @@ export const ROUTES = {
   SKILL_CATEGORIES: '/skills/categories',
   SKILL_FEATURED: '/skills/featured',
 
+  // 积分管理
+  CREDITS: '/credits',
+  CREDITS_PRICING: '/credits/pricing',
+
   // 系统监控
   MONITOR: '/monitor',
   MONITOR_LOGS: '/monitor/logs',
   MONITOR_ALERTS: '/monitor/alerts',
+  MONITOR_LLM_LOGS: '/monitor/llm-logs',
 
   // 系统配置
   CONFIG: '/config',
@@ -258,4 +263,40 @@ export const SKILL_SUBSCRIPTION_LABELS: Record<string, string> = {
   pro: '专业版',
   team: '团队版',
   enterprise: '企业版',
+}
+
+/**
+ * 积分流水类型标签
+ */
+export const CREDIT_TYPE_LABELS: Record<string, string> = {
+  earn: '获得',
+  consume: '消费',
+  expire: '过期',
+  refund: '退款',
+  admin_adjust: '管理员调整',
+}
+
+/**
+ * 积分来源标签
+ */
+export const CREDIT_SOURCE_LABELS: Record<string, string> = {
+  register: '注册赠送',
+  invite: '邀请奖励',
+  subscription: '包月发放',
+  purchase: '加油包',
+  model_call: '模型调用',
+  admin_grant: '管理员发放',
+  expiry_cleanup: '过期清理',
+  refund: '退款',
+}
+
+/**
+ * LLM 调用状态标签
+ */
+export const LLM_STATUS_LABELS: Record<string, string> = {
+  success: '成功',
+  error: '错误',
+  timeout: '超时',
+  rate_limited: '限流',
+  auth_error: '认证失败',
 }
