@@ -9,6 +9,7 @@ import WebSocket from 'ws'
 import { EventEmitter } from 'events'
 import type { SkillExecuteRequest, SkillExecuteResult } from '../../../../src/gateway/protocol/skill-execution'
 import { SKILL_EXECUTE_EVENT, SKILL_RESULT_METHOD } from '../../../../src/gateway/protocol/skill-execution'
+import { SKILL_INSTALL_EVENT, SKILL_INSTALL_RESULT_METHOD } from './skill-runtime'
 import type { ClientSkillRuntime } from './skill-runtime'
 
 // 日志输出
@@ -87,6 +88,10 @@ export interface GatewayClientConfig {
   token?: string
   /** 设备 ID（用于 device token 验证） */
   deviceId?: string
+  /** 连接角色，默认 'user' */
+  role?: string
+  /** 连接权限范围，默认 ['user.basic'] */
+  scopes?: string[]
   /** 重连间隔 (毫秒) */
   reconnectInterval?: number
   /** 最大重连次数 */
@@ -164,6 +169,8 @@ export class GatewayClient extends EventEmitter {
   private heartbeatFailCount = 0
   /** 心跳连续失败阈值，超过此值触发重连 */
   private static readonly HEARTBEAT_FAIL_THRESHOLD = 3
+  /** 是否为用户主动断开（主动断开时不自动重连） */
+  private intentionalDisconnect = false
 
   constructor(config: GatewayClientConfig) {
     super()
@@ -171,6 +178,8 @@ export class GatewayClient extends EventEmitter {
       url: config.url,
       token: config.token ?? '',
       deviceId: config.deviceId ?? '',
+      role: config.role ?? 'user',
+      scopes: config.scopes ?? ['user.basic'],
       reconnectInterval: config.reconnectInterval ?? 3000,
       maxReconnectAttempts: config.maxReconnectAttempts ?? 10,
       heartbeatInterval: config.heartbeatInterval ?? 30000,
@@ -197,6 +206,9 @@ export class GatewayClient extends EventEmitter {
    * 连接到 Gateway
    */
   async connect(): Promise<void> {
+    // 重置主动断开标志
+    this.intentionalDisconnect = false
+
     if (this.ws?.readyState === WebSocket.OPEN) {
       log.info('已经连接到 Gateway')
       return
@@ -242,6 +254,16 @@ export class GatewayClient extends EventEmitter {
           if (!wasHandshakeComplete) {
             reject(new Error(`Connection closed before handshake: ${code}`))
           }
+          // 认证失败（1008 = Policy Violation）不应重连，token 不对重连也没用
+          if (code === 1008) {
+            log.warn('认证失败，不进行自动重连')
+            return
+          }
+          // 用户主动断开，不自动重连
+          if (this.intentionalDisconnect) {
+            log.info('用户主动断开，跳过自动重连')
+            return
+          }
           this.scheduleReconnect()
         })
 
@@ -266,6 +288,9 @@ export class GatewayClient extends EventEmitter {
    */
   async disconnect(): Promise<void> {
     log.info('断开 Gateway 连接')
+
+    // 标记为主动断开，阻止 close 事件中的自动重连
+    this.intentionalDisconnect = true
 
     // 停止重连
     if (this.reconnectTimer) {
@@ -358,8 +383,8 @@ export class GatewayClient extends EventEmitter {
             ...(this.config.deviceId ? { deviceId: this.config.deviceId } : {}),
           }
         : undefined,
-      role: 'operator',
-      scopes: ['operator.admin'],
+      role: this.config.role,
+      scopes: this.config.scopes,
     }
 
     const message: Message = {
@@ -483,6 +508,20 @@ export class GatewayClient extends EventEmitter {
           return
         }
 
+        // 技能安装推送请求
+        if (message.event === SKILL_INSTALL_EVENT) {
+          log.info('收到技能安装推送:', message.payload)
+          this.handleSkillInstallPush(message.payload as {
+            requestId: string
+            skillId: string
+            version: string
+            packageBase64: string
+            packageHash: string
+            manifest: unknown
+          })
+          return
+        }
+
         // 其他事件
         this.emit('message', message)
       }
@@ -540,6 +579,64 @@ export class GatewayClient extends EventEmitter {
       log.info(`技能结果已发送: ${result.requestId}`)
     } catch (error) {
       log.error(`发送技能结果失败: ${result.requestId}`, error)
+    }
+  }
+
+  /**
+   * 处理来自 Gateway 的技能安装推送
+   *
+   * 调用 SkillRuntime 安装技能，回传结果到 Gateway
+   */
+  private async handleSkillInstallPush(request: {
+    requestId: string
+    skillId: string
+    version: string
+    packageBase64: string
+    packageHash: string
+    manifest: unknown
+  }): Promise<void> {
+    if (!this.skillRuntime) {
+      log.warn('SkillRuntime 未设置，无法处理技能安装推送')
+      await this.sendInstallResult({
+        requestId: request.requestId,
+        success: false,
+        error: 'SkillRuntime not initialized',
+      })
+      return
+    }
+
+    try {
+      log.info(`开始安装推送技能: ${request.skillId}`)
+      const result = await this.skillRuntime.handleSkillInstallPush(request as Parameters<typeof this.skillRuntime.handleSkillInstallPush>[0])
+      log.info(`技能安装推送完成: ${request.skillId}`, result)
+      await this.sendInstallResult({
+        requestId: request.requestId,
+        success: result.success,
+        error: result.error,
+      })
+    } catch (error) {
+      log.error(`技能安装推送失败: ${request.skillId}`, error)
+      await this.sendInstallResult({
+        requestId: request.requestId,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  }
+
+  /**
+   * 发送技能安装结果到 Gateway
+   */
+  private async sendInstallResult(result: {
+    requestId: string
+    success: boolean
+    error?: string
+  }): Promise<void> {
+    try {
+      await this.call(SKILL_INSTALL_RESULT_METHOD, result)
+      log.info(`技能安装结果已发送: ${result.requestId}`)
+    } catch (error) {
+      log.error(`发送技能安装结果失败: ${result.requestId}`, error)
     }
   }
 
@@ -693,6 +790,20 @@ export class GatewayClient extends EventEmitter {
    */
   setDeviceId(deviceId: string): void {
     this.config.deviceId = deviceId
+  }
+
+  /**
+   * 设置连接角色
+   */
+  setRole(role: string): void {
+    this.config.role = role
+  }
+
+  /**
+   * 设置权限范围
+   */
+  setScopes(scopes: string[]): void {
+    this.config.scopes = scopes
   }
 
   /**

@@ -5,10 +5,18 @@
  * 支持权限检查、用户确认、超时控制等功能
  */
 
+import crypto from 'node:crypto'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import { dialog, BrowserWindow } from 'electron'
 import { EventEmitter } from 'events'
 import type { SystemService } from './system-service'
 import { SkillSandbox, createDefaultSandbox } from './skill-sandbox'
+import { LocalSkillStore, type SkillManifest, type SkillIndexEntry } from './skill-store'
+import { TypeScriptRunner, RESULT_PREFIX } from './ts-runner'
+import { PythonRunner } from './python-runner'
+import { ShellRunner } from './shell-runner'
 
 // 日志输出
 const log = {
@@ -261,6 +269,10 @@ export class ClientSkillRuntime extends EventEmitter {
   private initialized = false
   private sandbox: SkillSandbox | null = null
   private sandboxEnabled = false
+  private skillStore: LocalSkillStore | null = null
+  private tsRunner: TypeScriptRunner | null = null
+  private pyRunner: PythonRunner | null = null
+  private shellRunner: ShellRunner | null = null
 
   constructor(systemService?: SystemService) {
     super()
@@ -280,6 +292,9 @@ export class ClientSkillRuntime extends EventEmitter {
 
   /**
    * 初始化技能运行时
+   *
+   * 初始化沙箱、本地技能存储和 TypeScript Runner
+   * 从 skillsDir 加载已安装的外部技能
    */
   async initialize(skillsDir: string, enableSandbox = false): Promise<void> {
     if (this.initialized) {
@@ -297,11 +312,20 @@ export class ClientSkillRuntime extends EventEmitter {
       log.info('Sandbox initialization', { enabled: this.sandboxEnabled })
     }
 
-    // TODO: 从 skillsDir 加载用户自定义技能
-    // 目前只使用内置技能
+    // 初始化本地技能存储和所有 Runner
+    this.skillStore = new LocalSkillStore(skillsDir)
+    await this.skillStore.initialize()
+    this.tsRunner = new TypeScriptRunner()
+    this.pyRunner = new PythonRunner()
+    this.shellRunner = new ShellRunner()
+
+    // 加载已安装的外部技能
+    await this.loadExternalSkills()
 
     this.initialized = true
-    log.info('SkillRuntime initialized')
+    log.info('SkillRuntime initialized', {
+      totalSkills: this.skills.size,
+    })
   }
 
   /**
@@ -525,8 +549,354 @@ export class ClientSkillRuntime extends EventEmitter {
       executionTimeMs: Date.now() - startTime,
     }
   }
+
+  /**
+   * 从本地技能存储加载外部技能
+   *
+   * 读取已安装技能列表，根据 runtime 类型选择对应 Runner 执行
+   */
+  private async loadExternalSkills(): Promise<void> {
+    if (!this.skillStore || !this.tsRunner) {
+      log.warn('SkillStore 或 TSRunner 未初始化，跳过外部技能加载')
+      return
+    }
+
+    const installed = await this.skillStore.listInstalled()
+    log.info('加载外部技能', { count: installed.length })
+
+    for (const entry of installed) {
+      if (!entry.enabled) {
+        log.debug('跳过已禁用技能', { skillId: entry.id })
+        continue
+      }
+
+      try {
+        const manifest = await this.skillStore.getManifest(entry.id)
+        if (!manifest) {
+          log.warn('技能清单读取失败，跳过', { skillId: entry.id })
+          continue
+        }
+
+        // 检查是否有对应的 Runner
+        const runner = this.selectRunner(manifest.runtime)
+        if (!runner) {
+          log.warn('不支持的 runtime 类型，跳过', {
+            skillId: entry.id,
+            runtime: manifest.runtime,
+          })
+          continue
+        }
+
+        const entryPath = await this.skillStore.getEntryPath(entry.id)
+        if (!entryPath) {
+          log.warn('技能入口路径获取失败，跳过', { skillId: entry.id })
+          continue
+        }
+
+        // 创建技能定义
+        const skillDef = this.createExternalSkillDefinition(manifest, entryPath)
+        this.skills.set(manifest.id, skillDef)
+
+        log.info('外部技能已加载', {
+          skillId: manifest.id,
+          name: manifest.name,
+          runtime: manifest.runtime,
+        })
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        log.error('加载外部技能失败', { skillId: entry.id, error: errorMessage })
+      }
+    }
+  }
+
+  /**
+   * 根据 runtime 类型选择对应的 Runner
+   *
+   * @param runtime - 技能运行时类型
+   * @returns 对应的 Runner 实例，不支持的类型返回 null
+   */
+  private selectRunner(runtime: string): { execute: (opts: import('./ts-runner').RunnerOptions) => Promise<import('./ts-runner').RunnerResult> } | null {
+    switch (runtime) {
+      case 'typescript':
+      case 'javascript':
+        return this.tsRunner
+      case 'python':
+        return this.pyRunner
+      case 'shell':
+        return this.shellRunner
+      default:
+        log.warn('未知的 runtime 类型', { runtime })
+        return null
+    }
+  }
+
+  /**
+   * 为外部技能创建 SkillDefinition
+   *
+   * 将 SkillManifest 转换为 SkillDefinition，根据 runtime 选择对应 Runner
+   */
+  private createExternalSkillDefinition(
+    manifest: SkillManifest,
+    entryPath: string,
+  ): SkillDefinition {
+    const store = this.skillStore!
+    const runtime = this
+
+    return {
+      id: manifest.id,
+      name: manifest.name,
+      description: manifest.description,
+      version: manifest.version,
+      runMode: 'local',
+      enabled: true,
+      permissions: manifest.permissions,
+      execute: async (params, context) => {
+        log.info('执行外部技能', {
+          skillId: manifest.id,
+          entryPath,
+          runtime: manifest.runtime,
+        })
+
+        const runner = runtime.selectRunner(manifest.runtime)
+        if (!runner) {
+          throw new Error(`不支持的 runtime 类型: ${manifest.runtime}`)
+        }
+
+        const result = await runner.execute({
+          entryPath,
+          params,
+          timeoutMs: 120_000,
+          abortSignal: context.abortSignal,
+        })
+
+        // 更新执行统计
+        await store.recordExecution(manifest.id).catch((err) => {
+          log.warn('更新执行统计失败', { skillId: manifest.id, error: String(err) })
+        })
+
+        if (!result.success) {
+          throw new Error(result.error ?? '技能执行失败')
+        }
+
+        return result.result
+      },
+    }
+  }
+
+  /**
+   * 获取本地技能存储（供外部使用）
+   */
+  getSkillStore(): LocalSkillStore | null {
+    return this.skillStore
+  }
+
+  // ============================================================================
+  // IPC 委托方法 — 供 main/index.ts 的 IPC 处理器调用
+  // ============================================================================
+
+  /**
+   * 从目录安装技能并自动重新加载
+   */
+  async installFromDirectory(sourceDir: string): Promise<{
+    success: boolean
+    skillId?: string
+    error?: string
+  }> {
+    if (!this.skillStore) {
+      return { success: false, error: 'SkillStore 未初始化' }
+    }
+
+    log.info('IPC: installFromDirectory', { sourceDir })
+    const result = await this.skillStore.installFromDirectory(sourceDir)
+
+    if (result.success) {
+      await this.reloadExternalSkills()
+    }
+
+    return result
+  }
+
+  /**
+   * 卸载本地技能并注销
+   */
+  async uninstallLocal(skillId: string): Promise<{
+    success: boolean
+    error?: string
+  }> {
+    if (!this.skillStore) {
+      return { success: false, error: 'SkillStore 未初始化' }
+    }
+
+    log.info('IPC: uninstallLocal', { skillId })
+    const result = await this.skillStore.uninstall(skillId)
+
+    if (result.success) {
+      this.unregisterSkill(skillId)
+    }
+
+    return result
+  }
+
+  /**
+   * 列出本地已安装技能
+   */
+  async listLocalInstalled(): Promise<SkillIndexEntry[]> {
+    if (!this.skillStore) {
+      return []
+    }
+    return this.skillStore.listInstalled()
+  }
+
+  /**
+   * 获取技能详情（manifest + indexEntry）
+   */
+  async getSkillDetail(skillId: string): Promise<{
+    manifest: SkillManifest | null
+    indexEntry: SkillIndexEntry | null
+  }> {
+    if (!this.skillStore) {
+      return { manifest: null, indexEntry: null }
+    }
+
+    const manifest = await this.skillStore.getManifest(skillId)
+    const installed = await this.skillStore.listInstalled()
+    const indexEntry = installed.find((s) => s.id === skillId) ?? null
+
+    return { manifest, indexEntry }
+  }
+
+  /**
+   * 启用/禁用本地技能并重新加载
+   */
+  async setLocalEnabled(skillId: string, enabled: boolean): Promise<boolean> {
+    if (!this.skillStore) {
+      return false
+    }
+
+    log.info('IPC: setLocalEnabled', { skillId, enabled })
+    const result = await this.skillStore.setEnabled(skillId, enabled)
+
+    if (result) {
+      await this.reloadExternalSkills()
+    }
+
+    return result
+  }
+
+  /**
+   * 重新加载外部技能
+   *
+   * 清除所有非内置技能后重新从存储加载
+   */
+  async reloadExternalSkills(): Promise<void> {
+    // 移除所有非内置技能
+    for (const [skillId] of this.skills) {
+      if (!skillId.startsWith('builtin:')) {
+        this.skills.delete(skillId)
+      }
+    }
+
+    // 重新读取磁盘索引
+    if (this.skillStore) {
+      await this.skillStore.reload()
+    }
+
+    // 重新加载
+    await this.loadExternalSkills()
+
+    log.info('外部技能重新加载完成', { totalSkills: this.skills.size })
+  }
+
+  /**
+   * 处理来自 Gateway 的技能安装推送
+   *
+   * 解码 base64 包 → 校验 SHA-256 → 解压 → 安装 → 重新加载
+   *
+   * @param request - 安装推送请求
+   * @returns 安装结果
+   */
+  async handleSkillInstallPush(request: {
+    requestId: string
+    skillId: string
+    version: string
+    packageBase64: string
+    packageHash: string
+    manifest: SkillManifest
+  }): Promise<{ success: boolean; error?: string }> {
+    log.info('收到技能安装推送', {
+      requestId: request.requestId,
+      skillId: request.skillId,
+      version: request.version,
+    })
+
+    const tempDir = path.join(os.tmpdir(), `skill-install-${request.skillId}-${Date.now()}`)
+
+    try {
+      // 1. base64 解码
+      const packageBuffer = Buffer.from(request.packageBase64, 'base64')
+
+      // 2. SHA-256 校验
+      const actualHash = crypto.createHash('sha256').update(packageBuffer).digest('hex')
+      if (actualHash !== request.packageHash) {
+        log.error('技能包哈希校验失败', {
+          skillId: request.skillId,
+          expected: request.packageHash,
+          actual: actualHash,
+        })
+        return { success: false, error: '包完整性校验失败：SHA-256 不匹配' }
+      }
+
+      // 3. 解压到临时目录
+      await fs.mkdir(tempDir, { recursive: true })
+      const archivePath = path.join(tempDir, `${request.skillId}.tgz`)
+      await fs.writeFile(archivePath, packageBuffer)
+
+      // 使用 tar 解压
+      const tar = await import('tar')
+      await tar.x({ file: archivePath, cwd: tempDir })
+
+      // 4. 找到包含 skill.json 的子目录
+      const entries = await fs.readdir(tempDir, { withFileTypes: true })
+      const skillSubDir = entries.find((e) => e.isDirectory())
+      if (!skillSubDir) {
+        return { success: false, error: '解压后未找到技能目录' }
+      }
+      const skillDir = path.join(tempDir, skillSubDir.name)
+
+      // 5. 通过 LocalSkillStore 安装
+      if (!this.skillStore) {
+        return { success: false, error: '技能存储未初始化' }
+      }
+      const installResult = await this.skillStore.installFromDirectory(skillDir)
+      if (!installResult.success) {
+        return { success: false, error: installResult.error || '安装失败' }
+      }
+
+      // 6. 重新加载外部技能
+      await this.reloadExternalSkills()
+
+      log.info('技能安装推送完成', {
+        skillId: request.skillId,
+        version: request.version,
+      })
+
+      return { success: true }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      log.error('技能安装推送失败', {
+        skillId: request.skillId,
+        error: errorMessage,
+      })
+      return { success: false, error: errorMessage }
+    } finally {
+      // 清理临时目录
+      await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {})
+    }
+  }
 }
 
 // 导出事件名称常量
 export const SKILL_EXECUTE_EVENT = 'skill.execute.request'
 export const SKILL_RESULT_METHOD = 'assistant.skill.result'
+export const SKILL_INSTALL_EVENT = 'skill.install.request'
+export const SKILL_INSTALL_RESULT_METHOD = 'assistant.skill.installResult'
