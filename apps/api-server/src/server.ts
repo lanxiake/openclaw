@@ -90,7 +90,8 @@ export async function createServer(
   await server.register(rateLimit, {
     max: config.rateLimitMax,
     timeWindow: "1 minute",
-    errorResponseBuilder: () => ({
+    errorResponseBuilder: (_request: unknown, _context: unknown) => ({
+      statusCode: 429,
       success: false,
       error: "Too many requests, please try again later",
       code: "RATE_LIMIT_EXCEEDED",

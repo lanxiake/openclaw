@@ -1289,6 +1289,29 @@ export interface CleanupResult {
   creditsExpired: number;
 }
 
+// ============ Embedding 测试 ============
+
+/**
+ * Embedding 连接测试请求参数
+ */
+export interface TestEmbeddingRequest {
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+  dimensions?: number;
+}
+
+/**
+ * Embedding 连接测试结果
+ */
+export interface EmbeddingTestResult {
+  connected: boolean;
+  latencyMs: number;
+  error?: string;
+  /** 实际返回的向量维度 */
+  dimensions?: number;
+}
+
 // ============ LLM 调用日志 ============
 
 /**

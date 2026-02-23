@@ -56,7 +56,7 @@ export function loadConfig(): AppConfig {
     jwtSecret,
     adminJwtSecret,
     corsOrigins,
-    rateLimitMax: Number(process.env.RATE_LIMIT_MAX ?? "100"),
+    rateLimitMax: Number(process.env.RATE_LIMIT_MAX ?? "300"),
     logLevel:
       process.env.LOG_LEVEL ?? (nodeEnv === "production" ? "info" : "debug"),
   };

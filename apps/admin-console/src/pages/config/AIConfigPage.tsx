@@ -79,7 +79,7 @@ import {
 } from '@/hooks/useAuthProfiles'
 import { useAllConfig } from '@/hooks/useConfig'
 import { apiClient } from '@/lib/api-client'
-import type { ModelProvider, ModelProviderTestResult, AuthProfile } from '@openclaw/api-client/admin'
+import type { ModelProvider, ModelProviderTestResult, AuthProfile, EmbeddingTestResult } from '@openclaw/api-client/admin'
 
 // ---------------------------------------------------------------------------
 // 类型 & 常量
@@ -103,6 +103,7 @@ interface EmbeddingConfig {
   baseUrl: string
   model: string
   dimensions: number
+  apiKey: string
 }
 
 /** 表单初始值 */
@@ -123,6 +124,7 @@ const defaultEmbeddingConfig: EmbeddingConfig = {
   baseUrl: '',
   model: '',
   dimensions: 1024,
+  apiKey: '',
 }
 
 /** API 类型选项（值必须与 pi-ai 的 registerApiProvider 注册名一致） */
@@ -218,6 +220,9 @@ export default function AIConfigPage() {
   const [embeddingConfig, setEmbeddingConfig] = useState<EmbeddingConfig>(defaultEmbeddingConfig)
   const [embeddingEditing, setEmbeddingEditing] = useState(false)
   const [savingEmbedding, setSavingEmbedding] = useState(false)
+  const [showEmbeddingApiKey, setShowEmbeddingApiKey] = useState(false)
+  const [embeddingTestResult, setEmbeddingTestResult] = useState<EmbeddingTestResult | null>(null)
+  const [testingEmbedding, setTestingEmbedding] = useState(false)
 
   /**
    * 加载 Embedding 配置
@@ -233,6 +238,7 @@ export default function AIConfigPage() {
           baseUrl: String(val.baseUrl ?? ''),
           model: String(val.model ?? ''),
           dimensions: Number(val.dimensions ?? 1024),
+          apiKey: String(val.apiKey ?? ''),
         })
       }
     } catch (error) {
@@ -491,17 +497,61 @@ export default function AIConfigPage() {
   const handleSaveEmbedding = useCallback(async () => {
     setSavingEmbedding(true)
     try {
-      await apiClient.instance.updateConfig('memory_embedding', {
+      const configValue: Record<string, unknown> = {
         provider: embeddingConfig.provider,
         baseUrl: embeddingConfig.baseUrl,
         model: embeddingConfig.model,
         dimensions: embeddingConfig.dimensions,
-      })
+      }
+      // apiKey 非空时才更新（空字符串表示保持原值）
+      if (embeddingConfig.apiKey.trim()) {
+        configValue.apiKey = embeddingConfig.apiKey.trim()
+      }
+      await apiClient.instance.updateConfig('memory_embedding', configValue)
       setEmbeddingEditing(false)
+      // 保存后重新加载以获取最新状态
+      void loadEmbeddingConfig()
     } catch (error) {
       console.error('[AIConfig] 保存 Embedding 配置失败:', error)
     } finally {
       setSavingEmbedding(false)
+    }
+  }, [embeddingConfig, loadEmbeddingConfig])
+
+  /**
+   * 测试 Embedding 连接
+   *
+   * 调用后端 test-embedding 端点验证配置的可达性
+   */
+  const handleTestEmbedding = useCallback(async () => {
+    if (!embeddingConfig.baseUrl || !embeddingConfig.model) {
+      setEmbeddingTestResult({
+        connected: false,
+        latencyMs: 0,
+        error: '请先填写 Base URL 和 Model',
+      })
+      return
+    }
+
+    setTestingEmbedding(true)
+    setEmbeddingTestResult(null)
+    try {
+      const result = await apiClient.instance.testEmbeddingConfig({
+        baseUrl: embeddingConfig.baseUrl,
+        apiKey: embeddingConfig.apiKey,
+        model: embeddingConfig.model,
+        dimensions: embeddingConfig.dimensions || undefined,
+      })
+      setEmbeddingTestResult(result)
+    } catch (error) {
+      console.error('[AIConfig] 测试 Embedding 连接失败:', error)
+      setEmbeddingTestResult({
+        connected: false,
+        latencyMs: 0,
+        error: error instanceof Error ? error.message : '测试请求失败',
+      })
+    } finally {
+      setTestingEmbedding(false)
     }
   }, [embeddingConfig])
 
@@ -735,12 +785,29 @@ export default function AIConfigPage() {
               </CardTitle>
               <CardDescription>用于记忆系统的向量嵌入服务</CardDescription>
             </div>
-            {!embeddingEditing && (
-              <Button variant="outline" size="sm" onClick={() => setEmbeddingEditing(true)}>
-                <Pencil className="mr-2 h-3.5 w-3.5" />
-                编辑
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {!embeddingEditing && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleTestEmbedding}
+                    disabled={testingEmbedding || !embeddingConfig.baseUrl || !embeddingConfig.model}
+                  >
+                    {testingEmbedding ? (
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Zap className="mr-2 h-3.5 w-3.5" />
+                    )}
+                    测试连接
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setEmbeddingEditing(true)}>
+                    <Pencil className="mr-2 h-3.5 w-3.5" />
+                    编辑
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -774,6 +841,32 @@ export default function AIConfigPage() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label>API Key</Label>
+                  <div className="relative">
+                    <Input
+                      type={showEmbeddingApiKey ? 'text' : 'password'}
+                      value={embeddingConfig.apiKey}
+                      onChange={(e) => updateEmbeddingField('apiKey', e.target.value)}
+                      placeholder="留空保持原值"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1 h-7 w-7"
+                      onClick={() => setShowEmbeddingApiKey((prev) => !prev)}
+                    >
+                      {showEmbeddingApiKey ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
                   <Label>Dimensions</Label>
                   <Input
                     type="number"
@@ -784,6 +877,18 @@ export default function AIConfigPage() {
                 </div>
               </div>
               <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleTestEmbedding}
+                  disabled={testingEmbedding || !embeddingConfig.baseUrl || !embeddingConfig.model}
+                >
+                  {testingEmbedding ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Zap className="mr-2 h-4 w-4" />
+                  )}
+                  测试连接
+                </Button>
                 <Button variant="outline" onClick={() => setEmbeddingEditing(false)}>
                   取消
                 </Button>
@@ -797,7 +902,7 @@ export default function AIConfigPage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground block mb-1">Provider</span>
                 <span>{embeddingConfig.provider || '-'}</span>
@@ -813,9 +918,55 @@ export default function AIConfigPage() {
                 </span>
               </div>
               <div>
+                <span className="text-muted-foreground block mb-1">API Key</span>
+                <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                  {maskApiKey(embeddingConfig.apiKey)}
+                </code>
+              </div>
+              <div>
                 <span className="text-muted-foreground block mb-1">Dimensions</span>
                 <span>{embeddingConfig.dimensions}</span>
               </div>
+            </div>
+          )}
+
+          {/* Embedding 测试结果 */}
+          {embeddingTestResult && (
+            <div className="mt-4 pt-4 border-t space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm">
+                  {embeddingTestResult.connected ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-red-500" />
+                  )}
+                  <span>
+                    {embeddingTestResult.connected ? '连接成功' : '连接失败'}
+                  </span>
+                  {embeddingTestResult.latencyMs > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      {embeddingTestResult.latencyMs}ms
+                    </span>
+                  )}
+                  {embeddingTestResult.connected && embeddingTestResult.dimensions && (
+                    <span className="text-xs text-muted-foreground">
+                      实际维度: {embeddingTestResult.dimensions}
+                    </span>
+                  )}
+                </div>
+                <button
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => setEmbeddingTestResult(null)}
+                  title="关闭测试结果"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              {embeddingTestResult.error && (
+                <p className="text-xs text-destructive pl-6">
+                  {embeddingTestResult.error}
+                </p>
+              )}
             </div>
           )}
         </CardContent>

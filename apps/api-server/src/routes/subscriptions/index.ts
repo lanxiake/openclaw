@@ -22,6 +22,9 @@ import {
   type BillingPeriod,
   type SubscriptionPlanId,
 } from "../../../../../src/assistant/subscription/index.js";
+import { getCreditService } from "../../../../../src/assistant/credits/credit-service.js";
+import { getConfigValue } from "../../../../../src/assistant/config/config-service.js";
+import { CONFIG_KEYS } from "../../../../../src/db/schema/system-config.js";
 import { getRequestUser } from "../../plugins/auth.js";
 
 /**
@@ -183,9 +186,36 @@ export function registerSubscriptionsRoutes(server: FastifyInstance): void {
           startTrial: body.startTrial,
         });
 
+        // 订阅创建成功后自动发放积分
+        let creditsGranted = 0;
+        try {
+          const monthlyCredits = await getConfigValue<number>(
+            CONFIG_KEYS.CREDITS_MONTHLY_AMOUNT,
+            2000,
+          );
+          const expiryMonths = body.billingPeriod === "yearly" ? 12 : 1;
+          const creditAmount = body.billingPeriod === "yearly" ? monthlyCredits * 12 : monthlyCredits;
+
+          const creditService = getCreditService();
+          const creditResult = await creditService.grantSubscriptionCredits(user.userId, {
+            amount: creditAmount,
+            expiryMonths,
+            sourceId: subscription.id,
+            description: `订阅 ${body.planId} (${body.billingPeriod}) 积分发放`,
+          });
+
+          creditsGranted = creditResult.success ? creditAmount : 0;
+          request.log.info(
+            { userId: user.userId, creditsGranted, subscriptionId: subscription.id },
+            "[subscriptions] 订阅积分发放完成",
+          );
+        } catch (creditError) {
+          request.log.error({ creditError }, "[subscriptions] 订阅积分发放失败（不影响订阅创建）");
+        }
+
         return {
           success: true,
-          data: { subscription },
+          data: { subscription, creditsGranted },
         };
       } catch (error) {
         request.log.error({ error }, "[subscriptions] 创建订阅失败");

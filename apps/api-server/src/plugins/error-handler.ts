@@ -97,10 +97,18 @@ export function registerErrorHandler(server: FastifyInstance): void {
       }
 
       // Fastify 限流错误
-      if ((error as FastifyError).statusCode === 429) {
+      // @fastify/rate-limit 可能以两种形式触发错误：
+      // 1. FastifyError 实例，statusCode === 429
+      // 2. errorResponseBuilder 返回的普通对象（不是 Error 实例），
+      //    此时 error.statusCode 可能不存在，需要检查 error.code 字段
+      if (
+        (error as FastifyError).statusCode === 429 ||
+        (error as Record<string, unknown>).code === "RATE_LIMIT_EXCEEDED"
+      ) {
+        request.log.warn("[error-handler] 速率限制触发");
         return reply.code(429).send({
           success: false,
-          error: "Too many requests",
+          error: "Too many requests, please try again later",
           code: "RATE_LIMIT_EXCEEDED",
         });
       }

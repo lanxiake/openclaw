@@ -82,6 +82,9 @@ export const ROUTES = {
 
   // 管理员管理
   ADMINS: '/admins',
+
+  // Agent 管理
+  AGENTS: '/agents',
 }
 
 /**
@@ -300,3 +303,35 @@ export const LLM_STATUS_LABELS: Record<string, string> = {
   rate_limited: '限流',
   auth_error: '认证失败',
 }
+
+/**
+ * Agent 沙箱模式标签
+ */
+export const AGENT_SANDBOX_MODE_LABELS: Record<string, string> = {
+  off: '关闭',
+  'non-main': '非主 Agent',
+  all: '全部',
+}
+
+/**
+ * Agent 工作空间访问权限标签
+ */
+export const AGENT_WORKSPACE_ACCESS_LABELS: Record<string, string> = {
+  none: '无访问',
+  ro: '只读',
+  rw: '读写',
+}
+
+/**
+ * Agent 主题色选项
+ */
+export const AGENT_THEME_OPTIONS = [
+  { value: 'blue', label: '蓝色' },
+  { value: 'green', label: '绿色' },
+  { value: 'purple', label: '紫色' },
+  { value: 'orange', label: '橙色' },
+  { value: 'red', label: '红色' },
+  { value: 'pink', label: '粉色' },
+  { value: 'cyan', label: '青色' },
+  { value: 'yellow', label: '黄色' },
+] as const

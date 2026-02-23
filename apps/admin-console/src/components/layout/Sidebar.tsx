@@ -14,6 +14,7 @@ import {
   Coins,
   BrainCircuit,
   UserCog,
+  Bot,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUIStore, useAuthStore } from '@/stores'
@@ -72,6 +73,12 @@ const navGroups: NavGroup[] = [
         href: ROUTES.SKILLS,
         icon: Package,
         permission: 'skill.view',
+      },
+      {
+        title: 'Agent 管理',
+        href: ROUTES.AGENTS,
+        icon: Bot,
+        permission: 'agents.view',
       },
       {
         title: '积分管理',

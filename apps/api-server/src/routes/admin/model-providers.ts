@@ -363,6 +363,52 @@ export function registerModelProviderRoutes(server: FastifyInstance): void {
   );
 
   /**
+   * POST /api/admin/model-providers/test-embedding - 测试 Embedding 服务连通性
+   *
+   * 使用提供的配置参数发送一个轻量 embedding 请求，验证 API 可达性。
+   * 返回连通状态、延迟（ms）、错误信息和实际向量维度。
+   */
+  server.post(
+    "/api/admin/model-providers/test-embedding",
+    { preHandler: requirePermission("system", "viewConfig") },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const admin = getRequiredAdmin(request);
+      const body = request.body as {
+        baseUrl: string;
+        apiKey: string;
+        model: string;
+        dimensions?: number;
+      };
+
+      request.log.info(
+        { adminId: admin.adminId, model: body.model },
+        "[model-providers] 测试 Embedding 连接"
+      );
+
+      // 参数校验
+      if (!body.baseUrl || !body.apiKey || !body.model) {
+        return {
+          success: true,
+          data: {
+            connected: false,
+            latencyMs: 0,
+            error: "缺少必填参数: baseUrl, apiKey, model",
+          },
+        };
+      }
+
+      const result = await testEmbeddingConnection(
+        body.baseUrl,
+        body.apiKey,
+        body.model,
+        body.dimensions
+      );
+
+      return { success: true, data: result };
+    }
+  );
+
+  /**
    * POST /api/admin/model-providers/:key/test - 测试提供商连接和模型可用性
    *
    * 发送轻量请求验证 API 连通性，再逐个检测已配置模型的可用性。
@@ -683,6 +729,140 @@ function parseApiError(status: number, body: string): string {
     // JSON 解析失败，返回原始内容
   }
   return `HTTP ${status}: ${body.slice(0, 150)}`;
+}
+
+/**
+ * 测试 Embedding 服务连通性
+ *
+ * 向 {baseUrl}/embeddings 发送 embedding 请求，验证 API Key 和模型可用性。
+ * 成功时从响应中提取实际的 embedding 维度。
+ */
+async function testEmbeddingConnection(
+  baseUrl: string,
+  apiKey: string,
+  model: string,
+  dimensions?: number
+): Promise<{
+  connected: boolean;
+  latencyMs: number;
+  error?: string;
+  dimensions?: number;
+}> {
+  const result = await doEmbeddingRequest(baseUrl, apiKey, model, dimensions);
+
+  // 如果带 dimensions 请求返回 400，自动不带 dimensions 重试
+  if (!result.connected && dimensions && result.error?.includes("400")) {
+    return doEmbeddingRequest(baseUrl, apiKey, model, undefined);
+  }
+
+  return result;
+}
+
+/**
+ * 发送 embedding 测试请求
+ *
+ * 内部实现：构造请求体、发送请求、解析响应。
+ * 由 testEmbeddingConnection 调用，支持 dimensions 降级重试。
+ */
+async function doEmbeddingRequest(
+  baseUrl: string,
+  apiKey: string,
+  model: string,
+  dimensions?: number
+): Promise<{
+  connected: boolean;
+  latencyMs: number;
+  error?: string;
+  dimensions?: number;
+}> {
+  const trimmedUrl = baseUrl.replace(/\/+$/, "");
+  const url = `${trimmedUrl}/embeddings`;
+
+  const requestBody: Record<string, unknown> = {
+    model,
+    input: ["test"],
+  };
+  if (dimensions !== undefined && dimensions > 0) {
+    requestBody.dimensions = dimensions;
+  }
+
+  const startTime = Date.now();
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+    const latencyMs = Date.now() - startTime;
+
+    if (response.status === 401 || response.status === 403) {
+      const errBody = await response.text().catch(() => "");
+      const friendlyError = parseApiError(response.status, errBody);
+      return {
+        connected: false,
+        latencyMs,
+        error: `认证失败: ${friendlyError}`,
+      };
+    }
+
+    if (!response.ok) {
+      const errBody = await response.text().catch(() => "");
+      const friendlyError = parseApiError(response.status, errBody);
+      return {
+        connected: false,
+        latencyMs,
+        error: friendlyError,
+      };
+    }
+
+    // 解析响应以提取实际 embedding 维度
+    const respBody = await response.json().catch(() => null);
+    let actualDimensions: number | undefined;
+    if (
+      respBody &&
+      typeof respBody === "object" &&
+      "data" in respBody &&
+      Array.isArray((respBody as Record<string, unknown>).data)
+    ) {
+      const dataArr = (respBody as Record<string, unknown[]>).data;
+      if (
+        dataArr.length > 0 &&
+        typeof dataArr[0] === "object" &&
+        dataArr[0] !== null &&
+        "embedding" in dataArr[0] &&
+        Array.isArray((dataArr[0] as Record<string, unknown>).embedding)
+      ) {
+        actualDimensions = (
+          (dataArr[0] as Record<string, unknown[]>).embedding
+        ).length;
+      }
+    }
+
+    return {
+      connected: true,
+      latencyMs,
+      dimensions: actualDimensions,
+    };
+  } catch (error) {
+    const latencyMs = Date.now() - startTime;
+    const msg = error instanceof Error ? error.message : String(error);
+    return {
+      connected: false,
+      latencyMs,
+      error: msg.includes("abort")
+        ? "连接超时（15秒）"
+        : `连接失败: ${msg.slice(0, 200)}`,
+    };
+  }
 }
 
 /**

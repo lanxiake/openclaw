@@ -94,6 +94,8 @@ import type {
   LlmLogStats,
   LlmModelDistribution,
   LlmPerformanceStats,
+  TestEmbeddingRequest,
+  EmbeddingTestResult,
 } from "./types.js";
 
 /**
@@ -824,6 +826,22 @@ export class AdminApiClient {
     );
   }
 
+  /**
+   * 测试 Embedding 配置连通性
+   *
+   * 使用提供的 baseUrl/apiKey/model 发送 embedding 请求验证可达性
+   */
+  async testEmbeddingConfig(request: TestEmbeddingRequest): Promise<EmbeddingTestResult> {
+    const response = await this.http.post<{ data: EmbeddingTestResult }>(
+      "/api/admin/model-providers/test-embedding",
+      request,
+    );
+    return (
+      (response as unknown as { data: EmbeddingTestResult }).data ??
+      (response as unknown as EmbeddingTestResult)
+    );
+  }
+
   // ============ Agent 配置 API ============
 
   /**
@@ -1005,9 +1023,7 @@ export class AdminApiClient {
    * 查询用户积分余额
    */
   async getCreditBalance(userId: string): Promise<CreditBalance> {
-    return this.http.get<CreditBalance>(
-      `/api/admin/credits/users/${userId}/balance`,
-    );
+    return this.http.get<CreditBalance>(`/api/admin/credits/users/${userId}/balance`);
   }
 
   /**
@@ -1027,10 +1043,7 @@ export class AdminApiClient {
   /**
    * 管理员发放积分
    */
-  async grantCredits(
-    userId: string,
-    request: GrantCreditsRequest,
-  ): Promise<CreditOperationResult> {
+  async grantCredits(userId: string, request: GrantCreditsRequest): Promise<CreditOperationResult> {
     return this.http.post<CreditOperationResult>(
       `/api/admin/credits/users/${userId}/grant`,
       request,
@@ -1051,9 +1064,7 @@ export class AdminApiClient {
    * 获取模型定价详情
    */
   async getModelPricing(modelId: string): Promise<ModelPricing> {
-    return this.http.get<ModelPricing>(
-      `/api/admin/credits/pricing/${modelId}`,
-    );
+    return this.http.get<ModelPricing>(`/api/admin/credits/pricing/${modelId}`);
   }
 
   /**
@@ -1092,10 +1103,7 @@ export class AdminApiClient {
   /**
    * 获取 LLM 调用统计
    */
-  async getLlmLogStats(params?: {
-    startTime?: string;
-    endTime?: string;
-  }): Promise<LlmLogStats> {
+  async getLlmLogStats(params?: { startTime?: string; endTime?: string }): Promise<LlmLogStats> {
     return this.http.get<LlmLogStats>(
       "/api/admin/llm-logs/stats",
       params as Record<string, string | number | boolean | undefined>,

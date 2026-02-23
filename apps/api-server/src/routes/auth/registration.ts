@@ -21,6 +21,7 @@ import {
   type RegisterByWeChatParams,
 } from "../../../../../src/services/user-registration-service.js";
 import { login } from "../../../../../src/assistant/auth/auth-service.js";
+import { getCreditService } from "../../../../../src/assistant/credits/index.js";
 import { generateAccessToken } from "../../../../../src/assistant/auth/jwt.js";
 import { getUserSessionRepository } from "../../../../../src/db/index.js";
 import { getClientInfo } from "../../plugins/request-utils.js";
@@ -150,6 +151,16 @@ export function registerUserRegistrationRoutes(server: FastifyInstance): void {
           "[auth] 手机号注册成功"
         );
 
+        // 非阻塞赠送注册积分
+        if (registerResult.user?.id) {
+          getCreditService().grantRegistrationBonus(registerResult.user.id).catch((err) => {
+            request.log.error(
+              { userId: registerResult.user?.id, error: err },
+              "[auth] 注册积分赠送失败（不影响注册流程）",
+            );
+          });
+        }
+
         // 2. 自动登录
         let loginResult;
         if (body.password) {
@@ -260,6 +271,16 @@ export function registerUserRegistrationRoutes(server: FastifyInstance): void {
           { email: body.email, userId: registerResult.user?.id },
           "[auth] 邮箱注册成功"
         );
+
+        // 非阻塞赠送注册积分
+        if (registerResult.user?.id) {
+          getCreditService().grantRegistrationBonus(registerResult.user.id).catch((err) => {
+            request.log.error(
+              { userId: registerResult.user?.id, error: err },
+              "[auth] 注册积分赠送失败（不影响注册流程）",
+            );
+          });
+        }
 
         // 2. 自动登录
         const loginResult = await login({
@@ -419,6 +440,16 @@ export function registerUserRegistrationRoutes(server: FastifyInstance): void {
           { wechatOpenId: body.wechatOpenId, userId: registerResult.user?.id },
           "[auth] 微信注册成功"
         );
+
+        // 非阻塞赠送注册积分
+        if (registerResult.user?.id) {
+          getCreditService().grantRegistrationBonus(registerResult.user.id).catch((err) => {
+            request.log.error(
+              { userId: registerResult.user?.id, error: err },
+              "[auth] 注册积分赠送失败（不影响注册流程）",
+            );
+          });
+        }
 
         // 2. 自动登录 (生成 token)
         const { accessToken, expiresIn } = generateAccessToken(registerResult.user!.id);
