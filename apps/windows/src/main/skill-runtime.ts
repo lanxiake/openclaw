@@ -17,6 +17,9 @@ import { LocalSkillStore, type SkillManifest, type SkillIndexEntry } from './ski
 import { TypeScriptRunner, RESULT_PREFIX } from './ts-runner'
 import { PythonRunner } from './python-runner'
 import { ShellRunner } from './shell-runner'
+import { SkillExecutionLogger } from './skill-execution-logger'
+import { SkillExporter } from './skill-exporter'
+import { SkillImporter } from './skill-importer'
 
 // 日志输出
 const log = {
@@ -273,6 +276,9 @@ export class ClientSkillRuntime extends EventEmitter {
   private tsRunner: TypeScriptRunner | null = null
   private pyRunner: PythonRunner | null = null
   private shellRunner: ShellRunner | null = null
+  private executionLogger: SkillExecutionLogger | null = null
+  private skillExporter: SkillExporter | null = null
+  private skillImporter: SkillImporter | null = null
 
   constructor(systemService?: SystemService) {
     super()
@@ -318,6 +324,15 @@ export class ClientSkillRuntime extends EventEmitter {
     this.tsRunner = new TypeScriptRunner()
     this.pyRunner = new PythonRunner()
     this.shellRunner = new ShellRunner()
+
+    // 初始化执行日志
+    const logsDir = path.join(path.dirname(skillsDir), 'logs', 'skills')
+    this.executionLogger = new SkillExecutionLogger(logsDir)
+    await this.executionLogger.initialize()
+
+    // 初始化导出/导入器
+    this.skillExporter = new SkillExporter()
+    this.skillImporter = new SkillImporter(this.skillStore)
 
     // 加载已安装的外部技能
     await this.loadExternalSkills()
@@ -674,6 +689,25 @@ export class ClientSkillRuntime extends EventEmitter {
           log.warn('更新执行统计失败', { skillId: manifest.id, error: String(err) })
         })
 
+        // 记录执行日志
+        await runtime.executionLogger?.logExecution({
+          requestId: crypto.randomUUID(),
+          skillId: manifest.id,
+          skillName: manifest.name,
+          runtime: manifest.runtime,
+          params,
+          startedAt: new Date(Date.now() - result.executionTimeMs).toISOString(),
+          executionTimeMs: result.executionTimeMs,
+          success: result.success,
+          resultSummary: result.result ? JSON.stringify(result.result).slice(0, 1024) : undefined,
+          error: result.error,
+          exitCode: result.exitCode,
+          stdout: result.stdout.slice(0, 4096),
+          stderr: result.stderr.slice(0, 4096),
+        }).catch((err) => {
+          log.warn('记录执行日志失败', { skillId: manifest.id, error: String(err) })
+        })
+
         if (!result.success) {
           throw new Error(result.error ?? '技能执行失败')
         }
@@ -690,9 +724,122 @@ export class ClientSkillRuntime extends EventEmitter {
     return this.skillStore
   }
 
+  /**
+   * 获取执行日志管理器（供外部使用）
+   */
+  getExecutionLogger(): SkillExecutionLogger | null {
+    return this.executionLogger
+  }
+
   // ============================================================================
   // IPC 委托方法 — 供 main/index.ts 的 IPC 处理器调用
   // ============================================================================
+
+  // ---------- 执行日志相关 ----------
+
+  /**
+   * 查询技能执行日志
+   */
+  async queryExecutionLogs(filter: {
+    skillId?: string
+    dateFrom?: string
+    dateTo?: string
+    success?: boolean
+    limit?: number
+    offset?: number
+  }): Promise<{ entries: import('./skill-execution-logger').ExecutionLogEntry[]; total: number }> {
+    if (!this.executionLogger) {
+      return { entries: [], total: 0 }
+    }
+    return this.executionLogger.queryLogs(filter)
+  }
+
+  /**
+   * 获取执行日志统计
+   */
+  async getExecutionLogStats(): Promise<{
+    totalExecutions: number
+    successCount: number
+    failureCount: number
+    totalLogFiles: number
+    totalLogSizeBytes: number
+  }> {
+    if (!this.executionLogger) {
+      return { totalExecutions: 0, successCount: 0, failureCount: 0, totalLogFiles: 0, totalLogSizeBytes: 0 }
+    }
+    return this.executionLogger.getStats()
+  }
+
+  /**
+   * 清理旧的执行日志
+   */
+  async clearOldExecutionLogs(daysBefore: number): Promise<number> {
+    if (!this.executionLogger) {
+      return 0
+    }
+    return this.executionLogger.clearOldLogs(daysBefore)
+  }
+
+  // ---------- 导出/导入相关 ----------
+
+  /**
+   * 导出技能为 .ocskill 文件
+   */
+  async exportSkill(skillId: string, outputPath: string): Promise<{
+    success: boolean
+    outputPath?: string
+    fileSize?: number
+    error?: string
+  }> {
+    if (!this.skillStore || !this.skillExporter) {
+      return { success: false, error: '技能系统未初始化' }
+    }
+
+    const skillDir = this.skillStore.getSkillDirectory(skillId)
+    if (!skillDir) {
+      return { success: false, error: `技能不存在: ${skillId}` }
+    }
+
+    log.info('IPC: exportSkill', { skillId, outputPath })
+    return this.skillExporter.exportSkill(skillDir, outputPath)
+  }
+
+  /**
+   * 从 .ocskill 文件导入技能
+   */
+  async importSkill(ocskillPath: string): Promise<{
+    success: boolean
+    skillId?: string
+    skillName?: string
+    error?: string
+  }> {
+    if (!this.skillImporter) {
+      return { success: false, error: '技能系统未初始化' }
+    }
+
+    log.info('IPC: importSkill', { ocskillPath })
+    const result = await this.skillImporter.importSkill(ocskillPath)
+
+    if (result.success) {
+      await this.reloadExternalSkills()
+    }
+
+    return result
+  }
+
+  /**
+   * 预览 .ocskill 文件内容（不安装）
+   */
+  async previewOcskill(ocskillPath: string): Promise<{
+    meta: import('./skill-exporter').OcskillMeta | null
+    error?: string
+  }> {
+    if (!this.skillImporter) {
+      return { meta: null, error: '技能系统未初始化' }
+    }
+
+    return this.skillImporter.previewSkill(ocskillPath)
+  }
 
   /**
    * 从目录安装技能并自动重新加载

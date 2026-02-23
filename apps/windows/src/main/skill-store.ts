@@ -318,6 +318,20 @@ export class LocalSkillStore {
   }
 
   /**
+   * 获取技能安装目录的绝对路径
+   *
+   * @param skillId - 技能 ID
+   * @returns 技能目录路径，不存在时返回 null
+   */
+  getSkillDirectory(skillId: string): string | null {
+    if (!this.index) return null
+    const entry = this.index.skills.find((s) => s.id === skillId)
+    if (!entry) return null
+    const dir = path.join(this.skillsDir, entry.dirName)
+    return fs.existsSync(dir) ? dir : null
+  }
+
+  /**
    * 加载索引文件
    */
   private async loadIndex(): Promise<SkillIndex> {
