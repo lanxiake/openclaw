@@ -142,6 +142,10 @@ const BASE_METHODS = [
   "assistant.subscription.usage",
   "assistant.subscription.usage.record",
   "assistant.subscription.overview",
+  // Assistant credits methods
+  "assistant.credits.balance",
+  "assistant.credits.history",
+  "assistant.credits.calculateCost",
   // User authentication methods
   "auth.sendCode",
   "auth.register",
@@ -287,6 +291,16 @@ const BASE_METHODS = [
   "admin.analytics.skills.usage",
   "admin.analytics.funnels.list",
   "admin.analytics.funnels.get",
+  // Admin console credits management methods
+  "admin.credits.balance",
+  "admin.credits.history",
+  "admin.credits.grant",
+  "admin.credits.pricing.list",
+  "admin.credits.pricing.get",
+  "admin.credits.pricing.set",
+  "admin.credits.pricing.delete",
+  "admin.credits.cleanup",
+  "admin.credits.overview",
   // Memory methods
   "memory.profile.fact.add",
   "memory.profile.fact.list",

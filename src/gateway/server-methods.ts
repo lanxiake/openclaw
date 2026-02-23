@@ -7,6 +7,7 @@ import { authMethods } from "./server-methods/assistant-auth.js";
 import { deviceMethods } from "./server-methods/assistant-device.js";
 import { assistantSkillHandlers } from "./server-methods/assistant-skills.js";
 import { assistantSubscriptionMethods } from "./server-methods/assistant-subscription.js";
+import { assistantCreditsMethods } from "./server-methods/assistant-credits.js";
 import { migrationRpcMethods } from "./server-methods/assistant-migration.js";
 import { paymentMethods } from "./server-methods/assistant-payment.js";
 import { adminAuthMethods } from "./server-methods/admin-auth.js";
@@ -20,6 +21,7 @@ import { adminMonitorHandlers } from "./server-methods/admin-monitor.js";
 import { adminConfigHandlers } from "./server-methods/admin-config.js";
 import { adminAnalyticsHandlers } from "./server-methods/admin-analytics.js";
 import { adminLlmLogHandlers } from "./server-methods/admin-llm-logs.js";
+import { adminCreditHandlers } from "./server-methods/admin-credits.js";
 import { adminAdminMethods } from "./server-methods/admin-admins.js";
 import { memoryHandlers } from "./server-methods/memory.js";
 import { browserHandlers } from "./server-methods/browser.js";
@@ -126,6 +128,10 @@ const READ_METHODS = new Set([
   "assistant.subscription.quota.check",
   "assistant.subscription.usage",
   "assistant.subscription.overview",
+  // Assistant credits methods (read-only)
+  "assistant.credits.balance",
+  "assistant.credits.history",
+  "assistant.credits.calculateCost",
   // Device methods (read-only)
   "device.list",
   "device.quota",
@@ -392,6 +398,7 @@ export const coreGatewayHandlers: GatewayRequestHandlers = {
   ...assistantAuditMethods,
   ...assistantSkillHandlers,
   ...assistantSubscriptionMethods,
+  ...assistantCreditsMethods,
   ...authMethods,
   ...deviceMethods,
   ...paymentMethods,
@@ -407,6 +414,7 @@ export const coreGatewayHandlers: GatewayRequestHandlers = {
   ...adminConfigHandlers,
   ...adminAnalyticsHandlers,
   ...adminLlmLogHandlers,
+  ...adminCreditHandlers,
   ...adminAdminMethods,
   ...memoryHandlers,
 };
