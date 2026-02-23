@@ -3,6 +3,9 @@
  *
  * 编排对话界面各子组件：SessionSidebar、ChatToolbar、MessageItem、ChatInput
  * 管理会话状态、流式响应、消息发送、消息排队等核心逻辑
+ *
+ * 支持多会话并行：每个会话的 runId/assistantMessageId 独立存储在 Map 中，
+ * 切换会话时保存/恢复运行状态，不丢失进行中的流式响应。
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
@@ -24,6 +27,16 @@ interface ChatViewProps {
  */
 function generateMessageId(): string {
   return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+}
+
+/**
+ * 每个会话的运行状态
+ */
+interface SessionRunState {
+  /** 当前 runId */
+  runId: string
+  /** 当前 assistant 消息 ID */
+  assistantMessageId: string
 }
 
 /**
@@ -49,7 +62,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
     loadServerMessages,
   } = useChatHistory()
 
-  const { streamingMessage, startStream } = useChatStream()
+  const { streamingMessage, startStream, getStreamByRunId } = useChatStream()
   const { getToolCalls } = useToolStream()
   const { todos, completedCount, totalCount } = useAgentTodo()
   const { queue, queueLength, enqueue, dequeue, remove: removeFromQueue, clear: clearQueue } = useMessageQueue(activeSessionId)
@@ -63,12 +76,31 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
     clearError: clearCheckpointError,
   } = useChatCheckpoint()
 
-  const [isLoading, setIsLoading] = useState(false)
   const [showSidebar, setShowSidebar] = useState(true)
   const [showResumeDialog, setShowResumeDialog] = useState(false)
-  const [currentRunId, setCurrentRunId] = useState<string | null>(null)
-  const [currentAssistantMessageId, setCurrentAssistantMessageId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  /**
+   * 每个会话的运行状态 Map
+   * key: sessionId, value: { runId, assistantMessageId }
+   *
+   * 注意：这是 ref 而非 state。组件仅在 streamMap 变化时重新渲染（由 useChatStream 驱动）。
+   * doSend 中必须先写入 ref 再调用 startStream，确保下次渲染时 ref 已就绪。
+   */
+  const sessionRunMapRef = useRef<Map<string, SessionRunState>>(new Map())
+
+  /**
+   * 当前会话的运行状态（直接从 ref 读取，无需 useCallback）
+   */
+  const currentRunState = activeSessionId
+    ? sessionRunMapRef.current.get(activeSessionId) ?? null
+    : null
+  const currentRunId = currentRunState?.runId ?? null
+  const currentAssistantMessageId = currentRunState?.assistantMessageId ?? null
+
+  // 通过 getStreamByRunId 获取当前会话对应的流式状态
+  const currentStreamingMessage = currentRunId ? getStreamByRunId(currentRunId) : null
+  const isLoading = currentStreamingMessage ? !currentStreamingMessage.isComplete : false
 
   /**
    * 滚动到最新消息
@@ -110,21 +142,6 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
   }, [activeSessionId, activeSession, loadServerMessages])
 
   /**
-   * 切换会话时重置运行状态
-   * 防止会话 A 的 isLoading 状态影响会话 B
-   */
-  const prevSessionIdRef = useRef<string | null>(activeSessionId)
-  useEffect(() => {
-    if (prevSessionIdRef.current !== activeSessionId) {
-      console.log('[ChatView] 会话切换，重置运行状态:', activeSessionId)
-      prevSessionIdRef.current = activeSessionId
-      setIsLoading(false)
-      setCurrentRunId(null)
-      setCurrentAssistantMessageId(null)
-    }
-  }, [activeSessionId])
-
-  /**
    * 发送消息到 Gateway 的核心逻辑
    * 不包含排队判断，直接执行发送
    */
@@ -151,11 +168,8 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
 
     console.log('[ChatView] 发送消息:', userMessage.content, '附件数量:', attachments.length)
     addMessage(userMessage)
-    setIsLoading(true)
 
     const runId = `run-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    setCurrentRunId(runId)
-
     const assistantMessageId = generateMessageId()
     const assistantMessage: ChatMessage = {
       id: assistantMessageId,
@@ -165,7 +179,14 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
       isStreaming: true,
     }
     addMessage(assistantMessage)
-    setCurrentAssistantMessageId(assistantMessageId)
+
+    // 保存当前会话的运行状态
+    const currentSessionId = activeSessionId || sessionKey
+    sessionRunMapRef.current.set(currentSessionId, {
+      runId,
+      assistantMessageId,
+    })
+    console.log('[ChatView] 设置会话运行状态:', { sessionId: currentSessionId, runId, assistantMessageId })
 
     startStream(runId, sessionKey)
 
@@ -202,9 +223,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
           content: response.content || '抱歉，我没有收到有效的回复。',
           isStreaming: false,
         })
-        setIsLoading(false)
-        setCurrentRunId(null)
-        setCurrentAssistantMessageId(null)
+        sessionRunMapRef.current.delete(currentSessionId)
       } catch (fallbackError) {
         console.error('[ChatView] assistant.chat 也失败:', fallbackError)
         updateMessage(assistantMessageId, {
@@ -212,85 +231,91 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
           role: 'system',
           isStreaming: false,
         })
-        setIsLoading(false)
-        setCurrentRunId(null)
-        setCurrentAssistantMessageId(null)
+        sessionRunMapRef.current.delete(currentSessionId)
       }
     }
   }, [isConnected, activeSessionId, activeSession, createSession, addMessage, updateMessage, startStream])
 
   /**
-   * 监听流式响应更新，同步到消息
-   * 当 run 完成后，自动从队列中取出下一条消息发送
+   * 监听所有活跃会话的流式响应更新
+   *
+   * 遍历 sessionRunMap 中的所有活跃 run，
+   * 对每个 run 检查其 streamingMessage 状态并同步到消息。
+   * 当 run 完成后清理状态，并为当前会话自动派发队列消息。
+   *
+   * 注意：streamingMessage 作为触发器代理 — 实际上 getStreamByRunId 引用变化
+   * （由 useChatStream 内部 streamMap 变化驱动）才是真正的触发源。
    */
   useEffect(() => {
-    if (!streamingMessage || !currentAssistantMessageId) {
-      return
-    }
+    /** 收集已完成的 sessionId，迭代后批量删除（避免迭代中修改 Map） */
+    const completedSessionIds: string[] = []
 
-    if (streamingMessage.runId !== currentRunId) {
-      return
-    }
+    for (const [sessionId, runState] of sessionRunMapRef.current) {
+      const stream = getStreamByRunId(runState.runId)
+      if (!stream) continue
 
-    if (streamingMessage.isComplete) {
-      console.log('[ChatView] 流式响应完成, isAborted:', streamingMessage.isAborted)
-      setIsLoading(false)
-      setCurrentRunId(null)
-      setCurrentAssistantMessageId(null)
+      if (stream.isComplete) {
+        console.log('[ChatView] 流式响应完成, sessionId:', sessionId, 'runId:', runState.runId, 'isAborted:', stream.isAborted)
+        completedSessionIds.push(sessionId)
 
-      if (streamingMessage.isAborted) {
-        const pending = pendingSendImmediatelyRef.current
-        const isSendImmediatelyAbort = pending !== null
+        if (stream.isAborted) {
+          const pending = pendingSendImmediatelyRef.current
+          const isSendImmediatelyAbort = pending !== null
 
-        /** 中断完成：仅在用户手动中断时标记 isAborted，立即发送引起的中断不标记 */
-        updateMessage(currentAssistantMessageId, {
-          content: streamingMessage.content || '',
-          isStreaming: false,
-          isAborted: !isSendImmediatelyAbort,
-        })
+          updateMessage(runState.assistantMessageId, {
+            content: stream.content || '',
+            isStreaming: false,
+            isAborted: !isSendImmediatelyAbort,
+          })
 
-        if (pending) {
-          console.log('[ChatView] 中断完成，发送暂存的立即发送消息:', pending.content)
-          pendingSendImmediatelyRef.current = null
-          clearSendImmediatelyTimeout()
-          queueMicrotask(() => {
-            doSend(pending.content, pending.attachments)
+          if (pending && sessionId === activeSessionId) {
+            console.log('[ChatView] 中断完成，发送暂存的立即发送消息:', pending.content)
+            pendingSendImmediatelyRef.current = null
+            clearSendImmediatelyTimeout()
+            queueMicrotask(() => {
+              doSend(pending.content, pending.attachments)
+            })
+          }
+        } else if (stream.error) {
+          updateMessage(runState.assistantMessageId, {
+            content: `错误: ${stream.error}`,
+            role: 'system',
+            isStreaming: false,
+          })
+        } else {
+          /** 正常完成（空回复时显示提示） */
+          const finalContent = stream.content?.trim()
+          updateMessage(runState.assistantMessageId, {
+            content: finalContent || '（未收到有效回复，请检查 AI 模型配置）',
+            isStreaming: false,
+            ...(finalContent ? {} : { role: 'system' as const }),
           })
         }
-      } else if (streamingMessage.error) {
-        updateMessage(currentAssistantMessageId, {
-          content: `错误: ${streamingMessage.error}`,
-          role: 'system',
-          isStreaming: false,
-        })
-      } else {
-        /** 正常完成（空回复时显示提示） */
-        const finalContent = streamingMessage.content?.trim()
-        updateMessage(currentAssistantMessageId, {
-          content: finalContent || '（未收到有效回复，请检查 AI 模型配置）',
-          isStreaming: false,
-          ...(finalContent ? {} : { role: 'system' as const }),
-        })
-      }
 
-      /** 自动派发队列中的下一条消息（中断时不自动派发，除非有暂存的立即发送消息） */
-      if (!streamingMessage.isAborted) {
-        const next = dequeue()
-        if (next) {
-          console.log('[ChatView] 自动派发队列消息:', next.content)
-          queueMicrotask(() => {
-            doSend(next.content, next.attachments)
-          })
+        /** 仅当前活跃会话自动派发队列消息 */
+        if (sessionId === activeSessionId && !stream.isAborted) {
+          const next = dequeue()
+          if (next) {
+            console.log('[ChatView] 自动派发队列消息:', next.content)
+            queueMicrotask(() => {
+              doSend(next.content, next.attachments)
+            })
+          }
         }
+      } else if (sessionId === activeSessionId) {
+        /** 仅更新当前活跃会话的实时内容（避免跨会话更新） */
+        updateMessage(runState.assistantMessageId, {
+          content: stream.content || '',
+          isStreaming: stream.isStreaming,
+        })
       }
-    } else {
-      /** 仍在流式传输中，更新消息内容 */
-      updateMessage(currentAssistantMessageId, {
-        content: streamingMessage.content || '',
-        isStreaming: streamingMessage.isStreaming,
-      })
     }
-  }, [streamingMessage, currentAssistantMessageId, currentRunId, updateMessage, dequeue, doSend])
+
+    // 批量清理已完成的会话运行状态
+    for (const id of completedSessionIds) {
+      sessionRunMapRef.current.delete(id)
+    }
+  }, [streamingMessage, activeSessionId, updateMessage, dequeue, doSend, getStreamByRunId])
 
   /**
    * 处理新建会话
