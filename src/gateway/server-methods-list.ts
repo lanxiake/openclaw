@@ -121,6 +121,11 @@ const BASE_METHODS = [
   "assistant.store.checkUpdates",
   "assistant.store.refresh",
   "assistant.store.install",
+  // Assistant skill client execution result
+  "assistant.skill.result",
+  // Assistant skill create and install
+  "assistant.skills.createAndPush",
+  "assistant.skill.installResult",
   // Assistant audit methods
   "assistant.audit.init",
   "assistant.audit.write",

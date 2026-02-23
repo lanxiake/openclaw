@@ -64,6 +64,9 @@ const WRITE_SCOPE = "operator.write";
 const APPROVALS_SCOPE = "operator.approvals";
 const PAIRING_SCOPE = "operator.pairing";
 
+/** user 角色的基础权限 scope */
+const USER_BASIC_SCOPE = "user.basic";
+
 const APPROVAL_METHODS = new Set(["exec.approval.request", "exec.approval.resolve"]);
 const NODE_ROLE_METHODS = new Set(["node.invoke.result", "node.event", "skills.bins"]);
 const PAIRING_METHODS = new Set([
@@ -205,6 +208,11 @@ const WRITE_METHODS = new Set([
   "assistant.skills.execute",
   "assistant.skills.executeByCommand",
   "assistant.skills.reload",
+  // Assistant skill client execution result
+  "assistant.skill.result",
+  // Assistant skill create and install
+  "assistant.skills.createAndPush",
+  "assistant.skill.installResult",
   // Assistant audit methods (write)
   "assistant.audit.init",
   "assistant.audit.write",
@@ -274,6 +282,110 @@ const WRITE_METHODS = new Set([
 ]);
 
 /**
+ * user 角色允许的方法集合
+ *
+ * user 角色是面向最终用户（如 Windows/iOS/Android 客户端）的受限角色，
+ * 可以执行聊天、查看会话、查看技能、管理设备等操作，
+ * 但不能执行管理员专属操作（配置、通道管理、迁移等）。
+ */
+const USER_ALLOWED_METHODS = new Set([
+  // 基础
+  "health",
+  "status",
+  "heartbeat",
+  // 聊天
+  "chat.send",
+  "chat.abort",
+  "chat.history",
+  "chat.todo.list",
+  "chat.todo.get",
+  "chat.queue.list",
+  "chat.queue.enqueue",
+  "chat.checkpoint.list",
+  "chat.checkpoint.load",
+  "chat.checkpoint.save",
+  "chat.checkpoint.resume",
+  // 助手
+  "assistant.chat",
+  "assistant.info",
+  "assistant.capabilities",
+  "assistant.heartbeat",
+  "assistant.confirm.request",
+  "assistant.confirm.response",
+  "assistant.command.result",
+  // 会话
+  "sessions.list",
+  "sessions.preview",
+  // 技能（只读 + 执行）
+  "assistant.skills.list",
+  "assistant.skills.listAll",
+  "assistant.skills.get",
+  "assistant.skills.tools",
+  "assistant.skills.findByCommand",
+  "assistant.skills.stats",
+  "assistant.skills.execute",
+  "assistant.skills.executeByCommand",
+  "assistant.skill.result",
+  // 订阅（只读 + 创建/取消）
+  "assistant.subscription.plans",
+  "assistant.subscription.plan",
+  "assistant.subscription.get",
+  "assistant.subscription.quota.check",
+  "assistant.subscription.usage",
+  "assistant.subscription.overview",
+  "assistant.subscription.create",
+  "assistant.subscription.update",
+  "assistant.subscription.cancel",
+  // 积分
+  "assistant.credits.balance",
+  "assistant.credits.history",
+  "assistant.credits.calculateCost",
+  // 设备
+  "device.list",
+  "device.quota",
+  "device.checkPaired",
+  "device.info",
+  "device.getUser",
+  "device.link",
+  "device.unlink",
+  "device.updateAlias",
+  "device.token.rotate",
+  "device.token.revoke",
+  "device.revoke",
+  // 节点（只读）
+  "node.list",
+  "node.describe",
+  // 模型
+  "models.list",
+  // 支付
+  "payment.getOrder",
+  "payment.queryOrders",
+  "payment.getPaymentStatus",
+  "payment.getUserPayments",
+  "payment.estimatePrice",
+  "payment.getSupportedProviders",
+  "payment.createOrder",
+  "payment.cancelOrder",
+  "payment.initiatePayment",
+  // 消息发送
+  "send",
+  "agent",
+  "agent.wait",
+  // 记忆（只读）
+  "memory.profile.fact.list",
+  "memory.profile.fact.search",
+  "memory.profile.preferences.get",
+  "memory.profile.pattern.list",
+  "memory.profile.export",
+  "memory.episodic.conversation.history",
+  "memory.episodic.conversation.summary",
+  "memory.episodic.event.list",
+  "memory.episodic.search",
+  "memory.episodic.timeline",
+  "memory.health",
+]);
+
+/**
  * 认证豁免方法前缀和名称
  *
  * 这些方法不需要用户认证（允许未认证连接调用）
@@ -311,6 +423,16 @@ function authorizeGatewayMethod(method: string, client: GatewayRequestOptions["c
   if (role === "node") {
     return errorShape(ErrorCodes.INVALID_REQUEST, `unauthorized role: ${role}`);
   }
+
+  // user 角色：只允许调用 USER_ALLOWED_METHODS 中定义的方法
+  if (role === "user") {
+    if (USER_ALLOWED_METHODS.has(method)) {
+      return null;
+    }
+    return errorShape(ErrorCodes.INVALID_REQUEST, `unauthorized method for user role: ${method}`);
+  }
+
+  // operator 角色：基于 scopes 的细粒度权限检查
   if (role !== "operator") {
     return errorShape(ErrorCodes.INVALID_REQUEST, `unauthorized role: ${role}`);
   }

@@ -44,9 +44,22 @@ import {
 } from "../../assistant/skills/skill-service.js";
 import { ErrorCodes, errorShape } from "../protocol/index.js";
 import type { GatewayRequestHandlers } from "./types.js";
+import {
+  ClientSkillDispatcher,
+  shouldDispatchToClient,
+} from "../../assistant/skills/client-dispatch.js";
+import { packSkill, type PackageInput } from "../../assistant/skills/skill-packager.js";
+import { SkillPushDispatcher, type SkillInstallResult } from "../../assistant/skills/skill-push.js";
+import type { SkillExecuteResult } from "../protocol/skill-execution.js";
 
 // 日志标签
 const LOG_TAG = "assistant-skills";
+
+// 全局客户端技能调度器 (单例)
+const clientSkillDispatcher = new ClientSkillDispatcher();
+
+// 全局技能推送调度器 (单例)
+const skillPushDispatcher = new SkillPushDispatcher();
 
 // 全局技能注册表 (懒加载)
 let skillRegistry: SkillRegistry | null = null;
@@ -173,8 +186,12 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
 
   /**
    * 执行技能
+   *
+   * 根据技能来源自动路由：
+   * - builtin 技能 → 在 Gateway 服务端直接执行
+   * - installed/workspace/remote 技能 → 调度到用户的客户端设备执行
    */
-  "assistant.skills.execute": async ({ params, respond, context }) => {
+  "assistant.skills.execute": async ({ params, respond, context, client }) => {
     try {
       const skillId = validateStringParam(params, "skillId", true);
       const sessionId = validateStringParam(params, "sessionId");
@@ -192,6 +209,57 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       });
 
       const registry = await getSkillRegistry();
+
+      // 查找技能记录以判断路由
+      const skillRecord = registry.skills.get(skillId);
+
+      if (!skillRecord) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `技能不存在: ${skillId}`));
+        return;
+      }
+
+      // runMode 路由：non-builtin 技能调度到客户端
+      if (shouldDispatchToClient(skillRecord.origin)) {
+        context.logGateway.info(`[${LOG_TAG}] 技能路由到客户端执行`, {
+          skillId,
+          origin: skillRecord.origin,
+        });
+
+        // 获取用户 ID
+        // 优先从 client 认证信息提取，fallback 到 RPC 参数中的 userId
+        const userId = client?.authenticatedUser?.userId || validateStringParam(params, "userId");
+
+        if (!userId) {
+          respond(
+            false,
+            undefined,
+            errorShape(
+              ErrorCodes.UNAVAILABLE,
+              "无法确定用户身份，无法调度到客户端。请确保已认证或传递 userId 参数。",
+            ),
+          );
+          return;
+        }
+
+        const result = await clientSkillDispatcher.dispatch({
+          userId,
+          skillId,
+          skillName: skillRecord.metadata.name,
+          params: skillParams,
+          requireConfirm: skillRecord.metadata.permissions?.requireConfirmation ?? false,
+          sendToUserClients: context.sendToUserClients,
+          timeoutMs: 120_000,
+        });
+
+        respond(true, result, undefined);
+        return;
+      }
+
+      // builtin 技能：走原有的服务端执行逻辑
+      context.logGateway.info(`[${LOG_TAG}] 技能在服务端执行`, {
+        skillId,
+        origin: skillRecord.origin,
+      });
 
       // 创建确认处理器 (通过 Gateway 广播到客户端)
       const confirmHandler = async (
@@ -960,6 +1028,234 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       context.logGateway.error(`[${LOG_TAG}] 提交技能失败`, { error: errorMessage });
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, errorMessage));
+    }
+  },
+
+  /**
+   * 创建技能并推送到客户端设备安装
+   *
+   * Agent 调用此方法，传入代码和 manifest 信息
+   * Gateway 负责打包、推送到客户端、注册元数据
+   */
+  "assistant.skills.createAndPush": async ({ params, respond, context, client }) => {
+    try {
+      const name = validateStringParam(params, "name", true);
+      const code = validateStringParam(params, "code", true);
+      const language = validateStringParam(params, "language", true);
+
+      if (!name || !code || !language) {
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "name, code, language 为必填参数"),
+        );
+        return;
+      }
+
+      const validLanguages = ["typescript", "python", "shell"];
+      if (!validLanguages.includes(language)) {
+        respond(
+          false,
+          undefined,
+          errorShape(
+            ErrorCodes.INVALID_REQUEST,
+            `不支持的语言: ${language}，可选: ${validLanguages.join(", ")}`,
+          ),
+        );
+        return;
+      }
+
+      const description = validateStringParam(params, "description") || "";
+      const triggers = Array.isArray(params.triggers) ? params.triggers : [];
+      const permissions =
+        params.permissions && typeof params.permissions === "object" ? params.permissions : {};
+
+      // 推断入口文件名
+      const entryMap: Record<string, string> = {
+        typescript: "index.ts",
+        python: "main.py",
+        shell: "run.sh",
+      };
+      const entry = entryMap[language] || "index.ts";
+
+      // 生成技能 ID
+      const skillId = `user-${name.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}`;
+
+      context.logGateway.info(`[${LOG_TAG}] 开始创建技能`, {
+        skillId,
+        name,
+        language,
+        codeLength: code.length,
+      });
+
+      // 1. 构建 PackageInput
+      const packageInput: PackageInput = {
+        manifest: {
+          id: skillId,
+          name,
+          description,
+          version: "1.0.0",
+          author: "agent",
+          entry,
+          runtime: language as "typescript" | "python" | "shell",
+          permissions: permissions as PackageInput["manifest"]["permissions"],
+          category: "custom",
+        },
+        files: {
+          [entry]: code,
+        },
+      };
+
+      // 2. 打包
+      const os = await import("node:os");
+      const packageOutput = await packSkill(packageInput, os.tmpdir());
+
+      // 3. 获取 userId
+      const userId = client?.authenticatedUser?.userId;
+      if (!userId) {
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "需要认证用户才能创建技能"),
+        );
+        return;
+      }
+
+      // 4. 推送到客户端设备
+      const pushResult = await skillPushDispatcher.pushToDevice({
+        userId,
+        packageOutput,
+        sendToUserClients: context.sendToUserClients,
+        timeoutMs: 120_000,
+      });
+
+      if (!pushResult.success) {
+        context.logGateway.warn(`[${LOG_TAG}] 技能推送到设备失败`, {
+          skillId,
+          error: pushResult.error,
+        });
+
+        respond(
+          true,
+          {
+            success: true,
+            skillId,
+            warning: `技能已创建但推送到设备失败: ${pushResult.error}。技能包已准备好，可在设备端手动安装。`,
+          },
+          undefined,
+        );
+        return;
+      }
+
+      context.logGateway.info(`[${LOG_TAG}] 技能创建并推送成功`, {
+        skillId,
+        name,
+      });
+
+      respond(
+        true,
+        {
+          success: true,
+          skillId,
+          message: `技能 "${name}" 已创建并推送到设备`,
+        },
+        undefined,
+      );
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      context.logGateway.error(`[${LOG_TAG}] 创建技能失败`, { error: errorMessage });
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, errorMessage));
+    }
+  },
+
+  /**
+   * 接收客户端回传的技能安装结果
+   *
+   * Client → Gateway: 客户端完成技能安装后回传结果
+   * 由 SkillPushDispatcher 匹配到对应的 pending request 并 resolve
+   */
+  "assistant.skill.installResult": async ({ params, respond, context }) => {
+    try {
+      const requestId = validateStringParam(params, "requestId", true);
+
+      if (!requestId) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing requestId"));
+        return;
+      }
+
+      context.logGateway.info(`[${LOG_TAG}] 收到客户端技能安装结果`, {
+        requestId,
+        success: params.success,
+      });
+
+      const result: SkillInstallResult = {
+        requestId,
+        success: Boolean(params.success),
+        error: typeof params.error === "string" ? params.error : undefined,
+      };
+
+      const handled = skillPushDispatcher.handleInstallResult(result);
+
+      if (!handled) {
+        context.logGateway.warn(`[${LOG_TAG}] 未找到匹配的技能安装请求`, {
+          requestId,
+        });
+      }
+
+      respond(true, { handled }, undefined);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      context.logGateway.error(`[${LOG_TAG}] 处理技能安装结果失败`, {
+        error: errorMessage,
+      });
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, errorMessage));
+    }
+  },
+
+  /**
+   * 接收客户端回传的技能执行结果
+   *
+   * Client → Gateway: 客户端完成本地技能执行后回传结果
+   * 由 ClientSkillDispatcher 匹配到对应的 pending request 并 resolve
+   */
+  "assistant.skill.result": async ({ params, respond, context }) => {
+    try {
+      const requestId = validateStringParam(params, "requestId", true);
+
+      if (!requestId) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing requestId"));
+        return;
+      }
+
+      context.logGateway.info(`[${LOG_TAG}] 收到客户端技能执行结果`, {
+        requestId,
+        success: params.success,
+      });
+
+      const result: SkillExecuteResult = {
+        requestId,
+        success: Boolean(params.success),
+        result: params.result,
+        error: params.error as SkillExecuteResult["error"],
+        executionTimeMs: typeof params.executionTimeMs === "number" ? params.executionTimeMs : 0,
+        resourceUsage: params.resourceUsage as SkillExecuteResult["resourceUsage"],
+      };
+
+      const handled = clientSkillDispatcher.handleResult(result);
+
+      if (!handled) {
+        context.logGateway.warn(`[${LOG_TAG}] 未找到匹配的技能执行请求`, {
+          requestId,
+        });
+      }
+
+      respond(true, { handled }, undefined);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      context.logGateway.error(`[${LOG_TAG}] 处理技能执行结果失败`, {
+        error: errorMessage,
+      });
       respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, errorMessage));
     }
   },
