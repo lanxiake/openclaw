@@ -19,8 +19,6 @@
 #   - 详见: 生产环境部署文档.md
 #
 
-version: "3.8"
-
 services:
   # ==================== API Server ====================
   api-server:
@@ -47,13 +45,8 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-Oc@2026!Mn#Secure}
     ports:
       - "${API_SERVER_PORT:-22300}:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
+    # 注意: depends_on 不能跨 compose 文件引用，基础设施服务在 infra.yml 中管理
+    # 请确保基础设施服务已启动: docker compose -f docker-compose.infra.yml up -d
     networks:
       - openclaw-network
     healthcheck:
@@ -141,11 +134,7 @@ services:
     ports:
       - "${GATEWAY_PORT:-22189}:18789"
       - "${BRIDGE_PORT:-22190}:18790"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    # 注意: depends_on 不能跨 compose 文件引用，基础设施服务在 infra.yml 中管理
     networks:
       - openclaw-network
     healthcheck:
@@ -164,7 +153,16 @@ services:
         reservations:
           memory: 1G
     command:
-      ["node", "dist/index.js", "gateway", "--bind", "${GATEWAY_BIND:-lan}", "--port", "18789"]
+      [
+        "node",
+        "dist/index.js",
+        "gateway",
+        "--bind",
+        "${GATEWAY_BIND:-lan}",
+        "--port",
+        "18789",
+        "--allow-unconfigured",
+      ]
 
 # ==================== 网络配置 ====================
 networks:
