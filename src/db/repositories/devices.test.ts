@@ -351,6 +351,67 @@ describe("DeviceRepository", () => {
       console.log("[TEST] ✓ 令牌撤销成功");
     });
   });
+
+  describe("revokeAllTokens", () => {
+    it("DEVICE-REVOKE-ALL-001: 应该撤销设备的所有令牌", async () => {
+      const deviceId = "test-device-revoke-all";
+      await deviceRepo.create({
+        deviceId,
+        publicKey: "test-key",
+        userId: testUserId,
+        isActive: true,
+        approvedAt: new Date(),
+      });
+
+      await deviceRepo.ensureToken(deviceId, "user", ["read"]);
+      await deviceRepo.ensureToken(deviceId, "admin", ["read", "write"]);
+
+      const revokedCount = await deviceRepo.revokeAllTokens(deviceId);
+
+      expect(revokedCount).toBe(2);
+
+      const device = await deviceRepo.findByDeviceId(deviceId);
+      for (const tokenInfo of Object.values(device!.tokens!)) {
+        expect(tokenInfo.revokedAtMs).toBeTruthy();
+      }
+    });
+
+    it("DEVICE-REVOKE-ALL-002: 无令牌时返回 0", async () => {
+      const deviceId = "test-device-no-tokens";
+      await deviceRepo.create({
+        deviceId,
+        publicKey: "test-key",
+        userId: testUserId,
+        isActive: true,
+        approvedAt: new Date(),
+      });
+
+      const revokedCount = await deviceRepo.revokeAllTokens(deviceId);
+      expect(revokedCount).toBe(0);
+    });
+
+    it("DEVICE-REVOKE-ALL-003: 已撤销的令牌不重复计数", async () => {
+      const deviceId = "test-device-partial-revoke";
+      await deviceRepo.create({
+        deviceId,
+        publicKey: "test-key",
+        userId: testUserId,
+        isActive: true,
+        approvedAt: new Date(),
+      });
+
+      await deviceRepo.ensureToken(deviceId, "user", ["read"]);
+      await deviceRepo.ensureToken(deviceId, "admin", ["write"]);
+
+      /** 先撤销一个 */
+      await deviceRepo.revokeToken(deviceId, "user");
+
+      const revokedCount = await deviceRepo.revokeAllTokens(deviceId);
+
+      /** 只有 admin 被新撤销 */
+      expect(revokedCount).toBe(1);
+    });
+  });
 });
 
 describe("DevicePairingRequestRepository", () => {

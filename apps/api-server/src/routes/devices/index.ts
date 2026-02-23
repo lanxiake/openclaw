@@ -12,6 +12,7 @@ import {
   requestDevicePairing,
   approveDevicePairing,
   rejectDevicePairing,
+  revokeDevice,
   updateDeviceUserId,
   ensureDeviceToken,
   type PendingRequestCompat as DevicePairingPendingRequest,
@@ -189,16 +190,41 @@ export function registerDeviceManagementRoutes(server: FastifyInstance): void {
           });
         }
 
-        // 2. 从数据库删除 user_devices 记录
-        await userDeviceRepo.delete(deviceId);
+        // 2. 执行完整设备撤销（软删除 + 撤销令牌 + 删除关联 + 审计）
+        const remoteIp =
+          (request.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+          request.ip ||
+          "unknown";
+        const userAgent = (request.headers["user-agent"] as string) || undefined;
 
-        // 3. TODO: 从 device-pairing 中撤销设备
-        // 需要实现 revokeDevice() 函数
+        const result = await revokeDevice({
+          deviceId,
+          userId,
+          reason: "user_initiated",
+          ipAddress: remoteIp,
+          userAgent,
+        });
 
-        request.log.info({ userId, deviceId }, "[devices] 撤销成功");
+        if (!result) {
+          // 设备在 device-pairing 中不存在，回退到仅删除 user_devices 关联
+          request.log.warn({ userId, deviceId }, "[devices] 设备不在 device-pairing 中，仅删除关联");
+          await userDeviceRepo.delete(deviceId);
+        }
+
+        request.log.info(
+          { userId, deviceId, tokensRevoked: result?.tokensRevoked ?? 0 },
+          "[devices] 撤销成功",
+        );
 
         return {
           success: true,
+          data: result
+            ? {
+                deviceId: result.deviceId,
+                revokedAt: new Date(result.revokedAt).toISOString(),
+                tokensRevoked: result.tokensRevoked,
+              }
+            : undefined,
         };
       } catch (error) {
         request.log.error({ userId, deviceId, error }, "[devices] 撤销失败");

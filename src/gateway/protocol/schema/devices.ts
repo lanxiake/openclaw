@@ -31,6 +31,14 @@ export const DeviceTokenRevokeParamsSchema = Type.Object(
   { additionalProperties: false },
 );
 
+export const DeviceRevokeParamsSchema = Type.Object(
+  {
+    deviceId: NonEmptyString,
+    reason: Type.Optional(NonEmptyString),
+  },
+  { additionalProperties: false },
+);
+
 export const DevicePairRequestedEventSchema = Type.Object(
   {
     requestId: NonEmptyString,

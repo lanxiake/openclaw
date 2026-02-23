@@ -277,6 +277,43 @@ export class DeviceRepository {
 
     logger.info("[device-repo] Token revoked", { deviceId, role });
   }
+
+  /**
+   * 撤销设备的所有令牌
+   *
+   * 遍历 devices.tokens JSONB 中所有角色的令牌，
+   * 将每个未撤销的令牌标记 revokedAtMs = Date.now()。
+   *
+   * @returns 本次新撤销的令牌数量
+   */
+  async revokeAllTokens(deviceId: string): Promise<number> {
+    const device = await this.findByDeviceId(deviceId);
+
+    if (!device?.tokens) {
+      logger.debug("[device-repo] revokeAllTokens: no tokens found", { deviceId });
+      return 0;
+    }
+
+    const now = Date.now();
+    let revokedCount = 0;
+
+    const updatedTokens = Object.fromEntries(
+      Object.entries(device.tokens).map(([role, tokenInfo]) => {
+        if (!tokenInfo.revokedAtMs) {
+          revokedCount++;
+          return [role, { ...tokenInfo, revokedAtMs: now }];
+        }
+        return [role, tokenInfo];
+      }),
+    );
+
+    if (revokedCount > 0) {
+      await this.update(deviceId, { tokens: updatedTokens });
+      logger.info("[device-repo] All tokens revoked", { deviceId, revokedCount });
+    }
+
+    return revokedCount;
+  }
 }
 
 /**

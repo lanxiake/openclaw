@@ -2,6 +2,7 @@ import {
   approveDevicePairing,
   type PairedDeviceCompat,
   rejectDevicePairing,
+  revokeDevice,
   revokeDeviceToken,
   rotateDeviceToken,
   summarizeDeviceTokens,
@@ -16,6 +17,7 @@ import {
   validateDevicePairApproveParams,
   validateDevicePairListParams,
   validateDevicePairRejectParams,
+  validateDeviceRevokeParams,
   validateDeviceTokenRevokeParams,
   validateDeviceTokenRotateParams,
 } from "../protocol/index.js";
@@ -261,5 +263,64 @@ export const deviceHandlers: GatewayRequestHandlers = {
       { deviceId, role: entry.role, revokedAtMs: entry.revokedAtMs ?? Date.now() },
       undefined,
     );
+  },
+
+  /**
+   * 撤销整个设备（级联：软删除 + 撤销全部令牌 + 删除关联 + 审计）
+   */
+  "device.revoke": async ({ params, respond, context, client }) => {
+    if (!validateDeviceRevokeParams(params)) {
+      respond(
+        false,
+        undefined,
+        errorShape(
+          ErrorCodes.INVALID_REQUEST,
+          `invalid device.revoke params: ${formatValidationErrors(
+            validateDeviceRevokeParams.errors,
+          )}`,
+        ),
+      );
+      return;
+    }
+
+    const userId = requireDeviceAuth(client, respond);
+    if (!userId) return;
+
+    const { deviceId, reason } = params as { deviceId: string; reason?: string };
+
+    /** 归属校验: 验证设备属于当前用户 */
+    const isOwner = await verifyDeviceOwnership(deviceId, userId);
+    if (!isOwner) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "无权操作此设备"));
+      return;
+    }
+
+    const result = await revokeDevice({
+      deviceId,
+      userId,
+      reason: reason ?? "user_initiated",
+    });
+
+    if (!result) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "设备不存在或已撤销"));
+      return;
+    }
+
+    context.logGateway.info(
+      `device revoked device=${deviceId} tokensRevoked=${result.tokensRevoked}`,
+    );
+
+    /** 广播设备撤销事件 */
+    context.broadcast(
+      "device.revoked",
+      {
+        deviceId,
+        revokedAt: result.revokedAt,
+        ts: Date.now(),
+      },
+      { dropIfSlow: true },
+    );
+
+    respond(true, result, undefined);
   },
 };

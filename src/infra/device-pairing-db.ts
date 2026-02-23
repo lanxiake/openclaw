@@ -435,6 +435,102 @@ export async function revokeDeviceToken(params: {
 }
 
 /**
+ * 撤销设备 (完整级联操作)
+ *
+ * 执行以下操作:
+ * 1. 检查设备存在
+ * 2. 软删除设备 (isActive=false, revokedAt=now)
+ * 3. 撤销设备所有令牌
+ * 4. 删除 user_devices 关联记录
+ * 5. 记录审计日志
+ *
+ * @returns 撤销结果, 若设备不存在返回 null
+ */
+export async function revokeDevice(params: {
+  deviceId: string;
+  userId: string;
+  reason?: string;
+  ipAddress?: string;
+  userAgent?: string;
+}): Promise<{
+  deviceId: string;
+  revokedAt: number;
+  tokensRevoked: number;
+} | null> {
+  const { deviceId, userId, reason, ipAddress, userAgent } = params;
+  const deviceRepo = getDeviceRepository();
+
+  logger.debug("[device-pairing-db] revokeDevice 开始", { deviceId, userId });
+
+  /** 1. 检查设备存在 */
+  const device = await deviceRepo.findByDeviceId(deviceId);
+  if (!device) {
+    logger.warn("[device-pairing-db] revokeDevice: 设备不存在", { deviceId });
+    return null;
+  }
+
+  /** 2. 软删除设备 */
+  await deviceRepo.revoke(deviceId);
+
+  /** 3. 撤销所有令牌 */
+  const tokensRevoked = await deviceRepo.revokeAllTokens(deviceId);
+
+  /** 4. 删除 user_devices 关联 (容错: 记录可能不存在) */
+  try {
+    const { getUserDeviceRepository } = await import("../db/repositories/users.js");
+    const userDeviceRepo = getUserDeviceRepository();
+    await userDeviceRepo.delete(deviceId);
+    logger.debug("[device-pairing-db] user_devices 关联已删除", { deviceId });
+  } catch (error) {
+    logger.debug("[device-pairing-db] user_devices 关联删除跳过", {
+      deviceId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+
+  /** 5. 记录审计日志 */
+  try {
+    const { audit } = await import("../db/repositories/audit.js");
+    await audit({
+      userId,
+      deviceId,
+      category: "device",
+      action: "device.revoked",
+      resourceType: "device",
+      resourceId: deviceId,
+      riskLevel: "high",
+      ipAddress,
+      userAgent,
+      result: "success",
+      details: {
+        reason,
+        platform: device.platform ?? undefined,
+        extra: {
+          tokensRevoked,
+          displayName: device.displayName ?? undefined,
+        },
+      },
+    });
+  } catch (error) {
+    logger.error("[device-pairing-db] 审计日志写入失败", {
+      deviceId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+
+  const revokedAt = Date.now();
+
+  logger.info("[device-pairing-db] 设备已撤销", {
+    deviceId,
+    userId,
+    tokensRevoked,
+    revokedAt,
+  });
+
+  return { deviceId, revokedAt, tokensRevoked };
+}
+
+/**
  * 设备令牌摘要 (脱敏，移除 token 值)
  */
 export function summarizeDeviceTokens(

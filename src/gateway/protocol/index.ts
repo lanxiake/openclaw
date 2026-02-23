@@ -68,6 +68,8 @@ import {
   DevicePairListParamsSchema,
   type DevicePairRejectParams,
   DevicePairRejectParamsSchema,
+  type DeviceRevokeParams,
+  DeviceRevokeParamsSchema,
   type DeviceTokenRevokeParams,
   DeviceTokenRevokeParamsSchema,
   type DeviceTokenRotateParams,
@@ -295,6 +297,7 @@ export const validateDeviceTokenRotateParams = ajv.compile<DeviceTokenRotatePara
 export const validateDeviceTokenRevokeParams = ajv.compile<DeviceTokenRevokeParams>(
   DeviceTokenRevokeParamsSchema,
 );
+export const validateDeviceRevokeParams = ajv.compile<DeviceRevokeParams>(DeviceRevokeParamsSchema);
 export const validateExecApprovalsGetParams = ajv.compile<ExecApprovalsGetParams>(
   ExecApprovalsGetParamsSchema,
 );
@@ -466,6 +469,7 @@ export type {
   DevicePairListParams,
   DevicePairApproveParams,
   DevicePairRejectParams,
+  DeviceRevokeParams,
   ConfigGetParams,
   ConfigSetParams,
   ConfigApplyParams,
