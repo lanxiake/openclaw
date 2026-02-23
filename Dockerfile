@@ -20,8 +20,12 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY ui/package.json ./ui/package.json
 COPY patches ./patches
 COPY scripts ./scripts
+COPY vendor/libsignal-stub ./vendor/libsignal-stub
 
 RUN pnpm install --frozen-lockfile
+
+# 手动链接 libsignal-stub（pnpm link: 协议在 Docker 构建中可能失效）
+RUN ln -sf /app/vendor/libsignal-stub /app/node_modules/libsignal
 
 COPY . .
 RUN OPENCLAW_A2UI_SKIP_MISSING=1 pnpm build
