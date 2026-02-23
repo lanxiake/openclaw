@@ -51,6 +51,9 @@ const AIConfigPage = lazy(() => import('@/pages/config/AIConfigPage'))
 const AgentConfigPage = lazy(() => import('@/pages/config/AgentConfigPage'))
 const GatewayConfigPage = lazy(() => import('@/pages/config/GatewayConfigPage'))
 
+// 管理员管理
+const AdminListPage = lazy(() => import('@/pages/admins/AdminListPage'))
+
 // 数据分析
 const AnalyticsPage = lazy(() => import('@/pages/analytics/AnalyticsPage'))
 const UsersAnalyticsPage = lazy(() => import('@/pages/analytics/UsersAnalyticsPage'))
@@ -131,6 +134,12 @@ export const router = createBrowserRouter([
       {
         path: 'audit',
         element: withSuspense(AuditLogsPage),
+      },
+
+      // 管理员管理
+      {
+        path: 'admins',
+        element: withSuspense(AdminListPage),
       },
 
       // 技能管理

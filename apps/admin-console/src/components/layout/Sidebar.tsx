@@ -13,6 +13,7 @@ import {
   BarChart3,
   Coins,
   BrainCircuit,
+  UserCog,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUIStore, useAuthStore } from '@/stores'
@@ -112,6 +113,12 @@ const navGroups: NavGroup[] = [
   {
     title: '系统',
     items: [
+      {
+        title: '管理员管理',
+        href: ROUTES.ADMINS,
+        icon: UserCog,
+        permission: 'admins.view',
+      },
       {
         title: '操作日志',
         href: ROUTES.AUDIT_LOGS,
