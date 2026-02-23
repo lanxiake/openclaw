@@ -1194,3 +1194,188 @@ export interface FunnelType {
   name: string;
   description: string;
 }
+
+// ============ 积分管理 ============
+
+/**
+ * 积分账户余额
+ */
+export interface CreditBalance {
+  id: string;
+  userId: string;
+  totalBalance: number;
+  totalEarned: number;
+  totalConsumed: number;
+  totalExpired: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 积分流水记录
+ */
+export interface CreditTransaction {
+  id: string;
+  userId: string;
+  batchId?: string;
+  type: "earn" | "consume" | "expire" | "refund" | "admin_adjust";
+  amount: number;
+  balanceAfter: number;
+  source: string;
+  sourceId?: string;
+  description?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+/**
+ * 积分流水查询参数
+ */
+export interface CreditHistoryParams {
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * 管理员发放积分请求
+ */
+export interface GrantCreditsRequest {
+  amount: number;
+  expiryMonths?: number;
+  description?: string;
+  adminNote?: string;
+}
+
+/**
+ * 积分操作结果
+ */
+export interface CreditOperationResult {
+  success: boolean;
+  creditsGranted: number;
+  newBalance: number;
+  reason?: string;
+}
+
+/**
+ * 模型定价
+ */
+export interface ModelPricing {
+  id: string;
+  modelId: string;
+  modelName: string;
+  inputPrice: number;
+  outputPrice: number;
+  multiplier: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 创建/更新模型定价请求
+ */
+export interface UpsertModelPricingRequest {
+  modelName: string;
+  inputPrice: number;
+  outputPrice: number;
+  multiplier?: string;
+}
+
+/**
+ * 过期清理结果
+ */
+export interface CleanupResult {
+  batchesCleaned: number;
+  creditsExpired: number;
+}
+
+// ============ LLM 调用日志 ============
+
+/**
+ * LLM 调用状态
+ */
+export type LlmCallStatus = "success" | "error" | "timeout" | "rate_limited" | "auth_error";
+
+/**
+ * LLM 调用日志记录
+ */
+export interface LlmCallLog {
+  id: string;
+  userId?: string;
+  sessionId?: string;
+  runId?: string;
+  channel?: string;
+  provider: string;
+  model: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  cacheReadTokens?: number;
+  cacheWriteTokens?: number;
+  totalTokens?: number;
+  durationMs?: number;
+  status: LlmCallStatus;
+  errorMessage?: string;
+  metadata?: Record<string, unknown>;
+  calledAt: string;
+  createdAt: string;
+}
+
+/**
+ * LLM 日志查询参数
+ */
+export interface LlmLogQueryParams {
+  userId?: string;
+  provider?: string;
+  model?: string;
+  status?: LlmCallStatus;
+  channel?: string;
+  startTime?: string;
+  endTime?: string;
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * LLM 日志列表响应
+ */
+export interface LlmLogListResponse {
+  logs: LlmCallLog[];
+  total: number;
+  hasMore: boolean;
+}
+
+/**
+ * LLM 调用统计
+ */
+export interface LlmLogStats {
+  totalCalls: number;
+  successCalls: number;
+  errorCalls: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  avgDurationMs: number;
+  byProvider: Record<string, number>;
+  byModel: Record<string, number>;
+}
+
+/**
+ * LLM 模型使用分布
+ */
+export interface LlmModelDistribution {
+  byModel: Record<string, number>;
+  byProvider: Record<string, number>;
+  totalCalls: number;
+}
+
+/**
+ * LLM 性能指标
+ */
+export interface LlmPerformanceStats {
+  totalCalls: number;
+  successCalls: number;
+  errorCalls: number;
+  errorRate: number;
+  avgDurationMs: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+}

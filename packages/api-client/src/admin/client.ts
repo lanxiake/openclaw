@@ -4,7 +4,7 @@
  * 封装所有管理员相关的 HTTP API 调用
  */
 
-import { HttpClient } from "../http-client.js";
+import { HttpClient, type FullResponse } from "../http-client.js";
 import { BrowserTokenProvider, type TokenProvider } from "../token-provider.js";
 import type {
   Admin,
@@ -81,6 +81,19 @@ import type {
   SkillUsageAnalyticsResponse,
   FunnelAnalysisResponse,
   FunnelType,
+  CreditBalance,
+  CreditTransaction,
+  CreditHistoryParams,
+  GrantCreditsRequest,
+  CreditOperationResult,
+  ModelPricing,
+  UpsertModelPricingRequest,
+  CleanupResult,
+  LlmLogQueryParams,
+  LlmLogListResponse,
+  LlmLogStats,
+  LlmModelDistribution,
+  LlmPerformanceStats,
 } from "./types.js";
 
 /**
@@ -984,6 +997,135 @@ export class AdminApiClient {
     return this.http.get<FunnelAnalysisResponse>(`/api/admin/analytics/funnels/${type}`, {
       period,
     });
+  }
+
+  // ============ 积分管理 API ============
+
+  /**
+   * 查询用户积分余额
+   */
+  async getCreditBalance(userId: string): Promise<CreditBalance> {
+    return this.http.get<CreditBalance>(
+      `/api/admin/credits/users/${userId}/balance`,
+    );
+  }
+
+  /**
+   * 查询用户积分流水
+   */
+  async getCreditHistory(
+    userId: string,
+    params?: CreditHistoryParams,
+  ): Promise<FullResponse<CreditTransaction[]>> {
+    return this.http.requestFull<CreditTransaction[]>({
+      method: "GET",
+      url: `/api/admin/credits/users/${userId}/history`,
+      params: params as Record<string, string | number | boolean | undefined>,
+    });
+  }
+
+  /**
+   * 管理员发放积分
+   */
+  async grantCredits(
+    userId: string,
+    request: GrantCreditsRequest,
+  ): Promise<CreditOperationResult> {
+    return this.http.post<CreditOperationResult>(
+      `/api/admin/credits/users/${userId}/grant`,
+      request,
+    );
+  }
+
+  /**
+   * 获取模型定价列表
+   */
+  async getModelPricingList(activeOnly?: boolean): Promise<ModelPricing[]> {
+    return this.http.get<ModelPricing[]>(
+      "/api/admin/credits/pricing",
+      activeOnly !== undefined ? { activeOnly: String(activeOnly) } : undefined,
+    );
+  }
+
+  /**
+   * 获取模型定价详情
+   */
+  async getModelPricing(modelId: string): Promise<ModelPricing> {
+    return this.http.get<ModelPricing>(
+      `/api/admin/credits/pricing/${modelId}`,
+    );
+  }
+
+  /**
+   * 创建/更新模型定价
+   */
+  async upsertModelPricing(modelId: string, request: UpsertModelPricingRequest): Promise<void> {
+    await this.http.put(`/api/admin/credits/pricing/${modelId}`, request);
+  }
+
+  /**
+   * 删除模型定价
+   */
+  async deleteModelPricing(modelId: string): Promise<void> {
+    await this.http.delete(`/api/admin/credits/pricing/${modelId}`);
+  }
+
+  /**
+   * 触发过期批次清理
+   */
+  async cleanupExpiredCredits(): Promise<CleanupResult> {
+    return this.http.post<CleanupResult>("/api/admin/credits/cleanup");
+  }
+
+  // ============ LLM 调用日志 API ============
+
+  /**
+   * 获取 LLM 调用日志列表
+   */
+  async getLlmLogs(params?: LlmLogQueryParams): Promise<LlmLogListResponse> {
+    return this.http.get<LlmLogListResponse>(
+      "/api/admin/llm-logs",
+      params as Record<string, string | number | boolean | undefined>,
+    );
+  }
+
+  /**
+   * 获取 LLM 调用统计
+   */
+  async getLlmLogStats(params?: {
+    startTime?: string;
+    endTime?: string;
+  }): Promise<LlmLogStats> {
+    return this.http.get<LlmLogStats>(
+      "/api/admin/llm-logs/stats",
+      params as Record<string, string | number | boolean | undefined>,
+    );
+  }
+
+  /**
+   * 获取模型使用分布
+   */
+  async getLlmLogModels(params?: {
+    startTime?: string;
+    endTime?: string;
+  }): Promise<LlmModelDistribution> {
+    return this.http.get<LlmModelDistribution>(
+      "/api/admin/llm-logs/models",
+      params as Record<string, string | number | boolean | undefined>,
+    );
+  }
+
+  /**
+   * 获取 LLM 性能指标
+   */
+  async getLlmLogPerformance(params?: {
+    startTime?: string;
+    endTime?: string;
+  }): Promise<LlmPerformanceStats> {
+    return this.http.get<LlmPerformanceStats>(
+      "/api/admin/llm-logs/performance",
+      params as Record<string, string | number | boolean | undefined>,
+    );
   }
 }
 
