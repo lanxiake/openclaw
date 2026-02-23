@@ -20,3 +20,4 @@ export { registerGatewayConfigRoutes } from "./gateway-config.js";
 export { registerAdminAnalyticsRoutes } from "./analytics.js";
 export { registerAdminLlmLogRoutes } from "./llm-logs.js";
 export { registerAdminCreditsRoutes } from "./credits.js";
+export { registerAdminAdminsRoutes } from "./admins.js";

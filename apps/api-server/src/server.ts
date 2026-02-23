@@ -30,6 +30,7 @@ import {
   registerAdminAnalyticsRoutes,
   registerAdminLlmLogRoutes,
   registerAdminCreditsRoutes,
+  registerAdminAdminsRoutes,
 } from "./routes/admin/index.js";
 import { registerAuthRoutes } from "./routes/auth/index.js";
 import { registerUsersRoutes } from "./routes/users/index.js";
@@ -123,6 +124,7 @@ export async function createServer(
   registerAdminAnalyticsRoutes(server);
   registerAdminLlmLogRoutes(server);
   registerAdminCreditsRoutes(server);
+  registerAdminAdminsRoutes(server);
 
   // 7. 用户 API 路由（公开 + 认证）
   registerAuthRoutes(server);
