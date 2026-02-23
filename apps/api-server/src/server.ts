@@ -29,6 +29,7 @@ import {
   registerGatewayConfigRoutes,
   registerAdminAnalyticsRoutes,
   registerAdminLlmLogRoutes,
+  registerAdminCreditsRoutes,
 } from "./routes/admin/index.js";
 import { registerAuthRoutes } from "./routes/auth/index.js";
 import { registerUsersRoutes } from "./routes/users/index.js";
@@ -44,6 +45,7 @@ import { registerSubscriptionsRoutes } from "./routes/subscriptions/index.js";
 import { registerPaymentsRoutes } from "./routes/payments/index.js";
 import { registerAuditRoutes } from "./routes/audit/index.js";
 import { registerUserConfigRoutes } from "./routes/user-config/index.js";
+import { registerCreditsRoutes } from "./routes/credits/index.js";
 
 /**
  * 创建并配置 Fastify 实例
@@ -120,6 +122,7 @@ export async function createServer(
   registerGatewayConfigRoutes(server);
   registerAdminAnalyticsRoutes(server);
   registerAdminLlmLogRoutes(server);
+  registerAdminCreditsRoutes(server);
 
   // 7. 用户 API 路由（公开 + 认证）
   registerAuthRoutes(server);
@@ -142,6 +145,9 @@ export async function createServer(
   registerPlansRoutes(server);
   registerSubscriptionsRoutes(server);
   registerPaymentsRoutes(server);
+
+  // 11. 积分 API 路由
+  registerCreditsRoutes(server);
 
   return server;
 }
