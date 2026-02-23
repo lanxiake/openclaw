@@ -245,6 +245,7 @@ export type SubscriptionEventType =
   | "subscription.canceled"
   | "subscription.expired"
   | "subscription.renewed"
+  | "subscription.extended"
   | "subscription.trial_started"
   | "subscription.trial_ended"
   | "payment.succeeded"

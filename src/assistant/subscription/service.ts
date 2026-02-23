@@ -304,23 +304,56 @@ export function isSubscriptionActive(subscription: UserSubscription): boolean {
 
 /**
  * 创建订阅
+ *
+ * 支持叠加购买：如果用户已有活跃订阅，新订阅的时间从现有订阅结束后开始累加
  */
 export async function createSubscription(
   request: CreateSubscriptionRequest,
 ): Promise<UserSubscription> {
   const store = await loadSubscriptions();
 
-  // 检查用户是否已有订阅
+  const now = new Date();
+  let periodStart = now;
+
+  // 检查用户是否已有活跃订阅 → 叠加时间
   const existingSubId = store.userSubscriptions.get(request.userId);
   if (existingSubId) {
     const existing = store.subscriptions.get(existingSubId);
     if (existing && isSubscriptionActive(existing)) {
-      throw new Error("用户已有活跃订阅，请先取消现有订阅");
+      // 已有活跃订阅：新周期从现有订阅结束时间开始叠加
+      const existingEnd = new Date(existing.currentPeriodEnd);
+      periodStart = existingEnd;
+      log.info("叠加订阅：新周期从现有订阅结束后开始", {
+        userId: request.userId,
+        existingEnd: existingEnd.toISOString(),
+        existingSubId: existing.id,
+      });
+
+      // 如果是同一计划，直接延长现有订阅周期
+      if (existing.planId === request.planId) {
+        const newPeriodEnd = calculatePeriodEnd(existingEnd, request.billingPeriod);
+        existing.currentPeriodEnd = newPeriodEnd.toISOString();
+        existing.updatedAt = now.toISOString();
+
+        await saveSubscriptions();
+        await logSubscriptionEvent("subscription.extended", request.userId, existing.id, {
+          planId: request.planId,
+          billingPeriod: request.billingPeriod,
+          newPeriodEnd: newPeriodEnd.toISOString(),
+        });
+
+        log.info("延长现有订阅周期", {
+          subscriptionId: existing.id,
+          userId: request.userId,
+          newPeriodEnd: newPeriodEnd.toISOString(),
+        });
+
+        return existing;
+      }
     }
   }
 
-  const now = new Date();
-  const periodEnd = calculatePeriodEnd(now, request.billingPeriod);
+  const periodEnd = calculatePeriodEnd(periodStart, request.billingPeriod);
 
   const subscription: UserSubscription = {
     id: generateSubscriptionId(),
@@ -328,7 +361,7 @@ export async function createSubscription(
     planId: request.planId,
     status: request.startTrial ? "trialing" : "active",
     billingPeriod: request.billingPeriod,
-    currentPeriodStart: now.toISOString(),
+    currentPeriodStart: periodStart.toISOString(),
     currentPeriodEnd: periodEnd.toISOString(),
     cancelAtPeriodEnd: false,
     trialEnd: request.startTrial
@@ -352,6 +385,8 @@ export async function createSubscription(
     subscriptionId: subscription.id,
     userId: request.userId,
     planId: request.planId,
+    periodStart: periodStart.toISOString(),
+    periodEnd: periodEnd.toISOString(),
   });
 
   return subscription;

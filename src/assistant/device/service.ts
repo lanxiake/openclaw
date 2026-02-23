@@ -18,6 +18,8 @@ import {
   type PairedDeviceCompat as PairedDevice,
 } from "../../infra/device-pairing-db.js";
 import { audit } from "../../db/index.js";
+import { getConfigValue } from "../config/config-service.js";
+import { CONFIG_KEYS } from "../../db/schema/system-config.js";
 import type {
   DeviceInfo,
   UserDeviceInfo,
@@ -84,8 +86,10 @@ async function userDeviceToUserDeviceInfo(
 /**
  * 获取用户订阅计划对应的设备配额
  *
- * 优先从用户当前订阅的套餐中获取 maxDevices
- * 如果没有有效订阅，返回免费版配额
+ * 优先级：
+ * 1. 用户当前订阅套餐的 maxDevices
+ * 2. 系统配置表 limits.max_devices（管理员可动态调整）
+ * 3. 硬编码的 DEFAULT_DEVICE_QUOTA.free 兜底
  */
 async function getDeviceQuotaForUser(userId: string): Promise<number> {
   const subscriptionRepo = getSubscriptionRepository();
@@ -95,10 +99,16 @@ async function getDeviceQuotaForUser(userId: string): Promise<number> {
     // 获取用户当前有效订阅
     const subscription = await subscriptionRepo.findActiveByUserId(userId);
     if (!subscription) {
-      logger.debug("[device-service] No active subscription, using free quota", {
+      // 无订阅：从 system_configs 获取免费用户配额，兜底硬编码值
+      const systemQuota = await getConfigValue<number>(
+        CONFIG_KEYS.LIMITS_MAX_DEVICES,
+        DEFAULT_DEVICE_QUOTA.free,
+      );
+      logger.debug("[device-service] No active subscription, using system config quota", {
         userId,
+        maxDevices: systemQuota,
       });
-      return DEFAULT_DEVICE_QUOTA.free;
+      return systemQuota;
     }
 
     // 获取套餐信息
@@ -108,7 +118,11 @@ async function getDeviceQuotaForUser(userId: string): Promise<number> {
         userId,
         planId: subscription.planId,
       });
-      return DEFAULT_DEVICE_QUOTA.free;
+      const systemQuota = await getConfigValue<number>(
+        CONFIG_KEYS.LIMITS_MAX_DEVICES,
+        DEFAULT_DEVICE_QUOTA.free,
+      );
+      return systemQuota;
     }
 
     // 返回套餐的设备配额

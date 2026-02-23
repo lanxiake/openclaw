@@ -686,6 +686,53 @@ export async function initializeDefaultConfigs(options: ConfigServiceOptions = {
       defaultValue: 1000,
       validationRules: { min: 0, max: 100000 },
     },
+    // 用户限制配置
+    {
+      key: CONFIG_KEYS.LIMITS_MAX_DEVICES,
+      value: 2,
+      valueType: "number" as ConfigValueType,
+      group: CONFIG_GROUPS.LIMITS,
+      description: "免费用户最大设备数（无订阅时使用）",
+      defaultValue: 2,
+      validationRules: { min: 1, max: 50 },
+    },
+    // 积分系统配置
+    {
+      key: CONFIG_KEYS.CREDITS_MONTHLY_AMOUNT,
+      value: 2000,
+      valueType: "number" as ConfigValueType,
+      group: CONFIG_GROUPS.CREDITS,
+      description: "月付订阅每期发放积分数",
+      defaultValue: 2000,
+      validationRules: { min: 0, max: 100000 },
+    },
+    {
+      key: CONFIG_KEYS.CREDITS_REGISTER_BONUS,
+      value: 300,
+      valueType: "number" as ConfigValueType,
+      group: CONFIG_GROUPS.CREDITS,
+      description: "注册赠送积分数",
+      defaultValue: 300,
+      validationRules: { min: 0, max: 10000 },
+    },
+    {
+      key: CONFIG_KEYS.CREDITS_INVITE_BONUS,
+      value: 200,
+      valueType: "number" as ConfigValueType,
+      group: CONFIG_GROUPS.CREDITS,
+      description: "每次邀请奖励积分数",
+      defaultValue: 200,
+      validationRules: { min: 0, max: 10000 },
+    },
+    {
+      key: CONFIG_KEYS.CREDITS_INVITE_MAX,
+      value: 2000,
+      valueType: "number" as ConfigValueType,
+      group: CONFIG_GROUPS.CREDITS,
+      description: "邀请积分总上限",
+      defaultValue: 2000,
+      validationRules: { min: 0, max: 100000 },
+    },
   ];
 
   for (const config of defaultConfigs) {

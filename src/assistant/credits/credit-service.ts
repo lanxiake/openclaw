@@ -25,6 +25,7 @@ import {
 } from "../../db/repositories/credits.js";
 import type {
   CreditAccount,
+  CreditBatch,
   CreditTransaction,
   CreditTransactionMetadata,
   ModelPricingRecord,
@@ -502,6 +503,19 @@ export class CreditService {
    */
   async getBalance(userId: string): Promise<CreditAccount | null> {
     return this.accountRepo.findByUserId(userId);
+  }
+
+  /**
+   * 获取用户有效积分批次列表
+   *
+   * 返回未过期且有余额的批次，按过期时间升序排列。
+   *
+   * @param userId 用户 ID
+   * @returns 有效批次列表
+   */
+  async getActiveBatches(userId: string): Promise<CreditBatch[]> {
+    logger.info("[credit-service] 获取用户有效积分批次", { userId });
+    return this.batchRepo.findActiveByUserId(userId);
   }
 
   // --------------------------------------------------------------------------
