@@ -52,15 +52,30 @@ async function createTestUser(userRepo: UserRepository, suffix: string): Promise
 
 /** 清理指定用户关联的所有积分数据 */
 async function cleanupUserCreditData(db: Database, userId: string): Promise<void> {
-  await db.delete(creditTransactions).where(sql`user_id = ${userId}`).execute();
-  await db.delete(creditBatches).where(sql`user_id = ${userId}`).execute();
-  await db.delete(inviteRecords).where(sql`inviter_user_id = ${userId} OR invitee_user_id = ${userId}`).execute();
-  await db.delete(creditAccounts).where(sql`user_id = ${userId}`).execute();
+  await db
+    .delete(creditTransactions)
+    .where(sql`user_id = ${userId}`)
+    .execute();
+  await db
+    .delete(creditBatches)
+    .where(sql`user_id = ${userId}`)
+    .execute();
+  await db
+    .delete(inviteRecords)
+    .where(sql`inviter_user_id = ${userId} OR invitee_user_id = ${userId}`)
+    .execute();
+  await db
+    .delete(creditAccounts)
+    .where(sql`user_id = ${userId}`)
+    .execute();
 }
 
 /** 清理模型定价测试数据 */
 async function cleanupPricingData(db: Database, modelId: string): Promise<void> {
-  await db.delete(modelPricing).where(sql`model_id = ${modelId}`).execute();
+  await db
+    .delete(modelPricing)
+    .where(sql`model_id = ${modelId}`)
+    .execute();
 }
 
 // ============================================================================
@@ -873,7 +888,12 @@ describe("CreditService Integration - 端到端完整流程", () => {
         multiplier: 1.0,
       },
     });
-    console.log("[INT-TEST] 5. 消费:", consumeResult.consumed, "积分，余额:", consumeResult.newBalance);
+    console.log(
+      "[INT-TEST] 5. 消费:",
+      consumeResult.consumed,
+      "积分，余额:",
+      consumeResult.newBalance,
+    );
     expect(consumeResult.success).toBe(true);
 
     // 7. 查询流水
