@@ -54,6 +54,8 @@ export const users = pgTable(
     preferences: jsonb("preferences").$type<UserPreferences>(),
     /** 用户配置 (JSON) */
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    /** 用户专属邀请码（用于邀请新用户获得积分奖励） */
+    inviteCode: text("invite_code"),
   },
   (table) => [
     // 唯一索引：手机号
@@ -72,6 +74,10 @@ export const users = pgTable(
     index("users_created_at_idx").on(table.createdAt),
     // 索引：活跃状态
     index("users_is_active_idx").on(table.isActive),
+    // 唯一索引：邀请码
+    uniqueIndex("users_invite_code_unique_idx")
+      .on(table.inviteCode)
+      .where(sql`invite_code IS NOT NULL`),
   ],
 );
 

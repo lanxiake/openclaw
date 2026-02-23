@@ -4,7 +4,7 @@
  * 提供审计日志写入和查询功能
  */
 
-import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
+import { eq, and, gte, lte, desc, sql, ilike, or } from "drizzle-orm";
 
 import { getDatabase, type Database } from "../connection.js";
 import {
@@ -83,6 +83,7 @@ export class AuditLogRepository {
     riskLevel?: AuditRiskLevel;
     startDate?: Date;
     endDate?: Date;
+    search?: string;
     limit?: number;
     offset?: number;
   }): Promise<{ logs: AuditLog[]; total: number }> {
@@ -102,6 +103,10 @@ export class AuditLogRepository {
     }
     if (params.endDate) {
       conditions.push(lte(auditLogs.createdAt, params.endDate));
+    }
+    if (params.search) {
+      const pattern = `%${params.search}%`;
+      conditions.push(or(ilike(auditLogs.action, pattern), ilike(auditLogs.errorMessage, pattern)));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;

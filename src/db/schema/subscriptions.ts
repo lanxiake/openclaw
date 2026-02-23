@@ -191,6 +191,10 @@ export const subscriptions = pgTable(
     trialEndsAt: timestamp("trial_ends_at", { withTimezone: true }),
     /** 外部订阅 ID (支付平台) */
     externalSubscriptionId: text("external_subscription_id"),
+    /** 是否首月（首月优惠标记） */
+    isFirstMonth: boolean("is_first_month").default(false).notNull(),
+    /** 本周期发放积分数 */
+    creditsPerPeriod: integer("credits_per_period").default(0).notNull(),
     /** 创建时间 */
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     /** 更新时间 */
@@ -220,7 +224,7 @@ export const paymentOrders = pgTable(
     orderNo: text("order_no").unique().notNull(),
     /** 订单类型 */
     orderType: text("order_type", {
-      enum: ["subscription", "skill", "tokens", "storage"],
+      enum: ["subscription", "skill", "tokens", "storage", "credits"],
     }).notNull(),
     /** 关联订阅 ID */
     subscriptionId: text("subscription_id").references(() => subscriptions.id),

@@ -127,3 +127,17 @@ export type {
   LlmCallLogStats,
   LlmCallLogInsertParams,
 } from "./llm-call-logs.js";
+
+// 积分系统仓库
+export {
+  CreditAccountRepository,
+  CreditBatchRepository,
+  CreditTransactionRepository,
+  InviteRepository,
+  ModelPricingRepository,
+  getCreditAccountRepository,
+  getCreditBatchRepository,
+  getCreditTransactionRepository,
+  getInviteRepository,
+  getModelPricingRepository,
+} from "./credits.js";

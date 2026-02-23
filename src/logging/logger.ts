@@ -142,6 +142,30 @@ export function getChildLogger(
   });
 }
 
+/**
+ * 创建模块级别的 Logger 实例
+ *
+ * 为特定模块创建带有模块标识的子 logger，
+ * 方便在日志聚合时按模块过滤和追踪。
+ *
+ * @param moduleName 模块名称 (如 "gateway", "db", "auth")
+ * @param opts 可选配置
+ * @returns 模块专用的 logger 实例
+ *
+ * @example
+ * ```ts
+ * const logger = createModuleLogger("gateway");
+ * logger.info("WebSocket 连接建立");
+ * // 日志中会包含 source: "gateway"
+ * ```
+ */
+export function createModuleLogger(
+  moduleName: string,
+  opts?: { level?: LogLevel },
+): TsLogger<LogObj> {
+  return getChildLogger({ module: moduleName }, opts);
+}
+
 // Baileys expects a pino-like logger shape. Provide a lightweight adapter.
 export function toPinoLikeLogger(logger: TsLogger<LogObj>, level: LogLevel): PinoLikeLogger {
   const buildChild = (bindings?: Record<string, unknown>) =>

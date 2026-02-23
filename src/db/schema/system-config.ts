@@ -190,6 +190,8 @@ export const CONFIG_GROUPS = {
   SUBSCRIPTION: "subscription",
   MAINTENANCE: "maintenance",
   MEMORY: "memory",
+  CREDITS: "credits",
+  LIMITS: "limits",
 } as const;
 
 export type ConfigGroup = (typeof CONFIG_GROUPS)[keyof typeof CONFIG_GROUPS];
@@ -242,6 +244,24 @@ export const CONFIG_KEYS = {
   PRO_QUOTA: "pro_quota",
   TEAM_QUOTA: "team_quota",
   ENTERPRISE_QUOTA: "enterprise_quota",
+
+  // 积分系统配置
+  CREDITS_REGISTER_BONUS: "credits.register_bonus",
+  CREDITS_INVITE_BONUS: "credits.invite_bonus",
+  CREDITS_INVITE_MAX: "credits.invite_max",
+  CREDITS_EXPIRY_MONTHS: "credits.expiry_months",
+  CREDITS_MONTHLY_AMOUNT: "credits.monthly_amount",
+  CREDITS_MONTHLY_PRICE: "credits.monthly_price",
+  CREDITS_MONTHLY_FIRST_PRICE: "credits.monthly_first_price",
+  CREDITS_BOOSTER_AMOUNT: "credits.booster_amount",
+  CREDITS_BOOSTER_PRICE: "credits.booster_price",
+  CREDITS_BOOSTER_EXPIRY_MONTHS: "credits.booster_expiry_months",
+  CREDITS_GLOBAL_MULTIPLIER: "credits.global_multiplier",
+
+  // 统一用户限制配置
+  LIMITS_MAX_DEVICES: "limits.max_devices",
+  LIMITS_MAX_SKILLS: "limits.max_skills",
+  LIMITS_MAX_FILE_SIZE_MB: "limits.max_file_size_mb",
 
   // 记忆系统配置
   MEMORY_EMBEDDING: "memory_embedding",
