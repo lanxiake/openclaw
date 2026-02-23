@@ -706,4 +706,61 @@ describe("ModelPricingRepository", () => {
     expect(disabled!.isActive).toBe(false);
     console.log("[TEST] ✓ 模型禁用成功");
   });
+
+  it("应该查询所有模型定价（含已禁用）", async () => {
+    console.log("[TEST] MODEL-PRICING-007: 查询所有定价含禁用");
+
+    const p1 = await repo.create({
+      modelId: "anthropic/claude-sonnet-4-20250514",
+      modelName: "Claude Sonnet 4",
+      inputPrice: 300,
+      outputPrice: 1500,
+    });
+    await repo.create({
+      modelId: "anthropic/claude-haiku-3-20240307",
+      modelName: "Claude Haiku 3",
+      inputPrice: 25,
+      outputPrice: 125,
+    });
+
+    // 禁用第一个
+    await repo.update(p1.id, { isActive: false });
+
+    // findAll 应返回全部（含禁用）
+    const all = await repo.findAll();
+    expect(all.length).toBe(2);
+
+    // findAllActive 应只返回 1 个
+    const active = await repo.findAllActive();
+    expect(active.length).toBe(1);
+    expect(active[0].modelId).toBe("anthropic/claude-haiku-3-20240307");
+    console.log("[TEST] ✓ 查询所有定价成功（含禁用）");
+  });
+
+  it("应该根据 ID 删除模型定价", async () => {
+    console.log("[TEST] MODEL-PRICING-008: 删除定价");
+
+    const pricing = await repo.create({
+      modelId: "anthropic/claude-sonnet-4-20250514",
+      modelName: "Claude Sonnet 4",
+      inputPrice: 300,
+      outputPrice: 1500,
+    });
+
+    const deleted = await repo.deleteById(pricing.id);
+    expect(deleted).toBe(true);
+
+    // 确认已删除
+    const found = await repo.findByModelId("anthropic/claude-sonnet-4-20250514");
+    expect(found).toBeNull();
+    console.log("[TEST] ✓ 删除定价成功");
+  });
+
+  it("删除不存在的定价应返回 false", async () => {
+    console.log("[TEST] MODEL-PRICING-009: 删除不存在的定价");
+
+    const deleted = await repo.deleteById("non-existent-id");
+    expect(deleted).toBe(false);
+    console.log("[TEST] ✓ 返回 false");
+  });
 });

@@ -532,6 +532,31 @@ export class ModelPricingRepository {
   }
 
   /**
+   * 查询所有模型定价（含已禁用）
+   */
+  async findAll(): Promise<ModelPricingRecord[]> {
+    return this.db.select().from(modelPricing);
+  }
+
+  /**
+   * 根据 ID 删除模型定价
+   *
+   * @param id 定价记录 ID
+   * @returns 是否删除成功
+   */
+  async deleteById(id: string): Promise<boolean> {
+    const result = await this.db.delete(modelPricing).where(eq(modelPricing.id, id)).returning();
+
+    if (result.length > 0) {
+      logger.info("[model-pricing-repo] 模型定价已删除", {
+        pricingId: id,
+        modelId: result[0].modelId,
+      });
+    }
+    return result.length > 0;
+  }
+
+  /**
    * 更新模型定价
    */
   async update(id: string, params: UpdateModelPricingParams): Promise<ModelPricingRecord | null> {

@@ -57,6 +57,11 @@ export interface AdminPermissions {
     edit?: boolean;
     delete?: boolean;
   };
+  /** 积分管理权限 */
+  credits?: {
+    view?: boolean;
+    edit?: boolean;
+  };
 }
 
 /**

@@ -36,6 +36,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<AdminRole, AdminPermissions> = {
     subscriptions: { view: true },
     skills: { view: true },
     system: { viewLogs: true },
+    credits: { view: true },
   },
   /** admin: 管理权限（不含管理员管理和用户删除） */
   admin: {
@@ -44,6 +45,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<AdminRole, AdminPermissions> = {
     skills: { view: true, create: true, edit: true, publish: true, delete: true, review: true },
     system: { viewConfig: true, editConfig: true, viewLogs: true /* resetConfig: 仅 super_admin */ },
     admins: { view: true },
+    credits: { view: true, edit: true },
   },
   /** super_admin: 拥有所有权限，无需枚举 */
   super_admin: {},
@@ -65,6 +67,7 @@ export const ROLE_PERMISSION_CEILING: Record<AdminRole, AdminPermissions> = {
     skills: { view: true, create: true, edit: true, publish: true, delete: true, review: true },
     system: { viewConfig: true, editConfig: true, viewLogs: true },
     admins: { view: true },
+    credits: { view: true, edit: true },
   },
   /** admin 最多可拥有所有权限 */
   admin: {
@@ -73,6 +76,7 @@ export const ROLE_PERMISSION_CEILING: Record<AdminRole, AdminPermissions> = {
     skills: { view: true, create: true, edit: true, publish: true, delete: true, review: true },
     system: { viewConfig: true, editConfig: true, viewLogs: true },
     admins: { view: true, create: true, edit: true, delete: true },
+    credits: { view: true, edit: true },
   },
   /** super_admin 不受天花板限制 */
   super_admin: {},

@@ -698,3 +698,149 @@ describe("CreditService - getTransactionHistory", () => {
     console.log("[TEST] ✓ 分页查询成功");
   });
 });
+
+// ============================================================================
+// CreditService - adminGrantCredits 管理员手动发放
+// ============================================================================
+
+describe("CreditService - adminGrantCredits", () => {
+  let service: CreditService;
+
+  beforeEach(() => {
+    console.log("[TEST] ========== 管理员发放测试开始 ==========");
+    enableMockDatabase();
+    service = createTestService();
+    clearMockDatabase();
+  });
+
+  afterEach(() => {
+    console.log("[TEST] ========== 管理员发放测试结束 ==========\n");
+    disableMockDatabase();
+  });
+
+  it("CS-ADMIN-001: 应该以 admin_grant 来源发放积分", async () => {
+    console.log("[TEST] CS-ADMIN-001: 管理员手动发放");
+
+    // 先为用户创建账户
+    await service.grantRegistrationBonus("user-admin-001");
+
+    const result = await service.adminGrantCredits(
+      "user-admin-001",
+      { amount: 500, expiryMonths: 6, description: "客服补偿" },
+      "admin-001",
+      "用户投诉补偿",
+    );
+
+    console.log("[TEST] 发放结果:", JSON.stringify(result));
+    expect(result.success).toBe(true);
+    expect(result.creditsGranted).toBe(500);
+    expect(result.newBalance).toBe(800); // 300 注册 + 500 管理员发放
+    console.log("[TEST] ✓ 管理员发放成功");
+  });
+
+  it("CS-ADMIN-002: 应该为无账户用户自动创建账户并发放", async () => {
+    console.log("[TEST] CS-ADMIN-002: 新用户管理员发放");
+
+    const result = await service.adminGrantCredits(
+      "user-admin-002",
+      { amount: 1000, expiryMonths: 12 },
+      "admin-001",
+    );
+
+    console.log("[TEST] 发放结果:", JSON.stringify(result));
+    expect(result.success).toBe(true);
+    expect(result.creditsGranted).toBe(1000);
+    expect(result.newBalance).toBe(1000);
+    console.log("[TEST] ✓ 新用户发放成功");
+  });
+});
+
+// ============================================================================
+// CreditService - getAllModelPricings / getModelPricing / deleteModelPricing
+// ============================================================================
+
+describe("CreditService - 模型定价管理方法", () => {
+  let service: CreditService;
+
+  beforeEach(() => {
+    console.log("[TEST] ========== 定价管理方法测试开始 ==========");
+    enableMockDatabase();
+    service = createTestService();
+    clearMockDatabase();
+  });
+
+  afterEach(() => {
+    console.log("[TEST] ========== 定价管理方法测试结束 ==========\n");
+    disableMockDatabase();
+  });
+
+  it("CS-PRICING-001: 应该获取所有定价（含禁用）", async () => {
+    console.log("[TEST] CS-PRICING-001: 获取所有定价");
+
+    await service.setModelPricing({
+      modelId: "model-a",
+      modelName: "Model A",
+      inputPrice: 300,
+      outputPrice: 1500,
+    });
+    await service.setModelPricing({
+      modelId: "model-b",
+      modelName: "Model B",
+      inputPrice: 100,
+      outputPrice: 500,
+    });
+
+    const all = await service.getAllModelPricings(false);
+    expect(all.length).toBe(2);
+
+    const activeOnly = await service.getAllModelPricings(true);
+    expect(activeOnly.length).toBe(2); // 默认都是 active
+    console.log("[TEST] ✓ 获取所有定价成功");
+  });
+
+  it("CS-PRICING-002: 应该获取单个模型定价", async () => {
+    console.log("[TEST] CS-PRICING-002: 获取单条定价");
+
+    await service.setModelPricing({
+      modelId: "model-a",
+      modelName: "Model A",
+      inputPrice: 300,
+      outputPrice: 1500,
+    });
+
+    const pricing = await service.getModelPricing("model-a");
+    expect(pricing).not.toBeNull();
+    expect(pricing!.modelName).toBe("Model A");
+
+    const notFound = await service.getModelPricing("non-existent");
+    expect(notFound).toBeNull();
+    console.log("[TEST] ✓ 获取单条定价成功");
+  });
+
+  it("CS-PRICING-003: 应该删除模型定价", async () => {
+    console.log("[TEST] CS-PRICING-003: 删除定价");
+
+    await service.setModelPricing({
+      modelId: "model-a",
+      modelName: "Model A",
+      inputPrice: 300,
+      outputPrice: 1500,
+    });
+
+    const deleted = await service.deleteModelPricing("model-a");
+    expect(deleted).toBe(true);
+
+    // 确认已删除
+    const found = await service.getModelPricing("model-a");
+    expect(found).toBeNull();
+    console.log("[TEST] ✓ 删除定价成功");
+  });
+
+  it("CS-PRICING-004: 删除不存在的模型定价应返回 false", async () => {
+    console.log("[TEST] CS-PRICING-004: 删除不存在的定价");
+
+    const deleted = await service.deleteModelPricing("non-existent");
+    expect(deleted).toBe(false);
+    console.log("[TEST] ✓ 返回 false");
+  });
+});

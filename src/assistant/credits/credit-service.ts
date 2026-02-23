@@ -27,6 +27,7 @@ import type {
   CreditAccount,
   CreditTransaction,
   CreditTransactionMetadata,
+  ModelPricingRecord,
 } from "../../db/schema/index.js";
 import { getLogger } from "../../logging/logger.js";
 
@@ -441,7 +442,9 @@ export class CreditService {
     // 5. FIFO 逐批扣减
     let remaining = amount;
     for (const batch of activeBatches) {
-      if (remaining <= 0) break;
+      if (remaining <= 0) {
+        break;
+      }
 
       const deduct = Math.min(remaining, batch.remainingAmount);
       await this.batchRepo.deductAmount(batch.id, deduct);
@@ -719,6 +722,89 @@ export class CreditService {
   }
 
   // --------------------------------------------------------------------------
+  // 管理员手动发放
+  // --------------------------------------------------------------------------
+
+  /**
+   * 管理员手动发放积分
+   *
+   * 使用 admin_grant 来源调用内部发放方法。
+   * 在流水 metadata 中记录管理员 ID 和备注信息。
+   *
+   * @param userId 目标用户 ID
+   * @param options 发放选项
+   * @param adminId 操作管理员 ID
+   * @param adminNote 管理员备注
+   * @returns 操作结果
+   */
+  async adminGrantCredits(
+    userId: string,
+    options: GrantCreditsOptions,
+    adminId: string,
+    adminNote?: string,
+  ): Promise<CreditOperationResult> {
+    logger.info("[credit-service] 管理员手动发放积分", {
+      userId,
+      amount: options.amount,
+      adminId,
+      adminNote,
+    });
+
+    return this.grantCreditsInternal(userId, "admin_grant", {
+      ...options,
+      description: options.description ?? `管理员 ${adminId} 手动发放 ${options.amount} 积分`,
+      metadata: {
+        adminId,
+        adminNote,
+      },
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // 模型定价管理
+  // --------------------------------------------------------------------------
+
+  /**
+   * 获取所有模型定价
+   *
+   * @param activeOnly 是否仅返回激活的（默认 true）
+   * @returns 定价列表
+   */
+  async getAllModelPricings(activeOnly = true): Promise<ModelPricingRecord[]> {
+    if (activeOnly) {
+      return this.pricingRepo.findAllActive();
+    }
+    return this.pricingRepo.findAll();
+  }
+
+  /**
+   * 获取指定模型定价
+   *
+   * @param modelId 模型标识
+   * @returns 定价记录，不存在返回 null
+   */
+  async getModelPricing(modelId: string): Promise<ModelPricingRecord | null> {
+    return this.pricingRepo.findByModelId(modelId);
+  }
+
+  /**
+   * 删除模型定价
+   *
+   * @param modelId 模型标识
+   * @returns 是否删除成功
+   */
+  async deleteModelPricing(modelId: string): Promise<boolean> {
+    logger.info("[credit-service] 删除模型定价", { modelId });
+
+    const existing = await this.pricingRepo.findByModelId(modelId);
+    if (!existing) {
+      logger.info("[credit-service] 模型定价不存在", { modelId });
+      return false;
+    }
+    return this.pricingRepo.deleteById(existing.id);
+  }
+
+  // --------------------------------------------------------------------------
   // 内部辅助方法
   // --------------------------------------------------------------------------
 
@@ -733,9 +819,9 @@ export class CreditService {
   private async grantCreditsInternal(
     userId: string,
     source: "subscription" | "purchase" | "admin_grant",
-    options: GrantCreditsOptions,
+    options: GrantCreditsOptions & { metadata?: CreditTransactionMetadata },
   ): Promise<CreditOperationResult> {
-    const { amount, expiryMonths, sourceId, description } = options;
+    const { amount, expiryMonths, sourceId, description, metadata } = options;
 
     logger.info("[credit-service] 开始发放积分", {
       userId,
@@ -777,6 +863,7 @@ export class CreditService {
       source,
       sourceId,
       description: desc,
+      metadata,
     });
 
     logger.info("[credit-service] 积分发放完成", {
