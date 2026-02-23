@@ -126,6 +126,7 @@ const BASE_METHODS = [
   // Assistant skill create and install
   "assistant.skills.createAndPush",
   "assistant.skill.installResult",
+  "assistant.skills.checkUpdates",
   // Assistant audit methods
   "assistant.audit.init",
   "assistant.audit.write",

@@ -213,6 +213,7 @@ const WRITE_METHODS = new Set([
   // Assistant skill create and install
   "assistant.skills.createAndPush",
   "assistant.skill.installResult",
+  "assistant.skills.checkUpdates",
   // Assistant audit methods (write)
   "assistant.audit.init",
   "assistant.audit.write",

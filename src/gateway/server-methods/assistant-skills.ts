@@ -50,6 +50,7 @@ import {
 } from "../../assistant/skills/client-dispatch.js";
 import { packSkill, type PackageInput } from "../../assistant/skills/skill-packager.js";
 import { SkillPushDispatcher, type SkillInstallResult } from "../../assistant/skills/skill-push.js";
+import { checkUpdates as checkVersionUpdates } from "../../assistant/skills/version-checker.js";
 import type { SkillExecuteResult } from "../protocol/skill-execution.js";
 
 // 日志标签
@@ -1254,6 +1255,64 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       context.logGateway.error(`[${LOG_TAG}] 处理技能执行结果失败`, {
+        error: errorMessage,
+      });
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, errorMessage));
+    }
+  },
+
+  /**
+   * 检查客户端已安装技能的版本更新
+   *
+   * Client → Gateway: 发送已安装技能列表
+   * Gateway → Client: 返回每个技能是否有更新可用
+   *
+   * params: { installedSkills: Array<{ skillId: string; version: string }> }
+   */
+  "assistant.skills.checkUpdates": async ({ params, respond, context }) => {
+    try {
+      const installedSkills = params.installedSkills;
+
+      if (!Array.isArray(installedSkills)) {
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "installedSkills must be an array"),
+        );
+        return;
+      }
+
+      context.logGateway.info(`[${LOG_TAG}] 检查技能版本更新`, {
+        count: installedSkills.length,
+      });
+
+      // 从技能商店逐个查询最新版本
+      const registry = new Map<string, { latestVersion: string }>();
+      for (const skill of installedSkills) {
+        const storeSkill = await getStoreSkillDetail(skill.skillId);
+        if (storeSkill) {
+          registry.set(storeSkill.id, { latestVersion: storeSkill.version });
+        }
+      }
+
+      // 使用 version-checker 批量比较
+      const results = checkVersionUpdates(
+        installedSkills.map((s: { skillId: string; version: string }) => ({
+          skillId: s.skillId,
+          version: s.version,
+        })),
+        registry,
+      );
+
+      context.logGateway.info(`[${LOG_TAG}] 版本检查完成`, {
+        checked: results.length,
+        updatesAvailable: results.filter((r) => r.hasUpdate).length,
+      });
+
+      respond(true, { updates: results }, undefined);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      context.logGateway.error(`[${LOG_TAG}] 版本检查失败`, {
         error: errorMessage,
       });
       respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, errorMessage));
