@@ -1152,6 +1152,123 @@ export class ApiClient {
   }
 
   // ==========================================================================
+  // 积分接口
+  // ==========================================================================
+
+  /**
+   * 获取当前用户积分余额
+   *
+   * @returns 积分余额（totalBalance/totalEarned/totalConsumed/totalExpired）
+   */
+  async getCreditBalance(): Promise<ApiResponse<{
+    id: string
+    userId: string
+    totalBalance: number
+    totalEarned: number
+    totalConsumed: number
+    totalExpired: number
+    createdAt: string
+    updatedAt: string
+  }>> {
+    log.info('获取用户积分余额')
+
+    return this.request('GET', '/api/credits/balance')
+  }
+
+  /**
+   * 获取用户积分流水记录
+   *
+   * @param options - 分页参数
+   * @returns 流水记录列表
+   */
+  async getCreditHistory(options?: {
+    limit?: number
+    offset?: number
+  }): Promise<ApiResponse<{
+    transactions: Array<{
+      id: string
+      userId: string
+      batchId?: string
+      type: string
+      amount: number
+      balanceAfter: number
+      source: string
+      sourceId?: string
+      description?: string
+      metadata?: Record<string, unknown>
+      createdAt: string
+    }>
+    meta: { limit: number; offset: number; count: number; hasMore: boolean }
+  }>> {
+    log.info('获取积分流水', { limit: options?.limit, offset: options?.offset })
+
+    const params = new URLSearchParams()
+    if (options?.limit !== undefined) params.set('limit', String(options.limit))
+    if (options?.offset !== undefined) params.set('offset', String(options.offset))
+
+    const query = params.toString()
+    const path = query ? `/api/credits/history?${query}` : '/api/credits/history'
+
+    return this.request('GET', path)
+  }
+
+  /**
+   * 获取有效积分批次列表（含过期时间）
+   *
+   * @returns 有效批次列表
+   */
+  async getCreditBatches(): Promise<ApiResponse<{
+    batches: Array<{
+      id: string
+      source: string
+      originalAmount: number
+      remainingAmount: number
+      expiresAt: string
+      description?: string
+      createdAt: string
+    }>
+  }>> {
+    log.info('获取积分批次')
+
+    return this.request('GET', '/api/credits/batches')
+  }
+
+  /**
+   * 获取用户邀请统计
+   *
+   * @returns 邀请人数、已获积分、积分上限
+   */
+  async getInviteStats(): Promise<ApiResponse<{
+    count: number
+    totalCredits: number
+    maxCredits: number
+  }>> {
+    log.info('获取邀请统计')
+
+    return this.request('GET', '/api/credits/invite-stats')
+  }
+
+  /**
+   * 获取用户邀请记录列表
+   *
+   * @returns 邀请记录数组
+   */
+  async getInviteList(): Promise<ApiResponse<{
+    invites: Array<{
+      id: string
+      inviterUserId: string
+      inviteeUserId: string
+      creditsAwarded: number
+      status: string
+      createdAt: string
+    }>
+  }>> {
+    log.info('获取邀请记录')
+
+    return this.request('GET', '/api/credits/invites')
+  }
+
+  // ==========================================================================
   // 通用请求方法
   // ==========================================================================
 

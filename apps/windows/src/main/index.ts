@@ -38,6 +38,7 @@ import { SystemService } from './system-service'
 import { DevicePairingService } from './device-pairing-service'
 import { UpdaterService, setupUpdaterIpcHandlers } from './updater-service'
 import { ClientSkillRuntime } from './skill-runtime'
+import { wrapSingleFile } from './skill-wrapper'
 import { ApiClient } from './api-client'
 import {
   validateUrl,
@@ -88,10 +89,21 @@ function createWindow(): void {
     },
   })
 
-  // 窗口准备好后显示
+  // 窗口准备好后显示并获取焦点
   mainWindow.once('ready-to-show', () => {
-    log.info('窗口准备就绪')
-    // 默认不显示主窗口，通过托盘图标唤起
+    log.info('窗口准备就绪，显示并聚焦')
+    mainWindow?.show()
+    mainWindow?.focus()
+  })
+
+  // 窗口显示时确保 webContents 获得焦点（修复无边框窗口输入问题）
+  mainWindow.on('show', () => {
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.focus()
+        mainWindow.webContents.focus()
+      }
+    }, 100)
   })
 
   // 关闭窗口时隐藏而不是退出
@@ -464,7 +476,12 @@ function setupIpcHandlers(): void {
   ipcMain.handle('window:isMaximized', () => mainWindow?.isMaximized() ?? false)
 
   // === Gateway 操作 ===
-  ipcMain.handle('gateway:connect', async (_event, url: string, options?: { token?: string; deviceId?: string }) => {
+  ipcMain.handle('gateway:connect', async (_event, url: string, options?: {
+    token?: string
+    deviceId?: string
+    role?: string
+    scopes?: string[]
+  }) => {
     // 验证 URL
     const safeUrl = validateUrl(url, { allowedProtocols: ['ws:', 'wss:', 'http:', 'https:'] })
 
@@ -479,6 +496,13 @@ function setupIpcHandlers(): void {
       }
       if (options?.deviceId) {
         gatewayClient.setDeviceId(options.deviceId)
+      }
+      // 设置设备的 role 和 scopes（与设备绑定时一致）
+      if (options?.role) {
+        gatewayClient.setRole(options.role)
+      }
+      if (options?.scopes) {
+        gatewayClient.setScopes(options.scopes)
       }
       return gatewayClient.connect()
     }
@@ -848,6 +872,143 @@ function setupIpcHandlers(): void {
     // 移除潜在的危险字符
     const safeName = displayName.replace(/[<>]/g, '')
     return devicePairingService?.updateDisplayName(safeName)
+  })
+
+  // ========== 本地技能管理 IPC 处理器 ==========
+
+  /**
+   * 列出本地已安装技能
+   */
+  ipcMain.handle('skills:listLocalInstalled', async () => {
+    if (!skillRuntime) {
+      throw new Error('技能运行时未初始化')
+    }
+    log.info('[Skills IPC] 列出本地已安装技能')
+    return skillRuntime.listLocalInstalled()
+  })
+
+  /**
+   * 从目录安装技能
+   */
+  ipcMain.handle('skills:installFromDirectory', async (_event, sourceDir: string) => {
+    if (!skillRuntime) {
+      throw new Error('技能运行时未初始化')
+    }
+    if (typeof sourceDir !== 'string' || sourceDir.length === 0) {
+      throw new Error('无效的源目录路径')
+    }
+    log.info('[Skills IPC] 从目录安装技能', { sourceDir })
+    return skillRuntime.installFromDirectory(sourceDir)
+  })
+
+  /**
+   * 卸载本地技能
+   */
+  ipcMain.handle('skills:uninstallLocal', async (_event, skillId: string) => {
+    if (!skillRuntime) {
+      throw new Error('技能运行时未初始化')
+    }
+    if (typeof skillId !== 'string' || skillId.length === 0) {
+      throw new Error('无效的技能 ID')
+    }
+    log.info('[Skills IPC] 卸载本地技能', { skillId })
+    return skillRuntime.uninstallLocal(skillId)
+  })
+
+  /**
+   * 本地执行技能
+   */
+  ipcMain.handle('skills:executeLocal', async (_event, params: {
+    skillId: string
+    params: Record<string, unknown>
+    timeoutMs?: number
+  }) => {
+    if (!skillRuntime) {
+      throw new Error('技能运行时未初始化')
+    }
+    if (typeof params.skillId !== 'string' || params.skillId.length === 0) {
+      throw new Error('无效的技能 ID')
+    }
+    log.info('[Skills IPC] 本地执行技能', { skillId: params.skillId })
+    return skillRuntime.executeSkill({
+      requestId: `ipc-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      skillId: params.skillId,
+      params: params.params ?? {},
+      requireConfirm: false,
+      timeoutMs: params.timeoutMs ?? 120_000,
+      runMode: 'local',
+    })
+  })
+
+  /**
+   * 启用/禁用技能
+   */
+  ipcMain.handle('skills:setEnabled', async (_event, skillId: string, enabled: boolean) => {
+    if (!skillRuntime) {
+      throw new Error('技能运行时未初始化')
+    }
+    if (typeof skillId !== 'string' || skillId.length === 0) {
+      throw new Error('无效的技能 ID')
+    }
+    if (typeof enabled !== 'boolean') {
+      throw new Error('enabled 必须为布尔值')
+    }
+    log.info('[Skills IPC] 设置技能启用状态', { skillId, enabled })
+    return skillRuntime.setLocalEnabled(skillId, enabled)
+  })
+
+  /**
+   * 获取技能详情
+   */
+  ipcMain.handle('skills:getSkillDetail', async (_event, skillId: string) => {
+    if (!skillRuntime) {
+      throw new Error('技能运行时未初始化')
+    }
+    if (typeof skillId !== 'string' || skillId.length === 0) {
+      throw new Error('无效的技能 ID')
+    }
+    log.info('[Skills IPC] 获取技能详情', { skillId })
+    return skillRuntime.getSkillDetail(skillId)
+  })
+
+  /**
+   * 从单文件脚本安装技能（自动包装 + 安装）
+   */
+  ipcMain.handle('skills:installFromScript', async (_event, filePath: string, meta?: {
+    name?: string
+    description?: string
+  }) => {
+    if (!skillRuntime) {
+      throw new Error('技能运行时未初始化')
+    }
+    if (typeof filePath !== 'string' || filePath.length === 0) {
+      throw new Error('无效的文件路径')
+    }
+    log.info('[Skills IPC] 从脚本安装技能', { filePath, meta })
+
+    // 先包装为技能目录
+    const skillsDir = join(app.getPath('userData'), 'skills', '.wrap-temp')
+    const wrapResult = await wrapSingleFile({
+      filePath,
+      outputDir: skillsDir,
+      meta,
+    })
+
+    if (!wrapResult.success || !wrapResult.skillDir) {
+      return { success: false, error: wrapResult.error ?? '包装失败' }
+    }
+
+    // 再通过 installFromDirectory 安装
+    const installResult = await skillRuntime.installFromDirectory(wrapResult.skillDir)
+
+    // 清理临时目录
+    try {
+      await fs.rm(wrapResult.skillDir, { recursive: true, force: true })
+    } catch {
+      // 清理失败不影响结果
+    }
+
+    return installResult
   })
 }
 
@@ -1510,6 +1671,66 @@ function setupApiIpcHandlers(): void {
     }
     log.info('清除审计日志', { beforeDate })
     return apiClient.clearAuditLogs(beforeDate)
+  })
+
+  // --- 积分接口 ---
+
+  /**
+   * 获取用户积分余额
+   */
+  ipcMain.handle('api:getCreditBalance', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取用户积分余额')
+    return apiClient.getCreditBalance()
+  })
+
+  /**
+   * 获取用户积分流水
+   */
+  ipcMain.handle('api:getCreditHistory', async (_event, options?: {
+    limit?: number
+    offset?: number
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取积分流水', { limit: options?.limit, offset: options?.offset })
+    return apiClient.getCreditHistory(options)
+  })
+
+  /**
+   * 获取积分批次列表（含过期时间）
+   */
+  ipcMain.handle('api:getCreditBatches', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取积分批次')
+    return apiClient.getCreditBatches()
+  })
+
+  /**
+   * 获取邀请统计
+   */
+  ipcMain.handle('api:getInviteStats', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取邀请统计')
+    return apiClient.getInviteStats()
+  })
+
+  /**
+   * 获取邀请记录列表
+   */
+  ipcMain.handle('api:getInviteList', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取邀请记录')
+    return apiClient.getInviteList()
   })
 
   // --- 技能运行时 + 节点列表 + 文件上传 ---
