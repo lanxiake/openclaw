@@ -656,6 +656,40 @@ export async function runEmbeddedPiAgent(
               const status =
                 resolveFailoverStatus(assistantFailoverReason ?? "unknown") ??
                 (isTimeoutErrorMessage(message) ? 408 : undefined);
+
+              // ---- LLM 调用日志：失败路径 (FailoverError) ----
+              try {
+                const { getLlmCallLogRepository } =
+                  await import("../../db/repositories/llm-call-logs.js");
+                const llmLogRepo = getLlmCallLogRepository();
+                const llmStatus = rateLimitFailure
+                  ? ("rate_limited" as const)
+                  : authFailure
+                    ? ("auth_error" as const)
+                    : timedOut
+                      ? ("timeout" as const)
+                      : ("error" as const);
+                await llmLogRepo.insert({
+                  userId: params.userId ?? null,
+                  sessionId: sessionIdUsed,
+                  runId: params.runId,
+                  channel: params.messageChannel ?? params.messageProvider ?? null,
+                  provider,
+                  model: modelId,
+                  durationMs: Date.now() - started,
+                  status: llmStatus,
+                  errorMessage: message,
+                  metadata: {
+                    authProfileId: lastProfileId ?? undefined,
+                    failoverReason: assistantFailoverReason ?? undefined,
+                    contextTokens: ctxInfo.tokens,
+                  },
+                  calledAt: new Date(started),
+                });
+              } catch (llmLogErr) {
+                log.debug(`[LLM-LOG] failed to log failed LLM call: ${llmLogErr}`);
+              }
+
               throw new FailoverError(message, {
                 reason: assistantFailoverReason ?? "unknown",
                 provider,
@@ -673,6 +707,38 @@ export async function runEmbeddedPiAgent(
             model: lastAssistant?.model ?? model.id,
             usage,
           };
+
+          // ---- LLM 调用日志：成功路径 ----
+          try {
+            const { getLlmCallLogRepository } =
+              await import("../../db/repositories/llm-call-logs.js");
+            const llmLogRepo = getLlmCallLogRepository();
+            await llmLogRepo.insert({
+              userId: params.userId ?? null,
+              sessionId: sessionIdUsed,
+              runId: params.runId,
+              channel: params.messageChannel ?? params.messageProvider ?? null,
+              provider: agentMeta.provider,
+              model: agentMeta.model,
+              inputTokens: usage?.input ?? null,
+              outputTokens: usage?.output ?? null,
+              cacheReadTokens: usage?.cacheRead ?? null,
+              cacheWriteTokens: usage?.cacheWrite ?? null,
+              totalTokens: usage?.total ?? null,
+              durationMs: Date.now() - started,
+              status: "success",
+              errorMessage: null,
+              metadata: {
+                authProfileId: lastProfileId ?? undefined,
+                contextTokens: ctxInfo.tokens,
+                thinkLevel: params.thinkLevel,
+                aborted,
+              },
+              calledAt: new Date(started),
+            });
+          } catch (llmLogErr) {
+            log.debug(`[LLM-LOG] failed to log successful LLM call: ${llmLogErr}`);
+          }
 
           const payloads = buildEmbeddedRunPayloads({
             assistantTexts: attempt.assistantTexts,

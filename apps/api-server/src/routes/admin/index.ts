@@ -17,3 +17,5 @@ export { registerModelProviderRoutes } from "./model-providers.js";
 export { registerAgentConfigRoutes } from "./agent-config.js";
 export { registerAuthProfileRoutes } from "./auth-profiles.js";
 export { registerGatewayConfigRoutes } from "./gateway-config.js";
+export { registerAdminAnalyticsRoutes } from "./analytics.js";
+export { registerAdminLlmLogRoutes } from "./llm-logs.js";

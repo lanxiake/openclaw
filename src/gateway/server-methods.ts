@@ -19,6 +19,7 @@ import { userSkillHandlers } from "./server-methods/user-skills.js";
 import { adminMonitorHandlers } from "./server-methods/admin-monitor.js";
 import { adminConfigHandlers } from "./server-methods/admin-config.js";
 import { adminAnalyticsHandlers } from "./server-methods/admin-analytics.js";
+import { adminLlmLogHandlers } from "./server-methods/admin-llm-logs.js";
 import { adminAdminMethods } from "./server-methods/admin-admins.js";
 import { memoryHandlers } from "./server-methods/memory.js";
 import { browserHandlers } from "./server-methods/browser.js";
@@ -74,6 +75,7 @@ const PAIRING_METHODS = new Set([
   "device.pair.reject",
   "device.token.rotate",
   "device.token.revoke",
+  "device.revoke",
   "node.rename",
 ]);
 const ADMIN_METHOD_PREFIXES = ["exec.approvals."];
@@ -404,6 +406,7 @@ export const coreGatewayHandlers: GatewayRequestHandlers = {
   ...adminMonitorHandlers,
   ...adminConfigHandlers,
   ...adminAnalyticsHandlers,
+  ...adminLlmLogHandlers,
   ...adminAdminMethods,
   ...memoryHandlers,
 };

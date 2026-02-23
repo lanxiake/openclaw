@@ -98,11 +98,7 @@ export { ModelProviderRepository, AgentDefaultConfigRepository } from "./model-c
 export { AlertRepository, getAlertRepository } from "./alerts.js";
 
 // 系统日志仓库
-export {
-  SystemLogsRepository,
-  getSystemLogsRepository,
-  generateLogId,
-} from "./system-logs.js";
+export { SystemLogsRepository, getSystemLogsRepository, generateLogId } from "./system-logs.js";
 
 // 系统日志相关类型
 export type { SystemLogQueryParams, SystemLogStats } from "./system-logs.js";
@@ -121,3 +117,13 @@ export {
   getChannelPairingRequestRepository,
   getChannelBindingRepository,
 } from "./channel-pairing.js";
+
+// LLM 调用日志仓库
+export { LlmCallLogRepository, getLlmCallLogRepository } from "./llm-call-logs.js";
+
+// LLM 调用日志相关类型
+export type {
+  LlmCallLogQueryParams,
+  LlmCallLogStats,
+  LlmCallLogInsertParams,
+} from "./llm-call-logs.js";

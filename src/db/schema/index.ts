@@ -445,12 +445,7 @@ export {
 } from "./system-alerts.js";
 
 // 系统告警相关类型
-export type {
-  SystemAlert,
-  NewSystemAlert,
-  AlertType,
-  AlertSeverity,
-} from "./system-alerts.js";
+export type { SystemAlert, NewSystemAlert, AlertType, AlertSeverity } from "./system-alerts.js";
 
 // 系统日志表
 export {
@@ -461,12 +456,7 @@ export {
 } from "./system-logs.js";
 
 // 系统日志相关类型
-export type {
-  SystemLog,
-  NewSystemLog,
-  LogLevelEnum,
-  SystemLogMetadata,
-} from "./system-logs.js";
+export type { SystemLog, NewSystemLog, LogLevelEnum, SystemLogMetadata } from "./system-logs.js";
 
 // 系统指标表
 export {
@@ -477,11 +467,7 @@ export {
 } from "./system-metrics.js";
 
 // 系统指标相关类型
-export type {
-  SystemMetric,
-  NewSystemMetric,
-  MetricType,
-} from "./system-metrics.js";
+export type { SystemMetric, NewSystemMetric, MetricType } from "./system-metrics.js";
 
 // 积分系统相关表
 export {
@@ -547,3 +533,14 @@ export type {
   NewUserChannelBinding,
   ChannelPairingStatus,
 } from "./channel-pairing.js";
+
+// LLM 调用日志表
+export {
+  llmCallLogs,
+  // Zod schemas
+  insertLlmCallLogSchema,
+  selectLlmCallLogSchema,
+} from "./llm-call-logs.js";
+
+// LLM 调用日志相关类型
+export type { LlmCallLog, NewLlmCallLog, LlmCallStatus, LlmCallMetadata } from "./llm-call-logs.js";
