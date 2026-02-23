@@ -344,7 +344,8 @@ export function attachGatewayWsMessageHandler(params: {
         }
 
         const roleRaw = connectParams.role ?? "operator";
-        const role = roleRaw === "operator" || roleRaw === "node" ? roleRaw : null;
+        const role =
+          roleRaw === "operator" || roleRaw === "node" || roleRaw === "user" ? roleRaw : null;
         if (!role) {
           setHandshakeState("failed");
           setCloseCause("invalid-role", {
@@ -369,7 +370,9 @@ export function attachGatewayWsMessageHandler(params: {
             ? requestedScopes
             : role === "operator"
               ? ["operator.admin"]
-              : [];
+              : role === "user"
+                ? ["user.basic"]
+                : [];
         connectParams.role = role;
         connectParams.scopes = scopes;
 

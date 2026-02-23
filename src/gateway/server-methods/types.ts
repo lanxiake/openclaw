@@ -64,6 +64,8 @@ export type GatewayRequestContext = {
   ) => void;
   /** 向指定用户的所有在线节点广播事件 */
   emitToUser: (userId: string, event: string, payload?: unknown) => number;
+  /** 向指定用户的具有本地技能执行能力的客户端发送事件 */
+  sendToUserClients: (userId: string, event: string, payload?: unknown) => number;
   nodeSendToSession: (sessionKey: string, event: string, payload: unknown) => void;
   nodeSendToAllSubscribed: (event: string, payload: unknown) => void;
   nodeSubscribe: (nodeId: string, sessionKey: string) => void;

@@ -681,6 +681,21 @@ export const chatHandlers: GatewayRequestHandlers = {
               });
             }
 
+            // 当 agent run 没有启动且没有生成任何回复时，发送友好提示而非空消息
+            if (!message && !isCommand) {
+              const fallbackText = "抱歉，当前无法生成回复。请检查 AI 模型配置是否正确。";
+              context.logGateway.warn(
+                `chat.send: no agent run and no reply for session=${p.sessionKey} runId=${clientRunId}`,
+              );
+              message = {
+                role: "assistant",
+                content: [{ type: "text", text: fallbackText }],
+                timestamp: Date.now(),
+                stopReason: "no-reply",
+                usage: { input: 0, output: 0, totalTokens: 0 },
+              };
+            }
+
             broadcastChatFinal({
               context,
               runId: clientRunId,

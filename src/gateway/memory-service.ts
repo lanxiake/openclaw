@@ -171,7 +171,13 @@ export class GatewayMemoryService {
       // 从 openclawConfig 中提取数据库记忆系统配置（通过 system_configs 合并进来的）
       const cfgAny = openclawConfig as Record<string, unknown>;
       const memoryEmbeddingConfig = cfgAny.memory_embedding as
-        | { provider?: string; model?: string; dimensions?: number; baseUrl?: string }
+        | {
+            provider?: string;
+            model?: string;
+            dimensions?: number;
+            baseUrl?: string;
+            apiKey?: string;
+          }
         | undefined;
       const memoryLlmConfig = cfgAny.memory_llm as
         | {
@@ -189,6 +195,7 @@ export class GatewayMemoryService {
           model: memoryEmbeddingConfig.model,
           dimensions: memoryEmbeddingConfig.dimensions,
           baseUrl: memoryEmbeddingConfig.baseUrl,
+          hasApiKey: !!memoryEmbeddingConfig.apiKey,
         });
       }
       if (memoryLlmConfig) {
@@ -233,8 +240,36 @@ export class GatewayMemoryService {
 
       logger.info("已注入 OpenClawConfig 到 episodic/profile provider");
 
-      // 如果启用 SQLite 知识适配器，替换知识记忆提供者
-      if (this.config.useSQLiteKnowledge) {
+      // 知识记忆后端选择逻辑：
+      // 1. 当数据库配置了有效的 embedding 配置（baseUrl + model），使用 PostgreSQL + pgvector
+      // 2. 否则回退到 SQLite 适配器（依赖 MemoryIndexManager）
+      const hasValidEmbeddingConfig =
+        memoryEmbeddingConfig?.baseUrl && memoryEmbeddingConfig?.model;
+
+      if (hasValidEmbeddingConfig) {
+        // 使用 PostgreSQL 知识记忆 provider（含 pgvector 向量搜索）
+        logger.info("启用 PostgreSQL 知识记忆 provider（含 pgvector）", {
+          model: memoryEmbeddingConfig.model,
+          baseUrl: memoryEmbeddingConfig.baseUrl,
+          hasApiKey: !!memoryEmbeddingConfig.apiKey,
+        });
+        memoryConfig = {
+          ...memoryConfig,
+          knowledge: {
+            provider: "postgres",
+            options: {
+              cfg: openclawConfig,
+              embeddingConfig: {
+                provider: memoryEmbeddingConfig.provider ?? "openai",
+                model: memoryEmbeddingConfig.model ?? "Qwen3-Embedding-0.6B",
+                dimensions: memoryEmbeddingConfig.dimensions ?? 1024,
+                baseUrl: memoryEmbeddingConfig.baseUrl ?? "",
+                apiKey: memoryEmbeddingConfig.apiKey ?? "",
+              },
+            },
+          },
+        };
+      } else if (this.config.useSQLiteKnowledge) {
         logger.info("启用 SQLite 知识适配器");
 
         // 创建 SQLite 适配器
@@ -253,27 +288,6 @@ export class GatewayMemoryService {
             provider: "sqlite",
             options: {
               indexManager: this.sqliteAdapter,
-            },
-          },
-        };
-      } else if (memoryConfig.knowledge.provider === "postgres") {
-        // 使用 PostgreSQL 知识记忆 provider 时，注入 cfg 和 embeddingConfig
-        logger.info("启用 PostgreSQL 知识记忆 provider（含 pgvector）");
-        memoryConfig = {
-          ...memoryConfig,
-          knowledge: {
-            ...memoryConfig.knowledge,
-            options: {
-              ...memoryConfig.knowledge.options,
-              cfg: openclawConfig,
-              embeddingConfig: memoryEmbeddingConfig
-                ? {
-                    provider: memoryEmbeddingConfig.provider ?? "openai",
-                    model: memoryEmbeddingConfig.model ?? "Qwen3-Embedding-0.6B",
-                    dimensions: memoryEmbeddingConfig.dimensions ?? 1024,
-                    baseUrl: memoryEmbeddingConfig.baseUrl ?? "",
-                  }
-                : undefined,
             },
           },
         };

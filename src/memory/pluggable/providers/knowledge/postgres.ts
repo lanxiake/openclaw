@@ -59,6 +59,8 @@ interface PostgresKnowledgeConfig extends ProviderConfig {
     dimensions: number;
     /** API 基础 URL（OpenAI 兼容格式） */
     baseUrl: string;
+    /** API Key */
+    apiKey?: string;
   };
 }
 
@@ -177,7 +179,9 @@ export class PostgresKnowledgeMemoryProvider implements IKnowledgeMemoryProvider
         // 优先使用外部 embeddingConfig（来自数据库 system_configs）
         const embeddingConfig = this.config.embeddingConfig;
         const model = embeddingConfig?.model ?? "text-embedding-3-small";
-        const remote = embeddingConfig?.baseUrl ? { baseUrl: embeddingConfig.baseUrl } : undefined;
+        const remote = embeddingConfig?.baseUrl
+          ? { baseUrl: embeddingConfig.baseUrl, apiKey: embeddingConfig.apiKey }
+          : undefined;
 
         const result = await createEmbeddingProvider({
           config: this.config.cfg,

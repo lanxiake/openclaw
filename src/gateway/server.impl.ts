@@ -486,6 +486,21 @@ export async function startGatewayServer(
       broadcast,
       emitToUser: (userId: string, event: string, payload?: unknown) =>
         nodeRegistry.emitToUser(userId, event, payload),
+      sendToUserClients: (userId: string, event: string, payload?: unknown) => {
+        let sent = 0;
+        const frame = JSON.stringify({ type: "event", event, payload });
+        for (const c of clients) {
+          if (c.authenticatedUser?.userId === userId && c.capabilities?.localSkillExecution) {
+            try {
+              c.socket.send(frame);
+              sent++;
+            } catch {
+              /* 忽略发送失败 */
+            }
+          }
+        }
+        return sent;
+      },
       nodeSendToSession,
       nodeSendToAllSubscribed,
       nodeSubscribe,
