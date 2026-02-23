@@ -16,6 +16,7 @@ import { createSessionsHistoryTool } from "./tools/sessions-history-tool.js";
 import { createSessionsListTool } from "./tools/sessions-list-tool.js";
 import { createSessionsSendTool } from "./tools/sessions-send-tool.js";
 import { createSessionsSpawnTool } from "./tools/sessions-spawn-tool.js";
+import { createSkillCreateTool } from "./tools/skill-create-tool.js";
 import { createWebFetchTool, createWebSearchTool } from "./tools/web-tools.js";
 import { createTtsTool } from "./tools/tts-tool.js";
 import { createTodoWriteTool } from "./tools/todo-write-tool.js";
@@ -139,6 +140,10 @@ export function createOpenClawTools(options?: {
     ...(webFetchTool ? [webFetchTool] : []),
     ...(imageTool ? [imageTool] : []),
     createTodoWriteTool(),
+    createSkillCreateTool({
+      agentSessionKey: options?.agentSessionKey,
+      config: options?.config,
+    }),
   ];
 
   const pluginTools = resolvePluginTools({
