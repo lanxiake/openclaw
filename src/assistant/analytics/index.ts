@@ -17,3 +17,17 @@ export {
   type UserStats,
   type RevenueStats,
 } from "./analytics-service.js";
+
+export {
+  getUserRetention,
+  getActiveHourDistribution,
+  getRevenueSources,
+  getUserValueMetrics,
+  getFunnelAnalysis,
+  listFunnelTypes,
+  getSkillUsageTrend,
+  type RetentionResult,
+  type RevenueSourcesResult,
+  type UserValueResult,
+  type FunnelResult,
+} from "./analytics-extended.js";

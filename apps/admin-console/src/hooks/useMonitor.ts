@@ -15,6 +15,7 @@ import type {
   ResourceHistory,
   LogQuery,
   LogQueryResponse,
+  LogStats,
   AlertListResponse,
 } from '@/types/monitor'
 
@@ -81,15 +82,18 @@ export function useResourceUsage() {
 }
 
 /**
- * 获取资源使用历史
- * TODO: 需要在 API Server 中实现 /api/admin/monitor/resources/history
+ * 获取资源使用历史（从 system_metrics 表查询真实数据）
  */
 export function useResourceHistory(period: 'hour' | 'day' | 'week' = 'hour') {
   return useQuery({
     queryKey: ['admin', 'monitor', 'resources', 'history', period],
     queryFn: async (): Promise<ResourceHistory> => {
-      console.log('[useMonitor] 获取资源使用历史:', period)
-      // 返回空数据，等待 API 实现
+      try {
+        return await apiClient.instance.getResourceHistory(period)
+      } catch {
+        /** API 不可用时返回空数据 */
+      }
+
       return {
         labels: [],
         cpu: [],
@@ -98,60 +102,60 @@ export function useResourceHistory(period: 'hour' | 'day' | 'week' = 'hour') {
       }
     },
     staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000,
   })
 }
 
 /**
- * 获取日志列表
- * TODO: 需要在 API Server 中实现 /api/admin/monitor/logs
+ * 获取日志列表（从 system_logs 表查询应用日志）
  */
 export function useLogs(query: LogQuery = {}) {
   return useQuery({
     queryKey: ['admin', 'monitor', 'logs', query],
     queryFn: async (): Promise<LogQueryResponse> => {
-      console.log('[useMonitor] 获取日志列表:', query)
-      // 返回空数据，等待 API 实现
-      return {
-        logs: [],
-        total: 0,
-        hasMore: false,
-      }
+      return apiClient.instance.getMonitorLogs(query)
     },
     staleTime: 10 * 1000,
+    refetchInterval: 30 * 1000,
   })
 }
 
 /**
- * 获取日志来源列表
- * TODO: 需要在 API Server 中实现 /api/admin/monitor/logs/sources
+ * 获取日志来源列表（从 system_logs 表查询去重 source）
  */
 export function useLogSources() {
   return useQuery({
     queryKey: ['admin', 'monitor', 'logs', 'sources'],
     queryFn: async (): Promise<string[]> => {
-      console.log('[useMonitor] 获取日志来源列表')
-      // 返回空数据，等待 API 实现
-      return []
+      return apiClient.instance.getMonitorLogSources()
     },
     staleTime: 5 * 60 * 1000,
   })
 }
 
 /**
- * 获取告警列表
- * TODO: 需要在 API Server 中实现 /api/admin/monitor/alerts
+ * 获取日志统计（按级别、来源分组计数）
+ */
+export function useLogStats(params?: { startTime?: string; endTime?: string }) {
+  return useQuery({
+    queryKey: ['admin', 'monitor', 'logs', 'stats', params],
+    queryFn: async (): Promise<LogStats> => {
+      return apiClient.instance.getLogStats(params)
+    },
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
+  })
+}
+
+/**
+ * 获取告警列表（从 system_alerts 表查询真实数据）
  */
 export function useAlerts(filters: { acknowledged?: boolean; resolved?: boolean } = {}) {
   return useQuery({
     queryKey: ['admin', 'monitor', 'alerts', filters],
     queryFn: async (): Promise<AlertListResponse> => {
       console.log('[useMonitor] 获取告警列表:', filters)
-      // 返回空数据，等待 API 实现
-      return {
-        alerts: [],
-        total: 0,
-        unacknowledged: 0,
-      }
+      return apiClient.instance.getMonitorAlerts(filters)
     },
     staleTime: 15 * 1000,
     refetchInterval: 30 * 1000,
@@ -160,7 +164,6 @@ export function useAlerts(filters: { acknowledged?: boolean; resolved?: boolean 
 
 /**
  * 确认告警
- * TODO: 需要在 API Server 中实现 /api/admin/monitor/alerts/:id/acknowledge
  */
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient()
@@ -168,8 +171,7 @@ export function useAcknowledgeAlert() {
   return useMutation({
     mutationFn: async (alertId: string) => {
       console.log('[useMonitor] 确认告警:', alertId)
-      // TODO: 等待 API 实现
-      throw new Error('告警 API 尚未实现')
+      await apiClient.instance.acknowledgeAlert(alertId)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'monitor', 'alerts'] })
@@ -179,7 +181,6 @@ export function useAcknowledgeAlert() {
 
 /**
  * 解决告警
- * TODO: 需要在 API Server 中实现 /api/admin/monitor/alerts/:id/resolve
  */
 export function useResolveAlert() {
   const queryClient = useQueryClient()
@@ -187,8 +188,7 @@ export function useResolveAlert() {
   return useMutation({
     mutationFn: async (alertId: string) => {
       console.log('[useMonitor] 解决告警:', alertId)
-      // TODO: 等待 API 实现
-      throw new Error('告警 API 尚未实现')
+      await apiClient.instance.resolveAlert(alertId)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'monitor', 'alerts'] })

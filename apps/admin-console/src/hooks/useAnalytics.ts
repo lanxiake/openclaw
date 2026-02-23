@@ -2,9 +2,7 @@
  * 数据分析 Hooks
  *
  * 提供数据分析相关的 React Query Hooks
- * 使用 API Server REST API
- *
- * 注意：分析 API 需要在 API Server 中实现对应的路由
+ * 使用 API Server REST API（全部对接真实后端数据）
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -23,24 +21,36 @@ import type {
 } from '@/types/analytics'
 
 /**
+ * 将 AnalyticsPeriod 映射到后端接受的 period 参数
+ */
+function mapPeriod(period: AnalyticsPeriod): string {
+  const periodMap: Record<AnalyticsPeriod, string> = {
+    day: 'week',
+    week: 'week',
+    month: 'month',
+    quarter: 'quarter',
+    year: 'quarter',
+  }
+  return periodMap[period]
+}
+
+/**
  * 获取分析概览
- * TODO: 需要在 API Server 中实现 /api/admin/analytics/overview
  */
 export function useAnalyticsOverview() {
   return useQuery({
     queryKey: ['admin', 'analytics', 'overview'],
     queryFn: async (): Promise<AnalyticsOverview> => {
       console.log('[useAnalytics] 获取分析概览')
-      // 使用仪表盘统计作为临时替代
-      const stats = await apiClient.instance.getDashboardStats()
+      const result = await apiClient.instance.getAnalyticsOverview()
       return {
-        totalUsers: stats.totalUsers ?? 0,
-        activeUsers: stats.activeUsers7d ?? 0,
-        newUsersToday: stats.newUsersToday ?? 0,
-        totalRevenue: stats.revenueThisMonth ?? 0,
-        revenueGrowth: stats.changes?.revenue ?? 0,
+        totalUsers: result.users?.total ?? 0,
+        activeUsers: result.users?.active ?? 0,
+        newUsersToday: result.users?.newToday ?? 0,
+        totalRevenue: result.revenue?.total ?? 0,
+        revenueGrowth: result.revenue?.growthRate ?? 0,
         avgSessionDuration: 0,
-        conversionRate: 0,
+        conversionRate: result.subscriptions?.conversionRate ?? 0,
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -50,21 +60,18 @@ export function useAnalyticsOverview() {
 
 /**
  * 获取用户增长趋势
- * TODO: 需要在 API Server 中实现 /api/admin/analytics/users/growth
  */
 export function useUserGrowthTrend(period: AnalyticsPeriod = 'month') {
   return useQuery({
     queryKey: ['admin', 'analytics', 'users', 'growth', period],
     queryFn: async (): Promise<UserGrowthTrend> => {
       console.log('[useAnalytics] 获取用户增长趋势:', period)
-      // 使用仪表盘趋势数据作为临时替代
-      const periodMap: Record<AnalyticsPeriod, '7d' | '30d' | '90d'> = { day: '7d', week: '7d', month: '30d', quarter: '90d', year: '90d' }
-      const trends = await apiClient.instance.getDashboardTrends('users', periodMap[period])
+      const result = await apiClient.instance.getUserGrowthTrend(mapPeriod(period))
       return {
-        labels: trends.labels,
-        data: trends.values ?? [],
-        total: 0,
-        growth: 0,
+        labels: (result.data ?? []).map((d) => d.date),
+        data: (result.data ?? []).map((d) => d.new),
+        total: result.summary?.totalUsers ?? 0,
+        growth: result.summary?.growthRate ?? 0,
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -73,17 +80,29 @@ export function useUserGrowthTrend(period: AnalyticsPeriod = 'month') {
 
 /**
  * 获取用户留存分析
- * TODO: 需要在 API Server 中实现 /api/admin/analytics/users/retention
  */
 export function useUserRetention(period: AnalyticsPeriod = 'month') {
   return useQuery({
     queryKey: ['admin', 'analytics', 'users', 'retention', period],
     queryFn: async (): Promise<RetentionAnalysis> => {
       console.log('[useAnalytics] 获取用户留存分析:', period)
-      // 返回空数据，等待 API 实现
+      const result = await apiClient.instance.getUserRetention(mapPeriod(period))
       return {
-        cohorts: [],
-        averageRetention: { day1: 0, day3: 0, day7: 0, day14: 0, day30: 0 },
+        cohorts: (result.cohorts ?? []).map((c) => ({
+          cohort: c.cohort,
+          day1: c.day1,
+          day3: c.day3,
+          day7: c.day7,
+          day14: c.day14,
+          day30: c.day30,
+        })),
+        averageRetention: result.averageRetention ?? {
+          day1: 0,
+          day3: 0,
+          day7: 0,
+          day14: 0,
+          day30: 0,
+        },
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -92,19 +111,26 @@ export function useUserRetention(period: AnalyticsPeriod = 'month') {
 
 /**
  * 获取用户画像
- * TODO: 需要在 API Server 中实现 /api/admin/analytics/users/demographics
  */
 export function useUserDemographics() {
   return useQuery({
     queryKey: ['admin', 'analytics', 'users', 'demographics'],
     queryFn: async (): Promise<UserDemographics> => {
       console.log('[useAnalytics] 获取用户画像')
-      // 返回空数据，等待 API 实现
+      const result = await apiClient.instance.getUserDemographics()
       return {
-        byRegion: [],
-        byDevice: [],
-        byPlatform: [],
-        byAge: [],
+        byRegion: (result.byRegion ?? []).map((r) => ({
+          region: r.region,
+          count: r.count,
+          percentage: r.percentage,
+        })),
+        byDevice: (result.byDevice ?? []).map((d) => ({
+          device: d.name,
+          count: d.count,
+          percentage: d.percentage,
+        })),
+        byPlatform: [], // 后端暂不提供平台分布
+        byAge: [], // 后端暂不提供年龄分布
       }
     },
     staleTime: 10 * 60 * 1000,
@@ -113,19 +139,18 @@ export function useUserDemographics() {
 
 /**
  * 获取收入趋势
- * TODO: 需要在 API Server 中实现 /api/admin/analytics/revenue/trend
  */
 export function useRevenueTrend(period: AnalyticsPeriod = 'month') {
   return useQuery({
     queryKey: ['admin', 'analytics', 'revenue', 'trend', period],
     queryFn: async (): Promise<RevenueTrend> => {
       console.log('[useAnalytics] 获取收入趋势:', period)
-      // 返回空数据，等待 API 实现
+      const result = await apiClient.instance.getRevenueTrend(mapPeriod(period))
       return {
-        labels: [],
-        data: [],
-        total: 0,
-        growth: 0,
+        labels: (result.data ?? []).map((d) => d.date),
+        data: (result.data ?? []).map((d) => d.revenue),
+        total: result.summary?.totalRevenue ?? 0,
+        growth: result.summary?.growthRate ?? 0,
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -134,18 +159,21 @@ export function useRevenueTrend(period: AnalyticsPeriod = 'month') {
 
 /**
  * 获取收入来源分布
- * TODO: 需要在 API Server 中实现 /api/admin/analytics/revenue/sources
  */
 export function useRevenueSources() {
   return useQuery({
     queryKey: ['admin', 'analytics', 'revenue', 'sources'],
     queryFn: async (): Promise<RevenueBySource> => {
       console.log('[useAnalytics] 获取收入来源分布')
-      // 返回空数据，等待 API 实现
-      return {
-        sources: [],
-        total: 0,
-      }
+      const result = await apiClient.instance.getRevenueSources()
+      const sources = (result.byPlan ?? []).map((p) => ({
+        name: p.plan,
+        revenue: p.revenue,
+        percentage: p.percentage,
+        orders: p.orders,
+      }))
+      const total = sources.reduce((sum, s) => sum + s.revenue, 0)
+      return { sources, total }
     },
     staleTime: 10 * 60 * 1000,
   })
@@ -153,19 +181,18 @@ export function useRevenueSources() {
 
 /**
  * 获取用户价值指标
- * TODO: 需要在 API Server 中实现 /api/admin/analytics/revenue/metrics
  */
 export function useUserValueMetrics(period: AnalyticsPeriod = 'month') {
   return useQuery({
     queryKey: ['admin', 'analytics', 'revenue', 'metrics', period],
     queryFn: async (): Promise<UserValueMetrics> => {
       console.log('[useAnalytics] 获取用户价值指标:', period)
-      // 返回空数据，等待 API 实现
+      const result = await apiClient.instance.getUserValueMetrics(mapPeriod(period))
       return {
-        arpu: 0,
-        arppu: 0,
-        ltv: 0,
-        payingUserRate: 0,
+        arpu: result.arpu ?? 0,
+        arppu: result.arppu ?? 0,
+        ltv: result.ltv ?? 0,
+        payingUserRate: result.payingUserRate ?? 0,
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -174,23 +201,40 @@ export function useUserValueMetrics(period: AnalyticsPeriod = 'month') {
 
 /**
  * 获取技能使用分析
- * TODO: 需要在 API Server 中实现 /api/admin/analytics/skills/usage
  */
 export function useSkillUsageAnalytics(period: AnalyticsPeriod = 'month') {
   return useQuery({
     queryKey: ['admin', 'analytics', 'skills', 'usage', period],
     queryFn: async (): Promise<SkillAnalytics> => {
       console.log('[useAnalytics] 获取技能使用分析:', period)
-      // 返回空数据，等待 API 实现
+      const result = await apiClient.instance.getSkillUsageAnalytics(mapPeriod(period))
       return {
-        topSkills: [],
-        usageTrend: [],
-        categoryDistribution: [],
+        topSkills: (result.topSkills ?? []).map((s) => ({
+          skillId: s.id,
+          skillName: s.name,
+          category: '',
+          totalExecutions: s.installCount,
+          uniqueUsers: s.activeUsers,
+          successRate: 0,
+          averageExecutionTime: 0,
+          trend: 'stable' as const,
+          trendValue: 0,
+        })),
+        usageTrend: (result.usageTrend ?? []).map((t) => ({
+          date: t.date,
+          executions: t.executions,
+          uniqueUsers: t.uniqueUsers,
+        })),
+        categoryDistribution: (result.categoryDistribution ?? []).map((c) => ({
+          category: c.category,
+          executions: c.count,
+          percentage: c.percentage,
+        })),
         summary: {
-          totalExecutions: 0,
-          totalUniqueUsers: 0,
-          averageExecutionsPerUser: 0,
-          activeSkillsCount: 0,
+          totalExecutions: result.summary?.totalInstalls ?? 0,
+          totalUniqueUsers: result.summary?.activeSkills ?? 0,
+          averageExecutionsPerUser: result.summary?.avgInstallsPerSkill ?? 0,
+          activeSkillsCount: result.summary?.activeSkills ?? 0,
         },
       }
     },
@@ -200,15 +244,13 @@ export function useSkillUsageAnalytics(period: AnalyticsPeriod = 'month') {
 
 /**
  * 获取漏斗列表
- * TODO: 需要在 API Server 中实现 /api/admin/analytics/funnels
  */
 export function useFunnelList() {
   return useQuery({
     queryKey: ['admin', 'analytics', 'funnels', 'list'],
     queryFn: async (): Promise<Array<{ id: string; name: string; description: string }>> => {
       console.log('[useAnalytics] 获取漏斗列表')
-      // 返回空数据，等待 API 实现
-      return []
+      return apiClient.instance.getFunnelList()
     },
     staleTime: 30 * 60 * 1000,
   })
@@ -216,17 +258,21 @@ export function useFunnelList() {
 
 /**
  * 获取漏斗分析
- * TODO: 需要在 API Server 中实现 /api/admin/analytics/funnels/:type
  */
 export function useFunnelAnalysis(type: string, period: AnalyticsPeriod = 'month') {
   return useQuery({
     queryKey: ['admin', 'analytics', 'funnels', 'get', type, period],
     queryFn: async (): Promise<FunnelAnalysis> => {
       console.log('[useAnalytics] 获取漏斗分析:', type, period)
-      // 返回空数据，等待 API 实现
+      const result = await apiClient.instance.getFunnelAnalysis(type, mapPeriod(period))
       return {
-        steps: [],
-        overallConversion: 0,
+        steps: (result.steps ?? []).map((s) => ({
+          name: s.name,
+          count: s.count,
+          percentage: s.percentage,
+          dropoffRate: s.dropoffRate,
+        })),
+        overallConversion: result.overallConversionRate ?? 0,
       }
     },
     enabled: !!type,

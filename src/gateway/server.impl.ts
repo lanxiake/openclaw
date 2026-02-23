@@ -336,6 +336,10 @@ export async function startGatewayServer(
   });
   let bonjourStop: (() => Promise<void>) | null = null;
   const nodeRegistry = new NodeRegistry();
+
+  // 注册活跃连接数 provider，让 monitor-service 能获取真实连接数
+  const { registerActiveConnectionsProvider } = await import("../assistant/monitor/index.js");
+  registerActiveConnectionsProvider(() => clients.size);
   const nodePresenceTimers = new Map<string, ReturnType<typeof setInterval>>();
   const nodeSubscriptions = createNodeSubscriptionManager();
   const nodeSendEvent = (opts: { nodeId: string; event: string; payloadJSON?: string | null }) => {
@@ -593,6 +597,47 @@ export async function startGatewayServer(
     });
   }
 
+  // ==================== 日志聚合 & 指标采集 ====================
+  let dbTransport: import("../logging/db-transport.js").DatabaseLogTransport | null = null;
+  let metricsCollector:
+    | import("../assistant/monitor/metrics-collector.js").MetricsCollector
+    | null = null;
+  try {
+    const { getSystemLogsRepository } = await import("../db/repositories/system-logs.js");
+    const { getSystemMetricsRepository } = await import("../db/repositories/system-metrics.js");
+    const { createDatabaseLogTransport } = await import("../logging/db-transport.js");
+    const { createBroadcastLogTransport } = await import("../logging/broadcast-transport.js");
+    const { createMetricsCollector, getSystemResources } =
+      await import("../assistant/monitor/index.js");
+
+    /** DB Transport: 批量将应用日志写入 system_logs 表 */
+    const logsRepo = getSystemLogsRepository();
+    dbTransport = createDatabaseLogTransport({ repository: logsRepo });
+    const { registerLogTransport } = await import("../logging/logger.js");
+    registerLogTransport(dbTransport.transport);
+    log.info("gateway: DB log transport registered");
+
+    /** Broadcast Transport: 实时推送日志到 admin 客户端 */
+    const broadcastTransport = createBroadcastLogTransport({ broadcaster: broadcast });
+    registerLogTransport(broadcastTransport.transport);
+    log.info("gateway: broadcast log transport registered");
+
+    /** MetricsCollector: 定期采集系统资源指标 */
+    const metricsRepo = getSystemMetricsRepository();
+    metricsCollector = createMetricsCollector({
+      repository: metricsRepo,
+      getResources: getSystemResources,
+      getActiveConnections: () => clients.size,
+      logsRepository: logsRepo,
+    });
+    metricsCollector.start();
+    log.info("gateway: metrics collector started");
+  } catch (logErr) {
+    log.warn("gateway: log aggregation / metrics collector initialization failed", {
+      error: logErr instanceof Error ? logErr.message : String(logErr),
+    });
+  }
+
   // Phase 3: 数据库配置变更监听 (LISTEN/NOTIFY)
   let configDbWatcher: ConfigDbWatcher | null = null;
   if (dbConfigs) {
@@ -703,6 +748,13 @@ export async function startGatewayServer(
         skillsRefreshTimer = null;
       }
       skillsChangeUnsub();
+      /** 关闭日志 transport 和指标采集器 */
+      if (metricsCollector) {
+        metricsCollector.stop();
+      }
+      if (dbTransport) {
+        await dbTransport.shutdown().catch(() => {});
+      }
       await shutdownGatewayMemoryService().catch(() => {});
       await close(opts);
     },

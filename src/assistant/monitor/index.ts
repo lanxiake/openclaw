@@ -13,6 +13,7 @@ export {
   getMonitorStats,
   generateResourceHistory,
   getApiMonitorStats,
+  registerActiveConnectionsProvider,
   formatBytes,
   formatUptime,
   type ServiceStatus,
@@ -21,3 +22,14 @@ export {
   type MonitorStats,
   type ApiMonitorData,
 } from "./monitor-service.js";
+
+export { LogService, getLogService } from "./log-service.js";
+
+export { AlertService, getAlertService } from "./alert-service.js";
+
+export {
+  MetricsCollector,
+  createMetricsCollector,
+  type MetricsCollectorOptions,
+  type ResourceDataProvider,
+} from "./metrics-collector.js";

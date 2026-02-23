@@ -1,7 +1,10 @@
 /**
  * 管理员系统监控 RPC 方法处理器
  *
- * 提供系统监控相关的 RPC 方法，使用真实系统数据
+ * 提供系统监控相关的 RPC 方法，使用真实系统数据。
+ * 日志查询委托 LogService（使用 system_logs 表），
+ * 资源历史从 system_metrics 表查询真实采集数据，
+ * 告警管理委托 AlertService（使用 system_alerts 表）。
  */
 
 import { ErrorCodes, errorShape } from "../protocol/index.js";
@@ -12,138 +15,37 @@ import {
   getMonitorStats,
   generateResourceHistory,
   getApiMonitorStats,
+  getLogService,
+  getAlertService,
 } from "../../assistant/monitor/index.js";
+import { getSystemMetricsRepository } from "../../db/repositories/system-metrics.js";
 
 // 日志标签
 const LOG_TAG = "admin-monitor";
 
-/**
- * 日志级别类型
- */
-type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
+// 延迟初始化的服务实例
+let _logService: ReturnType<typeof getLogService> | null = null;
+let _alertService: ReturnType<typeof getAlertService> | null = null;
 
 /**
- * 模拟日志数据
- *
- * TODO: 从系统日志文件或日志表读取
+ * 获取 LogService 实例（延迟初始化）
  */
-const mockLogs: Array<{
-  id: string;
-  timestamp: string;
-  level: LogLevel;
-  source: string;
-  message: string;
-  metadata?: Record<string, unknown>;
-}> = [
-  {
-    id: "log-1",
-    timestamp: new Date(Date.now() - 1000).toISOString(),
-    level: "info",
-    source: "gateway",
-    message: "客户端连接成功",
-    metadata: { clientId: "client-123", ip: "192.168.1.100" },
-  },
-  {
-    id: "log-2",
-    timestamp: new Date(Date.now() - 5000).toISOString(),
-    level: "warn",
-    source: "auth",
-    message: "登录尝试失败",
-    metadata: { username: "admin", reason: "密码错误" },
-  },
-  {
-    id: "log-3",
-    timestamp: new Date(Date.now() - 10000).toISOString(),
-    level: "error",
-    source: "database",
-    message: "数据库连接超时",
-    metadata: { timeout: 30000, retries: 3 },
-  },
-  {
-    id: "log-4",
-    timestamp: new Date(Date.now() - 15000).toISOString(),
-    level: "info",
-    source: "api",
-    message: "API 请求处理完成",
-    metadata: { method: "POST", path: "/api/users", duration: 125 },
-  },
-  {
-    id: "log-5",
-    timestamp: new Date(Date.now() - 20000).toISOString(),
-    level: "debug",
-    source: "cache",
-    message: "缓存命中",
-    metadata: { key: "user:123", ttl: 3600 },
-  },
-  {
-    id: "log-6",
-    timestamp: new Date(Date.now() - 25000).toISOString(),
-    level: "info",
-    source: "scheduler",
-    message: "定时任务执行完成",
-    metadata: { task: "cleanup", duration: 5230 },
-  },
-  {
-    id: "log-7",
-    timestamp: new Date(Date.now() - 30000).toISOString(),
-    level: "warn",
-    source: "gateway",
-    message: "连接数接近上限",
-    metadata: { current: 950, max: 1000 },
-  },
-  {
-    id: "log-8",
-    timestamp: new Date(Date.now() - 35000).toISOString(),
-    level: "error",
-    source: "api",
-    message: "请求处理异常",
-    metadata: { method: "GET", path: "/api/skills", error: "Internal Server Error" },
-  },
-];
+function logService() {
+  if (!_logService) {
+    _logService = getLogService();
+  }
+  return _logService;
+}
 
 /**
- * 模拟告警数据
+ * 获取 AlertService 实例（延迟初始化）
  */
-const mockAlerts = [
-  {
-    id: "alert-1",
-    type: "memory" as const,
-    severity: "warning" as const,
-    title: "内存使用率过高",
-    message: "服务器内存使用率已达到 85%，请关注",
-    source: "monitor",
-    timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    acknowledged: false,
-    resolved: false,
-  },
-  {
-    id: "alert-2",
-    type: "api_error" as const,
-    severity: "critical" as const,
-    title: "API 错误率过高",
-    message: "过去 5 分钟内 API 错误率达到 15%",
-    source: "api-monitor",
-    timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    acknowledged: true,
-    acknowledgedBy: "admin",
-    acknowledgedAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-    resolved: false,
-  },
-  {
-    id: "alert-3",
-    type: "service_down" as const,
-    severity: "critical" as const,
-    title: "缓存服务不可用",
-    message: "Redis 缓存服务连接失败",
-    source: "health-check",
-    timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    acknowledged: true,
-    acknowledgedBy: "admin",
-    acknowledgedAt: new Date(Date.now() - 55 * 60 * 1000).toISOString(),
-    resolved: true,
-    resolvedAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-  },
-];
+function alertService() {
+  if (!_alertService) {
+    _alertService = getAlertService();
+  }
+  return _alertService;
+}
 
 /**
  * 验证字符串参数
@@ -267,7 +169,10 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
   },
 
   /**
-   * 获取资源使用历史（基于当前值生成）
+   * 获取资源使用历史（优先使用 system_metrics 真实数据）
+   *
+   * 从 system_metrics 表查询真实采集的历史数据。
+   * 如果表中没有足够数据（刚启动、采集器未运行等），回退到模拟生成。
    */
   "admin.monitor.resources.history": async ({ params, respond, context }) => {
     try {
@@ -275,11 +180,47 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
 
       context.logGateway.info(`[${LOG_TAG}] 获取资源使用历史`, { period });
 
-      // 获取当前资源使用情况
-      const currentResources = await getSystemResources();
+      /** 计算时间范围 */
+      const now = new Date();
+      const startTime = new Date(now);
+      if (period === "hour") {
+        startTime.setHours(startTime.getHours() - 1);
+      } else if (period === "day") {
+        startTime.setDate(startTime.getDate() - 1);
+      } else {
+        startTime.setDate(startTime.getDate() - 7);
+      }
 
-      // 基于当前值生成历史数据
-      const timeline = generateResourceHistory(period, currentResources);
+      /** 尝试从 system_metrics 获取真实历史数据 */
+      type TimelineEntry = { timestamp: string; cpu: number; memory: number; disk: number };
+      let timeline: TimelineEntry[];
+
+      try {
+        const metricsRepo = getSystemMetricsRepository();
+        const metrics = await metricsRepo.getTimeseries({
+          startTime,
+          endTime: now,
+          metricType: "system",
+        });
+
+        if (metrics.length >= 3) {
+          /** 有足够的真实数据，按时间正序返回 */
+          timeline = metrics.reverse().map((m) => ({
+            timestamp: m.timestamp.toISOString(),
+            cpu: Number(m.cpuUsage ?? 0),
+            memory: Number(m.memoryUsage ?? 0),
+            disk: Number(m.diskUsage ?? 0),
+          }));
+        } else {
+          /** 数据不足，回退到模拟生成 */
+          const currentResources = await getSystemResources();
+          timeline = generateResourceHistory(period, currentResources);
+        }
+      } catch {
+        /** 查询失败，回退到模拟生成 */
+        const currentResources = await getSystemResources();
+        timeline = generateResourceHistory(period, currentResources);
+      }
 
       const data = {
         timeline,
@@ -295,13 +236,21 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
   },
 
   /**
-   * 获取日志列表
+   * 获取日志列表（从 system_logs 表查询真实应用日志）
    */
   "admin.monitor.logs": async ({ params, respond, context }) => {
     try {
-      const level = validateStringParam(params, "level") as LogLevel | undefined;
+      const level = validateStringParam(params, "level") as
+        | "debug"
+        | "info"
+        | "warn"
+        | "error"
+        | "fatal"
+        | undefined;
       const source = validateStringParam(params, "source");
       const search = validateStringParam(params, "search");
+      const startTime = validateStringParam(params, "startTime");
+      const endTime = validateStringParam(params, "endTime");
       const limit = validateNumberParam(params, "limit", 50) || 50;
       const offset = validateNumberParam(params, "offset", 0) || 0;
 
@@ -313,37 +262,23 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
         offset,
       });
 
-      // 过滤日志
-      let filtered = [...mockLogs];
-
-      if (level) {
-        filtered = filtered.filter((log) => log.level === level);
-      }
-
-      if (source) {
-        filtered = filtered.filter((log) => log.source === source);
-      }
-
-      if (search) {
-        const searchLower = search.toLowerCase();
-        filtered = filtered.filter(
-          (log) =>
-            log.message.toLowerCase().includes(searchLower) ||
-            log.source.toLowerCase().includes(searchLower),
-        );
-      }
-
-      // 分页
-      const total = filtered.length;
-      const logs = filtered.slice(offset, offset + limit);
+      const result = await logService().queryLogs({
+        level,
+        source,
+        search,
+        startTime,
+        endTime,
+        limit,
+        offset,
+      });
 
       respond(
         true,
         {
           success: true,
-          logs,
-          total,
-          hasMore: offset + limit < total,
+          logs: result.logs,
+          total: result.total,
+          hasMore: result.hasMore,
         },
         undefined,
       );
@@ -355,13 +290,13 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
   },
 
   /**
-   * 获取日志来源列表
+   * 获取日志来源列表（从 system_logs 表查询去重 source）
    */
   "admin.monitor.logs.sources": async ({ respond, context }) => {
     try {
       context.logGateway.info(`[${LOG_TAG}] 获取日志来源列表`);
 
-      const sources = ["gateway", "api", "auth", "database", "cache", "scheduler", "monitor"];
+      const sources = await logService().getSources();
 
       respond(true, { success: true, sources }, undefined);
     } catch (error) {
@@ -371,7 +306,30 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
   },
 
   /**
-   * 获取告警列表
+   * 获取日志统计信息（按级别、来源分组计数）
+   */
+  "admin.monitor.logs.stats": async ({ params, respond, context }) => {
+    try {
+      const startTime = validateStringParam(params, "startTime");
+      const endTime = validateStringParam(params, "endTime");
+
+      context.logGateway.info(`[${LOG_TAG}] 获取日志统计`);
+
+      const stats = await logService().getStats({
+        startTime: startTime ? new Date(startTime) : undefined,
+        endTime: endTime ? new Date(endTime) : undefined,
+      });
+
+      respond(true, { success: true, data: stats }, undefined);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      context.logGateway.error(`[${LOG_TAG}] 获取日志统计失败`, { error: errorMessage });
+      respond(false, undefined, errorShape(ErrorCodes.INTERNAL_ERROR, errorMessage));
+    }
+  },
+
+  /**
+   * 获取告警列表（从 system_alerts 表查询真实数据）
    */
   "admin.monitor.alerts": async ({ params, respond, context }) => {
     try {
@@ -380,25 +338,18 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
 
       context.logGateway.info(`[${LOG_TAG}] 获取告警列表`, { acknowledged, resolved });
 
-      let filtered = [...mockAlerts];
-
-      if (acknowledged !== undefined) {
-        filtered = filtered.filter((a) => a.acknowledged === acknowledged);
-      }
-
-      if (resolved !== undefined) {
-        filtered = filtered.filter((a) => a.resolved === resolved);
-      }
-
-      const unacknowledged = mockAlerts.filter((a) => !a.acknowledged).length;
+      const result = await alertService().listAlerts({
+        acknowledged,
+        resolved,
+      });
 
       respond(
         true,
         {
           success: true,
-          alerts: filtered,
-          total: filtered.length,
-          unacknowledged,
+          alerts: result.alerts,
+          total: result.total,
+          unacknowledged: result.unacknowledged,
         },
         undefined,
       );
@@ -421,22 +372,15 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
         return;
       }
 
-      context.logGateway.info(`[${LOG_TAG}] 确认告警`, { alertId });
+      // 从 context 获取管理员信息
+      const adminName =
+        validateStringParam(params, "adminName") ||
+        ((context as Record<string, unknown>).adminUsername as string) ||
+        "admin";
 
-      const alert = mockAlerts.find((a) => a.id === alertId);
+      context.logGateway.info(`[${LOG_TAG}] 确认告警`, { alertId, adminName });
 
-      if (!alert) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, `Alert not found: ${alertId}`),
-        );
-        return;
-      }
-
-      alert.acknowledged = true;
-      alert.acknowledgedBy = "admin";
-      alert.acknowledgedAt = new Date().toISOString();
+      await alertService().acknowledgeAlert(alertId, adminName);
 
       respond(true, { success: true, alertId, message: "告警已确认" }, undefined);
     } catch (error) {
@@ -460,19 +404,7 @@ export const adminMonitorHandlers: GatewayRequestHandlers = {
 
       context.logGateway.info(`[${LOG_TAG}] 解决告警`, { alertId });
 
-      const alert = mockAlerts.find((a) => a.id === alertId);
-
-      if (!alert) {
-        respond(
-          false,
-          undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, `Alert not found: ${alertId}`),
-        );
-        return;
-      }
-
-      alert.resolved = true;
-      alert.resolvedAt = new Date().toISOString();
+      await alertService().resolveAlert(alertId);
 
       respond(true, { success: true, alertId, message: "告警已解决" }, undefined);
     } catch (error) {

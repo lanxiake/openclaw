@@ -581,6 +581,16 @@ export interface ResourceUsage {
   disk: { used: number; total: number; percentage: number };
 }
 
+/**
+ * 资源使用历史
+ */
+export interface ResourceHistory {
+  labels: string[];
+  cpu: number[];
+  memory: number[];
+  disk: number[];
+}
+
 // ============ 模型提供商 ============
 
 /**
@@ -876,4 +886,311 @@ export interface UpdateGatewayConfigRequest {
   tailscaleMode?: string;
   tailscaleResetOnExit?: boolean;
   extraConfig?: Record<string, unknown>;
+}
+
+// ============ 监控日志和告警 ============
+
+/**
+ * 日志级别
+ */
+export type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
+
+/**
+ * 日志条目
+ */
+export interface LogEntry {
+  id: string;
+  timestamp: string;
+  level: LogLevel;
+  source: string;
+  message: string;
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * 日志查询参数
+ */
+export interface LogQueryParams {
+  level?: LogLevel;
+  source?: string;
+  search?: string;
+  startTime?: string;
+  endTime?: string;
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * 日志查询响应
+ */
+export interface LogQueryResponse {
+  logs: LogEntry[];
+  total: number;
+  hasMore: boolean;
+}
+
+/**
+ * 日志统计
+ */
+export interface LogStats {
+  total: number;
+  byLevel: Record<string, number>;
+  bySource: Record<string, number>;
+}
+
+/**
+ * 告警严重级别
+ */
+export type AlertSeverity = "info" | "warning" | "critical";
+
+/**
+ * 告警
+ */
+export interface Alert {
+  id: string;
+  type: "cpu" | "memory" | "disk" | "api_error" | "service_down" | "custom";
+  severity: AlertSeverity;
+  title: string;
+  message: string;
+  source: string;
+  timestamp: string;
+  acknowledged: boolean;
+  acknowledgedBy?: string;
+  acknowledgedAt?: string;
+  resolved: boolean;
+  resolvedAt?: string;
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * 告警列表查询参数
+ */
+export interface AlertListParams {
+  acknowledged?: boolean;
+  resolved?: boolean;
+  severity?: AlertSeverity;
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * 告警列表响应
+ */
+export interface AlertListResponse {
+  alerts: Alert[];
+  total: number;
+  unacknowledged: number;
+}
+
+// ============ 数据分析 ============
+
+/**
+ * 分析概览
+ */
+export interface AnalyticsOverview {
+  users: {
+    total: number;
+    active: number;
+    newToday: number;
+    growthRate: number;
+  };
+  revenue: {
+    total: number;
+    thisMonth: number;
+    growthRate: number;
+  };
+  skills: {
+    total: number;
+    active: number;
+    newThisWeek: number;
+  };
+  subscriptions: {
+    active: number;
+    conversionRate: number;
+  };
+}
+
+/**
+ * 用户增长趋势数据点
+ */
+export interface GrowthDataPoint {
+  date: string;
+  total: number;
+  new: number;
+  active: number;
+}
+
+/**
+ * 趋势摘要
+ */
+export interface GrowthSummary {
+  totalUsers: number;
+  newUsers: number;
+  growthRate: number;
+  avgDailyGrowth: number;
+}
+
+/**
+ * 用户增长趋势响应
+ */
+export interface UserGrowthTrendResponse {
+  period: string;
+  data: GrowthDataPoint[];
+  summary: GrowthSummary;
+}
+
+/**
+ * 留存队列
+ */
+export interface RetentionCohort {
+  cohort: string;
+  cohortSize: number;
+  day1: number;
+  day3: number;
+  day7: number;
+  day14: number;
+  day30: number;
+}
+
+/**
+ * 留存分析响应
+ */
+export interface RetentionAnalysisResponse {
+  period: string;
+  cohorts: RetentionCohort[];
+  averageRetention: {
+    day1: number;
+    day3: number;
+    day7: number;
+    day14: number;
+    day30: number;
+  };
+}
+
+/**
+ * 活跃时段分布
+ */
+export interface HourDistribution {
+  hour: number;
+  count: number;
+}
+
+/**
+ * 用户画像响应
+ */
+export interface UserDemographicsResponse {
+  byPlan: Array<{ name: string; count: number; percentage: number }>;
+  byDevice: Array<{ name: string; count: number; percentage: number }>;
+  byRegion: Array<{ region: string; count: number; percentage: number }>;
+  byActiveHour: HourDistribution[];
+}
+
+/**
+ * 收入趋势数据点
+ */
+export interface RevenueDataPoint {
+  date: string;
+  revenue: number;
+  orders: number;
+}
+
+/**
+ * 收入趋势响应
+ */
+export interface RevenueTrendResponse {
+  period: string;
+  data: RevenueDataPoint[];
+  summary: {
+    totalRevenue: number;
+    totalOrders: number;
+    growthRate: number;
+    avgDailyRevenue: number;
+  };
+}
+
+/**
+ * 收入来源分布
+ */
+export interface RevenueSourcesResponse {
+  byPlan: Array<{ plan: string; revenue: number; percentage: number; orders: number }>;
+  byPaymentMethod: Array<{
+    method: string;
+    revenue: number;
+    percentage: number;
+    orders: number;
+  }>;
+}
+
+/**
+ * 用户价值指标
+ */
+export interface UserValueMetricsResponse {
+  arpu: number;
+  arppu: number;
+  ltv: number;
+  payingUserRate: number;
+}
+
+/**
+ * 技能使用趋势数据点
+ */
+export interface SkillUsageTrendPoint {
+  date: string;
+  executions: number;
+  uniqueUsers: number;
+}
+
+/**
+ * 技能使用分析响应
+ */
+export interface SkillUsageAnalyticsResponse {
+  period: string;
+  topSkills: Array<{
+    id: string;
+    name: string;
+    installCount: number;
+    activeUsers: number;
+    percentage: number;
+  }>;
+  categoryDistribution: Array<{
+    category: string;
+    count: number;
+    percentage: number;
+  }>;
+  usageTrend: SkillUsageTrendPoint[];
+  summary: {
+    totalSkills: number;
+    activeSkills: number;
+    totalInstalls: number;
+    avgInstallsPerSkill: number;
+  };
+}
+
+/**
+ * 漏斗步骤
+ */
+export interface FunnelStep {
+  name: string;
+  count: number;
+  percentage: number;
+  dropoffRate: number;
+}
+
+/**
+ * 漏斗分析响应
+ */
+export interface FunnelAnalysisResponse {
+  name: string;
+  steps: FunnelStep[];
+  overallConversionRate: number;
+  period: string;
+}
+
+/**
+ * 漏斗类型
+ */
+export interface FunnelType {
+  id: string;
+  name: string;
+  description: string;
 }

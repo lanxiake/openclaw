@@ -30,7 +30,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { cn, formatDateTime } from '@/lib/utils'
-import { useLogs, useLogSources } from '@/hooks/useMonitor'
+import { useLogs, useLogSources, useLogStats } from '@/hooks/useMonitor'
 import type { LogLevel, LogEntry, LogQuery } from '@/types/monitor'
 import { useDebounce } from '@/hooks/useDebounce'
 
@@ -85,6 +85,9 @@ export default function LogsPage() {
 
   // 获取来源列表
   const { data: sources } = useLogSources()
+
+  // 获取日志统计
+  const { data: logStats } = useLogStats()
 
   /**
    * 导出日志
@@ -186,6 +189,50 @@ export default function LogsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 日志统计概览 */}
+      {logStats && logStats.total > 0 && (
+        <div className="grid gap-4 md:grid-cols-5">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold">{logStats.total.toLocaleString()}</div>
+              <p className="text-sm text-muted-foreground">日志总数</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold text-red-500">
+                {((logStats.byLevel.error ?? 0) + (logStats.byLevel.fatal ?? 0)).toLocaleString()}
+              </div>
+              <p className="text-sm text-muted-foreground">错误/致命</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold text-yellow-500">
+                {(logStats.byLevel.warn ?? 0).toLocaleString()}
+              </div>
+              <p className="text-sm text-muted-foreground">警告</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold text-blue-500">
+                {(logStats.byLevel.info ?? 0).toLocaleString()}
+              </div>
+              <p className="text-sm text-muted-foreground">信息</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold text-gray-500">
+                {(logStats.byLevel.debug ?? 0).toLocaleString()}
+              </div>
+              <p className="text-sm text-muted-foreground">调试</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* 日志列表 */}
       <Card>

@@ -156,6 +156,15 @@ export interface LogQueryResponse {
 }
 
 /**
+ * 日志统计
+ */
+export interface LogStats {
+  total: number
+  byLevel: Record<string, number>
+  bySource: Record<string, number>
+}
+
+/**
  * 系统监控统计
  */
 export interface MonitorStats {

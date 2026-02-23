@@ -48,6 +48,7 @@ import type {
   MonitorStats,
   SystemHealth,
   ResourceUsage,
+  ResourceHistory,
   AdminItem,
   AdminListParams,
   AdminListResponse,
@@ -65,6 +66,21 @@ import type {
   AuthProfileOrder,
   GatewayConfig,
   UpdateGatewayConfigRequest,
+  LogQueryParams,
+  LogQueryResponse,
+  LogStats,
+  AlertListParams,
+  AlertListResponse,
+  AnalyticsOverview,
+  UserGrowthTrendResponse,
+  RetentionAnalysisResponse,
+  UserDemographicsResponse,
+  RevenueTrendResponse,
+  RevenueSourcesResponse,
+  UserValueMetricsResponse,
+  SkillUsageAnalyticsResponse,
+  FunnelAnalysisResponse,
+  FunnelType,
 } from "./types.js";
 
 /**
@@ -659,6 +675,89 @@ export class AdminApiClient {
     return this.http.get<ResourceUsage>("/api/admin/monitor/resources");
   }
 
+  /**
+   * 获取资源使用历史
+   *
+   * 从 system_metrics 表查询真实历史数据，数据不足时回退到模拟生成
+   */
+  async getResourceHistory(period: "hour" | "day" | "week" = "hour"): Promise<ResourceHistory> {
+    const response = await this.http.get<{ data: ResourceHistory }>(
+      "/api/admin/monitor/resources/history",
+      { period },
+    );
+    return (
+      (response as unknown as { data: ResourceHistory }).data ??
+      (response as unknown as ResourceHistory)
+    );
+  }
+
+  // ============ 监控日志 API ============
+
+  /**
+   * 获取监控日志列表
+   */
+  async getMonitorLogs(params?: LogQueryParams): Promise<LogQueryResponse> {
+    const response = await this.http.get<{ data: LogQueryResponse }>(
+      "/api/admin/monitor/logs",
+      params as Record<string, string | number | boolean | undefined>,
+    );
+    return (
+      (response as unknown as { data: LogQueryResponse }).data ??
+      (response as unknown as LogQueryResponse)
+    );
+  }
+
+  /**
+   * 获取监控日志来源列表
+   */
+  async getMonitorLogSources(): Promise<string[]> {
+    const response = await this.http.get<{ data: string[] }>("/api/admin/monitor/logs/sources");
+    return (response as unknown as { data: string[] }).data ?? (response as unknown as string[]);
+  }
+
+  /**
+   * 获取日志统计信息
+   *
+   * 按级别和来源分组统计日志数量
+   */
+  async getLogStats(params?: { startTime?: string; endTime?: string }): Promise<LogStats> {
+    const response = await this.http.get<{ data: LogStats }>(
+      "/api/admin/monitor/logs/stats",
+      params as Record<string, string | number | boolean | undefined>,
+    );
+    return (response as unknown as { data: LogStats }).data ?? (response as unknown as LogStats);
+  }
+
+  // ============ 监控告警 API ============
+
+  /**
+   * 获取告警列表
+   */
+  async getMonitorAlerts(params?: AlertListParams): Promise<AlertListResponse> {
+    const response = await this.http.get<{ data: AlertListResponse }>(
+      "/api/admin/monitor/alerts",
+      params as Record<string, string | number | boolean | undefined>,
+    );
+    return (
+      (response as unknown as { data: AlertListResponse }).data ??
+      (response as unknown as AlertListResponse)
+    );
+  }
+
+  /**
+   * 确认告警
+   */
+  async acknowledgeAlert(alertId: string): Promise<void> {
+    await this.http.post(`/api/admin/monitor/alerts/${alertId}/acknowledge`);
+  }
+
+  /**
+   * 解决告警
+   */
+  async resolveAlert(alertId: string): Promise<void> {
+    await this.http.post(`/api/admin/monitor/alerts/${alertId}/resolve`);
+  }
+
   // ============ 模型提供商 API ============
 
   /**
@@ -805,6 +904,86 @@ export class AdminApiClient {
    */
   async updateGatewayConfig(request: UpdateGatewayConfigRequest): Promise<GatewayConfig> {
     return this.http.put<GatewayConfig>("/api/admin/gateway-config", request);
+  }
+
+  // ============ 数据分析 API ============
+
+  /**
+   * 获取分析概览
+   */
+  async getAnalyticsOverview(): Promise<AnalyticsOverview> {
+    return this.http.get<AnalyticsOverview>("/api/admin/analytics/overview");
+  }
+
+  /**
+   * 获取用户增长趋势
+   */
+  async getUserGrowthTrend(period?: string): Promise<UserGrowthTrendResponse> {
+    return this.http.get<UserGrowthTrendResponse>("/api/admin/analytics/users/growth", { period });
+  }
+
+  /**
+   * 获取用户留存分析
+   */
+  async getUserRetention(period?: string): Promise<RetentionAnalysisResponse> {
+    return this.http.get<RetentionAnalysisResponse>("/api/admin/analytics/users/retention", {
+      period,
+    });
+  }
+
+  /**
+   * 获取用户画像
+   */
+  async getUserDemographics(): Promise<UserDemographicsResponse> {
+    return this.http.get<UserDemographicsResponse>("/api/admin/analytics/users/demographics");
+  }
+
+  /**
+   * 获取收入趋势
+   */
+  async getRevenueTrend(period?: string): Promise<RevenueTrendResponse> {
+    return this.http.get<RevenueTrendResponse>("/api/admin/analytics/revenue/trend", { period });
+  }
+
+  /**
+   * 获取收入来源分布
+   */
+  async getRevenueSources(): Promise<RevenueSourcesResponse> {
+    return this.http.get<RevenueSourcesResponse>("/api/admin/analytics/revenue/sources");
+  }
+
+  /**
+   * 获取用户价值指标
+   */
+  async getUserValueMetrics(period?: string): Promise<UserValueMetricsResponse> {
+    return this.http.get<UserValueMetricsResponse>("/api/admin/analytics/revenue/metrics", {
+      period,
+    });
+  }
+
+  /**
+   * 获取技能使用分析
+   */
+  async getSkillUsageAnalytics(period?: string): Promise<SkillUsageAnalyticsResponse> {
+    return this.http.get<SkillUsageAnalyticsResponse>("/api/admin/analytics/skills/usage", {
+      period,
+    });
+  }
+
+  /**
+   * 获取漏斗类型列表
+   */
+  async getFunnelList(): Promise<FunnelType[]> {
+    return this.http.get<FunnelType[]>("/api/admin/analytics/funnels");
+  }
+
+  /**
+   * 获取漏斗分析
+   */
+  async getFunnelAnalysis(type: string, period?: string): Promise<FunnelAnalysisResponse> {
+    return this.http.get<FunnelAnalysisResponse>(`/api/admin/analytics/funnels/${type}`, {
+      period,
+    });
   }
 }
 

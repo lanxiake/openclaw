@@ -5,6 +5,7 @@
  */
 
 import * as os from "os";
+import { statfs } from "node:fs/promises";
 import { sql, desc, count, and, gte, eq } from "drizzle-orm";
 import { getDatabase } from "../../db/index.js";
 import { auditLogs, adminAuditLogs } from "../../db/schema/index.js";
@@ -87,6 +88,22 @@ let previousCpuTime = 0;
 
 // 进程启动时间
 const processStartTime = Date.now();
+
+// 活跃连接数 provider（通过回调避免 gateway ↔ monitor 循环依赖）
+let activeConnectionsProvider: () => number = () => 0;
+
+/**
+ * 注册活跃连接数提供者
+ *
+ * Gateway 在启动时调用，传入 () => clients.size 回调。
+ * 使用回调模式避免 monitor 模块直接依赖 gateway 模块。
+ *
+ * @param fn - 返回当前活跃连接数的函数
+ */
+export function registerActiveConnectionsProvider(fn: () => number): void {
+  activeConnectionsProvider = fn;
+  monitorLogger.info("[MonitorService] 注册活跃连接数 provider");
+}
 
 /**
  * 获取 CPU 使用率
@@ -180,11 +197,28 @@ export async function getSystemResources(): Promise<SystemResources> {
   const memory = getMemoryInfo();
   const processInfo = getProcessInfo();
 
-  // 磁盘信息 - Windows 和 Unix 系统不同
-  // 这里使用一个简化的估算
-  const diskTotal = 500 * 1024 * 1024 * 1024; // 假设 500GB
-  const diskUsed = Math.floor(diskTotal * 0.65); // 假设 65% 使用
-  const diskFree = diskTotal - diskUsed;
+  // 磁盘信息 - 使用 node:fs/promises statfs 获取真实数据
+  let diskTotal: number;
+  let diskUsed: number;
+  let diskFree: number;
+  const diskPath = process.platform === "win32" ? "C:\\" : "/";
+
+  try {
+    const stats = await statfs(diskPath);
+    diskTotal = stats.bsize * stats.blocks;
+    diskFree = stats.bsize * stats.bavail;
+    diskUsed = diskTotal - diskFree;
+    console.log("[MonitorService] 磁盘信息获取成功", {
+      path: diskPath,
+      totalGB: Math.round(diskTotal / 1024 / 1024 / 1024),
+      usedGB: Math.round(diskUsed / 1024 / 1024 / 1024),
+    });
+  } catch (error) {
+    console.warn("[MonitorService] 磁盘信息获取失败，使用估算值:", error);
+    diskTotal = 500 * 1024 * 1024 * 1024;
+    diskUsed = Math.floor(diskTotal * 0.65);
+    diskFree = diskTotal - diskUsed;
+  }
 
   // 网络信息 - 使用 os.networkInterfaces() 获取基础信息
   // 实际流量需要外部工具或 /proc/net/dev
@@ -211,8 +245,8 @@ export async function getSystemResources(): Promise<SystemResources> {
       total: diskTotal,
       used: diskUsed,
       free: diskFree,
-      usagePercent: Math.round((diskUsed / diskTotal) * 10000) / 100,
-      path: process.platform === "win32" ? "C:\\" : "/",
+      usagePercent: diskTotal > 0 ? Math.round((diskUsed / diskTotal) * 10000) / 100 : 0,
+      path: diskPath,
     },
     network: {
       bytesIn,
@@ -381,7 +415,7 @@ export async function getMonitorStats(): Promise<MonitorStats> {
     cpuUsage: resources.cpu.usage,
     memoryUsage: resources.memory.usagePercent,
     diskUsage: resources.disk.usagePercent,
-    activeConnections: 0, // TODO: 从 Gateway 获取实际连接数
+    activeConnections: activeConnectionsProvider(),
   };
 }
 
