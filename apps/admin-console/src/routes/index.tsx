@@ -30,10 +30,16 @@ const SkillUploadPage = lazy(() => import('@/pages/skills/SkillUploadPage'))
 const CategoriesPage = lazy(() => import('@/pages/skills/CategoriesPage'))
 const FeaturedPage = lazy(() => import('@/pages/skills/FeaturedPage'))
 
+// 积分管理
+const CreditsPage = lazy(() => import('@/pages/credits/CreditsPage'))
+const PricingPage = lazy(() => import('@/pages/credits/PricingPage'))
+const UserCreditsPage = lazy(() => import('@/pages/credits/UserCreditsPage'))
+
 // 系统监控
 const MonitorPage = lazy(() => import('@/pages/monitor/MonitorPage'))
 const LogsPage = lazy(() => import('@/pages/monitor/LogsPage'))
 const AlertsPage = lazy(() => import('@/pages/monitor/AlertsPage'))
+const LlmLogsPage = lazy(() => import('@/pages/monitor/LlmLogsPage'))
 
 // 系统配置
 const ConfigPage = lazy(() => import('@/pages/config/ConfigPage'))
@@ -138,6 +144,16 @@ export const router = createBrowserRouter([
         ],
       },
 
+      // 积分管理
+      {
+        path: 'credits',
+        children: [
+          { index: true, element: withSuspense(CreditsPage) },
+          { path: 'pricing', element: withSuspense(PricingPage) },
+          { path: 'users/:userId', element: withSuspense(UserCreditsPage) },
+        ],
+      },
+
       // 系统监控
       {
         path: 'monitor',
@@ -145,6 +161,7 @@ export const router = createBrowserRouter([
           { index: true, element: withSuspense(MonitorPage) },
           { path: 'logs', element: withSuspense(LogsPage) },
           { path: 'alerts', element: withSuspense(AlertsPage) },
+          { path: 'llm-logs', element: withSuspense(LlmLogsPage) },
         ],
       },
 

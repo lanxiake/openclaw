@@ -11,6 +11,8 @@ import {
   Package,
   Activity,
   BarChart3,
+  Coins,
+  BrainCircuit,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUIStore, useAuthStore } from '@/stores'
@@ -70,6 +72,12 @@ const navGroups: NavGroup[] = [
         icon: Package,
         permission: 'skill.view',
       },
+      {
+        title: '积分管理',
+        href: ROUTES.CREDITS,
+        icon: Coins,
+        permission: 'credits.view',
+      },
     ],
   },
   {
@@ -80,6 +88,12 @@ const navGroups: NavGroup[] = [
         href: ROUTES.MONITOR,
         icon: Activity,
         permission: 'monitor.view',
+      },
+      {
+        title: 'LLM 日志',
+        href: ROUTES.MONITOR_LLM_LOGS,
+        icon: BrainCircuit,
+        permission: 'system.viewLogs',
       },
       {
         title: '系统配置',
