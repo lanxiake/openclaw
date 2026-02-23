@@ -2,6 +2,7 @@
  * 设备管理服务
  *
  * 封装设备绑定、配对、管理相关的 API 调用
+ * 所有 HTTP 响应均检测 401 状态码并触发 token 过期事件
  */
 
 /**
@@ -80,15 +81,26 @@ export class DeviceService {
   }
 
   /**
+   * 检测 401 响应并触发 token 过期事件
+   * 当 API Server 返回 401 时，通知渲染进程令牌已过期
+   */
+  private handleUnauthorized(status: number): void {
+    if (status === 401) {
+      console.warn('[device-service] 检测到 401，触发 token 过期通知')
+      window.electronAPI?.on?.('auth:token-expired', () => {})
+      // 直接分发自定义事件通知 AuthContext
+      window.dispatchEvent(new CustomEvent('auth:token-expired'))
+    }
+  }
+
+  /**
    * 获取当前用户的设备列表
    */
   async getDevices(): Promise<{ success: boolean; devices?: Device[]; error?: string }> {
     console.log('[device-service] 获取设备列表')
-    console.log('[device-service] accessToken:', this.accessToken ? `${this.accessToken.substring(0, 20)}...` : '无')
 
     try {
       const headers = this.getAuthOnlyHeaders()
-      console.log('[device-service] 请求头:', headers)
 
       const response = await fetch(`${this.baseUrl}/api/devices`, {
         method: 'GET',
@@ -99,6 +111,7 @@ export class DeviceService {
 
       if (!response.ok) {
         console.error('[device-service] 响应错误:', { status: response.status, data })
+        this.handleUnauthorized(response.status)
         return {
           success: false,
           error: data.error || `HTTP ${response.status}`,
@@ -146,6 +159,7 @@ export class DeviceService {
       const data = await response.json()
 
       if (!response.ok) {
+        this.handleUnauthorized(response.status)
         return {
           success: false,
           error: data.error || `HTTP ${response.status}`,
@@ -185,6 +199,7 @@ export class DeviceService {
       const data = await response.json()
 
       if (!response.ok) {
+        this.handleUnauthorized(response.status)
         return {
           success: false,
           error: data.error || `HTTP ${response.status}`,
@@ -223,6 +238,7 @@ export class DeviceService {
       const data = await response.json()
 
       if (!response.ok) {
+        this.handleUnauthorized(response.status)
         return {
           success: false,
           error: data.error || `HTTP ${response.status}`,
@@ -258,6 +274,7 @@ export class DeviceService {
       const data = await response.json()
 
       if (!response.ok) {
+        this.handleUnauthorized(response.status)
         return {
           success: false,
           error: data.error || `HTTP ${response.status}`,
@@ -292,6 +309,7 @@ export class DeviceService {
       const data = await response.json()
 
       if (!response.ok) {
+        this.handleUnauthorized(response.status)
         return {
           success: false,
           error: data.error || `HTTP ${response.status}`,
@@ -327,6 +345,7 @@ export class DeviceService {
 
       if (!response.ok) {
         console.error('[device-service] 获取设备 Token 失败:', { status: response.status, data })
+        this.handleUnauthorized(response.status)
         return {
           success: false,
           error: data.error || `HTTP ${response.status}`,

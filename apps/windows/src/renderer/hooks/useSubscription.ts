@@ -1,23 +1,14 @@
 /**
- * useSubscription Hook - 订阅管理
+ * useSubscription Hook - 订阅管理（简化版）
  *
  * 提供订阅相关功能：
- * - 获取订阅计划列表
- * - 获取用户订阅状态
+ * - 获取订阅计划列表（仅月费/年费）
+ * - 获取用户积分余额
  * - 创建/取消订阅
- * - 配额检查
- * - 使用量统计
- *
- * @author OpenClaw
  */
 
 import { useState, useCallback, useEffect } from 'react'
 import { subscriptionService } from '../services/subscription-service'
-
-/**
- * 订阅计划 ID
- */
-export type SubscriptionPlanId = 'free' | 'pro' | 'team' | 'enterprise'
 
 /**
  * 计费周期
@@ -36,218 +27,107 @@ export type SubscriptionStatus =
   | 'paused'
 
 /**
- * 计划功能特性
- */
-export interface PlanFeature {
-  id: string
-  name: string
-  description?: string
-  included: boolean
-  limit?: string
-}
-
-/**
- * 计划配额
- */
-export interface PlanQuotas {
-  dailyConversations: number
-  monthlyAiCalls: number
-  maxSkills: number
-  maxDevices: number
-  storageQuotaMb: number
-  premiumSkills: boolean
-  prioritySupport: boolean
-  apiAccess: boolean
-}
-
-/**
- * 订阅计划
+ * 服务端返回的订阅计划
  */
 export interface SubscriptionPlan {
-  id: SubscriptionPlanId
+  id: string
   name: string
-  description: string
-  price: {
-    monthly: number
-    yearly: number
+  displayName: string
+  description?: string
+  price: number
+  currency: string
+  billingCycle: 'monthly' | 'yearly'
+  features: {
+    maxDevices: number
+    maxSkills: number
+    maxConversations: number
+    maxMemorySize: number
+    prioritySupport: boolean
+    customBranding: boolean
   }
-  features: PlanFeature[]
-  quotas: PlanQuotas
-  recommended?: boolean
+  isActive: boolean
 }
 
 /**
- * 用户订阅
+ * 用户订阅信息
  */
 export interface UserSubscription {
   id: string
   userId: string
-  planId: SubscriptionPlanId
+  planId: string
   status: SubscriptionStatus
   billingPeriod: BillingPeriod
   currentPeriodStart: string
   currentPeriodEnd: string
   canceledAt?: string
   cancelAtPeriodEnd: boolean
-  trialEnd?: string
   createdAt: string
   updatedAt: string
 }
 
 /**
- * 配额检查结果
+ * 积分余额信息
  */
-export interface QuotaCheckResult {
-  allowed: boolean
-  quotaType: string
-  current: number
-  limit: number
-  remaining: number
-  resetAt?: string
-  reason?: string
-}
-
-/**
- * 使用量统计
- */
-export interface UsageStats {
-  daily: {
-    conversations: number
-    aiCalls: number
-    skillExecutions: number
-    fileOperations: number
-    quotas: {
-      conversations: number
-    }
-  }
-  monthly: {
-    conversations: number
-    aiCalls: number
-    skillExecutions: number
-    fileOperations: number
-    quotas: {
-      aiCalls: number
-      storage: number
-    }
-  }
-}
-
-/**
- * 订阅概览
- */
-export interface SubscriptionOverview {
-  subscription: {
-    id: string
-    planId: SubscriptionPlanId
-    status: SubscriptionStatus
-    currentPeriodEnd: string
-    cancelAtPeriodEnd: boolean
-  } | null
-  plan: {
-    id: SubscriptionPlanId
-    name: string
-  }
-  usage: {
-    conversations: {
-      used: number
-      limit: number
-      percent: number
-    }
-    aiCalls: {
-      used: number
-      limit: number
-      percent: number
-    }
-    devices?: {
-      used: number
-      limit: number
-      percent: number
-    }
-    skills?: {
-      used: number
-      limit: number
-      percent: number
-    }
-    storage?: {
-      used: number
-      limit: number
-      percent: number
-      unit?: string
-    }
-  }
-  features: {
-    premiumSkills: boolean
-    prioritySupport: boolean
-    apiAccess: boolean
-  }
+export interface CreditBalance {
+  id: string
+  userId: string
+  totalBalance: number
+  totalEarned: number
+  totalConsumed: number
+  totalExpired: number
+  createdAt: string
+  updatedAt: string
 }
 
 interface UseSubscriptionReturn {
-  /** 所有订阅计划 */
+  /** 所有订阅计划（服务端返回） */
   plans: SubscriptionPlan[]
   /** 用户订阅信息 */
   subscription: UserSubscription | null
-  /** 当前计划 */
-  currentPlan: SubscriptionPlan | null
-  /** 订阅概览 */
-  overview: SubscriptionOverview | null
-  /** 使用量统计 */
-  usage: UsageStats | null
+  /** 积分余额 */
+  creditBalance: CreditBalance | null
   /** 是否正在加载 */
   isLoading: boolean
   /** 错误信息 */
   error: string | null
+  /** 当前选中的计费周期 */
+  selectedPeriod: BillingPeriod
 
   /** 获取所有计划 */
   fetchPlans: () => Promise<void>
-  /** 获取用户订阅 */
-  fetchSubscription: () => Promise<void>
-  /** 获取订阅概览 */
-  fetchOverview: () => Promise<void>
-  /** 获取使用量 */
-  fetchUsage: () => Promise<void>
   /** 创建订阅 */
   createSubscription: (
-    planId: SubscriptionPlanId,
+    planId: string,
     billingPeriod: BillingPeriod,
-    options?: { startTrial?: boolean }
   ) => Promise<void>
   /** 取消订阅 */
   cancelSubscription: (immediately?: boolean, reason?: string) => Promise<void>
-  /** 更新订阅 */
-  updateSubscription: (planId: SubscriptionPlanId, billingPeriod?: BillingPeriod) => Promise<void>
-  /** 检查配额 */
-  checkQuota: (
-    quotaType: 'conversations' | 'aiCalls' | 'skills' | 'devices' | 'storage'
-  ) => Promise<QuotaCheckResult>
   /** 刷新所有数据 */
   refresh: () => Promise<void>
-  /** 获取价格显示文本 */
-  formatPrice: (planId: SubscriptionPlanId, period: BillingPeriod) => string
-  /** 是否可以升级到目标计划 */
-  canUpgradeTo: (targetPlanId: SubscriptionPlanId) => boolean
+  /** 格式化价格 */
+  formatPrice: (plan: SubscriptionPlan) => string
+  /** 切换计费周期 */
+  setSelectedPeriod: (period: BillingPeriod) => void
 }
 
 /**
- * 订阅管理 Hook
+ * 订阅管理 Hook（简化版）
+ *
+ * 移除了 overview / usage / quota 等不存在的端点调用，
+ * 仅获取计划列表和积分余额。
  */
 export function useSubscription(): UseSubscriptionReturn {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([])
   const [subscription, setSubscription] = useState<UserSubscription | null>(null)
-  const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan | null>(null)
-  const [overview, setOverview] = useState<SubscriptionOverview | null>(null)
-  const [usage, setUsage] = useState<UsageStats | null>(null)
+  const [creditBalance, setCreditBalance] = useState<CreditBalance | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>('monthly')
 
   /**
-   * 获取所有订阅计划
+   * 获取订阅计划列表
    */
   const fetchPlans = useCallback(async () => {
-    console.log('[useSubscription] 获取订阅计划列表')
-    setIsLoading(true)
-    setError(null)
-
     try {
       const accessToken = localStorage.getItem('openclaw_access_token')
       if (!accessToken) {
@@ -258,17 +138,13 @@ export function useSubscription(): UseSubscriptionReturn {
       const result = await subscriptionService.getAvailablePlans()
 
       if (result.success && result.plans) {
-        setPlans(result.plans as any) // 类型转换,因为 API 返回的结构可能略有不同
-        console.log('[useSubscription] 获取到', result.plans.length, '个计划')
+        setPlans(result.plans)
       } else {
         throw new Error(result.error || '获取计划列表失败')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取计划列表失败'
-      console.error('[useSubscription] 获取计划失败:', errorMessage)
       setError(errorMessage)
-    } finally {
-      setIsLoading(false)
     }
   }, [])
 
@@ -276,86 +152,43 @@ export function useSubscription(): UseSubscriptionReturn {
    * 获取用户订阅状态
    */
   const fetchSubscription = useCallback(async () => {
-    console.log('[useSubscription] 获取用户订阅状态')
-    setIsLoading(true)
-    setError(null)
-
     try {
       const accessToken = localStorage.getItem('openclaw_access_token')
       if (!accessToken) {
-        throw new Error('未登录')
+        return
       }
 
       subscriptionService.setAccessToken(accessToken)
       const result = await subscriptionService.getSubscription()
 
       if (result.success) {
-        setSubscription(result.subscription as any || null)
-
-        // 查找当前计划的完整信息
-        if (plans.length > 0 && result.plan) {
-          const plan = plans.find((p) => p.id === result.plan?.id)
-          setCurrentPlan(plan || null)
-        }
-
-        console.log('[useSubscription] 订阅状态:', result.subscription ? '活跃' : '无')
-      } else {
-        throw new Error(result.error || '获取订阅状态失败')
+        setSubscription((result.subscription as UserSubscription) ?? null)
       }
     } catch (err) {
+      // 订阅信息获取失败不阻塞，静默处理
       const errorMessage = err instanceof Error ? err.message : '获取订阅状态失败'
-      console.error('[useSubscription] 获取订阅失败:', errorMessage)
       setError(errorMessage)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [plans])
-
-  /**
-   * 获取订阅概览
-   */
-  const fetchOverview = useCallback(async () => {
-    console.log('[useSubscription] 获取订阅概览')
-
-    try {
-      const result = await window.electronAPI.api.getSubscriptionOverview() as {
-        success: boolean
-        data?: SubscriptionOverview
-        error?: string
-      }
-
-      if (result.success && result.data) {
-        setOverview(result.data)
-        console.log('[useSubscription] 概览:', result.data.plan.name)
-      } else {
-        console.error('[useSubscription] 获取概览失败:', result.error)
-      }
-    } catch (err) {
-      console.error('[useSubscription] 获取概览失败:', err)
     }
   }, [])
 
   /**
-   * 获取使用量统计
+   * 获取积分余额
    */
-  const fetchUsage = useCallback(async () => {
-    console.log('[useSubscription] 获取使用量统计')
-
+  const fetchCreditBalance = useCallback(async () => {
     try {
-      const result = await window.electronAPI.api.getUsage() as {
+      const response = await window.electronAPI.api.getCreditBalance() as {
         success: boolean
-        data?: { usage: UsageStats }
+        data?: CreditBalance | null
         error?: string
       }
 
-      if (result.success && result.data) {
-        setUsage(result.data.usage as UsageStats)
-        console.log('[useSubscription] 使用量获取成功')
-      } else {
-        console.error('[useSubscription] 获取使用量失败:', result.error)
+      if (response.success) {
+        setCreditBalance(response.data ?? null)
       }
     } catch (err) {
-      console.error('[useSubscription] 获取使用量失败:', err)
+      // 积分余额获取失败不阻塞
+      const errorMessage = err instanceof Error ? err.message : '获取积分余额失败'
+      setError(errorMessage)
     }
   }, [])
 
@@ -363,12 +196,7 @@ export function useSubscription(): UseSubscriptionReturn {
    * 创建订阅
    */
   const createSubscription = useCallback(
-    async (
-      planId: SubscriptionPlanId,
-      billingPeriod: BillingPeriod,
-      options?: { startTrial?: boolean }
-    ) => {
-      console.log('[useSubscription] 创建订阅:', planId, billingPeriod)
+    async (planId: string, billingPeriod: BillingPeriod) => {
       setIsLoading(true)
       setError(null)
 
@@ -376,7 +204,6 @@ export function useSubscription(): UseSubscriptionReturn {
         const result = await window.electronAPI.api.createSubscription({
           planId,
           billingPeriod,
-          startTrial: options?.startTrial,
         }) as {
           success: boolean
           data?: { subscription: UserSubscription; message?: string }
@@ -385,23 +212,21 @@ export function useSubscription(): UseSubscriptionReturn {
 
         if (result.success && result.data) {
           setSubscription(result.data.subscription)
-          console.log('[useSubscription] 订阅创建成功:', result.data.message)
         } else {
           throw new Error(result.error || '创建订阅失败')
         }
 
-        // 刷新相关数据
-        await fetchOverview()
+        // 刷新积分余额
+        await fetchCreditBalance()
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : '创建订阅失败'
-        console.error('[useSubscription] 创建订阅失败:', errorMessage)
         setError(errorMessage)
         throw err
       } finally {
         setIsLoading(false)
       }
     },
-    [fetchOverview]
+    [fetchCreditBalance],
   )
 
   /**
@@ -413,14 +238,13 @@ export function useSubscription(): UseSubscriptionReturn {
         throw new Error('没有活跃的订阅')
       }
 
-      console.log('[useSubscription] 取消订阅:', subscription.id, immediately ? '立即' : '周期结束')
       setIsLoading(true)
       setError(null)
 
       try {
         const result = await window.electronAPI.api.cancelSubscription(
           subscription.id,
-          { immediately, reason }
+          { immediately, reason },
         ) as {
           success: boolean
           data?: { subscription: UserSubscription; message?: string }
@@ -429,170 +253,70 @@ export function useSubscription(): UseSubscriptionReturn {
 
         if (result.success && result.data) {
           setSubscription(result.data.subscription)
-          console.log('[useSubscription] 订阅取消成功:', result.data.message)
         } else {
           throw new Error(result.error || '取消订阅失败')
         }
-
-        // 刷新相关数据
-        await fetchOverview()
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : '取消订阅失败'
-        console.error('[useSubscription] 取消订阅失败:', errorMessage)
         setError(errorMessage)
         throw err
       } finally {
         setIsLoading(false)
       }
     },
-    [subscription, fetchOverview]
-  )
-
-  /**
-   * 更新订阅（升级/降级）
-   */
-  const updateSubscription = useCallback(
-    async (planId: SubscriptionPlanId, billingPeriod?: BillingPeriod) => {
-      if (!subscription) {
-        throw new Error('没有活跃的订阅')
-      }
-
-      console.log('[useSubscription] 更新订阅:', planId)
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const result = await window.electronAPI.api.updateSubscription(
-          subscription.id,
-          { planId, billingPeriod }
-        ) as {
-          success: boolean
-          data?: { subscription: UserSubscription; message?: string }
-          error?: string
-        }
-
-        if (result.success && result.data) {
-          setSubscription(result.data.subscription)
-          console.log('[useSubscription] 订阅更新成功:', result.data.message)
-        } else {
-          throw new Error(result.error || '更新订阅失败')
-        }
-
-        // 刷新相关数据
-        await fetchOverview()
-        await fetchSubscription()
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : '更新订阅失败'
-        console.error('[useSubscription] 更新订阅失败:', errorMessage)
-        setError(errorMessage)
-        throw err
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [subscription, fetchOverview, fetchSubscription]
-  )
-
-  /**
-   * 检查配额
-   */
-  const checkQuota = useCallback(
-    async (
-      quotaType: 'conversations' | 'aiCalls' | 'skills' | 'devices' | 'storage'
-    ): Promise<QuotaCheckResult> => {
-      console.log('[useSubscription] 检查配额:', quotaType)
-
-      const result = await window.electronAPI.api.checkQuota(quotaType) as {
-        success: boolean
-        data?: QuotaCheckResult
-        error?: string
-      }
-
-      if (result.success && result.data) {
-        return result.data
-      }
-
-      throw new Error(result.error || '检查配额失败')
-    },
-    []
+    [subscription],
   )
 
   /**
    * 刷新所有数据
    */
   const refresh = useCallback(async () => {
-    console.log('[useSubscription] 刷新所有数据')
-    await Promise.all([fetchPlans(), fetchSubscription(), fetchOverview(), fetchUsage()])
-  }, [fetchPlans, fetchSubscription, fetchOverview, fetchUsage])
+    setIsLoading(true)
+    setError(null)
+
+    await Promise.allSettled([
+      fetchPlans(),
+      fetchSubscription(),
+      fetchCreditBalance(),
+    ])
+
+    setIsLoading(false)
+  }, [fetchPlans, fetchSubscription, fetchCreditBalance])
 
   /**
    * 格式化价格显示
    */
   const formatPrice = useCallback(
-    (planId: SubscriptionPlanId, period: BillingPeriod): string => {
-      const plan = plans.find((p) => p.id === planId)
-      if (!plan) return '¥0'
+    (plan: SubscriptionPlan): string => {
+      if (plan.price === 0) return '免费'
+      if (plan.price === -1) return '联系销售'
 
-      if (plan.price.monthly === -1) return '联系销售'
-      if (plan.price.monthly === 0) return '免费'
-
-      const price = period === 'yearly' ? plan.price.yearly : plan.price.monthly
-      const displayPrice = (price / 100).toFixed(0)
-      return `¥${displayPrice}/${period === 'yearly' ? '年' : '月'}`
+      const displayPrice = (plan.price / 100).toFixed(0)
+      const periodLabel = plan.billingCycle === 'yearly' ? '年' : '月'
+      return `¥${displayPrice}/${periodLabel}`
     },
-    [plans]
-  )
-
-  /**
-   * 检查是否可以升级到目标计划
-   */
-  const canUpgradeTo = useCallback(
-    (targetPlanId: SubscriptionPlanId): boolean => {
-      const currentPlanId = subscription?.planId || 'free'
-      const planOrder = ['free', 'pro', 'team', 'enterprise']
-      return planOrder.indexOf(targetPlanId) > planOrder.indexOf(currentPlanId)
-    },
-    [subscription]
+    [],
   )
 
   /**
    * 初始化加载
    */
   useEffect(() => {
-    fetchPlans()
-  }, [fetchPlans])
-
-  /**
-   * 计划加载后获取订阅状态
-   */
-  useEffect(() => {
-    if (plans.length > 0) {
-      fetchSubscription()
-      fetchOverview()
-    }
-  }, [plans, fetchSubscription, fetchOverview])
+    refresh()
+  }, [refresh])
 
   return {
-    // 状态
     plans,
     subscription,
-    currentPlan,
-    overview,
-    usage,
+    creditBalance,
     isLoading,
     error,
-
-    // 方法
+    selectedPeriod,
     fetchPlans,
-    fetchSubscription,
-    fetchOverview,
-    fetchUsage,
     createSubscription,
     cancelSubscription,
-    updateSubscription,
-    checkQuota,
     refresh,
     formatPrice,
-    canUpgradeTo,
+    setSelectedPeriod,
   }
 }

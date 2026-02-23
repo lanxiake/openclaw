@@ -46,6 +46,55 @@
   padding: 24px;
 }
 
+/* 配额展示 */
+.quota-section {
+  background: white;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.quota-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quota-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.quota-numbers {
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.quota-progress {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.quota-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.quota-hint {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* 设备列表 */
 .device-list-section {
   background: white;
   border-radius: 8px;
@@ -67,6 +116,12 @@
   color: #333;
 }
 
+.section-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .pair-button {
   padding: 8px 16px;
   background: #6366f1;
@@ -78,8 +133,35 @@
   transition: all 0.2s;
 }
 
-.pair-button:hover {
+.pair-button:hover:not(:disabled) {
   background: #4f46e5;
+}
+
+.pair-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refresh-button {
+  padding: 8px 16px;
+  background: transparent;
+  color: #666;
+  border: 1px solid #d5d5d5;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refresh-button:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #999;
+  color: #333;
+}
+
+.refresh-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .loading {
@@ -144,19 +226,30 @@
   border-color: #d5d5d5;
 }
 
+.device-item.online {
+  border-left: 3px solid #10b981;
+}
+
+.device-item.offline {
+  border-left: 3px solid transparent;
+}
+
 .device-info {
   display: flex;
   align-items: center;
   gap: 12px;
   flex: 1;
+  min-width: 0;
 }
 
 .device-icon {
   font-size: 32px;
+  flex-shrink: 0;
 }
 
 .device-details {
   flex: 1;
+  min-width: 0;
 }
 
 .device-name {
@@ -167,6 +260,18 @@
   font-weight: 500;
   color: #333;
   margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.device-name-text {
+  cursor: pointer;
+  border-bottom: 1px dashed transparent;
+  transition: border-color 0.2s;
+}
+
+.device-name-text:hover {
+  border-bottom-color: #6366f1;
+  color: #6366f1;
 }
 
 .primary-badge {
@@ -175,28 +280,25 @@
   color: white;
   font-size: 12px;
   border-radius: 4px;
+  flex-shrink: 0;
 }
 
-.device-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #666;
+.current-badge {
+  padding: 2px 8px;
+  background: #10b981;
+  color: white;
+  font-size: 12px;
+  border-radius: 4px;
+  flex-shrink: 0;
 }
 
-.device-actions {
-  display: flex;
-  gap: 8px;
-}
-
-/* 在线/离线状态指示点 */
 .status-dot {
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   margin-left: 4px;
+  flex-shrink: 0;
 }
 
 .status-dot.online {
@@ -208,43 +310,82 @@
   background: #9ca3af;
 }
 
-/* 在线设备卡片边框 */
-.device-item.online {
-  border-left: 3px solid #10b981;
-}
-
-.device-item.offline {
-  border-left: 3px solid transparent;
-}
-
-/* section-actions 容器 */
-.section-actions {
+.device-meta {
   display: flex;
-  gap: 8px;
   align-items: center;
-}
-
-/* 刷新按钮 */
-.refresh-button {
-  padding: 8px 16px;
-  background: transparent;
+  gap: 8px;
+  font-size: 13px;
   color: #666;
-  border: 1px solid #d5d5d5;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
+  flex-wrap: wrap;
 }
 
-.refresh-button:hover:not(:disabled) {
-  background: #f5f5f5;
-  border-color: #999;
+/* 别名编辑 */
+.alias-edit-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.alias-input {
+  width: 180px;
+  padding: 4px 8px;
+  border: 1px solid #6366f1;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  background: white;
   color: #333;
 }
 
-.refresh-button:disabled {
+.alias-input:focus {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.alias-save-btn,
+.alias-cancel-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.alias-save-btn {
+  background: #10b981;
+  color: white;
+}
+
+.alias-save-btn:hover:not(:disabled) {
+  background: #059669;
+}
+
+.alias-save-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.alias-cancel-btn {
+  background: #e5e7eb;
+  color: #666;
+}
+
+.alias-cancel-btn:hover {
+  background: #d1d5db;
+  color: #333;
+}
+
+/* 设备操作按钮 */
+.device-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .action-button {
@@ -256,21 +397,48 @@
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
-.action-button:hover {
+.action-button:hover:not(:disabled) {
   background: #f5f5f5;
   border-color: #999;
   color: #333;
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-button.primary {
+  background: #6366f1;
+  color: white;
+  border-color: #6366f1;
+}
+
+.action-button.primary:hover:not(:disabled) {
+  background: #4f46e5;
+  border-color: #4f46e5;
 }
 
 .action-button.danger {
   color: #c33;
 }
 
-.action-button.danger:hover {
+.action-button.danger:hover:not(:disabled) {
   background: #fee;
   border-color: #c33;
+}
+
+.action-button.warning {
+  color: #d97706;
+  border-color: #fbbf24;
+}
+
+.action-button.warning:hover:not(:disabled) {
+  background: #fef3c7;
+  border-color: #d97706;
 }
 
 /* 配对对话框 */

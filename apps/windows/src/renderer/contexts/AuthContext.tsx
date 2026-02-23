@@ -4,7 +4,7 @@
  * 提供全局的认证状态管理
  */
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from 'react'
 
 /**
  * 用户信息
@@ -171,19 +171,156 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, setState] = useState<AuthState>(() => {
     const loaded = loadAuthState()
-    console.log('[AuthContext] 初始化认证状态:', { isAuthenticated: loaded.isAuthenticated })
+    const hasStoredAuth = !!(loaded.user && loaded.accessToken)
+    console.log('[AuthContext] 初始化认证状态:', { hasStoredAuth })
     return {
       user: loaded.user ?? null,
       accessToken: loaded.accessToken ?? null,
       refreshToken: loaded.refreshToken ?? null,
-      isAuthenticated: loaded.isAuthenticated ?? false,
-      isLoading: false,
+      // 启动时暂不认为已认证，等 token 验证通过后再设为 true
+      isAuthenticated: false,
+      // 如果有存储的 token，标记为 loading 状态（等待验证）
+      isLoading: hasStoredAuth,
       error: null,
     }
   })
 
   // 添加登出标志，防止重复调用
-  const isLoggingOutRef = React.useRef(false)
+  const isLoggingOutRef = useRef(false)
+  // 标记是否已完成启动验证，防止重复执行
+  const hasValidatedRef = useRef(false)
+
+  /**
+   * 启动时验证 token 有效性
+   *
+   * 从 localStorage 恢复 token 后，主动调用 API 验证 token 是否仍然有效。
+   * - 有效：设置 isAuthenticated=true
+   * - 无效（401）：尝试 refreshToken 刷新
+   *   - 刷新成功：更新 token，设置 isAuthenticated=true
+   *   - 刷新失败：清除认证状态，显示登录页
+   */
+  useEffect(() => {
+    if (hasValidatedRef.current) {
+      return
+    }
+
+    const storedAccessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
+    const storedRefreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
+    const storedUserStr = localStorage.getItem(STORAGE_KEYS.USER)
+
+    // 没有存储的 token，无需验证
+    if (!storedAccessToken || !storedUserStr) {
+      console.log('[AuthContext] 没有存储的 token，跳过验证')
+      hasValidatedRef.current = true
+      return
+    }
+
+    hasValidatedRef.current = true
+    console.log('[AuthContext] 启动时验证 token 有效性...')
+
+    const validateStartupToken = async () => {
+      try {
+        // 先同步 token 到主进程
+        await window.electronAPI.api.setAccessToken(storedAccessToken)
+
+        // 调用 getCurrentUser 验证 token
+        const response = await window.electronAPI.api.getCurrentUser() as {
+          success: boolean
+          data?: User
+          error?: string
+          code?: string
+        }
+
+        if (response.success && response.data) {
+          console.log('[AuthContext] token 验证通过，恢复登录状态')
+          const user = response.data
+          // 更新本地存储中的用户信息（可能有变更）
+          saveAuthState(user, storedAccessToken, storedRefreshToken)
+          setState({
+            user,
+            accessToken: storedAccessToken,
+            refreshToken: storedRefreshToken,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          })
+          return
+        }
+
+        // token 无效，尝试 refresh
+        console.log('[AuthContext] accessToken 验证失败，尝试刷新:', response.error)
+
+        if (!storedRefreshToken) {
+          console.log('[AuthContext] 没有 refreshToken，清除认证状态')
+          clearAuthState()
+          await window.electronAPI.api.setAccessToken(null)
+          setState({
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null,
+          })
+          return
+        }
+
+        // 尝试刷新 token
+        const refreshResponse = await window.electronAPI.api.refreshToken(storedRefreshToken) as AuthResponse
+
+        if (refreshResponse.success && refreshResponse.data?.accessToken) {
+          console.log('[AuthContext] token 刷新成功，恢复登录状态')
+          const { accessToken: newAccessToken, refreshToken: newRefreshToken, user: refreshedUser } = refreshResponse.data
+          const finalRefreshToken = newRefreshToken || storedRefreshToken
+          const user = refreshedUser || JSON.parse(storedUserStr) as User
+
+          saveAuthState(user, newAccessToken, finalRefreshToken)
+          await window.electronAPI.api.setAccessToken(newAccessToken)
+
+          setState({
+            user,
+            accessToken: newAccessToken,
+            refreshToken: finalRefreshToken,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          })
+          return
+        }
+
+        // 刷新也失败，清除认证状态
+        console.log('[AuthContext] token 刷新失败，重定向到登录页:', refreshResponse.error)
+        clearAuthState()
+        await window.electronAPI.api.setAccessToken(null)
+        setState({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+        })
+      } catch (error) {
+        console.error('[AuthContext] 启动验证异常:', error)
+        clearAuthState()
+        try {
+          await window.electronAPI.api.setAccessToken(null)
+        } catch {
+          // 忽略清除失败
+        }
+        setState({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+        })
+      }
+    }
+
+    validateStartupToken()
+  }, [])
 
   /**
    * 用户注册

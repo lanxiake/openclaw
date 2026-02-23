@@ -224,7 +224,7 @@ export interface ElectronAPI {
 
   // Gateway 相关
   gateway: {
-    connect: (url: string, options?: { token?: string; deviceId?: string }) => Promise<void>
+    connect: (url: string, options?: { token?: string; deviceId?: string; role?: string; scopes?: string[] }) => Promise<void>
     disconnect: () => Promise<void>
     isConnected: () => Promise<boolean>
     call: <T>(method: string, params?: unknown) => Promise<T>
@@ -550,6 +550,18 @@ export interface ElectronAPI {
     /** 清除审计日志 */
     clearAuditLogs: (beforeDate?: string) => Promise<unknown>
 
+    // --- 积分接口 ---
+    /** 获取用户积分余额 */
+    getCreditBalance: () => Promise<unknown>
+    /** 获取用户积分流水 */
+    getCreditHistory: (options?: { limit?: number; offset?: number }) => Promise<unknown>
+    /** 获取积分批次列表（含过期时间） */
+    getCreditBatches: () => Promise<unknown>
+    /** 获取邀请统计 */
+    getInviteStats: () => Promise<unknown>
+    /** 获取邀请记录列表 */
+    getInviteList: () => Promise<unknown>
+
     // --- 技能运行时 + 节点列表 + 文件上传 ---
     /** 获取所有已加载技能列表（通过 Gateway WS） */
     listAllSkills: () => Promise<unknown>
@@ -563,6 +575,45 @@ export interface ElectronAPI {
       contentType: string
       data: string
     }) => Promise<unknown>
+  }
+
+  // 本地技能管理
+  skills: {
+    /** 列出本地已安装技能 */
+    listLocalInstalled: () => Promise<unknown[]>
+    /** 从目录安装技能 */
+    installFromDirectory: (sourceDir: string) => Promise<{
+      success: boolean
+      skillId?: string
+      error?: string
+    }>
+    /** 卸载本地技能 */
+    uninstallLocal: (skillId: string) => Promise<{
+      success: boolean
+      error?: string
+    }>
+    /** 本地执行技能 */
+    executeLocal: (params: {
+      skillId: string
+      params: Record<string, unknown>
+      timeoutMs?: number
+    }) => Promise<unknown>
+    /** 启用/禁用技能 */
+    setEnabled: (skillId: string, enabled: boolean) => Promise<boolean>
+    /** 获取技能详情 */
+    getSkillDetail: (skillId: string) => Promise<{
+      manifest: unknown
+      indexEntry: unknown
+    }>
+    /** 从单文件脚本安装技能 */
+    installFromScript: (filePath: string, meta?: {
+      name?: string
+      description?: string
+    }) => Promise<{
+      success: boolean
+      skillId?: string
+      error?: string
+    }>
   }
 }
 
@@ -871,6 +922,18 @@ const electronAPI: ElectronAPI = {
     clearAuditLogs: (beforeDate?: string) =>
       ipcRenderer.invoke('api:clearAuditLogs', beforeDate),
 
+    // --- 积分接口 ---
+    getCreditBalance: () =>
+      ipcRenderer.invoke('api:getCreditBalance'),
+    getCreditHistory: (options?: { limit?: number; offset?: number }) =>
+      ipcRenderer.invoke('api:getCreditHistory', options),
+    getCreditBatches: () =>
+      ipcRenderer.invoke('api:getCreditBatches'),
+    getInviteStats: () =>
+      ipcRenderer.invoke('api:getInviteStats'),
+    getInviteList: () =>
+      ipcRenderer.invoke('api:getInviteList'),
+
     // --- 技能运行时 + 节点列表 + 文件上传 ---
     listAllSkills: () =>
       ipcRenderer.invoke('api:listAllSkills'),
@@ -883,6 +946,29 @@ const electronAPI: ElectronAPI = {
       contentType: string
       data: string
     }) => ipcRenderer.invoke('api:uploadSkillFile', params),
+  },
+
+  // 本地技能管理 API
+  skills: {
+    listLocalInstalled: () =>
+      ipcRenderer.invoke('skills:listLocalInstalled'),
+    installFromDirectory: (sourceDir: string) =>
+      ipcRenderer.invoke('skills:installFromDirectory', sourceDir),
+    uninstallLocal: (skillId: string) =>
+      ipcRenderer.invoke('skills:uninstallLocal', skillId),
+    executeLocal: (params: {
+      skillId: string
+      params: Record<string, unknown>
+      timeoutMs?: number
+    }) => ipcRenderer.invoke('skills:executeLocal', params),
+    setEnabled: (skillId: string, enabled: boolean) =>
+      ipcRenderer.invoke('skills:setEnabled', skillId, enabled),
+    getSkillDetail: (skillId: string) =>
+      ipcRenderer.invoke('skills:getSkillDetail', skillId),
+    installFromScript: (filePath: string, meta?: {
+      name?: string
+      description?: string
+    }) => ipcRenderer.invoke('skills:installFromScript', filePath, meta),
   },
 }
 

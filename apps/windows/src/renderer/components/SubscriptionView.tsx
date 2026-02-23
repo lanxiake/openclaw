@@ -1,63 +1,179 @@
 /**
  * SubscriptionView Component - 订阅管理视图
  *
- * 显示订阅计划、当前订阅状态和使用量统计
- *
- * @author OpenClaw
+ * 布局：
+ * 1. 账户状态区 — 显示当前身份（免费用户 / 月费会员 / 年费会员）
+ * 2. 积分概览卡片 — 可用积分、累计获得、累计消费、已过期
+ * 3. 计费周期切换 — 月付 / 年付 toggle
+ * 4. 计划选择区 — 根据周期显示对应 pro 计划
+ * 5. 积分包购买区域 — 预设积分包选项
+ * 6. 快速入口 — "查看积分明细" 按钮跳转到 CreditsView
  */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useSubscription, type SubscriptionPlan, type BillingPeriod } from '../hooks/useSubscription'
 import './SubscriptionView.css'
 
+/** 积分包选项定义 */
+interface CreditPackage {
+  /** 积分数量 */
+  credits: number
+  /** 价格（分） */
+  priceCents: number
+  /** 描述 */
+  label: string
+  /** 是否推荐 */
+  recommended?: boolean
+}
+
+/** 预设积分包列表 */
+const CREDIT_PACKAGES: CreditPackage[] = [
+  { credits: 600, priceCents: 1000, label: '600 积分' },
+  { credits: 1200, priceCents: 2000, label: '1200 积分', recommended: true },
+  { credits: 3200, priceCents: 5000, label: '3200 积分' },
+]
+
+/** 本地计划展示配置（当服务端未返回详细计划时使用） */
+interface LocalPlanDisplay {
+  /** 计划标识 */
+  id: string
+  /** 计划名称 */
+  name: string
+  /** 价格描述 */
+  priceLabel: string
+  /** 计费周期 */
+  billingCycle: BillingPeriod
+  /** 积分额度 */
+  creditsLabel: string
+  /** 额外描述 */
+  badge?: string
+  /** 功能列表 */
+  features: string[]
+}
+
+/** 月付和年付计划的展示配置 */
+const LOCAL_PLANS: Record<BillingPeriod, LocalPlanDisplay[]> = {
+  monthly: [
+    {
+      id: 'pro-monthly',
+      name: 'Pro 月付',
+      priceLabel: '¥30/月',
+      billingCycle: 'monthly',
+      creditsLabel: '每月 2,000 积分',
+      badge: '首月 ¥5',
+      features: [
+        '每月 2,000 AI 积分',
+        '支持 GPT-4、Claude 等主流模型',
+        '多设备同时在线',
+        '历史记录云同步',
+        '优先客服支持',
+      ],
+    },
+  ],
+  yearly: [
+    {
+      id: 'pro-yearly',
+      name: 'Pro 年付',
+      priceLabel: '¥300/年',
+      billingCycle: 'yearly',
+      creditsLabel: '每月 2,000 积分',
+      badge: '省 ¥60',
+      features: [
+        '每月 2,000 AI 积分（年度总计 24,000）',
+        '支持 GPT-4、Claude 等主流模型',
+        '多设备同时在线',
+        '历史记录云同步',
+        '优先客服支持',
+        '年付专属折扣',
+      ],
+    },
+  ],
+}
+
 interface SubscriptionViewProps {
-  /** Gateway 连接状态（保留兼容但订阅页面不再依赖此状态） */
+  /** Gateway 连接状态（保留接口兼容） */
   isConnected?: boolean
+  /** 视图切换回调，用于跳转到积分明细页 */
+  onViewChange?: (view: string) => void
 }
 
 /**
  * 订阅管理视图组件
  */
-export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ isConnected }) => {
+export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ onViewChange }) => {
   const {
     plans,
     subscription,
-    overview,
+    creditBalance,
     isLoading,
     error,
-    fetchPlans,
+    selectedPeriod,
     createSubscription,
     cancelSubscription,
     formatPrice,
-    canUpgradeTo,
     refresh,
+    setSelectedPeriod,
   } = useSubscription()
 
-  const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>('monthly')
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
+  const [purchasingPackage, setPurchasingPackage] = useState<number | null>(null)
 
   /**
-   * 初始化加载（不依赖 Gateway 连接，通过 REST API 获取数据）
+   * 获取付费计划（过滤掉 free 和 enterprise），按当前选中周期过滤
    */
-  useEffect(() => {
-    refresh()
-  }, [refresh])
+  const filteredPlans = plans.filter(
+    (p) => p.price > 0 && p.price !== -1 && p.billingCycle === selectedPeriod
+  )
+
+  /**
+   * 获取账户状态文字
+   */
+  const getAccountStatusLabel = (): string => {
+    if (!subscription || subscription.status === 'expired' || subscription.status === 'canceled') {
+      return '免费用户'
+    }
+    const matchedPlan = plans.find((p) => p.id === subscription.planId)
+    if (matchedPlan?.billingCycle === 'yearly') return '年费会员'
+    if (matchedPlan?.billingCycle === 'monthly') return '月费会员'
+    return '付费会员'
+  }
+
+  /**
+   * 判断当前计划是否为该 plan
+   */
+  const isCurrentPlan = (plan: SubscriptionPlan): boolean => {
+    return subscription?.planId === plan.id && subscription?.status === 'active'
+  }
 
   /**
    * 处理订阅
    */
   const handleSubscribe = async (plan: SubscriptionPlan) => {
-    if (plan.id === 'enterprise') {
-      // 企业版联系销售
-      window.open('mailto:sales@openclaw.ai?subject=企业版咨询', '_blank')
-      return
-    }
-
     try {
-      await createSubscription(plan.id, selectedPeriod)
+      await createSubscription(plan.id, plan.billingCycle as BillingPeriod)
     } catch (err) {
-      console.error('订阅失败:', err)
+      // 错误已在 hook 中处理
+    }
+  }
+
+  /**
+   * 处理积分包购买
+   */
+  const handlePurchaseCredits = async (pkg: CreditPackage) => {
+    setPurchasingPackage(pkg.credits)
+    try {
+      await window.electronAPI.api.purchaseSubscription({
+        type: 'topup',
+        planId: `credits-${pkg.credits}`,
+        provider: 'mock',
+      })
+      // 购买成功后刷新数据
+      await refresh()
+    } catch (err) {
+      // 错误处理：静默
+    } finally {
+      setPurchasingPackage(null)
     }
   }
 
@@ -70,147 +186,22 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ isConnected 
       setShowCancelDialog(false)
       setCancelReason('')
     } catch (err) {
-      console.error('取消订阅失败:', err)
+      // 错误已在 hook 中处理
     }
   }
 
   /**
-   * 渲染计划卡片
+   * 渲染账户状态区
    */
-  const renderPlanCard = (plan: SubscriptionPlan) => {
-    const isCurrentPlan = subscription?.planId === plan.id || (!subscription && plan.id === 'free')
-    const canUpgrade = canUpgradeTo(plan.id)
-    const price = formatPrice(plan.id, selectedPeriod)
+  const renderAccountStatus = () => {
+    const statusLabel = getAccountStatusLabel()
+    const isActive = subscription?.status === 'active'
 
     return (
-      <div
-        key={plan.id}
-        className={`plan-card ${plan.recommended ? 'recommended' : ''} ${isCurrentPlan ? 'current' : ''}`}
-      >
-        {plan.recommended && <div className="recommended-badge">推荐</div>}
-        {isCurrentPlan && <div className="current-badge">当前计划</div>}
-
-        <div className="plan-header">
-          <h3 className="plan-name">{plan.name}</h3>
-          <p className="plan-description">{plan.description}</p>
-        </div>
-
-        <div className="plan-price">
-          <span className="price-amount">{price}</span>
-          {plan.price.monthly > 0 && selectedPeriod === 'yearly' && (
-            <span className="price-savings">省 2 个月</span>
-          )}
-        </div>
-
-        <ul className="plan-features">
-          {plan.features.map((feature) => (
-            <li key={feature.id} className={feature.included ? 'included' : 'excluded'}>
-              <span className="feature-icon">{feature.included ? '✓' : '×'}</span>
-              <span className="feature-name">{feature.name}</span>
-              {feature.limit && <span className="feature-limit">{feature.limit}</span>}
-            </li>
-          ))}
-        </ul>
-
-        <div className="plan-action">
-          {isCurrentPlan ? (
-            <button className="btn-current" disabled>
-              当前计划
-            </button>
-          ) : canUpgrade ? (
-            <button
-              className="btn-upgrade"
-              onClick={() => handleSubscribe(plan)}
-              disabled={isLoading}
-            >
-              {plan.id === 'enterprise' ? '联系销售' : '升级'}
-            </button>
-          ) : (
-            <button className="btn-downgrade" disabled>
-              降级
-            </button>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  /**
-   * 获取使用量级别（用于颜色编码）
-   */
-  const getUsageLevel = (percent: number): string => {
-    if (percent >= 80) return 'critical'
-    if (percent >= 60) return 'warning'
-    return 'normal'
-  }
-
-  /**
-   * 渲染单个使用量条目
-   */
-  const renderUsageItem = (
-    label: string,
-    item: { used: number; limit: number; percent: number; unit?: string } | undefined | null,
-    unit?: string
-  ) => {
-    if (!item) return null
-    const level = getUsageLevel(item.percent)
-    const displayUnit = unit || (item as { unit?: string }).unit || ''
-    const limitText = item.limit === -1 ? '∞' : `${item.limit}${displayUnit}`
-    const usedText = `${item.used}${displayUnit}`
-
-    return (
-      <div className="usage-item" key={label}>
-        <div className="usage-header">
-          <span className="usage-label">{label}</span>
-          <span className="usage-text">
-            {usedText} / {limitText}
-          </span>
-        </div>
-        <div className="usage-bar">
-          <div
-            className={`usage-fill usage-${level}`}
-            style={{ width: `${Math.min(item.percent, 100)}%` }}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  /**
-   * 渲染使用量统计
-   */
-  const renderUsageStats = () => {
-    if (!overview) return null
-
-    const { usage } = overview
-
-    return (
-      <div className="usage-stats">
-        <h3>使用量统计</h3>
-        <div className="usage-items">
-          {renderUsageItem('今日对话', usage.conversations)}
-          {renderUsageItem('本月 AI 调用', usage.aiCalls)}
-          {usage.devices && renderUsageItem('已连接设备', usage.devices)}
-          {usage.skills && renderUsageItem('已安装技能', usage.skills)}
-          {usage.storage && renderUsageItem('存储空间', usage.storage, 'MB')}
-        </div>
-      </div>
-    )
-  }
-
-  /**
-   * 渲染当前订阅信息
-   */
-  const renderCurrentSubscription = () => {
-    if (!overview) return null
-
-    const { subscription: sub, plan, features } = overview
-
-    return (
-      <div className="current-subscription">
-        <div className="subscription-header">
-          <h3>当前订阅</h3>
-          {sub && !sub.cancelAtPeriodEnd && (
+      <div className="account-status-card">
+        <div className="account-status-header">
+          <h3>账户状态</h3>
+          {isActive && !subscription?.cancelAtPeriodEnd && (
             <button
               className="btn-cancel"
               onClick={() => setShowCancelDialog(true)}
@@ -219,55 +210,224 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ isConnected 
             </button>
           )}
         </div>
+        <div className="account-status-body">
+          <span className={`status-badge ${isActive ? 'active' : 'free'}`}>
+            {statusLabel}
+          </span>
+          {subscription?.currentPeriodEnd && isActive && (
+            <span className="period-info">
+              到期: {new Date(subscription.currentPeriodEnd).toLocaleDateString('zh-CN')}
+            </span>
+          )}
+          {subscription?.cancelAtPeriodEnd && (
+            <span className="cancel-warning">
+              订阅将在周期结束后取消
+            </span>
+          )}
+        </div>
+      </div>
+    )
+  }
 
-        <div className="subscription-info">
-          <div className="info-row">
-            <span className="info-label">计划</span>
-            <span className="info-value">{plan.name}</span>
+  /**
+   * 渲染积分概览卡片
+   */
+  const renderCreditOverview = () => {
+    const balance = creditBalance ?? {
+      totalBalance: 0,
+      totalEarned: 0,
+      totalConsumed: 0,
+      totalExpired: 0,
+    }
+
+    return (
+      <div className="credit-overview-section">
+        <div className="section-header">
+          <h3>积分概览</h3>
+          {onViewChange && (
+            <button
+              className="btn-link"
+              onClick={() => onViewChange('credits')}
+            >
+              查看积分明细
+            </button>
+          )}
+        </div>
+        <div className="balance-cards">
+          <div className="balance-card primary">
+            <div className="balance-label">可用积分</div>
+            <div className="balance-value">{balance.totalBalance.toLocaleString()}</div>
           </div>
+          <div className="balance-card">
+            <div className="balance-label">累计获得</div>
+            <div className="balance-value earned">{balance.totalEarned.toLocaleString()}</div>
+          </div>
+          <div className="balance-card">
+            <div className="balance-label">累计消费</div>
+            <div className="balance-value consumed">{balance.totalConsumed.toLocaleString()}</div>
+          </div>
+          <div className="balance-card">
+            <div className="balance-label">已过期</div>
+            <div className="balance-value expired">{balance.totalExpired.toLocaleString()}</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-          {sub && (
-            <>
-              <div className="info-row">
-                <span className="info-label">状态</span>
-                <span className={`info-value status-${sub.status}`}>
-                  {sub.status === 'active' && '活跃'}
-                  {sub.status === 'trialing' && '试用中'}
-                  {sub.status === 'canceled' && '已取消'}
-                  {sub.status === 'expired' && '已过期'}
-                </span>
-              </div>
+  /**
+   * 渲染计费周期切换
+   */
+  const renderPeriodToggle = () => {
+    return (
+      <div className="period-toggle-wrapper">
+        <div className="period-toggle">
+          <button
+            className={`period-btn ${selectedPeriod === 'monthly' ? 'active' : ''}`}
+            onClick={() => setSelectedPeriod('monthly')}
+          >
+            月付
+          </button>
+          <button
+            className={`period-btn ${selectedPeriod === 'yearly' ? 'active' : ''}`}
+            onClick={() => setSelectedPeriod('yearly')}
+          >
+            年付
+            <span className="save-tag">省 2 个月</span>
+          </button>
+        </div>
+      </div>
+    )
+  }
 
-              <div className="info-row">
-                <span className="info-label">到期时间</span>
-                <span className="info-value">
-                  {new Date(sub.currentPeriodEnd).toLocaleDateString('zh-CN')}
-                </span>
-              </div>
+  /**
+   * 渲染计划卡片（服务端数据）
+   */
+  const renderPlanCard = (plan: SubscriptionPlan) => {
+    const current = isCurrentPlan(plan)
+    const price = formatPrice(plan)
+    const periodLabel = plan.billingCycle === 'yearly' ? '年付' : '月付'
 
-              {sub.cancelAtPeriodEnd && (
-                <div className="info-row warning">
-                  <span className="info-label">注意</span>
-                  <span className="info-value">订阅将在周期结束后取消</span>
-                </div>
-              )}
-            </>
+    return (
+      <div
+        key={plan.id}
+        className={`plan-card ${current ? 'current' : ''}`}
+      >
+        {current && <div className="current-badge">当前计划</div>}
+
+        <div className="plan-header">
+          <h3 className="plan-name">{plan.displayName || plan.name}</h3>
+          {plan.description && (
+            <p className="plan-description">{plan.description}</p>
           )}
         </div>
 
-        {features && (
-          <div className="subscription-features">
-            <h4>已启用功能</h4>
-            <div className="feature-tags">
-              {features.premiumSkills && <span className="feature-tag">高级技能</span>}
-              {features.prioritySupport && <span className="feature-tag">优先支持</span>}
-              {features.apiAccess && <span className="feature-tag">API 访问</span>}
-              {!features.premiumSkills && !features.prioritySupport && !features.apiAccess && (
-                <span className="feature-tag basic">基础功能</span>
-              )}
+        <div className="plan-price">
+          <span className="price-amount">{price}</span>
+          <span className="price-period">{periodLabel}</span>
+        </div>
+
+        <div className="plan-action">
+          {current ? (
+            <button className="btn-current" disabled>
+              当前计划
+            </button>
+          ) : (
+            <button
+              className="btn-upgrade"
+              onClick={() => handleSubscribe(plan)}
+              disabled={isLoading}
+            >
+              {isLoading ? '处理中...' : '订阅'}
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  /**
+   * 渲染本地计划卡片（无服务端数据时使用）
+   */
+  const renderLocalPlanCard = (plan: LocalPlanDisplay) => {
+    const isActive = subscription?.status === 'active'
+    const isCurrent = subscription?.planId === plan.id && isActive
+
+    return (
+      <div
+        key={plan.id}
+        className={`plan-card local-plan ${isCurrent ? 'current' : ''}`}
+      >
+        {isCurrent && <div className="current-badge">当前计划</div>}
+        {plan.badge && !isCurrent && <div className="promo-badge">{plan.badge}</div>}
+
+        <div className="plan-header">
+          <h3 className="plan-name">{plan.name}</h3>
+          <p className="plan-credits-label">{plan.creditsLabel}</p>
+        </div>
+
+        <div className="plan-price">
+          <span className="price-amount">{plan.priceLabel}</span>
+        </div>
+
+        <ul className="plan-features">
+          {plan.features.map((feature, idx) => (
+            <li key={idx} className="plan-feature-item">{feature}</li>
+          ))}
+        </ul>
+
+        <div className="plan-action">
+          {isCurrent ? (
+            <button className="btn-current" disabled>
+              当前计划
+            </button>
+          ) : (
+            <button
+              className="btn-upgrade"
+              onClick={() => handleSubscribe({ id: plan.id, billingCycle: plan.billingCycle } as SubscriptionPlan)}
+              disabled={isLoading}
+            >
+              {isLoading ? '处理中...' : '立即订阅'}
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  /**
+   * 渲染积分包购买区域
+   */
+  const renderCreditPackages = () => {
+    return (
+      <div className="credit-packages-section">
+        <h3>购买积分包</h3>
+        <p className="section-desc">积分可用于 AI 模型调用，购买后立即到账</p>
+        <div className="credit-packages-grid">
+          {CREDIT_PACKAGES.map((pkg) => (
+            <div
+              key={pkg.credits}
+              className={`credit-package-card ${pkg.recommended ? 'recommended' : ''}`}
+            >
+              {pkg.recommended && <div className="recommended-badge">推荐</div>}
+              <div className="package-credits">{pkg.credits.toLocaleString()}</div>
+              <div className="package-label">积分</div>
+              <div className="package-price">
+                ¥{(pkg.priceCents / 100).toFixed(0)}
+              </div>
+              <div className="package-unit-price">
+                ¥{(pkg.priceCents / pkg.credits / 100).toFixed(2)}/积分
+              </div>
+              <button
+                className="btn-buy-package"
+                onClick={() => handlePurchaseCredits(pkg)}
+                disabled={purchasingPackage !== null}
+              >
+                {purchasingPackage === pkg.credits ? '购买中...' : '购买'}
+              </button>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     )
   }
@@ -327,37 +487,33 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ isConnected 
       {/* 错误提示 */}
       {error && (
         <div className="error-banner">
-          <span className="error-icon">⚠️</span>
+          <span className="error-icon">!</span>
           <span className="error-message">{error}</span>
         </div>
       )}
 
-      {/* 当前订阅和使用量 */}
-      <div className="subscription-overview">
-        {renderCurrentSubscription()}
-        {renderUsageStats()}
-      </div>
+      {/* 账户状态 */}
+      {renderAccountStatus()}
+
+      {/* 积分概览 */}
+      {renderCreditOverview()}
 
       {/* 计费周期切换 */}
-      <div className="billing-toggle">
-        <button
-          className={selectedPeriod === 'monthly' ? 'active' : ''}
-          onClick={() => setSelectedPeriod('monthly')}
-        >
-          月付
-        </button>
-        <button
-          className={selectedPeriod === 'yearly' ? 'active' : ''}
-          onClick={() => setSelectedPeriod('yearly')}
-        >
-          年付 <span className="discount">省 17%</span>
-        </button>
+      {renderPeriodToggle()}
+
+      {/* 计划选择区 */}
+      <div className="plans-section">
+        <h3>升级计划</h3>
+        <div className="plans-grid">
+          {filteredPlans.length > 0
+            ? filteredPlans.map(renderPlanCard)
+            : LOCAL_PLANS[selectedPeriod].map(renderLocalPlanCard)
+          }
+        </div>
       </div>
 
-      {/* 计划列表 */}
-      <div className="plans-grid">
-        {plans.map(renderPlanCard)}
-      </div>
+      {/* 积分包购买 */}
+      {renderCreditPackages()}
 
       {/* 取消订阅对话框 */}
       {renderCancelDialog()}

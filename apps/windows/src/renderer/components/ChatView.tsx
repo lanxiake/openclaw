@@ -264,10 +264,12 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
           isStreaming: false,
         })
       } else {
-        /** 正常完成 */
+        /** 正常完成（空回复时显示提示） */
+        const finalContent = streamingMessage.content?.trim()
         updateMessage(currentAssistantMessageId, {
-          content: streamingMessage.content || '',
+          content: finalContent || '（未收到有效回复，请检查 AI 模型配置）',
           isStreaming: false,
+          ...(finalContent ? {} : { role: 'system' as const }),
         })
       }
 

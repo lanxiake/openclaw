@@ -107,7 +107,7 @@ export interface AppSettings {
  */
 const DEFAULT_SETTINGS: AppSettings = {
   gateway: {
-    url: 'ws://localhost:18789',
+    url: 'ws://127.0.0.1:18789',
     autoConnect: false,
     reconnectInterval: 5000,
     maxReconnectAttempts: 5,

@@ -1,0 +1,462 @@
+/**
+ * CreditsView Styles - 积分管理视图样式
+ */
+
+.credits-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+  overflow-y: auto;
+  background: var(--bg-primary, #0f0f23);
+}
+
+/* 余额统计卡片 */
+.balance-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.balance-card {
+  background: var(--bg-secondary, #1a1a3e);
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.balance-card.primary {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  border-color: #6366f1;
+}
+
+.balance-label {
+  font-size: 13px;
+  color: var(--text-secondary, #a0aec0);
+  margin-bottom: 8px;
+}
+
+.balance-card.primary .balance-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.balance-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+}
+
+.balance-value.earned {
+  color: #22c55e;
+}
+
+.balance-value.consumed {
+  color: #f59e0b;
+}
+
+.balance-value.expired {
+  color: #6b7280;
+}
+
+/* 积分区块标题 */
+.credits-section {
+  margin-bottom: 24px;
+}
+
+.credits-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  margin: 0 0 12px 0;
+}
+
+/* 空状态 */
+.credits-empty {
+  text-align: center;
+  padding: 32px;
+  color: var(--text-secondary, #a0aec0);
+}
+
+/* 批次列表（积分有效期） */
+.batches-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.batch-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg-secondary, #1a1a3e);
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.batch-item.expiring-soon {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.batch-item.expiring-warning {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.batch-item.expired {
+  opacity: 0.5;
+}
+
+.batch-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.batch-source {
+  font-size: 14px;
+  color: var(--text-primary, #ffffff);
+  font-weight: 500;
+}
+
+.batch-amount {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.batch-expiry {
+  font-size: 12px;
+}
+
+.expiry-text {
+  color: var(--text-secondary, #a0aec0);
+}
+
+.expiry-text.expiring-soon {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.expiry-text.expiring-warning {
+  color: #f59e0b;
+}
+
+.expiry-text.expired {
+  color: #6b7280;
+}
+
+.batch-desc {
+  font-size: 12px;
+  color: var(--text-secondary, #a0aec0);
+}
+
+/* 流水记录表格 */
+.transactions-list {
+  background: var(--bg-secondary, #1a1a3e);
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.transaction-header {
+  display: grid;
+  grid-template-columns: 140px 70px 90px 80px 80px 1fr;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-tertiary, #2a2a4a);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #a0aec0);
+  text-transform: uppercase;
+}
+
+.transaction-row {
+  display: grid;
+  grid-template-columns: 140px 70px 90px 80px 80px 1fr;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--text-primary, #ffffff);
+  border-top: 1px solid var(--border-color, #3a3a5a);
+}
+
+.transaction-row:hover {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.col-time {
+  color: var(--text-secondary, #a0aec0);
+  font-size: 12px;
+}
+
+.col-type {
+  font-weight: 500;
+}
+
+.type-earn {
+  color: #22c55e;
+}
+
+.type-consume {
+  color: #f59e0b;
+}
+
+.type-expire {
+  color: #6b7280;
+}
+
+.type-refund {
+  color: #3b82f6;
+}
+
+.type-admin_adjust {
+  color: #8b5cf6;
+}
+
+.col-source {
+  font-size: 12px;
+  color: var(--text-secondary, #a0aec0);
+}
+
+.col-amount.positive {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.col-amount.negative {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.col-balance {
+  color: var(--text-secondary, #a0aec0);
+}
+
+.col-desc {
+  color: var(--text-secondary, #a0aec0);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 加载更多 */
+.load-more {
+  text-align: center;
+  padding: 16px;
+}
+
+.btn-load-more {
+  padding: 8px 24px;
+  background: var(--bg-tertiary, #2a2a4a);
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 6px;
+  color: var(--text-secondary, #a0aec0);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-load-more:hover {
+  background: var(--bg-hover, #3a3a5a);
+  color: var(--text-primary, #ffffff);
+}
+
+/* 邀请好友区域 */
+.invite-section {
+  background: var(--bg-secondary, #1a1a3e);
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.invite-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.invite-header h3 {
+  margin: 0;
+}
+
+.btn-invite {
+  padding: 8px 16px;
+  background: var(--primary-color, #6366f1);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-invite:hover {
+  background: #4f46e5;
+}
+
+.invite-stats-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.invite-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.invite-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+}
+
+.invite-stat-label {
+  font-size: 12px;
+  color: var(--text-secondary, #a0aec0);
+}
+
+.invite-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.invite-progress-bar {
+  height: 8px;
+  background: var(--bg-tertiary, #2a2a4a);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.invite-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.invite-progress-text {
+  font-size: 12px;
+  color: var(--text-secondary, #a0aec0);
+  text-align: right;
+}
+
+/* 邀请对话框 */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background: var(--bg-secondary, #1a1a2e);
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 420px;
+  width: 90%;
+}
+
+.dialog h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+}
+
+.dialog p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: var(--text-secondary, #a0aec0);
+  line-height: 1.5;
+}
+
+.invite-code-box {
+  margin-bottom: 20px;
+}
+
+.invite-code-box label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary, #a0aec0);
+  margin-bottom: 8px;
+}
+
+.invite-code {
+  padding: 12px 16px;
+  background: var(--bg-tertiary, #2a2a4a);
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 8px;
+  color: var(--primary-color, #6366f1);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: monospace;
+  text-align: center;
+  user-select: all;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-secondary {
+  padding: 10px 20px;
+  background: var(--bg-tertiary, #2a2a4a);
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 6px;
+  color: var(--text-primary, #ffffff);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-hover, #3a3a5a);
+}
+
+.btn-primary {
+  padding: 10px 20px;
+  background: var(--primary-color, #6366f1);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: #4f46e5;
+}
+
+/* 响应式 */
+@media (max-width: 800px) {
+  .balance-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .transaction-header,
+  .transaction-row {
+    grid-template-columns: 100px 60px 80px 70px 70px 1fr;
+    font-size: 11px;
+  }
+}

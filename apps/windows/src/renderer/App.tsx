@@ -10,6 +10,7 @@ import { AuditLogView } from './components/AuditLogView'
 import { AuthView } from './components/AuthView'
 import { ChatView } from './components/ChatView'
 import { ConfirmDialog } from './components/ConfirmDialog'
+import { CreditsView } from './components/CreditsView'
 import { DashboardView } from './components/DashboardView'
 import { DeviceManagementView } from './components/DeviceManagementView'
 import { FilesView } from './components/FilesView'
@@ -27,7 +28,23 @@ import { useSettings } from './hooks/useSettings'
 /**
  * 视图类型
  */
-type ViewType = 'dashboard' | 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'settings' | 'devices'
+type ViewType = 'dashboard' | 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'settings' | 'devices' | 'credits'
+
+// localStorage keys for device binding
+const DEVICE_TOKEN_KEY = 'device_token'
+const DEVICE_ID_KEY = 'device_id'
+
+/**
+ * 读取本地存储的设备 token 和 deviceId
+ */
+function getStoredDeviceAuth(): { token: string; deviceId: string } | null {
+  const token = localStorage.getItem(DEVICE_TOKEN_KEY)
+  const deviceId = localStorage.getItem(DEVICE_ID_KEY)
+  if (token && deviceId) {
+    return { token, deviceId }
+  }
+  return null
+}
 
 /**
  * 主应用组件
@@ -94,16 +111,12 @@ const App: React.FC = () => {
   /**
    * 认证成功后自动连接 Gateway
    *
-   * 多租户认证流程：
-   * 1. 用户通过 API Server 登录成功,获得 accessToken (JWT)
-   * 2. 使用 accessToken 连接 Gateway (支持多租户身份识别)
-   * 3. Gateway 从 JWT 中提取 userId,实现租户隔离
-   * 4. 如果 Gateway 不可用,聊天功能不可用但不影响已登录状态
-   * 5. 连接失败后,每 5 分钟重试一次
-   *
-   * 认证层次：
-   * - 连接层: Gateway token (可选,开发环境通常为 none)
-   * - 业务层: JWT accessToken (必需,用于用户身份识别和权限控制)
+   * 双层认证流程：
+   * 1. 用户通过 API Server 登录成功，获得 accessToken (JWT)
+   * 2. 检查本地是否有设备绑定（device_token + device_id）
+   * 3. 优先使用 device token 连接 Gateway（无人值守长期连接）
+   * 4. 备选使用 settings 中配置的 gateway token 连接
+   * 5. 连接失败后，每 5 分钟重试一次
    */
   useEffect(() => {
     if (!isAuthenticated || !accessToken) {
@@ -115,23 +128,39 @@ const App: React.FC = () => {
       return
     }
 
-    const gatewayUrl = settings.gateway.url || 'ws://localhost:18789'
+    // 强制使用 IPv4 地址，避免 Windows 上 localhost 解析为 IPv6 导致连接失败
+    const rawUrl = settings.gateway.url || 'ws://127.0.0.1:18789'
+    const gatewayUrl = rawUrl.replace('://localhost:', '://127.0.0.1:')
+
+    // 构建连接选项：优先使用设备 token，其次使用 settings 中的 gateway token
+    const deviceAuth = getStoredDeviceAuth()
     const gatewayToken = settings.gateway.token
     const gatewayDeviceId = settings.gateway.deviceId
 
-    console.log('[App] 用户已认证,尝试连接 Gateway:', {
-      url: gatewayUrl,
-      hasGatewayToken: !!gatewayToken,
-      hasDeviceId: !!gatewayDeviceId,
-      hasAccessToken: !!accessToken
-    })
+    let connectOptions: { token?: string; deviceId?: string; role?: string; scopes?: string[] } | undefined
 
-    // 连接选项:
-    // - 如果配置了 gateway.token,使用它作为连接层认证
-    // - 如果有 deviceId, 传递给 Gateway 用于 device token 验证
-    // - accessToken 会在 RPC 调用时自动添加到请求参数中
-    const connectOptions: { token?: string; deviceId?: string } | undefined =
-      gatewayToken ? { token: gatewayToken, ...(gatewayDeviceId ? { deviceId: gatewayDeviceId } : {}) } : undefined
+    if (deviceAuth) {
+      // 使用设备绑定的 device token 连接，role/scopes 需与绑定时一致
+      connectOptions = {
+        token: deviceAuth.token,
+        deviceId: deviceAuth.deviceId,
+        role: 'user',
+        scopes: ['user.basic'],
+      }
+      console.log('[App] 使用设备 token 连接 Gateway:', {
+        url: gatewayUrl,
+        deviceId: deviceAuth.deviceId,
+      })
+    } else if (gatewayToken) {
+      // 使用 settings 中配置的 gateway token 连接
+      connectOptions = { token: gatewayToken, ...(gatewayDeviceId ? { deviceId: gatewayDeviceId } : {}) }
+      console.log('[App] 使用配置 token 连接 Gateway:', {
+        url: gatewayUrl,
+        hasDeviceId: !!gatewayDeviceId,
+      })
+    } else {
+      console.log('[App] 无设备 token 也无 gateway token，尝试无认证连接:', { url: gatewayUrl })
+    }
 
     // 立即尝试连接
     connect(gatewayUrl, connectOptions).catch(err => {
@@ -141,17 +170,23 @@ const App: React.FC = () => {
     // 设置定时重连（5 分钟）
     const reconnectInterval = setInterval(() => {
       if (!isConnected) {
+        // 重新读取设备 token（可能在此期间完成了设备绑定）
+        const latestDeviceAuth = getStoredDeviceAuth()
+        const retryOptions = latestDeviceAuth
+          ? { token: latestDeviceAuth.token, deviceId: latestDeviceAuth.deviceId, role: 'user', scopes: ['user.basic'] }
+          : connectOptions
+
         console.log('[App] 定时重连 Gateway:', gatewayUrl)
-        connect(gatewayUrl, connectOptions).catch(err => {
+        connect(gatewayUrl, retryOptions).catch(err => {
           console.error('[App] 重连 Gateway 失败:', err)
         })
       }
-    }, 5 * 60 * 1000) // 5 分钟
+    }, 5 * 60 * 1000)
 
     return () => {
       clearInterval(reconnectInterval)
     }
-  }, [isAuthenticated, accessToken, connect, settings.gateway.url, settings.gateway.token]) // 添加 gateway.token 依赖
+  }, [isAuthenticated, accessToken, connect, isConnected, settings.gateway.url, settings.gateway.token, settings.gateway.deviceId])
 
   /**
    * 认证成功回调
@@ -167,18 +202,32 @@ const App: React.FC = () => {
 
   /**
    * 设备配对成功回调
+   *
+   * 配对成功后使用新的 device token 和 deviceId 连接 Gateway
    */
   const handleDevicePaired = useCallback((deviceToken: string) => {
-    console.log('[App] 设备配对成功,尝试连接 Gateway')
-    const gatewayUrl = settings.gateway.url || 'ws://localhost:18789'
-    const gatewayToken = settings.gateway.token
+    console.log('[App] 设备配对成功，使用 device token 连接 Gateway')
+    // 强制使用 IPv4 地址，避免 Windows 上 localhost 解析为 IPv6 导致连接失败
+    const rawUrl = settings.gateway.url || 'ws://127.0.0.1:18789'
+    const gatewayUrl = rawUrl.replace('://localhost:', '://127.0.0.1:')
 
-    // 使用 gateway token (如果配置了) 连接
-    const connectOptions = gatewayToken ? { token: gatewayToken } : undefined
+    // 从 localStorage 读取配对时保存的 deviceId
+    const deviceId = localStorage.getItem(DEVICE_ID_KEY)
+
+    // 使用设备 token 连接 Gateway，role/scopes 与设备绑定时一致
+    const connectOptions: { token: string; deviceId?: string; role: string; scopes: string[] } = {
+      token: deviceToken,
+      role: 'user',
+      scopes: ['user.basic'],
+    }
+    if (deviceId) {
+      connectOptions.deviceId = deviceId
+    }
+
     connect(gatewayUrl, connectOptions).catch(err => {
       console.error('[App] 连接 Gateway 失败:', err)
     })
-  }, [connect, settings.gateway.url, settings.gateway.token])
+  }, [connect, settings.gateway.url])
 
   /**
    * 切换侧边栏显示
@@ -203,7 +252,9 @@ const App: React.FC = () => {
       case 'audit':
         return <AuditLogView isConnected={isConnected} />
       case 'subscription':
-        return <SubscriptionView isConnected={isConnected} />
+        return <SubscriptionView isConnected={isConnected} onViewChange={setActiveView} />
+      case 'credits':
+        return <CreditsView />
       case 'settings':
         return <SettingsView isConnected={isConnected} isConnecting={isConnecting} connectionError={connectionError} onConnect={connect} onDisconnect={disconnect} />
       case 'devices':

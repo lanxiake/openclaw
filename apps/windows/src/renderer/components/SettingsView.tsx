@@ -8,7 +8,6 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useSettings, type AppSettings } from '../hooks/useSettings'
 import { useAuth } from '../contexts/AuthContext'
 import { UpdaterView } from './UpdaterView'
-import { deviceService } from '../services/device-service'
 import './SettingsView.css'
 
 interface SettingsViewProps {
@@ -84,9 +83,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'fail'>('idle')
   const [testLatency, setTestLatency] = useState<number | null>(null)
   const [testError, setTestError] = useState<string | null>(null)
-
-  /** 设备 Token 加载状态 */
-  const [deviceTokenLoading, setDeviceTokenLoading] = useState(false)
 
   /** 账户设置状态 */
   const [displayNameEdit, setDisplayNameEdit] = useState(user?.displayName || '')
@@ -180,15 +176,26 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
 
   /**
    * 处理连接/断开 Gateway
+   *
+   * 优先使用设备 token 连接（无需手动配置），其次回退到 settings 中的 token。
    */
   const handleToggleConnection = () => {
     if (isConnected) {
       onDisconnect?.()
     } else {
-      const token = settings.gateway.token || undefined
-      const deviceId = settings.gateway.deviceId || undefined
-      const options = token ? { token, ...(deviceId ? { deviceId } : {}) } : undefined
-      onConnect?.(settings.gateway.url, options)
+      // 优先使用设备 token
+      const deviceToken = localStorage.getItem('device_token')
+      const deviceId = localStorage.getItem('device_id')
+
+      if (deviceToken && deviceId) {
+        onConnect?.(settings.gateway.url, { token: deviceToken, deviceId, role: 'user', scopes: ['user.basic'] })
+      } else {
+        // 回退到 settings 中的 token
+        const token = settings.gateway.token || undefined
+        const settingsDeviceId = settings.gateway.deviceId || undefined
+        const options = token ? { token, ...(settingsDeviceId ? { deviceId: settingsDeviceId } : {}) } : undefined
+        onConnect?.(settings.gateway.url, options)
+      }
     }
   }
 
@@ -211,9 +218,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
         return
       }
 
-      const token = settings.gateway.token || undefined
-      const deviceId = settings.gateway.deviceId || undefined
-      const options = token ? { token, ...(deviceId ? { deviceId } : {}) } : undefined
+      // 优先使用设备 token
+      const deviceToken = localStorage.getItem('device_token')
+      const localDeviceId = localStorage.getItem('device_id')
+      let options: { token?: string; deviceId?: string; role?: string; scopes?: string[] } | undefined
+      if (deviceToken && localDeviceId) {
+        options = { token: deviceToken, deviceId: localDeviceId, role: 'user', scopes: ['user.basic'] }
+      } else {
+        const token = settings.gateway.token || undefined
+        const settingsDeviceId = settings.gateway.deviceId || undefined
+        options = token ? { token, ...(settingsDeviceId ? { deviceId: settingsDeviceId } : {}) } : undefined
+      }
       await onConnect?.(settings.gateway.url, options)
 
       const latency = Date.now() - start
@@ -227,57 +242,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
       console.error('[SettingsView] 连接测试失败:', errMsg)
     }
   }, [isConnected, settings.gateway.url, settings.gateway.token, onConnect])
-
-  /**
-   * 使用设备专属 Token 填充 Gateway Token
-   *
-   * 通过 API 从用户已绑定的设备中获取 Gateway 连接 Token，
-   * 而非依赖本地 pairing 服务状态。
-   */
-  const handleUseDeviceToken = useCallback(async () => {
-    console.log('[SettingsView] 获取设备 Token（通过 API）')
-    setDeviceTokenLoading(true)
-    try {
-      // 确保 deviceService 有最新的 accessToken
-      deviceService.setAccessToken(accessToken)
-
-      // 1. 获取用户设备列表
-      const devicesResult = await deviceService.getDevices()
-      if (!devicesResult.success || !devicesResult.devices?.length) {
-        alert('未找到已绑定的设备，请先完成设备配对')
-        console.warn('[SettingsView] 无已绑定设备')
-        return
-      }
-
-      // 2. 优先选择主设备，否则取第一个
-      const targetDevice = devicesResult.devices.find(d => d.isPrimary) || devicesResult.devices[0]
-      console.log('[SettingsView] 目标设备:', targetDevice.deviceId, targetDevice.alias || targetDevice.displayName)
-
-      // 3. 通过 API 获取设备的 Gateway Token
-      const tokenResult = await deviceService.getDeviceToken(targetDevice.deviceId)
-      if (!tokenResult.success || !tokenResult.data?.token) {
-        alert(tokenResult.error || '获取设备 Token 失败')
-        console.error('[SettingsView] 获取设备 Token 失败:', tokenResult.error)
-        return
-      }
-
-      // 4. 填入 Gateway Token 和 deviceId，并自动保存
-      updateGateway({ token: tokenResult.data.token, deviceId: targetDevice.deviceId })
-      console.log('[SettingsView] 已填入设备 Token (deviceId: %s)', targetDevice.deviceId)
-
-      // 延迟保存，等待 React 状态更新完成
-      setTimeout(() => {
-        saveSettings().catch((err: unknown) => {
-          console.error('[SettingsView] 自动保存设置失败:', err)
-        })
-      }, 100)
-    } catch (err) {
-      console.error('[SettingsView] 获取设备 Token 失败:', err)
-      alert('获取设备 Token 失败')
-    } finally {
-      setDeviceTokenLoading(false)
-    }
-  }, [updateGateway, accessToken, saveSettings])
 
   /**
    * 保存用户显示名称
@@ -546,26 +510,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
         </div>
 
         <div className="setting-item">
-          <label className="setting-label">认证 Token (可选)</label>
-          <div className="token-input-row">
-            <input
-              type="password"
-              className="setting-input"
-              value={settings.gateway.token || ''}
-              onChange={(e) => updateGateway({ token: e.target.value || undefined })}
-              placeholder="留空则不使用认证"
-            />
-            <button
-              className="device-token-btn"
-              onClick={handleUseDeviceToken}
-              disabled={deviceTokenLoading}
-              title="从已配对设备中自动填入专属 Token"
-            >
-              {deviceTokenLoading ? '获取中...' : '使用设备 Token'}
-            </button>
-          </div>
           <span className="setting-hint">
-            用于 Gateway 认证的 Token，可点击「使用设备 Token」自动填入已配对设备的专属 Token
+            绑定设备后，将自动使用设备 Token 进行 Gateway 认证。
+            {localStorage.getItem('device_token') ? ' (已有设备 Token)' : ' (尚未绑定设备，请前往设备管理页面绑定)'}
           </span>
         </div>
 
