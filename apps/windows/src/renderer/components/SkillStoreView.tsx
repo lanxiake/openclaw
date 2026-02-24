@@ -19,22 +19,6 @@ interface SkillStoreViewProps {
 }
 
 /**
- * 订阅类型标签
- */
-function getSubscriptionLabel(type: string): { label: string; className: string } {
-  switch (type) {
-    case 'free':
-      return { label: '免费', className: 'subscription-free' }
-    case 'premium':
-      return { label: '高级', className: 'subscription-premium' }
-    case 'enterprise':
-      return { label: '企业', className: 'subscription-enterprise' }
-    default:
-      return { label: type, className: '' }
-  }
-}
-
-/**
  * 格式化下载数量
  */
 function formatDownloads(count: number): string {
@@ -56,8 +40,6 @@ const StoreSkillCard: React.FC<{
   onInstall: () => void
   isInstalling: boolean
 }> = ({ skill, onSelect, onInstall, isInstalling }) => {
-  const subscriptionInfo = getSubscriptionLabel(skill.subscription.type)
-
   /**
    * 处理安装按钮点击
    */
@@ -70,16 +52,6 @@ const StoreSkillCard: React.FC<{
     <div className="store-skill-card" onClick={onSelect}>
       <div className="store-card-header">
         <div className="store-card-icon">{skill.icon || '🔧'}</div>
-        <div className="store-card-meta">
-          <span className={`subscription-badge ${subscriptionInfo.className}`}>
-            {subscriptionInfo.label}
-          </span>
-          {skill.subscription.price && (
-            <span className="price-tag">
-              ¥{skill.subscription.price}/{skill.subscription.period === 'monthly' ? '月' : '年'}
-            </span>
-          )}
-        </div>
       </div>
       <div className="store-card-content">
         <h3 className="store-skill-name">{skill.name}</h3>
@@ -134,8 +106,6 @@ const SkillDetailDialog: React.FC<{
 }> = ({ skill, isOpen, onClose, onInstall, isInstalling }) => {
   if (!isOpen || !skill) return null
 
-  const subscriptionInfo = getSubscriptionLabel(skill.subscription.type)
-
   return (
     <div className="dialog-overlay" onClick={onClose}>
       <div className="dialog-content skill-detail-dialog" onClick={e => e.stopPropagation()}>
@@ -162,12 +132,6 @@ const SkillDetailDialog: React.FC<{
             <div className="stat-block">
               <span className="stat-label">版本</span>
               <span className="stat-value">v{skill.version}</span>
-            </div>
-            <div className="stat-block">
-              <span className="stat-label">类型</span>
-              <span className={`stat-value subscription-badge ${subscriptionInfo.className}`}>
-                {subscriptionInfo.label}
-              </span>
             </div>
           </div>
 
@@ -220,9 +184,7 @@ const SkillDetailDialog: React.FC<{
               onClick={onInstall}
               disabled={isInstalling}
             >
-              {isInstalling ? '安装中...' : skill.subscription.price
-                ? `安装 (¥${skill.subscription.price}/${skill.subscription.period === 'monthly' ? '月' : '年'})`
-                : '免费安装'}
+              {isInstalling ? '安装中...' : '安装'}
             </button>
           )}
         </div>
@@ -309,7 +271,6 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [subscriptionFilter, setSubscriptionFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('downloads')
   const [selectedSkill, setSelectedSkill] = useState<StoreSkillInfo | null>(null)
   const [showDetailDialog, setShowDetailDialog] = useState(false)
@@ -318,6 +279,17 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
     success: boolean
     message: string
   } | null>(null)
+
+  /** 提交技能表单状态 */
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitForm, setSubmitForm] = useState({
+    name: '',
+    description: '',
+    version: '1.0.0',
+    categoryId: '',
+    tags: '',
+  })
 
   /**
    * 初始加载
@@ -359,17 +331,6 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
   }, [searchSkills])
 
   /**
-   * 处理订阅筛选
-   */
-  const handleSubscriptionFilter = useCallback((value: string) => {
-    setSubscriptionFilter(value)
-    loadStoreSkills({
-      ...filters,
-      subscription: value as StoreFilters['subscription'],
-    })
-  }, [filters, loadStoreSkills])
-
-  /**
    * 处理排序
    */
   const handleSortChange = useCallback((value: string) => {
@@ -405,7 +366,6 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
           success: true,
           message: '技能安装成功！',
         })
-        // 刷新列表
         loadStoreSkills(filters)
         onInstallComplete?.()
       } else {
@@ -423,6 +383,43 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
       setInstallingSkillId(null)
     }
   }, [installSkill, loadStoreSkills, filters, onInstallComplete])
+
+  /**
+   * 处理提交技能到商店
+   */
+  const handleSubmitSkill = useCallback(async () => {
+    if (!submitForm.name.trim()) {
+      setInstallResult({ success: false, message: '技能名称不能为空' })
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const api = (window as unknown as { electronAPI: { api: { submitSkillToStore: (data: Record<string, unknown>) => Promise<{ success: boolean; error?: string }> } } }).electronAPI.api
+      const result = await api.submitSkillToStore({
+        name: submitForm.name.trim(),
+        description: submitForm.description.trim() || undefined,
+        version: submitForm.version || '1.0.0',
+        categoryId: submitForm.categoryId || undefined,
+        tags: submitForm.tags ? submitForm.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
+      })
+
+      if (result.success) {
+        setInstallResult({ success: true, message: '技能已提交审核，审核通过后将在商店上架' })
+        setShowSubmitDialog(false)
+        setSubmitForm({ name: '', description: '', version: '1.0.0', categoryId: '', tags: '' })
+      } else {
+        setInstallResult({ success: false, message: result.error || '提交失败' })
+      }
+    } catch (err) {
+      setInstallResult({
+        success: false,
+        message: err instanceof Error ? err.message : '提交失败',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [submitForm])
 
   if (!isConnected) {
     return (
@@ -452,15 +449,6 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
         <div className="filter-controls">
           <select
             className="filter-select"
-            value={subscriptionFilter}
-            onChange={e => handleSubscriptionFilter(e.target.value)}
-          >
-            <option value="all">全部类型</option>
-            <option value="free">免费</option>
-            <option value="premium">高级</option>
-          </select>
-          <select
-            className="filter-select"
             value={sortBy}
             onChange={e => handleSortChange(e.target.value)}
           >
@@ -476,6 +464,13 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
             title="刷新商店数据"
           >
             {isRefreshing ? '⏳' : '🔄'}
+          </button>
+          <button
+            className="submit-skill-button"
+            onClick={() => setShowSubmitDialog(true)}
+            title="提交技能到商店"
+          >
+            ➕ 提交技能
           </button>
         </div>
       </div>
@@ -593,6 +588,81 @@ export const SkillStoreView: React.FC<SkillStoreViewProps> = ({
         onInstall={() => selectedSkill && handleInstall(selectedSkill.id)}
         isInstalling={selectedSkill ? installingSkillId === selectedSkill.id : false}
       />
+
+      {/* 提交技能对话框 */}
+      {showSubmitDialog && (
+        <div className="dialog-overlay" onClick={() => setShowSubmitDialog(false)}>
+          <div className="dialog-content submit-skill-dialog" onClick={e => e.stopPropagation()}>
+            <div className="dialog-header">
+              <h3>提交技能到商店</h3>
+              <button className="close-button" onClick={() => setShowSubmitDialog(false)}>✕</button>
+            </div>
+            <div className="dialog-body">
+              <div className="form-group">
+                <label>技能名称 *</label>
+                <input
+                  type="text"
+                  value={submitForm.name}
+                  onChange={e => setSubmitForm({ ...submitForm, name: e.target.value })}
+                  placeholder="输入技能名称"
+                  maxLength={100}
+                />
+              </div>
+              <div className="form-group">
+                <label>描述</label>
+                <textarea
+                  value={submitForm.description}
+                  onChange={e => setSubmitForm({ ...submitForm, description: e.target.value })}
+                  placeholder="描述技能的功能和用途"
+                  rows={3}
+                />
+              </div>
+              <div className="form-group">
+                <label>版本号</label>
+                <input
+                  type="text"
+                  value={submitForm.version}
+                  onChange={e => setSubmitForm({ ...submitForm, version: e.target.value })}
+                  placeholder="1.0.0"
+                />
+              </div>
+              <div className="form-group">
+                <label>分类</label>
+                <select
+                  value={submitForm.categoryId}
+                  onChange={e => setSubmitForm({ ...submitForm, categoryId: e.target.value })}
+                >
+                  <option value="">选择分类</option>
+                  {stats?.categories
+                    .filter(c => c.id !== 'all')
+                    .map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>标签（逗号分隔）</label>
+                <input
+                  type="text"
+                  value={submitForm.tags}
+                  onChange={e => setSubmitForm({ ...submitForm, tags: e.target.value })}
+                  placeholder="标签1, 标签2, 标签3"
+                />
+              </div>
+            </div>
+            <div className="dialog-footer">
+              <button className="cancel-button" onClick={() => setShowSubmitDialog(false)}>取消</button>
+              <button
+                className="confirm-button"
+                onClick={handleSubmitSkill}
+                disabled={isSubmitting || !submitForm.name.trim()}
+              >
+                {isSubmitting ? '提交中...' : '提交审核'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

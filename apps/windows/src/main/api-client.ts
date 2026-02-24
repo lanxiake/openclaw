@@ -966,6 +966,50 @@ export class ApiClient {
   }
 
   /**
+   * 启用已安装的技能
+   */
+  async enableInstalledSkill(skillId: string): Promise<ApiResponse<unknown>> {
+    log.info('启用已安装技能', { skillId })
+
+    return this.request<ApiResponse<unknown>>('PATCH', `/api/store/skills/${skillId}/enable`)
+  }
+
+  /**
+   * 禁用已安装的技能
+   */
+  async disableInstalledSkill(skillId: string): Promise<ApiResponse<unknown>> {
+    log.info('禁用已安装技能', { skillId })
+
+    return this.request<ApiResponse<unknown>>('PATCH', `/api/store/skills/${skillId}/disable`)
+  }
+
+  /**
+   * 切换已安装技能的启用/禁用状态
+   */
+  async toggleInstalledSkill(skillId: string): Promise<ApiResponse<unknown>> {
+    log.info('切换技能启用状态', { skillId })
+
+    return this.request<ApiResponse<unknown>>('PATCH', `/api/store/skills/${skillId}/toggle`)
+  }
+
+  /**
+   * 提交技能到商店
+   */
+  async submitSkillToStore(data: {
+    name: string
+    description?: string
+    readme?: string
+    version?: string
+    categoryId?: string
+    tags?: string[]
+    config?: Record<string, unknown>
+  }): Promise<ApiResponse<unknown>> {
+    log.info('提交技能到商店', { name: data.name })
+
+    return this.request<ApiResponse<unknown>>('POST', '/api/store/skills/submit', data)
+  }
+
+  /**
    * 创建用户自建技能
    */
   async createUserSkill(data: {

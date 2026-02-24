@@ -1556,6 +1556,58 @@ function setupApiIpcHandlers(): void {
     return apiClient.getInstalledSkills()
   })
 
+  ipcMain.handle('api:enableInstalledSkill', async (_event, skillId: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof skillId !== 'string' || skillId.length > 200) {
+      throw new Error('无效的技能 ID')
+    }
+    log.info('启用已安装技能', { skillId })
+    return apiClient.enableInstalledSkill(skillId)
+  })
+
+  ipcMain.handle('api:disableInstalledSkill', async (_event, skillId: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof skillId !== 'string' || skillId.length > 200) {
+      throw new Error('无效的技能 ID')
+    }
+    log.info('禁用已安装技能', { skillId })
+    return apiClient.disableInstalledSkill(skillId)
+  })
+
+  ipcMain.handle('api:toggleInstalledSkill', async (_event, skillId: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof skillId !== 'string' || skillId.length > 200) {
+      throw new Error('无效的技能 ID')
+    }
+    log.info('切换技能启用状态', { skillId })
+    return apiClient.toggleInstalledSkill(skillId)
+  })
+
+  ipcMain.handle('api:submitSkillToStore', async (_event, data: {
+    name: string
+    description?: string
+    readme?: string
+    version?: string
+    categoryId?: string
+    tags?: string[]
+    config?: Record<string, unknown>
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof data.name !== 'string' || data.name.length === 0 || data.name.length > 200) {
+      throw new Error('无效的技能名称')
+    }
+    log.info('提交技能到商店', { name: data.name })
+    return apiClient.submitSkillToStore(data)
+  })
+
   ipcMain.handle('api:createUserSkill', async (_event, data: {
     name: string
     description?: string

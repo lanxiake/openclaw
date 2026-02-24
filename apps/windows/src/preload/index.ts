@@ -883,6 +883,21 @@ const electronAPI: ElectronAPI = {
       ipcRenderer.invoke('api:uninstallStoreSkill', skillId),
     getInstalledSkills: () =>
       ipcRenderer.invoke('api:getInstalledSkills'),
+    enableInstalledSkill: (skillId: string) =>
+      ipcRenderer.invoke('api:enableInstalledSkill', skillId),
+    disableInstalledSkill: (skillId: string) =>
+      ipcRenderer.invoke('api:disableInstalledSkill', skillId),
+    toggleInstalledSkill: (skillId: string) =>
+      ipcRenderer.invoke('api:toggleInstalledSkill', skillId),
+    submitSkillToStore: (data: {
+      name: string
+      description?: string
+      readme?: string
+      version?: string
+      categoryId?: string
+      tags?: string[]
+      config?: Record<string, unknown>
+    }) => ipcRenderer.invoke('api:submitSkillToStore', data),
     createUserSkill: (data: {
       name: string
       description?: string
