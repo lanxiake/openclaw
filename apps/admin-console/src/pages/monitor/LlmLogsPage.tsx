@@ -58,11 +58,21 @@ const STATUS_BADGE_VARIANT: Record<string, 'default' | 'secondary' | 'destructiv
 }
 
 /**
+ * 将 datetime-local 值转换为 ISO 字符串用于 API 查询
+ */
+function toISOString(datetimeLocalValue: string): string | undefined {
+  if (!datetimeLocalValue) return undefined
+  const date = new Date(datetimeLocalValue)
+  if (isNaN(date.getTime())) return undefined
+  return date.toISOString()
+}
+
+/**
  * LLM 调用日志页组件
  */
 export default function LlmLogsPage() {
   /** 搜索和过滤状态 */
-  const [userIdInput, setUserIdInput] = useState('')
+  const [userNameInput, setUserNameInput] = useState('')
   const [providerFilter, setProviderFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [startTime, setStartTime] = useState('')
@@ -74,23 +84,23 @@ export default function LlmLogsPage() {
   const [selectedLog, setSelectedLog] = useState<LlmCallLog | null>(null)
 
   /** 防抖搜索 */
-  const debouncedUserId = useDebounce(userIdInput, 300)
+  const debouncedUserName = useDebounce(userNameInput, 300)
 
   /** 构建查询参数 */
   const query: LlmLogQuery = {
-    userId: debouncedUserId || undefined,
+    userName: debouncedUserName || undefined,
     provider: providerFilter !== 'all' ? providerFilter : undefined,
     status: statusFilter !== 'all' ? (statusFilter as LlmCallStatus) : undefined,
-    startTime: startTime || undefined,
-    endTime: endTime || undefined,
+    startTime: toISOString(startTime),
+    endTime: toISOString(endTime),
     limit,
     offset,
   }
 
   /** 时间范围参数（用于统计查询） */
   const timeParams = {
-    startTime: startTime || undefined,
-    endTime: endTime || undefined,
+    startTime: toISOString(startTime),
+    endTime: toISOString(endTime),
   }
 
   /** 获取数据 */
@@ -112,7 +122,7 @@ export default function LlmLogsPage() {
 
   /** 重置过滤器并回到第一页 */
   const handleResetFilters = () => {
-    setUserIdInput('')
+    setUserNameInput('')
     setProviderFilter('all')
     setStatusFilter('all')
     setStartTime('')
@@ -156,12 +166,12 @@ export default function LlmLogsPage() {
         <CardContent className="pt-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">用户 ID</label>
+              <label className="text-xs text-muted-foreground">用户名称</label>
               <Input
-                placeholder="输入用户 ID 搜索"
-                value={userIdInput}
+                placeholder="输入用户名称搜索"
+                value={userNameInput}
                 onChange={(e) => {
-                  setUserIdInput(e.target.value)
+                  setUserNameInput(e.target.value)
                   setOffset(0)
                 }}
               />
@@ -378,6 +388,7 @@ export default function LlmLogsPage() {
                       <th className="p-3 font-medium">用户</th>
                       <th className="p-3 font-medium">输入</th>
                       <th className="p-3 font-medium">输出</th>
+                      <th className="p-3 font-medium">积分</th>
                       <th className="p-3 font-medium">耗时</th>
                       <th className="p-3 font-medium">详情</th>
                     </tr>
@@ -397,11 +408,12 @@ export default function LlmLogsPage() {
                             {LLM_STATUS_LABELS[log.status] ?? log.status}
                           </Badge>
                         </td>
-                        <td className="p-3 text-xs font-mono max-w-[100px] truncate" title={log.userId}>
-                          {log.userId ? log.userId.slice(0, 8) + '...' : '-'}
+                        <td className="p-3 text-xs max-w-[120px] truncate" title={log.userName ?? log.userId}>
+                          {log.userName ?? (log.userId ? log.userId.slice(0, 8) + '...' : '-')}
                         </td>
                         <td className="p-3 font-mono text-xs">{log.inputTokens ?? '-'}</td>
                         <td className="p-3 font-mono text-xs">{log.outputTokens ?? '-'}</td>
+                        <td className="p-3 font-mono text-xs">{log.creditsConsumed ?? '-'}</td>
                         <td className="p-3 font-mono text-xs">
                           {log.durationMs ? `${log.durationMs}ms` : '-'}
                         </td>
@@ -445,12 +457,12 @@ export default function LlmLogsPage() {
 
       {/* 详情 Dialog */}
       <Dialog open={!!selectedLog} onOpenChange={(open) => { if (!open) setSelectedLog(null) }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>调用详情</DialogTitle>
           </DialogHeader>
           {selectedLog && (
-            <div className="space-y-3 text-sm max-h-[60vh] overflow-y-auto">
+            <div className="space-y-3 text-sm max-h-[70vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <span className="text-muted-foreground">ID: </span>
@@ -483,12 +495,13 @@ export default function LlmLogsPage() {
               {/* Token 信息 */}
               <div className="rounded bg-muted/50 p-3">
                 <p className="text-xs text-muted-foreground mb-2">Token 统计</p>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>输入: <span className="font-mono">{selectedLog.inputTokens ?? '-'}</span></div>
                   <div>输出: <span className="font-mono">{selectedLog.outputTokens ?? '-'}</span></div>
+                  <div>合计: <span className="font-mono font-medium">{selectedLog.totalTokens ?? '-'}</span></div>
                   <div>缓存读取: <span className="font-mono">{selectedLog.cacheReadTokens ?? '-'}</span></div>
                   <div>缓存写入: <span className="font-mono">{selectedLog.cacheWriteTokens ?? '-'}</span></div>
-                  <div>合计: <span className="font-mono font-medium">{selectedLog.totalTokens ?? '-'}</span></div>
+                  <div>积分消耗: <span className="font-mono font-medium">{selectedLog.creditsConsumed ?? '-'}</span></div>
                 </div>
               </div>
 
@@ -496,7 +509,7 @@ export default function LlmLogsPage() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <span className="text-muted-foreground">用户: </span>
-                  <span className="font-mono text-xs">{selectedLog.userId ?? '-'}</span>
+                  <span className="text-xs">{selectedLog.userName ?? selectedLog.userId ?? '-'}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">会话: </span>
@@ -511,6 +524,26 @@ export default function LlmLogsPage() {
                   <span className="font-mono text-xs">{selectedLog.runId ? selectedLog.runId.slice(0, 12) + '...' : '-'}</span>
                 </div>
               </div>
+
+              {/* 输入内容 */}
+              {selectedLog.inputContent && (
+                <div>
+                  <p className="text-muted-foreground mb-1">输入内容:</p>
+                  <pre className="rounded bg-muted p-3 text-xs overflow-auto max-h-40 whitespace-pre-wrap break-words">
+                    {selectedLog.inputContent}
+                  </pre>
+                </div>
+              )}
+
+              {/* 输出内容 */}
+              {selectedLog.outputContent && (
+                <div>
+                  <p className="text-muted-foreground mb-1">输出内容:</p>
+                  <pre className="rounded bg-muted p-3 text-xs overflow-auto max-h-40 whitespace-pre-wrap break-words">
+                    {selectedLog.outputContent}
+                  </pre>
+                </div>
+              )}
 
               {/* 错误信息 */}
               {selectedLog.errorMessage && (

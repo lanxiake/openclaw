@@ -9,6 +9,8 @@ import {
   Cpu,
   Bot,
   Network,
+  Brain,
+  Package,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -156,6 +158,18 @@ export default function ConfigPage() {
                 description="网关端口、认证模式、Tailscale 等基础设施配置"
                 icon={Network}
                 href="/config/gateway"
+              />
+              <ConfigCard
+                title="记忆默认模板"
+                description="管理新用户初始化时使用的 workspace 文件模板（SOUL.md、IDENTITY.md 等）"
+                icon={Brain}
+                href="/config/memory-defaults"
+              />
+              <ConfigCard
+                title="Bundled 技能管理"
+                description="管理内置技能的启用/禁用状态，控制哪些 bundled 技能对用户可见"
+                icon={Package}
+                href="/config/bundled-skills"
               />
             </div>
           </div>

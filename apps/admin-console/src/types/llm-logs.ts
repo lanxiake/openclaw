@@ -13,6 +13,7 @@ export type LlmCallStatus = 'success' | 'error' | 'timeout' | 'rate_limited' | '
 export interface LlmCallLog {
   id: string
   userId?: string
+  userName?: string
   sessionId?: string
   runId?: string
   channel?: string
@@ -26,6 +27,9 @@ export interface LlmCallLog {
   durationMs?: number
   status: LlmCallStatus
   errorMessage?: string
+  inputContent?: string
+  outputContent?: string
+  creditsConsumed?: number
   metadata?: Record<string, unknown>
   calledAt: string
   createdAt: string
@@ -36,6 +40,7 @@ export interface LlmCallLog {
  */
 export interface LlmLogQuery {
   userId?: string
+  userName?: string
   provider?: string
   model?: string
   status?: LlmCallStatus

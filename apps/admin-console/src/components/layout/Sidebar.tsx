@@ -4,6 +4,7 @@ import {
   Users,
   CreditCard,
   FileText,
+  ScrollText,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -96,6 +97,12 @@ const navGroups: NavGroup[] = [
         href: ROUTES.MONITOR,
         icon: Activity,
         permission: 'monitor.view',
+      },
+      {
+        title: '系统日志',
+        href: ROUTES.MONITOR_LOGS,
+        icon: ScrollText,
+        permission: 'system.viewLogs',
       },
       {
         title: 'LLM 日志',

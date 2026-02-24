@@ -50,6 +50,8 @@ const NotificationsConfigPage = lazy(() => import('@/pages/config/NotificationsC
 const AIConfigPage = lazy(() => import('@/pages/config/AIConfigPage'))
 const AgentConfigPage = lazy(() => import('@/pages/config/AgentConfigPage'))
 const GatewayConfigPage = lazy(() => import('@/pages/config/GatewayConfigPage'))
+const MemoryDefaultsPage = lazy(() => import('@/pages/config/MemoryDefaultsPage'))
+const BundledSkillsConfigPage = lazy(() => import('@/pages/config/BundledSkillsConfigPage'))
 
 // 管理员管理
 const AdminListPage = lazy(() => import('@/pages/admins/AdminListPage'))
@@ -198,6 +200,8 @@ export const router = createBrowserRouter([
           { path: 'auth-profiles', element: <Navigate to="/config/ai" replace /> },
           { path: 'agent', element: withSuspense(AgentConfigPage) },
           { path: 'gateway', element: withSuspense(GatewayConfigPage) },
+          { path: 'memory-defaults', element: withSuspense(MemoryDefaultsPage) },
+          { path: 'bundled-skills', element: withSuspense(BundledSkillsConfigPage) },
         ],
       },
 

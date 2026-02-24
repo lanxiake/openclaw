@@ -10,6 +10,7 @@ import {
   Phone,
   RefreshCw,
   Trash2,
+  Brain,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -29,6 +30,7 @@ import {
 import { formatDateTime, formatNumber, cn } from '@/lib/utils'
 import { USER_STATUS_LABELS, SUBSCRIPTION_STATUS_LABELS } from '@/lib/constants'
 import { useUserDetail, useUnlinkDevice } from '@/hooks/useUsers'
+import MemoryTab from './memory/MemoryTab'
 
 /**
  * 用户详情页面
@@ -288,6 +290,19 @@ export default function UserDetailPage() {
               <p className="text-sm text-muted-foreground">本月 Tokens</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* 用户记忆管理 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Brain className="h-5 w-5" />
+            用户记忆
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MemoryTab userId={userId!} />
         </CardContent>
       </Card>
     </div>
