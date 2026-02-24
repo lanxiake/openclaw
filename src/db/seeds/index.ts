@@ -5,3 +5,11 @@
  */
 
 export { runSkillSeeds, seedSkillCategories, seedExampleSkills } from "./skill-store.js";
+export {
+  seedMemoryDefaults,
+  getMemoryDefaults,
+  getMemoryDefaultsByFileName,
+  getFileNameFromConfigKey,
+  getConfigKeyFromFileName,
+  resetMemoryDefaultsFromFiles,
+} from "../seed/memory-defaults.js";

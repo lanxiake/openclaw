@@ -5,10 +5,10 @@
  * 支持按用户、模型、Provider、状态、频道和时间范围过滤。
  */
 
-import { eq, and, gte, lte, lt, desc, sql } from "drizzle-orm";
+import { eq, and, gte, lte, lt, desc, sql, like } from "drizzle-orm";
 
 import { getDatabase, type Database } from "../connection.js";
-import { llmCallLogs, type LlmCallLog, type LlmCallStatus } from "../schema/index.js";
+import { llmCallLogs, type LlmCallLog, type LlmCallStatus, users } from "../schema/index.js";
 import { generateId } from "../utils/id.js";
 import { getLogger } from "../../logging/logger.js";
 
@@ -22,6 +22,8 @@ const logger = getLogger();
 export interface LlmCallLogQueryParams {
   /** 用户 ID */
   userId?: string;
+  /** 用户名称（模糊搜索） */
+  userName?: string;
   /** 模型提供商 */
   provider?: string;
   /** 模型标识 */
@@ -82,6 +84,9 @@ export interface LlmCallLogInsertParams {
   durationMs?: number | null;
   status: LlmCallStatus;
   errorMessage?: string | null;
+  inputContent?: string | null;
+  outputContent?: string | null;
+  creditsConsumed?: number | null;
   metadata?: Record<string, unknown> | null;
   calledAt: Date;
 }
@@ -125,6 +130,9 @@ export class LlmCallLogRepository {
       durationMs: entry.durationMs ?? null,
       status: entry.status,
       errorMessage: entry.errorMessage ?? null,
+      inputContent: entry.inputContent ?? null,
+      outputContent: entry.outputContent ?? null,
+      creditsConsumed: entry.creditsConsumed ?? null,
       metadata: entry.metadata ?? null,
       calledAt: entry.calledAt,
     });
@@ -156,6 +164,9 @@ export class LlmCallLogRepository {
       durationMs: entry.durationMs ?? null,
       status: entry.status,
       errorMessage: entry.errorMessage ?? null,
+      inputContent: entry.inputContent ?? null,
+      outputContent: entry.outputContent ?? null,
+      creditsConsumed: entry.creditsConsumed ?? null,
       metadata: entry.metadata ?? null,
       calledAt: entry.calledAt,
     }));
@@ -166,10 +177,10 @@ export class LlmCallLogRepository {
   /**
    * 查询 LLM 调用日志
    *
-   * 支持多维度过滤和分页
+   * 支持多维度过滤和分页，LEFT JOIN users 表获取用户名称
    */
   async query(params: LlmCallLogQueryParams): Promise<{
-    logs: LlmCallLog[];
+    logs: (LlmCallLog & { userName?: string | null })[];
     total: number;
     hasMore: boolean;
   }> {
@@ -177,6 +188,9 @@ export class LlmCallLogRepository {
 
     if (params.userId) {
       conditions.push(eq(llmCallLogs.userId, params.userId));
+    }
+    if (params.userName) {
+      conditions.push(like(users.displayName, `%${params.userName}%`));
     }
     if (params.provider) {
       conditions.push(eq(llmCallLogs.provider, params.provider));
@@ -203,11 +217,15 @@ export class LlmCallLogRepository {
 
     logger.debug("[LlmCallLogRepo] query", { limit, offset, filters: conditions.length });
 
-    /** 并行获取日志数据和总数 */
-    const [logs, [countResult]] = await Promise.all([
+    /** 并行获取日志数据（含用户名）和总数 */
+    const [rows, [countResult]] = await Promise.all([
       this.db
-        .select()
+        .select({
+          log: llmCallLogs,
+          userName: users.displayName,
+        })
         .from(llmCallLogs)
+        .leftJoin(users, eq(llmCallLogs.userId, users.id))
         .where(whereClause)
         .orderBy(desc(llmCallLogs.calledAt))
         .limit(limit)
@@ -215,10 +233,17 @@ export class LlmCallLogRepository {
       this.db
         .select({ count: sql<number>`count(*)::int` })
         .from(llmCallLogs)
+        .leftJoin(users, eq(llmCallLogs.userId, users.id))
         .where(whereClause),
     ]);
 
     const total = countResult?.count ?? 0;
+
+    /** 合并日志数据与用户名 */
+    const logs = rows.map((row) => ({
+      ...row.log,
+      userName: row.userName,
+    }));
 
     return {
       logs,

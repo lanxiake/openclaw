@@ -104,6 +104,17 @@ export const llmCallLogs = pgTable(
     /** 错误信息 (仅失败时) */
     errorMessage: text("error_message"),
 
+    // ---- 输入输出内容 ----
+
+    /** 输入内容摘要（用户消息/system prompt 摘要，截断到 4KB） */
+    inputContent: text("input_content"),
+
+    /** 输出内容摘要（assistant 回复摘要，截断到 4KB） */
+    outputContent: text("output_content"),
+
+    /** 本次调用消耗积分 */
+    creditsConsumed: integer("credits_consumed"),
+
     // ---- 扩展信息 ----
 
     /** 结构化扩展元数据 */

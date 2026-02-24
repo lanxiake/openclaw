@@ -263,9 +263,19 @@ export const CONFIG_KEYS = {
   LIMITS_MAX_SKILLS: "limits.max_skills",
   LIMITS_MAX_FILE_SIZE_MB: "limits.max_file_size_mb",
 
+  // Bundled 技能管控
+  BUNDLED_SKILLS_DISABLED: "bundled_skills.disabled",
+
   // 记忆系统配置
   MEMORY_EMBEDDING: "memory_embedding",
   MEMORY_LLM: "memory_llm",
+
+  // 记忆默认模板
+  MEMORY_DEFAULT_SOUL: "memory.default.soul",
+  MEMORY_DEFAULT_IDENTITY: "memory.default.identity",
+  MEMORY_DEFAULT_AGENTS: "memory.default.agents",
+  MEMORY_DEFAULT_TOOLS: "memory.default.tools",
+  MEMORY_DEFAULT_HEARTBEAT: "memory.default.heartbeat",
 } as const;
 
 export type ConfigKey = (typeof CONFIG_KEYS)[keyof typeof CONFIG_KEYS];

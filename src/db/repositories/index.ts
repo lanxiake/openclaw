@@ -141,3 +141,28 @@ export {
   getInviteRepository,
   getModelPricingRepository,
 } from "./credits.js";
+
+// 用户 workspace 文件仓库
+export {
+  UserWorkspaceFilesRepository,
+  getUserWorkspaceFilesRepository,
+} from "./user-workspace-files.js";
+
+// 记忆审计日志仓库
+export {
+  MemoryAuditRepository,
+  getMemoryAuditRepository,
+  type LogMemoryAccessParams,
+} from "./memory-audit.js";
+
+// Profile Memory 仓库
+export {
+  UserProfileRepository,
+  UserFactRepository,
+  UserPreferencesV2Repository,
+  BehaviorPatternRepository,
+  getUserProfileRepository,
+  getUserFactRepository,
+  getUserPreferencesV2Repository,
+  getBehaviorPatternRepository,
+} from "./profile-memory.js";

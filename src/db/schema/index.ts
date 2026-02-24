@@ -544,3 +544,39 @@ export {
 
 // LLM 调用日志相关类型
 export type { LlmCallLog, NewLlmCallLog, LlmCallStatus, LlmCallMetadata } from "./llm-call-logs.js";
+
+// 用户 Workspace 文件表
+export {
+  userWorkspaceFiles,
+  userWorkspaceFilesRelations,
+  WORKSPACE_FILE_NAMES,
+  // Zod schemas
+  insertUserWorkspaceFileSchema,
+  selectUserWorkspaceFileSchema,
+} from "./user-workspace-files.js";
+
+// 用户 Workspace 文件相关类型
+export type {
+  UserWorkspaceFile,
+  NewUserWorkspaceFile,
+  WorkspaceFileName,
+} from "./user-workspace-files.js";
+
+// 记忆审计日志表
+export {
+  memoryAuditLogs,
+  MEMORY_AUDIT_ACTIONS,
+  MEMORY_AUDIT_SOURCES,
+  // Zod schemas
+  insertMemoryAuditLogSchema,
+  selectMemoryAuditLogSchema,
+} from "./memory-audit.js";
+
+// 记忆审计日志相关类型
+export type {
+  MemoryAuditLog,
+  NewMemoryAuditLog,
+  MemoryAuditAction,
+  MemoryAuditSource,
+  MemoryAuditDetails,
+} from "./memory-audit.js";
