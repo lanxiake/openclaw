@@ -1325,6 +1325,7 @@ export type LlmCallStatus = "success" | "error" | "timeout" | "rate_limited" | "
 export interface LlmCallLog {
   id: string;
   userId?: string;
+  userName?: string;
   sessionId?: string;
   runId?: string;
   channel?: string;
@@ -1338,6 +1339,9 @@ export interface LlmCallLog {
   durationMs?: number;
   status: LlmCallStatus;
   errorMessage?: string;
+  inputContent?: string;
+  outputContent?: string;
+  creditsConsumed?: number;
   metadata?: Record<string, unknown>;
   calledAt: string;
   createdAt: string;
@@ -1348,6 +1352,7 @@ export interface LlmCallLog {
  */
 export interface LlmLogQueryParams {
   userId?: string;
+  userName?: string;
   provider?: string;
   model?: string;
   status?: LlmCallStatus;
@@ -1401,4 +1406,164 @@ export interface LlmPerformanceStats {
   avgDurationMs: number;
   totalInputTokens: number;
   totalOutputTokens: number;
+}
+
+// ============ 用户记忆管理 ============
+
+/**
+ * 用户记忆概览
+ */
+export interface UserMemoryOverview {
+  userId: string;
+  hasProfile: boolean;
+  factsCount: number;
+  hasPreferences: boolean;
+  workspaceFilesCount: number;
+  auditLogsCount: number;
+}
+
+/**
+ * 用户记忆事实
+ */
+export interface UserMemoryFact {
+  id: string;
+  category: string;
+  key: string;
+  value: string;
+  confidence: number;
+  source: string;
+  sensitive: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 用户记忆事实查询参数
+ */
+export interface UserMemoryFactsParams {
+  category?: string;
+  activeOnly?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * 用户记忆事实列表响应
+ */
+export interface UserMemoryFactsResponse {
+  facts: UserMemoryFact[];
+  total: number;
+}
+
+/**
+ * 用户偏好
+ */
+export interface UserMemoryPreferences {
+  language?: string;
+  timezone?: string;
+  responseStyle?: string;
+  confirmLevel?: string;
+  thinkingLevel?: string;
+  verboseLevel?: string;
+  favoriteSkills?: string[];
+  disabledSkills?: string[];
+  notifications?: Record<string, unknown>;
+}
+
+/**
+ * 用户 Workspace 文件
+ */
+export interface UserWorkspaceFileInfo {
+  id: string;
+  fileName: string;
+  content: string;
+  isCustomized: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 记忆审计日志
+ */
+export interface MemoryAuditLogEntry {
+  id: string;
+  userId: string;
+  action: string;
+  source: string;
+  targetId?: string;
+  sessionId?: string;
+  agentId?: string;
+  adminId?: string;
+  details?: Record<string, unknown>;
+  createdAt: string;
+}
+
+/**
+ * 记忆审计日志查询参数
+ */
+export interface MemoryAuditLogParams {
+  action?: string;
+  source?: string;
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * 记忆审计日志列表响应
+ */
+export interface MemoryAuditLogResponse {
+  logs: MemoryAuditLogEntry[];
+  total: number;
+}
+
+/**
+ * 默认模板信息
+ */
+export interface MemoryDefaultTemplate {
+  key: string;
+  fileName: string;
+  content: string;
+  updatedAt?: string;
+}
+
+/**
+ * 更新默认模板请求
+ */
+export interface UpdateMemoryDefaultRequest {
+  content: string;
+}
+
+// ============ Bundled 技能管理 ============
+
+/**
+ * Bundled 技能信息
+ */
+export interface BundledSkillInfo {
+  /** 技能名称（目录名） */
+  name: string;
+  /** 技能描述 */
+  description: string;
+  /** 是否被管理员禁用 */
+  isDisabled: boolean;
+  /** 技能元数据 */
+  metadata: Record<string, unknown>;
+}
+
+/**
+ * Bundled 技能列表响应
+ */
+export interface BundledSkillsResponse {
+  data: BundledSkillInfo[];
+  meta: {
+    total: number;
+    disabledCount: number;
+  };
+}
+
+/**
+ * 批量更新禁用列表请求
+ */
+export interface BatchUpdateBundledSkillsRequest {
+  disabled: string[];
 }

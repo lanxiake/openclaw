@@ -96,6 +96,18 @@ import type {
   LlmPerformanceStats,
   TestEmbeddingRequest,
   EmbeddingTestResult,
+  UserMemoryOverview,
+  UserMemoryFact,
+  UserMemoryFactsParams,
+  UserMemoryFactsResponse,
+  UserMemoryPreferences,
+  UserWorkspaceFileInfo,
+  MemoryAuditLogParams,
+  MemoryAuditLogResponse,
+  MemoryDefaultTemplate,
+  UpdateMemoryDefaultRequest,
+  BundledSkillsResponse,
+  BatchUpdateBundledSkillsRequest,
 } from "./types.js";
 
 /**
@@ -1134,6 +1146,160 @@ export class AdminApiClient {
       "/api/admin/llm-logs/performance",
       params as Record<string, string | number | boolean | undefined>,
     );
+  }
+
+  // ============ 用户记忆管理 API ============
+
+  /**
+   * 获取用户记忆概览
+   */
+  async getUserMemoryOverview(userId: string): Promise<UserMemoryOverview> {
+    return this.http.get<UserMemoryOverview>(`/api/admin/users/${userId}/memory/overview`);
+  }
+
+  /**
+   * 获取用户记忆事实列表
+   */
+  async getUserMemoryFacts(
+    userId: string,
+    params?: UserMemoryFactsParams,
+  ): Promise<UserMemoryFactsResponse> {
+    return this.http.get<UserMemoryFactsResponse>(
+      `/api/admin/users/${userId}/memory/facts`,
+      params as Record<string, string | number | boolean | undefined>,
+    );
+  }
+
+  /**
+   * 更新用户记忆事实
+   */
+  async updateUserMemoryFact(
+    userId: string,
+    factId: string,
+    data: Partial<Pick<UserMemoryFact, "value" | "confidence">>,
+  ): Promise<UserMemoryFact> {
+    return this.http.put<UserMemoryFact>(`/api/admin/users/${userId}/memory/facts/${factId}`, data);
+  }
+
+  /**
+   * 删除用户记忆事实
+   */
+  async deleteUserMemoryFact(userId: string, factId: string): Promise<void> {
+    return this.http.delete<void>(`/api/admin/users/${userId}/memory/facts/${factId}`);
+  }
+
+  /**
+   * 获取用户偏好
+   */
+  async getUserMemoryPreferences(userId: string): Promise<UserMemoryPreferences | null> {
+    return this.http.get<UserMemoryPreferences | null>(
+      `/api/admin/users/${userId}/memory/preferences`,
+    );
+  }
+
+  /**
+   * 获取用户 Workspace 文件列表
+   */
+  async getUserWorkspaceFiles(userId: string): Promise<UserWorkspaceFileInfo[]> {
+    return this.http.get<UserWorkspaceFileInfo[]>(
+      `/api/admin/users/${userId}/memory/workspace-files`,
+    );
+  }
+
+  /**
+   * 更新用户 Workspace 文件
+   */
+  async updateUserWorkspaceFile(
+    userId: string,
+    fileName: string,
+    content: string,
+  ): Promise<UserWorkspaceFileInfo> {
+    return this.http.put<UserWorkspaceFileInfo>(
+      `/api/admin/users/${userId}/memory/workspace-files/${fileName}`,
+      { content },
+    );
+  }
+
+  /**
+   * 重置用户 Workspace 文件为默认模板
+   */
+  async resetUserWorkspaceFile(userId: string, fileName: string): Promise<UserWorkspaceFileInfo> {
+    return this.http.post<UserWorkspaceFileInfo>(
+      `/api/admin/users/${userId}/memory/workspace-files/${fileName}/reset`,
+    );
+  }
+
+  /**
+   * 获取用户记忆审计日志
+   */
+  async getUserMemoryAuditLogs(
+    userId: string,
+    params?: MemoryAuditLogParams,
+  ): Promise<MemoryAuditLogResponse> {
+    return this.http.get<MemoryAuditLogResponse>(
+      `/api/admin/users/${userId}/memory/audit-logs`,
+      params as Record<string, string | number | boolean | undefined>,
+    );
+  }
+
+  // ============ 默认模板管理 API ============
+
+  /**
+   * 获取所有默认模板
+   */
+  async getMemoryDefaults(): Promise<MemoryDefaultTemplate[]> {
+    return this.http.get<MemoryDefaultTemplate[]>("/api/admin/memory/defaults");
+  }
+
+  /**
+   * 获取单个默认模板
+   */
+  async getMemoryDefault(key: string): Promise<MemoryDefaultTemplate> {
+    return this.http.get<MemoryDefaultTemplate>(`/api/admin/memory/defaults/${key}`);
+  }
+
+  /**
+   * 更新默认模板
+   */
+  async updateMemoryDefault(key: string, data: UpdateMemoryDefaultRequest): Promise<void> {
+    return this.http.put<void>(`/api/admin/memory/defaults/${key}`, data);
+  }
+
+  /**
+   * 重置所有默认模板为原始文件
+   */
+  async resetMemoryDefaults(): Promise<void> {
+    return this.http.post<void>("/api/admin/memory/defaults/reset");
+  }
+
+  // ============ Bundled 技能管理 API ============
+
+  /**
+   * 获取所有 bundled 技能列表
+   */
+  async getBundledSkills(): Promise<BundledSkillsResponse> {
+    return this.http.get<BundledSkillsResponse>("/api/admin/bundled-skills");
+  }
+
+  /**
+   * 禁用一个 bundled 技能
+   */
+  async disableBundledSkill(name: string): Promise<void> {
+    await this.http.put(`/api/admin/bundled-skills/${encodeURIComponent(name)}/disable`);
+  }
+
+  /**
+   * 启用一个 bundled 技能
+   */
+  async enableBundledSkill(name: string): Promise<void> {
+    await this.http.put(`/api/admin/bundled-skills/${encodeURIComponent(name)}/enable`);
+  }
+
+  /**
+   * 批量更新 bundled 技能禁用列表
+   */
+  async batchUpdateBundledSkills(request: BatchUpdateBundledSkillsRequest): Promise<void> {
+    await this.http.put("/api/admin/bundled-skills/batch", request);
   }
 }
 
