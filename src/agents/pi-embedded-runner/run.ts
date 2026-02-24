@@ -669,6 +669,19 @@ export async function runEmbeddedPiAgent(
                     : timedOut
                       ? ("timeout" as const)
                       : ("error" as const);
+
+                /** 序列化发送给 LLM 的原始输入 messages（截断到 16KB） */
+                const inputMessages = attempt.messagesSnapshot ?? [];
+                const inputContent =
+                  inputMessages.length > 0
+                    ? JSON.stringify(
+                        inputMessages.map((m) => ({
+                          role: m.role,
+                          ...("content" in m ? { content: m.content } : {}),
+                        })),
+                      ).slice(0, 16384)
+                    : null;
+
                 await llmLogRepo.insert({
                   userId: params.userId ?? null,
                   sessionId: sessionIdUsed,
@@ -679,6 +692,9 @@ export async function runEmbeddedPiAgent(
                   durationMs: Date.now() - started,
                   status: llmStatus,
                   errorMessage: message,
+                  inputContent,
+                  outputContent: null,
+                  creditsConsumed: null,
                   metadata: {
                     authProfileId: lastProfileId ?? undefined,
                     failoverReason: assistantFailoverReason ?? undefined,
@@ -713,6 +729,23 @@ export async function runEmbeddedPiAgent(
             const { getLlmCallLogRepository } =
               await import("../../db/repositories/llm-call-logs.js");
             const llmLogRepo = getLlmCallLogRepository();
+
+            /** 序列化发送给 LLM 的原始输入 messages（截断到 16KB） */
+            const inputMessages = attempt.messagesSnapshot.filter(
+              (m) => m.role !== "assistant" || m !== attempt.lastAssistant,
+            );
+            const inputContent = JSON.stringify(
+              inputMessages.map((m) => ({
+                role: m.role,
+                ...("content" in m ? { content: m.content } : {}),
+              })),
+            ).slice(0, 16384);
+
+            /** 序列化 LLM 原始输出（包含 text/thinking/toolCall，截断到 16KB） */
+            const outputContent = attempt.lastAssistant
+              ? JSON.stringify(attempt.lastAssistant.content).slice(0, 16384)
+              : null;
+
             await llmLogRepo.insert({
               userId: params.userId ?? null,
               sessionId: sessionIdUsed,
@@ -728,6 +761,9 @@ export async function runEmbeddedPiAgent(
               durationMs: Date.now() - started,
               status: "success",
               errorMessage: null,
+              inputContent,
+              outputContent,
+              creditsConsumed: null,
               metadata: {
                 authProfileId: lastProfileId ?? undefined,
                 contextTokens: ctxInfo.tokens,

@@ -6,12 +6,25 @@
  * - 设备列表和权限
  * - 助手配置
  * - 配额信息
+ * - 用户画像记忆（profile, facts, preferences）
+ * - 用户 workspace 文件
  */
+
+import { eq, and } from "drizzle-orm";
 
 import { getDatabase } from "../db/connection.js";
 import { getAssistantConfigRepository } from "../db/repositories/assistant-configs.js";
 import { getUsageQuotaRepository } from "../db/repositories/usage-quotas.js";
+import {
+  getUserProfileRepository,
+  getUserFactRepository,
+  getUserPreferencesV2Repository,
+} from "../db/repositories/profile-memory.js";
+import { getUserWorkspaceFilesRepository } from "../db/repositories/user-workspace-files.js";
 import { getLogger } from "../logging/logger.js";
+import type { UserProfile, UserFactRecord, UserPreferencesV2Record } from "../db/schema/index.js";
+import { userInstalledSkills, skillStoreItems, systemConfigs } from "../db/schema/index.js";
+import { CONFIG_KEYS } from "../db/schema/system-config.js";
 
 const logger = getLogger();
 
@@ -52,6 +65,15 @@ export interface UserQuota {
 }
 
 /**
+ * 用户画像记忆
+ */
+export interface UserProfileMemory {
+  profile: UserProfile | null;
+  facts: UserFactRecord[];
+  preferences: UserPreferencesV2Record | null;
+}
+
+/**
  * 用户 Agent 上下文
  *
  * 包含 Agent 运行时所需的所有用户相关信息
@@ -67,6 +89,14 @@ export interface UserAgentContext {
   assistantConfig?: UserAssistantConfig;
   /** 配额信息 */
   quotas: UserQuota[];
+  /** 用户画像记忆（profile, facts, preferences） */
+  profileMemory?: UserProfileMemory;
+  /** 用户 workspace 文件 Map<文件名, 内容> */
+  workspaceFiles?: Map<string, string>;
+  /** 用户已禁用的技能名称集合（从 userInstalledSkills 表加载） */
+  disabledSkillNames?: Set<string>;
+  /** 管理员禁用的 bundled 技能名称集合（从 systemConfigs 表加载） */
+  adminDisabledSkillNames?: Set<string>;
   /** 上下文加载时间 */
   loadedAt: Date;
 }
@@ -100,14 +130,26 @@ export async function loadUserAgentContext(
   logger.debug(`[user-context] 加载用户上下文, userId=${normalizedUserId}`);
 
   // 并行加载用户数据
-  const [assistantConfig, devices, quotas] = await Promise.all([
+  const [
+    assistantConfig,
+    devices,
+    quotas,
+    profileMemory,
+    workspaceFiles,
+    disabledSkillNames,
+    adminDisabledSkillNames,
+  ] = await Promise.all([
     loadAssistantConfig(normalizedUserId),
     loadUserDevices(normalizedUserId),
     loadUserQuotas(normalizedUserId),
+    loadProfileMemory(normalizedUserId),
+    loadWorkspaceFiles(normalizedUserId),
+    loadDisabledSkillNames(normalizedUserId),
+    loadAdminDisabledSkillNames(),
   ]);
 
   logger.debug(
-    `[user-context] 用户上下文加载完成, userId=${normalizedUserId}, devices=${devices.length}, hasConfig=${!!assistantConfig}`,
+    `[user-context] 用户上下文加载完成, userId=${normalizedUserId}, devices=${devices.length}, hasConfig=${!!assistantConfig}, hasProfile=${!!profileMemory?.profile}, factsCount=${profileMemory?.facts.length ?? 0}, workspaceFiles=${workspaceFiles?.size ?? 0}, disabledSkills=${disabledSkillNames?.size ?? 0}, adminDisabledSkills=${adminDisabledSkillNames?.size ?? 0}`,
   );
 
   return {
@@ -116,6 +158,10 @@ export async function loadUserAgentContext(
     devices,
     assistantConfig,
     quotas,
+    profileMemory,
+    workspaceFiles,
+    disabledSkillNames,
+    adminDisabledSkillNames,
     loadedAt: new Date(),
   };
 }
@@ -184,6 +230,171 @@ async function loadUserQuotas(userId: string): Promise<UserQuota[]> {
   } catch (error) {
     logger.warn(`[user-context] 加载配额信息失败, userId=${userId}`, error);
     return [];
+  }
+}
+
+/**
+ * 加载用户画像记忆（profile, facts, preferences）
+ *
+ * 从 profile-memory 表并行查询用户画像、事实和偏好
+ *
+ * @param userId - 用户 ID
+ * @returns 用户画像记忆，加载失败返回 undefined
+ */
+async function loadProfileMemory(userId: string): Promise<UserProfileMemory | undefined> {
+  try {
+    const db = getDatabase();
+
+    const profileRepo = getUserProfileRepository(db, userId);
+    const factRepo = getUserFactRepository(db, userId);
+    const prefsRepo = getUserPreferencesV2Repository(db, userId);
+
+    const [profile, factsResult, preferences] = await Promise.all([
+      profileRepo.get(),
+      factRepo.findAll({ activeOnly: true, limit: 100 }),
+      prefsRepo.get(),
+    ]);
+
+    logger.debug(
+      `[user-context] 画像记忆加载完成, userId=${userId}, hasProfile=${!!profile}, facts=${factsResult.facts.length}, hasPrefs=${!!preferences}`,
+    );
+
+    return {
+      profile,
+      facts: factsResult.facts,
+      preferences,
+    };
+  } catch (error) {
+    logger.warn(`[user-context] 加载画像记忆失败, userId=${userId}`, error);
+    return undefined;
+  }
+}
+
+/**
+ * 加载用户 workspace 文件
+ *
+ * 从 user_workspace_files 表查询用户的所有 workspace 文件。
+ * 当用户无任何记录时（新用户），自动从 system_configs 加载默认模板
+ * 并调用 initializeForUser() 创建初始记录。
+ *
+ * @param userId - 用户 ID
+ * @returns 文件名到内容的 Map，加载失败返回 undefined
+ */
+async function loadWorkspaceFiles(userId: string): Promise<Map<string, string> | undefined> {
+  try {
+    const db = getDatabase();
+    const repo = getUserWorkspaceFilesRepository(db, userId);
+    let files = await repo.getAllForUser();
+
+    if (files.length === 0) {
+      logger.debug(
+        `[user-context] 新用户无 workspace 文件, 尝试从默认模板初始化, userId=${userId}`,
+      );
+
+      try {
+        const { getMemoryDefaultsByFileName } = await import("../db/seed/memory-defaults.js");
+        const defaults = await getMemoryDefaultsByFileName();
+
+        if (defaults.size > 0) {
+          const count = await repo.initializeForUser(defaults);
+          logger.info(
+            `[user-context] 从默认模板初始化 workspace 文件完成, userId=${userId}, count=${count}`,
+          );
+
+          // 重新查询初始化后的文件
+          files = await repo.getAllForUser();
+        } else {
+          logger.warn(`[user-context] 无默认模板可用, 跳过初始化, userId=${userId}`);
+        }
+      } catch (initError) {
+        logger.warn(`[user-context] 从默认模板初始化失败, userId=${userId}`, initError);
+      }
+    }
+
+    if (files.length === 0) {
+      logger.debug(`[user-context] 无 workspace 文件, userId=${userId}`);
+      return undefined;
+    }
+
+    const map = new Map<string, string>();
+    for (const file of files) {
+      map.set(file.fileName, file.content);
+    }
+
+    logger.debug(`[user-context] workspace 文件加载完成, userId=${userId}, count=${map.size}`);
+
+    return map;
+  } catch (error) {
+    logger.warn(`[user-context] 加载 workspace 文件失败, userId=${userId}`, error);
+    return undefined;
+  }
+}
+
+/**
+ * 加载用户已安装但禁用的技能名称集合
+ *
+ * 从 userInstalledSkills 表 join skillStoreItems 表查询
+ * 返回 isEnabled=false 的技能名称，用于在 Agent 提示词构建时过滤掉
+ *
+ * @param userId - 用户 ID
+ * @returns 已禁用的技能名称集合，加载失败返回 undefined
+ */
+async function loadDisabledSkillNames(userId: string): Promise<Set<string> | undefined> {
+  try {
+    const db = getDatabase();
+
+    const results = await db
+      .select({ name: skillStoreItems.name })
+      .from(userInstalledSkills)
+      .innerJoin(skillStoreItems, eq(userInstalledSkills.skillItemId, skillStoreItems.id))
+      .where(and(eq(userInstalledSkills.userId, userId), eq(userInstalledSkills.isEnabled, false)));
+
+    const names = new Set(results.map((r) => r.name));
+
+    logger.debug(`[user-context] 已禁用技能名称加载完成, userId=${userId}, count=${names.size}`);
+
+    return names;
+  } catch (error) {
+    logger.warn(`[user-context] 加载已禁用技能名称失败, userId=${userId}`, error);
+    return undefined;
+  }
+}
+
+/**
+ * 加载管理员禁用的 bundled 技能名称集合
+ *
+ * 从 systemConfigs 表读取 bundled_skills.disabled 配置项，
+ * 返回管理员禁用的技能名称 Set，用于在 Agent 提示词构建时过滤掉
+ *
+ * @returns 管理员禁用的技能名称集合，加载失败返回 undefined
+ */
+async function loadAdminDisabledSkillNames(): Promise<Set<string> | undefined> {
+  try {
+    const db = getDatabase();
+
+    const result = await db
+      .select({ value: systemConfigs.value })
+      .from(systemConfigs)
+      .where(eq(systemConfigs.key, CONFIG_KEYS.BUNDLED_SKILLS_DISABLED))
+      .limit(1);
+
+    if (result.length === 0) {
+      logger.debug("[user-context] 管理员禁用技能配置不存在，返回空集合");
+      return new Set();
+    }
+
+    const rawValue = result[0].value;
+    const disabledList = Array.isArray(rawValue)
+      ? rawValue.filter((v): v is string => typeof v === "string")
+      : [];
+    const names = new Set(disabledList);
+
+    logger.debug(`[user-context] 管理员禁用技能名称加载完成, count=${names.size}`);
+
+    return names;
+  } catch (error) {
+    logger.warn("[user-context] 加载管理员禁用技能名称失败", error);
+    return undefined;
   }
 }
 

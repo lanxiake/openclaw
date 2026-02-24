@@ -10,6 +10,7 @@ import { resolveUserPath } from "../utils.js";
 import { resolveOpenClawDocsPath } from "./docs-path.js";
 import { resolveSessionAgentIds } from "./agent-scope.js";
 import { makeBootstrapWarn, resolveBootstrapContextForRun } from "./bootstrap-files.js";
+import { getUserContext } from "./user-context-store.js";
 import { resolveCliBackendConfig } from "./cli-backends.js";
 import {
   appendImagePathsToPrompt,
@@ -71,12 +72,16 @@ export async function runCliAgent(params: {
     .join("\n");
 
   const sessionLabel = params.sessionKey ?? params.sessionId;
+  // 获取用户上下文，用于数据库优先加载和个性化
+  const userContext = getUserContext();
+
   const { contextFiles } = await resolveBootstrapContextForRun({
     workspaceDir,
     config: params.config,
     sessionKey: params.sessionKey,
     sessionId: params.sessionId,
     warn: makeBootstrapWarn({ sessionLabel, warn: (message) => log.warn(message) }),
+    userContext,
   });
   const { defaultAgentId, sessionAgentId } = resolveSessionAgentIds({
     sessionKey: params.sessionKey,
@@ -104,6 +109,8 @@ export async function runCliAgent(params: {
     contextFiles,
     modelDisplay,
     agentId: sessionAgentId,
+    userPersonalization: userContext?.assistantConfig,
+    profileMemory: userContext?.profileMemory,
   });
 
   const { sessionId: cliSessionIdToSend, isNew } = resolveSessionIdToSend({

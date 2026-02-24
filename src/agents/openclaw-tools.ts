@@ -20,6 +20,8 @@ import { createSkillCreateTool } from "./tools/skill-create-tool.js";
 import { createWebFetchTool, createWebSearchTool } from "./tools/web-tools.js";
 import { createTtsTool } from "./tools/tts-tool.js";
 import { createTodoWriteTool } from "./tools/todo-write-tool.js";
+import { createProfileMemoryTool } from "./tools/profile-memory-tool.js";
+import { createWorkspaceFileTool } from "./tools/workspace-file-tool.js";
 
 export function createOpenClawTools(options?: {
   sandboxBrowserBridgeUrl?: string;
@@ -144,6 +146,8 @@ export function createOpenClawTools(options?: {
       agentSessionKey: options?.agentSessionKey,
       config: options?.config,
     }),
+    createProfileMemoryTool(),
+    createWorkspaceFileTool(),
   ];
 
   const pluginTools = resolvePluginTools({

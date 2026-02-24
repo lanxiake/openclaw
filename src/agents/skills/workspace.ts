@@ -48,8 +48,21 @@ function filterSkillEntries(
   config?: OpenClawConfig,
   skillFilter?: string[],
   eligibility?: SkillEligibilityContext,
+  disabledSkillNames?: Set<string>,
+  adminDisabledSkillNames?: Set<string>,
 ): SkillEntry[] {
   let filtered = entries.filter((entry) => shouldIncludeSkill({ entry, config, eligibility }));
+
+  /** 排除管理员禁用的 bundled 技能（从 systemConfigs 表读取） */
+  if (adminDisabledSkillNames && adminDisabledSkillNames.size > 0) {
+    filtered = filtered.filter((entry) => !adminDisabledSkillNames.has(entry.skill.name));
+  }
+
+  /** 排除用户已禁用的技能（从数据库 userInstalledSkills 表读取） */
+  if (disabledSkillNames && disabledSkillNames.size > 0) {
+    filtered = filtered.filter((entry) => !disabledSkillNames.has(entry.skill.name));
+  }
+
   // If skillFilter is provided, only include skills in the filter list.
   if (skillFilter !== undefined) {
     const normalized = skillFilter.map((entry) => String(entry).trim()).filter(Boolean);
@@ -201,6 +214,10 @@ export function buildWorkspaceSkillSnapshot(
     skillFilter?: string[];
     eligibility?: SkillEligibilityContext;
     snapshotVersion?: number;
+    /** 用户已禁用的技能名称集合，这些技能不会出现在提示词中 */
+    disabledSkillNames?: Set<string>;
+    /** 管理员禁用的 bundled 技能名称集合 */
+    adminDisabledSkillNames?: Set<string>;
   },
 ): SkillSnapshot {
   const skillEntries = opts?.entries ?? loadSkillEntries(workspaceDir, opts);
@@ -209,6 +226,8 @@ export function buildWorkspaceSkillSnapshot(
     opts?.config,
     opts?.skillFilter,
     opts?.eligibility,
+    opts?.disabledSkillNames,
+    opts?.adminDisabledSkillNames,
   );
   const promptEntries = eligible.filter(
     (entry) => entry.invocation?.disableModelInvocation !== true,
@@ -237,6 +256,10 @@ export function buildWorkspaceSkillsPrompt(
     /** If provided, only include skills with these names */
     skillFilter?: string[];
     eligibility?: SkillEligibilityContext;
+    /** 用户已禁用的技能名称集合，这些技能不会出现在提示词中 */
+    disabledSkillNames?: Set<string>;
+    /** 管理员禁用的 bundled 技能名称集合 */
+    adminDisabledSkillNames?: Set<string>;
   },
 ): string {
   const skillEntries = opts?.entries ?? loadSkillEntries(workspaceDir, opts);
@@ -245,6 +268,8 @@ export function buildWorkspaceSkillsPrompt(
     opts?.config,
     opts?.skillFilter,
     opts?.eligibility,
+    opts?.disabledSkillNames,
+    opts?.adminDisabledSkillNames,
   );
   const promptEntries = eligible.filter(
     (entry) => entry.invocation?.disableModelInvocation !== true,
@@ -260,6 +285,10 @@ export function resolveSkillsPromptForRun(params: {
   entries?: SkillEntry[];
   config?: OpenClawConfig;
   workspaceDir: string;
+  /** 用户已禁用的技能名称集合，这些技能不会出现在提示词中 */
+  disabledSkillNames?: Set<string>;
+  /** 管理员禁用的 bundled 技能名称集合 */
+  adminDisabledSkillNames?: Set<string>;
 }): string {
   const snapshotPrompt = params.skillsSnapshot?.prompt?.trim();
   if (snapshotPrompt) {
@@ -269,6 +298,8 @@ export function resolveSkillsPromptForRun(params: {
     const prompt = buildWorkspaceSkillsPrompt(params.workspaceDir, {
       entries: params.entries,
       config: params.config,
+      disabledSkillNames: params.disabledSkillNames,
+      adminDisabledSkillNames: params.adminDisabledSkillNames,
     });
     return prompt.trim() ? prompt : "";
   }
@@ -343,6 +374,10 @@ export function buildWorkspaceSkillCommandSpecs(
     skillFilter?: string[];
     eligibility?: SkillEligibilityContext;
     reservedNames?: Set<string>;
+    /** 用户已禁用的技能名称集合 */
+    disabledSkillNames?: Set<string>;
+    /** 管理员禁用的 bundled 技能名称集合 */
+    adminDisabledSkillNames?: Set<string>;
   },
 ): SkillCommandSpec[] {
   const skillEntries = opts?.entries ?? loadSkillEntries(workspaceDir, opts);
@@ -351,6 +386,8 @@ export function buildWorkspaceSkillCommandSpecs(
     opts?.config,
     opts?.skillFilter,
     opts?.eligibility,
+    opts?.disabledSkillNames,
+    opts?.adminDisabledSkillNames,
   );
   const userInvocable = eligible.filter((entry) => entry.invocation?.userInvocable !== false);
   const used = new Set<string>();

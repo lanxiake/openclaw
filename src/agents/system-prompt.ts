@@ -3,7 +3,7 @@ import { SILENT_REPLY_TOKEN } from "../auto-reply/tokens.js";
 import { listDeliverableMessageChannels } from "../utils/message-channel.js";
 import type { ResolvedTimeFormat } from "./date-time.js";
 import type { EmbeddedContextFile } from "./pi-embedded-helpers.js";
-import type { UserAssistantConfig } from "./user-context.js";
+import type { UserAssistantConfig, UserProfileMemory } from "./user-context.js";
 
 /**
  * Controls which hardcoded sections are included in the system prompt.
@@ -41,14 +41,117 @@ function buildMemorySection(params: { isMinimal: boolean; availableTools: Set<st
   if (params.isMinimal) {
     return [];
   }
-  if (!params.availableTools.has("memory_search") && !params.availableTools.has("memory_get")) {
+
+  const lines: string[] = [];
+
+  // 文件系统记忆（MEMORY.md）
+  if (params.availableTools.has("memory_search") || params.availableTools.has("memory_get")) {
+    lines.push(
+      "## Memory Recall",
+      "Before answering anything about prior work, decisions, dates, people, preferences, or todos: run memory_search on MEMORY.md + memory/*.md; then use memory_get to pull only the needed lines. If low confidence after search, say you checked.",
+      "",
+    );
+  }
+
+  // 数据库记忆工具引导
+  const hasProfileMemory = params.availableTools.has("profile_memory");
+  const hasWorkspaceFile = params.availableTools.has("workspace_file");
+
+  if (hasProfileMemory || hasWorkspaceFile) {
+    lines.push("## User Memory Management");
+
+    if (hasProfileMemory) {
+      lines.push(
+        "- When the user shares personal information (preferences, habits, background), use `profile_memory` with action=add_fact to record it.",
+        "- When you need to recall user information, use `profile_memory` with action=search_facts.",
+        "- When information needs correction, use `profile_memory` with action=update_fact.",
+      );
+    }
+
+    if (hasWorkspaceFile) {
+      lines.push(
+        "- When the user asks to modify your personality, identity, or configuration, use `workspace_file` to read and then update the relevant file.",
+      );
+    }
+
+    lines.push("");
+  }
+
+  return lines;
+}
+
+/**
+ * 构建用户画像记忆提示部分
+ *
+ * 将数据库中的 profile、facts、preferences 格式化为系统提示文本，
+ * 使 Agent 能感知用户的个人信息、已知事实和交互偏好。
+ *
+ * @param profileMemory - 用户画像记忆数据
+ * @returns 提示行数组
+ */
+function buildProfileMemorySection(profileMemory?: UserProfileMemory): string[] {
+  if (!profileMemory) {
     return [];
   }
-  return [
-    "## Memory Recall",
-    "Before answering anything about prior work, decisions, dates, people, preferences, or todos: run memory_search on MEMORY.md + memory/*.md; then use memory_get to pull only the needed lines. If low confidence after search, say you checked.",
-    "",
-  ];
+
+  const lines: string[] = [];
+
+  // Profile 部分
+  const profile = profileMemory.profile;
+  if (profile) {
+    lines.push("## User Profile");
+    const profileEntries: string[] = [];
+    if (profile.displayName) profileEntries.push(`- Name: ${profile.displayName}`);
+    if (profile.nickname) profileEntries.push(`- Nickname: ${profile.nickname}`);
+    if (profile.bio) profileEntries.push(`- Bio: ${profile.bio}`);
+    if (profile.language) profileEntries.push(`- Language: ${profile.language}`);
+    if (profile.timezone) profileEntries.push(`- Timezone: ${profile.timezone}`);
+    if (profile.workRole) profileEntries.push(`- Work Role: ${profile.workRole}`);
+
+    if (profileEntries.length > 0) {
+      lines.push(...profileEntries);
+    } else {
+      lines.push("(No profile details available)");
+    }
+    lines.push("");
+  }
+
+  // Facts 部分
+  const facts = profileMemory.facts;
+  if (facts.length > 0) {
+    lines.push("## Known Facts About User");
+    lines.push("Use these facts to personalize responses. Update via profile_fact tools.");
+
+    // 按 category 分组
+    const grouped = new Map<string, typeof facts>();
+    for (const fact of facts) {
+      const category = fact.category;
+      const existing = grouped.get(category) ?? [];
+      grouped.set(category, [...existing, fact]);
+    }
+
+    for (const [category, categoryFacts] of grouped) {
+      lines.push(`### ${category}`);
+      for (const fact of categoryFacts) {
+        const confidence = fact.confidence < 0.7 ? " (low confidence)" : "";
+        lines.push(`- ${fact.key}: ${fact.value}${confidence}`);
+      }
+    }
+    lines.push("");
+  }
+
+  // Preferences 部分
+  const prefs = profileMemory.preferences;
+  if (prefs) {
+    lines.push("## User Interaction Preferences");
+    lines.push(`- Response Style: ${prefs.responseStyle}`);
+    lines.push(`- Confirm Level: ${prefs.confirmLevel}`);
+    lines.push(`- Thinking Level: ${prefs.thinkingLevel}`);
+    lines.push(`- Verbose Level: ${prefs.verboseLevel}`);
+    lines.push("");
+  }
+
+  return lines;
 }
 
 function buildUserIdentitySection(ownerLine: string | undefined, isMinimal: boolean) {
@@ -262,6 +365,8 @@ export function buildAgentSystemPrompt(params: {
   };
   /** 用户个性化配置（多租户支持） */
   userPersonalization?: UserAssistantConfig;
+  /** 用户画像记忆（数据库加载） */
+  profileMemory?: UserProfileMemory;
 }) {
   const coreToolSummaries: Record<string, string> = {
     read: "Read file contents",
@@ -401,6 +506,7 @@ export function buildAgentSystemPrompt(params: {
     readToolName,
   });
   const memorySection = buildMemorySection({ isMinimal, availableTools });
+  const profileMemorySection = buildProfileMemorySection(params.profileMemory);
   const docsSection = buildDocsSection({
     docsPath: params.docsPath,
     isMinimal,
@@ -471,6 +577,7 @@ export function buildAgentSystemPrompt(params: {
     "",
     ...skillsSection,
     ...memorySection,
+    ...profileMemorySection,
     // Skip self-update for subagent/none modes
     hasGateway && !isMinimal ? "## OpenClaw Self-Update" : "",
     hasGateway && !isMinimal

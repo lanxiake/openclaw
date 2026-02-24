@@ -183,14 +183,20 @@ export async function runEmbeddedAttempt(
           config: params.config,
         });
 
+    const sessionLabel = params.sessionKey ?? params.sessionId;
+
+    // 获取用户上下文，用于数据库优先加载和个性化
+    const userContext = getUserContext();
+
     const skillsPrompt = resolveSkillsPromptForRun({
       skillsSnapshot: params.skillsSnapshot,
       entries: shouldLoadSkillEntries ? skillEntries : undefined,
       config: params.config,
       workspaceDir: effectiveWorkspace,
+      disabledSkillNames: userContext?.disabledSkillNames,
+      adminDisabledSkillNames: userContext?.adminDisabledSkillNames,
     });
 
-    const sessionLabel = params.sessionKey ?? params.sessionId;
     const { bootstrapFiles: hookAdjustedBootstrapFiles, contextFiles } =
       await resolveBootstrapContextForRun({
         workspaceDir: effectiveWorkspace,
@@ -198,6 +204,7 @@ export async function runEmbeddedAttempt(
         sessionKey: params.sessionKey,
         sessionId: params.sessionId,
         warn: makeBootstrapWarn({ sessionLabel, warn: (message) => log.warn(message) }),
+        userContext,
       });
     const workspaceNotes = hookAdjustedBootstrapFiles.some(
       (file) => file.name === DEFAULT_BOOTSTRAP_FILENAME && !file.missing,
@@ -346,9 +353,9 @@ export async function runEmbeddedAttempt(
     });
     const ttsHint = params.config ? buildTtsSystemPromptHint(params.config) : undefined;
 
-    // 获取用户上下文中的助手配置（用于个性化系统提示）
-    const userContext = getUserContext();
+    // 使用已获取的用户上下文提取个性化配置和画像记忆
     const userPersonalization = userContext?.assistantConfig;
+    const profileMemory = userContext?.profileMemory;
 
     const appendPrompt = buildEmbeddedSystemPrompt({
       workspaceDir: effectiveWorkspace,
@@ -376,6 +383,7 @@ export async function runEmbeddedAttempt(
       userTimeFormat,
       contextFiles,
       userPersonalization,
+      profileMemory,
     });
     const systemPromptReport = buildSystemPromptReport({
       source: "run",

@@ -3,7 +3,7 @@ import type { ResolvedTimeFormat } from "../date-time.js";
 import type { EmbeddedContextFile } from "../pi-embedded-helpers.js";
 import { buildAgentSystemPrompt, type PromptMode } from "../system-prompt.js";
 import { buildToolSummaryMap } from "../tool-summaries.js";
-import type { UserAssistantConfig } from "../user-context.js";
+import type { UserAssistantConfig, UserProfileMemory } from "../user-context.js";
 import type { EmbeddedSandboxInfo } from "./types.js";
 import type { ReasoningLevel, ThinkLevel } from "./utils.js";
 
@@ -48,6 +48,8 @@ export function buildEmbeddedSystemPrompt(params: {
   contextFiles?: EmbeddedContextFile[];
   /** 用户个性化配置（多租户支持） */
   userPersonalization?: UserAssistantConfig;
+  /** 用户画像记忆（数据库加载） */
+  profileMemory?: UserProfileMemory;
 }): string {
   return buildAgentSystemPrompt({
     workspaceDir: params.workspaceDir,
@@ -74,6 +76,7 @@ export function buildEmbeddedSystemPrompt(params: {
     userTimeFormat: params.userTimeFormat,
     contextFiles: params.contextFiles,
     userPersonalization: params.userPersonalization,
+    profileMemory: params.profileMemory,
   });
 }
 

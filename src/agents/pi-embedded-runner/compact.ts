@@ -45,6 +45,7 @@ import { resolveSandboxContext } from "../sandbox.js";
 import { guardSessionManager } from "../session-tool-result-guard-wrapper.js";
 import { resolveTranscriptPolicy } from "../transcript-policy.js";
 import { acquireSessionWriteLock } from "../session-write-lock.js";
+import { getUserContext } from "../user-context-store.js";
 import {
   applySkillEnvOverrides,
   applySkillEnvOverridesFromSnapshot,
@@ -196,20 +197,28 @@ export async function compactEmbeddedPiSessionDirect(
           skills: skillEntries ?? [],
           config: params.config,
         });
+
+    // 获取用户上下文，用于数据库优先加载和个性化
+    const userContext = getUserContext();
+
     const skillsPrompt = resolveSkillsPromptForRun({
       skillsSnapshot: params.skillsSnapshot,
       entries: shouldLoadSkillEntries ? skillEntries : undefined,
       config: params.config,
       workspaceDir: effectiveWorkspace,
+      disabledSkillNames: userContext?.disabledSkillNames,
+      adminDisabledSkillNames: userContext?.adminDisabledSkillNames,
     });
 
     const sessionLabel = params.sessionKey ?? params.sessionId;
+
     const { contextFiles } = await resolveBootstrapContextForRun({
       workspaceDir: effectiveWorkspace,
       config: params.config,
       sessionKey: params.sessionKey,
       sessionId: params.sessionId,
       warn: makeBootstrapWarn({ sessionLabel, warn: (message) => log.warn(message) }),
+      userContext,
     });
     const runAbortController = new AbortController();
     const toolsRaw = createOpenClawCodingTools({
@@ -325,6 +334,11 @@ export async function compactEmbeddedPiSessionDirect(
       moduleUrl: import.meta.url,
     });
     const ttsHint = params.config ? buildTtsSystemPromptHint(params.config) : undefined;
+
+    // 使用已获取的用户上下文提取个性化配置和画像记忆
+    const userPersonalization = userContext?.assistantConfig;
+    const profileMemory = userContext?.profileMemory;
+
     const appendPrompt = buildEmbeddedSystemPrompt({
       workspaceDir: effectiveWorkspace,
       defaultThinkLevel: params.thinkLevel,
@@ -349,6 +363,8 @@ export async function compactEmbeddedPiSessionDirect(
       userTime,
       userTimeFormat,
       contextFiles,
+      userPersonalization,
+      profileMemory,
     });
     const systemPrompt = createSystemPromptOverride(appendPrompt);
 
