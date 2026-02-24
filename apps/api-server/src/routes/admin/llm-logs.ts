@@ -38,6 +38,7 @@ export function registerAdminLlmLogRoutes(server: FastifyInstance): void {
       const repo = getLlmCallLogRepository();
       const result = await repo.query({
         userId: query.userId,
+        userName: query.userName,
         provider: query.provider,
         model: query.model,
         status: query.status as LlmCallStatus | undefined,

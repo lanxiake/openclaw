@@ -21,3 +21,6 @@ export { registerAdminAnalyticsRoutes } from "./analytics.js";
 export { registerAdminLlmLogRoutes } from "./llm-logs.js";
 export { registerAdminCreditsRoutes } from "./credits.js";
 export { registerAdminAdminsRoutes } from "./admins.js";
+export { registerAdminMemoryDefaultsRoutes } from "./memory-defaults.js";
+export { registerAdminMemoryRoutes } from "./memory.js";
+export { registerAdminBundledSkillsRoutes } from "./bundled-skills.js";

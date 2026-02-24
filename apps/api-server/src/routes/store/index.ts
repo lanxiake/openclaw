@@ -20,9 +20,13 @@ import {
 import {
   getCategoryList,
   getSkill,
+  createSkill,
   installSkillForUser,
   uninstallSkillForUser,
   getUserInstalledSkills,
+  enableSkillForUser,
+  disableSkillForUser,
+  toggleSkillForUser,
 } from "../../../../../src/assistant/skills/skill-service.js";
 import { downloadSkillFile } from "../../../../../src/assistant/skills/skill-storage-service.js";
 
@@ -46,7 +50,6 @@ export function registerStoreRoutes(server: FastifyInstance): void {
       const query = request.query as {
         category?: string;
         tags?: string;
-        subscription?: string;
         sortBy?: string;
         search?: string;
         offset?: string;
@@ -58,7 +61,6 @@ export function registerStoreRoutes(server: FastifyInstance): void {
       const filters: StoreFilters = {
         category: query.category,
         tags: query.tags ? query.tags.split(",") : undefined,
-        subscription: query.subscription as "free" | "premium" | "enterprise" | "all" | undefined,
         sortBy: query.sortBy as "downloads" | "rating" | "updated" | "name" | undefined,
         search: query.search,
         offset: query.offset ? parseInt(query.offset, 10) : 0,
@@ -183,6 +185,77 @@ export function registerStoreRoutes(server: FastifyInstance): void {
           ...r.installed,
           skill: r.skill,
         })),
+      };
+    },
+  );
+
+  /**
+   * POST /api/store/skills/submit - 用户提交技能到商店（需认证）
+   */
+  server.post(
+    "/api/store/skills/submit",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = getRequestUser(request);
+      if (!user) {
+        return reply.code(401).send({
+          success: false,
+          error: "Unauthorized",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const body = request.body as {
+        name?: string;
+        description?: string;
+        readme?: string;
+        version?: string;
+        categoryId?: string;
+        tags?: string[];
+        config?: Record<string, unknown>;
+      };
+
+      /** 参数验证 */
+      if (!body.name || typeof body.name !== "string" || body.name.trim().length === 0) {
+        return reply.code(400).send({
+          success: false,
+          error: "技能名称不能为空",
+          code: "BAD_REQUEST",
+        });
+      }
+
+      if (body.name.length > 100) {
+        return reply.code(400).send({
+          success: false,
+          error: "技能名称不能超过 100 个字符",
+          code: "BAD_REQUEST",
+        });
+      }
+
+      request.log.info(
+        { userId: user.userId, skillName: body.name },
+        "[store] 用户提交技能到商店",
+      );
+
+      const skill = await createSkill({
+        name: body.name.trim(),
+        description: body.description ?? null,
+        readme: body.readme ?? null,
+        version: body.version ?? "1.0.0",
+        categoryId: body.categoryId ?? null,
+        tags: body.tags ?? [],
+        subscriptionLevel: "free",
+        config: body.config ?? null,
+        sourceType: "user",
+        authorId: user.userId,
+        status: "pending",
+      });
+
+      return {
+        success: true,
+        data: {
+          message: "技能已提交审核",
+          skill,
+        },
       };
     },
   );
@@ -461,6 +534,133 @@ export function registerStoreRoutes(server: FastifyInstance): void {
         data: {
           message: result.message,
           skillId: id,
+        },
+      };
+    },
+  );
+
+  /**
+   * PATCH /api/store/skills/:id/enable - 启用已安装的技能（需认证）
+   */
+  server.patch(
+    "/api/store/skills/:id/enable",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = getRequestUser(request);
+      if (!user) {
+        return reply.code(401).send({
+          success: false,
+          error: "Unauthorized",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const { id } = request.params as { id: string };
+
+      request.log.info(
+        { userId: user.userId, skillId: id },
+        "[store] 启用技能",
+      );
+
+      const result = await enableSkillForUser(user.userId, id);
+
+      if (!result.success) {
+        return reply.code(400).send({
+          success: false,
+          error: result.message,
+          code: "ENABLE_FAILED",
+        });
+      }
+
+      return {
+        success: true,
+        data: {
+          message: result.message,
+          skillId: id,
+        },
+      };
+    },
+  );
+
+  /**
+   * PATCH /api/store/skills/:id/disable - 禁用已安装的技能（需认证）
+   */
+  server.patch(
+    "/api/store/skills/:id/disable",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = getRequestUser(request);
+      if (!user) {
+        return reply.code(401).send({
+          success: false,
+          error: "Unauthorized",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const { id } = request.params as { id: string };
+
+      request.log.info(
+        { userId: user.userId, skillId: id },
+        "[store] 禁用技能",
+      );
+
+      const result = await disableSkillForUser(user.userId, id);
+
+      if (!result.success) {
+        return reply.code(400).send({
+          success: false,
+          error: result.message,
+          code: "DISABLE_FAILED",
+        });
+      }
+
+      return {
+        success: true,
+        data: {
+          message: result.message,
+          skillId: id,
+        },
+      };
+    },
+  );
+
+  /**
+   * PATCH /api/store/skills/:id/toggle - 切换已安装技能启用/禁用（需认证）
+   */
+  server.patch(
+    "/api/store/skills/:id/toggle",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = getRequestUser(request);
+      if (!user) {
+        return reply.code(401).send({
+          success: false,
+          error: "Unauthorized",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const { id } = request.params as { id: string };
+
+      request.log.info(
+        { userId: user.userId, skillId: id },
+        "[store] 切换技能启用状态",
+      );
+
+      const result = await toggleSkillForUser(user.userId, id);
+
+      if (!result.success) {
+        return reply.code(400).send({
+          success: false,
+          error: result.message,
+          code: "TOGGLE_FAILED",
+        });
+      }
+
+      return {
+        success: true,
+        data: {
+          message: result.message,
+          skillId: id,
+          isEnabled: result.isEnabled,
         },
       };
     },
