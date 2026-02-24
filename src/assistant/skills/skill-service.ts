@@ -668,3 +668,108 @@ export async function getUserInstalledSkills(
 
   return results;
 }
+
+/**
+ * 启用已安装的技能
+ *
+ * @param userId 用户 ID
+ * @param skillItemId 技能商店条目 ID
+ * @returns 操作结果
+ */
+export async function enableSkillForUser(
+  userId: string,
+  skillItemId: string,
+): Promise<{ success: boolean; message: string }> {
+  console.log(`${LOG_TAG} enableSkillForUser`, { userId, skillItemId });
+
+  const db = await getDatabase();
+
+  const result = await db
+    .update(userInstalledSkills)
+    .set({ isEnabled: true })
+    .where(
+      and(eq(userInstalledSkills.userId, userId), eq(userInstalledSkills.skillItemId, skillItemId)),
+    )
+    .returning();
+
+  if (result.length === 0) {
+    return { success: false, message: "未找到安装记录" };
+  }
+
+  return { success: true, message: "技能已启用" };
+}
+
+/**
+ * 禁用已安装的技能
+ *
+ * @param userId 用户 ID
+ * @param skillItemId 技能商店条目 ID
+ * @returns 操作结果
+ */
+export async function disableSkillForUser(
+  userId: string,
+  skillItemId: string,
+): Promise<{ success: boolean; message: string }> {
+  console.log(`${LOG_TAG} disableSkillForUser`, { userId, skillItemId });
+
+  const db = await getDatabase();
+
+  const result = await db
+    .update(userInstalledSkills)
+    .set({ isEnabled: false })
+    .where(
+      and(eq(userInstalledSkills.userId, userId), eq(userInstalledSkills.skillItemId, skillItemId)),
+    )
+    .returning();
+
+  if (result.length === 0) {
+    return { success: false, message: "未找到安装记录" };
+  }
+
+  return { success: true, message: "技能已禁用" };
+}
+
+/**
+ * 切换已安装技能的启用/禁用状态
+ *
+ * @param userId 用户 ID
+ * @param skillItemId 技能商店条目 ID
+ * @returns 操作结果，包含新的 isEnabled 状态
+ */
+export async function toggleSkillForUser(
+  userId: string,
+  skillItemId: string,
+): Promise<{ success: boolean; message: string; isEnabled?: boolean }> {
+  console.log(`${LOG_TAG} toggleSkillForUser`, { userId, skillItemId });
+
+  const db = await getDatabase();
+
+  /** 查找当前安装记录 */
+  const existing = await db
+    .select()
+    .from(userInstalledSkills)
+    .where(
+      and(eq(userInstalledSkills.userId, userId), eq(userInstalledSkills.skillItemId, skillItemId)),
+    )
+    .limit(1);
+
+  if (existing.length === 0) {
+    return { success: false, message: "未找到安装记录" };
+  }
+
+  /** 切换 isEnabled 状态 */
+  const newEnabled = !existing[0].isEnabled;
+
+  await db
+    .update(userInstalledSkills)
+    .set({ isEnabled: newEnabled })
+    .where(
+      and(eq(userInstalledSkills.userId, userId), eq(userInstalledSkills.skillItemId, skillItemId)),
+    );
+
+  return {
+    success: true,
+    message: newEnabled ? "技能已启用" : "技能已禁用",
+    isEnabled: newEnabled,
+  };
+}

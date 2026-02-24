@@ -733,6 +733,15 @@ export async function initializeDefaultConfigs(options: ConfigServiceOptions = {
       defaultValue: 2000,
       validationRules: { min: 0, max: 100000 },
     },
+    // Bundled 技能管控
+    {
+      key: CONFIG_KEYS.BUNDLED_SKILLS_DISABLED,
+      value: [],
+      valueType: "array" as ConfigValueType,
+      group: CONFIG_GROUPS.LIMITS,
+      description: "管理员禁用的 bundled 技能名称列表",
+      defaultValue: [],
+    },
   ];
 
   for (const config of defaultConfigs) {

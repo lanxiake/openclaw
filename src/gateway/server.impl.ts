@@ -229,6 +229,16 @@ export async function startGatewayServer(
     });
   }
 
+  // 确保记忆默认模板已初始化到数据库（幂等，已存在的不会覆盖）
+  try {
+    const { seedMemoryDefaults } = await import("../db/seed/memory-defaults.js");
+    await seedMemoryDefaults();
+  } catch (err) {
+    log.warn("gateway: seedMemoryDefaults skipped (db or templates may be unavailable)", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+
   const dbConfigs = await loadAllDatabaseConfigs();
   const cfgAtStart = dbConfigs ? mergeFileAndDbConfigs(fileConfig, dbConfigs) : fileConfig;
   if (dbConfigs) {

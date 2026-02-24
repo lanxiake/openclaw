@@ -27,6 +27,11 @@ import {
   getFeaturedSkills,
   setFeatured,
   updateFeaturedOrder,
+  installSkillForUser,
+  enableSkillForUser,
+  disableSkillForUser,
+  toggleSkillForUser,
+  getUserInstalledSkills,
   type SkillListQuery,
 } from "./skill-service.js";
 
@@ -492,5 +497,141 @@ describe("SkillService - 推荐管理", () => {
     const s2 = await getSkill(skill2.id);
     expect(s1!.featuredOrder).toBe(2);
     expect(s2!.featuredOrder).toBe(1);
+  });
+});
+
+describe("SkillService - 技能启用/禁用管理", () => {
+  const TEST_USER_ID = "test-user-001";
+
+  beforeEach(() => {
+    enableMockDatabase();
+    clearMockDatabase();
+  });
+
+  afterEach(() => {
+    disableMockDatabase();
+  });
+
+  it("ENABLE-001: 启用已安装的技能", async () => {
+    // 先创建并安装一个技能
+    const skill = await createSkill({
+      name: "可启用技能",
+      version: "1.0.0",
+      status: "published",
+      subscriptionLevel: "free",
+    });
+
+    const installResult = await installSkillForUser(TEST_USER_ID, skill.id);
+    expect(installResult.success).toBe(true);
+
+    // 启用技能（安装时默认已启用，先模拟禁用场景）
+    const result = await enableSkillForUser(TEST_USER_ID, skill.id);
+
+    expect(result.success).toBe(true);
+    expect(result.message).toBeDefined();
+  });
+
+  it("ENABLE-002: 启用未安装的技能应失败", async () => {
+    const result = await enableSkillForUser(TEST_USER_ID, "non-existent-skill");
+
+    expect(result.success).toBe(false);
+    expect(result.message).toContain("未找到安装记录");
+  });
+
+  it("DISABLE-001: 禁用已安装的技能", async () => {
+    // 创建并安装技能
+    const skill = await createSkill({
+      name: "可禁用技能",
+      version: "1.0.0",
+      status: "published",
+      subscriptionLevel: "free",
+    });
+
+    await installSkillForUser(TEST_USER_ID, skill.id);
+
+    // 禁用技能
+    const result = await disableSkillForUser(TEST_USER_ID, skill.id);
+
+    expect(result.success).toBe(true);
+    expect(result.message).toBeDefined();
+  });
+
+  it("DISABLE-002: 禁用未安装的技能应失败", async () => {
+    const result = await disableSkillForUser(TEST_USER_ID, "non-existent-skill");
+
+    expect(result.success).toBe(false);
+    expect(result.message).toContain("未找到安装记录");
+  });
+
+  it("TOGGLE-001: 切换已启用技能变为禁用", async () => {
+    // 创建并安装技能（默认 isEnabled=true）
+    const skill = await createSkill({
+      name: "切换技能",
+      version: "1.0.0",
+      status: "published",
+      subscriptionLevel: "free",
+    });
+
+    await installSkillForUser(TEST_USER_ID, skill.id);
+
+    // 切换：true → false
+    const result = await toggleSkillForUser(TEST_USER_ID, skill.id);
+
+    expect(result.success).toBe(true);
+    expect(result.isEnabled).toBe(false);
+  });
+
+  it("TOGGLE-002: 切换未安装的技能应失败", async () => {
+    const result = await toggleSkillForUser(TEST_USER_ID, "non-existent-skill");
+
+    expect(result.success).toBe(false);
+  });
+
+  it("TOGGLE-003: 禁用后再切换变为启用", async () => {
+    // 创建并安装技能
+    const skill = await createSkill({
+      name: "再次切换",
+      version: "1.0.0",
+      status: "published",
+      subscriptionLevel: "free",
+    });
+
+    await installSkillForUser(TEST_USER_ID, skill.id);
+
+    // 先禁用
+    await disableSkillForUser(TEST_USER_ID, skill.id);
+
+    // 再切换：false → true
+    const result = await toggleSkillForUser(TEST_USER_ID, skill.id);
+
+    expect(result.success).toBe(true);
+    expect(result.isEnabled).toBe(true);
+  });
+
+  it("ENABLE-DISABLE-VERIFY-001: 禁用后再启用验证状态变化", async () => {
+    // 创建并安装技能
+    const skill = await createSkill({
+      name: "验证技能",
+      version: "1.0.0",
+      status: "published",
+      subscriptionLevel: "free",
+    });
+
+    await installSkillForUser(TEST_USER_ID, skill.id);
+
+    // 禁用技能
+    const disableResult = await disableSkillForUser(TEST_USER_ID, skill.id);
+    expect(disableResult.success).toBe(true);
+    expect(disableResult.message).toBe("技能已禁用");
+
+    // 切换回启用，验证 toggle 返回正确状态
+    const toggleResult = await toggleSkillForUser(TEST_USER_ID, skill.id);
+    expect(toggleResult.success).toBe(true);
+    expect(toggleResult.isEnabled).toBe(true);
+
+    // 再次启用（幂等操作）
+    const enableResult = await enableSkillForUser(TEST_USER_ID, skill.id);
+    expect(enableResult.success).toBe(true);
+    expect(enableResult.message).toBe("技能已启用");
   });
 });

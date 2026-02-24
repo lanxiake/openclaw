@@ -13,6 +13,7 @@ import { withProgress, withProgressTotals } from "./progress.js";
 import { formatErrorMessage, withManager } from "./cli-utils.js";
 import { getMemorySearchManager, type MemorySearchManagerResult } from "../memory/index.js";
 import { listMemoryFiles, normalizeExtraMemoryPaths } from "../memory/internal.js";
+import { runMemoryMigrate } from "../commands/memory-migrate.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../terminal/links.js";
 import { colorize, isRich, theme } from "../terminal/theme.js";
@@ -677,6 +678,24 @@ export function registerMemoryCli(program: Command) {
             }
             defaultRuntime.log(lines.join("\n").trim());
           },
+        });
+      },
+    );
+
+  memory
+    .command("migrate")
+    .description("Migrate workspace .md files to database")
+    .option("--user <id>", "Target user ID (default: 'default')")
+    .option("--workspace <path>", "Custom workspace directory path")
+    .option("--dry-run", "Simulate without writing to database", false)
+    .option("--verbose", "Verbose logging", false)
+    .action(
+      async (opts: { user?: string; workspace?: string; dryRun?: boolean; verbose?: boolean }) => {
+        await runMemoryMigrate({
+          userId: opts.user,
+          workspaceDir: opts.workspace,
+          dryRun: opts.dryRun,
+          verbose: opts.verbose,
         });
       },
     );

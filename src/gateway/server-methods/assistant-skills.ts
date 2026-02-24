@@ -675,7 +675,6 @@ export const assistantSkillHandlers: GatewayRequestHandlers = {
       // 解析筛选条件
       const filters: StoreFilters = {
         category: params.category as string | undefined,
-        subscription: params.subscription as StoreFilters["subscription"],
         sortBy: params.sortBy as StoreFilters["sortBy"],
         search: params.search as string | undefined,
         offset: typeof params.offset === "number" ? params.offset : 0,
