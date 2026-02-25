@@ -229,7 +229,7 @@ export interface ChangePasswordParams {
 // ============================================================================
 
 /** 订阅计划 ID */
-export type SubscriptionPlanId = 'free' | 'pro' | 'team' | 'enterprise'
+export type SubscriptionPlanId = 'free' | 'monthly' | 'yearly'
 
 /** 计费周期 */
 export type BillingPeriod = 'monthly' | 'yearly'

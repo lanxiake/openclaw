@@ -105,7 +105,7 @@ export interface SkillUploadData {
   /** 标签列表 */
   tags?: string[];
   /** 订阅级别要求 */
-  subscriptionLevel?: "free" | "pro" | "team" | "enterprise";
+  subscriptionLevel?: "free" | "monthly" | "yearly";
   /** 图标 URL */
   iconUrl?: string;
   /** 技能配置文件 URL */

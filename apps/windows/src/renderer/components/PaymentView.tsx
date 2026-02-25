@@ -27,40 +27,36 @@ interface PaymentViewProps {
 
 /**
  * 订阅计划定义
+ *
+ * 积分制体系：免费版/月付版/年付版
+ * 所有用户共享统一资源限制（5设备、100技能、50MB文件）
  */
 const SUBSCRIPTION_PLANS = [
   {
-    id: 'basic',
-    name: '基础版',
-    description: '适合个人用户日常使用',
-    monthlyPrice: 1900,
-    yearlyPrice: 19000,
-    features: ['50 次/日 AI 对话', '5 个技能', '1 台设备', '5GB 存储'],
-  },
-  {
-    id: 'pro',
-    name: '专业版',
-    description: '适合高频使用和专业需求',
-    monthlyPrice: 4900,
-    yearlyPrice: 49000,
-    features: ['无限 AI 对话', '20 个技能', '3 台设备', '50GB 存储', '优先支持'],
+    id: 'monthly',
+    name: '月付版',
+    description: '每月2000积分，首月仅3元',
+    monthlyPrice: 3000,
+    yearlyPrice: 0,
+    features: ['每月 2000 积分', '首月仅 3 元', '5 台设备', '100 个技能', '积分包购买'],
     popular: true,
+    firstMonthPrice: 300,
   },
   {
-    id: 'enterprise',
-    name: '企业版',
-    description: '适合团队和企业使用',
-    monthlyPrice: 19900,
-    yearlyPrice: 199000,
-    features: ['无限 AI 对话', '无限技能', '10 台设备', '500GB 存储', '专属支持', 'API 访问'],
+    id: 'yearly',
+    name: '年付版',
+    description: '每月2000积分，年付更划算',
+    monthlyPrice: 0,
+    yearlyPrice: 30000,
+    features: ['每月 2000 积分', '等效 25 元/月', '5 台设备', '100 个技能', '积分包购买', '优先支持'],
   },
 ]
 
 export const PaymentView: React.FC<PaymentViewProps> = ({ userId, initialPlanId, onClose }) => {
   // 状态
   const [activeTab, setActiveTab] = useState<'plans' | 'orders'>('plans')
-  const [selectedPlan, setSelectedPlan] = useState(initialPlanId || 'pro')
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('yearly')
+  const [selectedPlan, setSelectedPlan] = useState(initialPlanId || 'monthly')
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
   const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>('mock')
   const [showPaymentModal, setShowPaymentModal] = useState(false)
 
@@ -141,61 +137,58 @@ export const PaymentView: React.FC<PaymentViewProps> = ({ userId, initialPlanId,
    */
   const renderPlans = () => (
     <div className="payment-plans">
-      {/* 计费周期切换 */}
-      <div className="billing-period-toggle">
-        <button
-          className={billingPeriod === 'monthly' ? 'active' : ''}
-          onClick={() => setBillingPeriod('monthly')}
-        >
-          月付
-        </button>
-        <button
-          className={billingPeriod === 'yearly' ? 'active' : ''}
-          onClick={() => setBillingPeriod('yearly')}
-        >
-          年付
-          <span className="discount-badge">省 2 个月</span>
-        </button>
-      </div>
-
       {/* 计划卡片 */}
       <div className="plans-grid">
-        {SUBSCRIPTION_PLANS.map((plan) => (
-          <div
-            key={plan.id}
-            className={`plan-card ${selectedPlan === plan.id ? 'selected' : ''} ${plan.popular ? 'popular' : ''}`}
-            onClick={() => setSelectedPlan(plan.id)}
-          >
-            {plan.popular && <div className="popular-badge">最受欢迎</div>}
-            <h3>{plan.name}</h3>
-            <p className="plan-description">{plan.description}</p>
-            <div className="plan-price">
-              <span className="price">
-                {formatAmount(billingPeriod === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice)}
-              </span>
-              <span className="period">/{billingPeriod === 'yearly' ? '年' : '月'}</span>
-            </div>
-            {billingPeriod === 'yearly' && (
-              <div className="monthly-equivalent">
-                相当于 {formatAmount(Math.round(plan.yearlyPrice / 12))}/月
-              </div>
-            )}
-            <ul className="plan-features">
-              {plan.features.map((feature, index) => (
-                <li key={index}>
-                  <span className="check-icon">✓</span>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <button
-              className={`select-plan-btn ${selectedPlan === plan.id ? 'selected' : ''}`}
-              onClick={() => setSelectedPlan(plan.id)}
+        {SUBSCRIPTION_PLANS.map((plan) => {
+          const displayPrice = plan.id === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice
+          const periodLabel = plan.id === 'monthly' ? '月' : '年'
+          const isFirstMonth = plan.id === 'monthly' && plan.firstMonthPrice
+          return (
+            <div
+              key={plan.id}
+              className={`plan-card ${selectedPlan === plan.id ? 'selected' : ''} ${plan.popular ? 'popular' : ''}`}
+              onClick={() => {
+                setSelectedPlan(plan.id)
+                setBillingPeriod(plan.id === 'yearly' ? 'yearly' : 'monthly')
+              }}
             >
-              {selectedPlan === plan.id ? '已选择' : '选择'}
-            </button>
-          </div>
-        ))}
+              {plan.popular && <div className="popular-badge">推荐</div>}
+              <h3>{plan.name}</h3>
+              <p className="plan-description">{plan.description}</p>
+              <div className="plan-price">
+                <span className="price">{formatAmount(displayPrice)}</span>
+                <span className="period">/{periodLabel}</span>
+              </div>
+              {isFirstMonth && (
+                <div className="monthly-equivalent">
+                  首月仅 {formatAmount(plan.firstMonthPrice!)}
+                </div>
+              )}
+              {plan.id === 'yearly' && (
+                <div className="monthly-equivalent">
+                  相当于 {formatAmount(Math.round(plan.yearlyPrice / 12))}/月
+                </div>
+              )}
+              <ul className="plan-features">
+                {plan.features.map((feature, index) => (
+                  <li key={index}>
+                    <span className="check-icon">✓</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <button
+                className={`select-plan-btn ${selectedPlan === plan.id ? 'selected' : ''}`}
+                onClick={() => {
+                  setSelectedPlan(plan.id)
+                  setBillingPeriod(plan.id === 'yearly' ? 'yearly' : 'monthly')
+                }}
+              >
+                {selectedPlan === plan.id ? '已选择' : '选择'}
+              </button>
+            </div>
+          )
+        })}
       </div>
 
       {/* 支付方式选择 */}
