@@ -29,6 +29,8 @@ const ALLOWED_FILE_TYPES = [
   'image/gif',
   'image/webp',
   'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
   'text/plain',
   'text/markdown',
   'text/csv',
@@ -87,7 +89,7 @@ export const ChatInput = memo<ChatInputProps>(({
         properties: ['openFile', 'multiSelections'],
         filters: [
           { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'] },
-          { name: 'Documents', extensions: ['pdf', 'txt', 'md', 'csv', 'json'] },
+          { name: 'Documents', extensions: ['pdf', 'doc', 'docx', 'txt', 'md', 'csv', 'json'] },
           { name: 'All Files', extensions: ['*'] },
         ],
       })

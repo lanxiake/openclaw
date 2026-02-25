@@ -83,6 +83,14 @@ export interface ShortcutConfig {
 }
 
 /**
+ * 工作空间配置
+ */
+export interface WorkspaceConfig {
+  /** 工作空间目录路径（空字符串表示使用默认路径） */
+  directory: string
+}
+
+/**
  * 应用设置
  */
 export interface AppSettings {
@@ -96,6 +104,8 @@ export interface AppSettings {
   privacy: PrivacyConfig
   /** 快捷键配置 */
   shortcuts: ShortcutConfig
+  /** 工作空间配置 */
+  workspace: WorkspaceConfig
   /** 语言 */
   language: 'zh-CN' | 'en-US'
   /** 启动时检查更新 */
@@ -135,6 +145,9 @@ const DEFAULT_SETTINGS: AppSettings = {
     toggleSidebar: 'Ctrl+B',
     openSettings: 'Ctrl+,',
   },
+  workspace: {
+    directory: '',
+  },
   language: 'zh-CN',
   checkUpdateOnStartup: true,
 }
@@ -163,6 +176,8 @@ interface UseSettingsReturn {
   updatePrivacy: (config: Partial<PrivacyConfig>) => void
   /** 更新快捷键配置 */
   updateShortcuts: (config: Partial<ShortcutConfig>) => void
+  /** 更新工作空间配置 */
+  updateWorkspace: (config: Partial<WorkspaceConfig>) => void
   /** 保存设置 */
   saveSettings: () => Promise<void>
   /** 重置为默认设置 */
@@ -291,6 +306,16 @@ export function useSettings(): UseSettingsReturn {
   }, [])
 
   /**
+   * 更新工作空间配置
+   */
+  const updateWorkspace = useCallback((config: Partial<WorkspaceConfig>) => {
+    setSettings((prev) => ({
+      ...prev,
+      workspace: { ...prev.workspace, ...config },
+    }))
+  }, [])
+
+  /**
    * 保存设置
    */
   const saveSettings = useCallback(async () => {
@@ -351,6 +376,7 @@ export function useSettings(): UseSettingsReturn {
     updateNotification,
     updatePrivacy,
     updateShortcuts,
+    updateWorkspace,
     saveSettings,
     resetSettings,
     exportSettings,

@@ -179,9 +179,22 @@ export function formatFileSize(bytes: number): string {
 }
 
 /**
+ * 文件管理 Hook 配置项
+ */
+interface UseFileManagerOptions {
+  /** 初始路径 */
+  initialPath?: string
+  /** 根路径约束（不允许导航到此目录之外） */
+  rootPath?: string
+}
+
+/**
  * 文件管理 Hook
  */
-export function useFileManager(initialPath?: string): UseFileManagerReturn {
+export function useFileManager(options?: UseFileManagerOptions): UseFileManagerReturn {
+  const initialPath = options?.initialPath
+  const rootPath = options?.rootPath
+
   const [currentPath, setCurrentPath] = useState(initialPath || '')
   const [files, setFiles] = useState<FileItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -198,14 +211,19 @@ export function useFileManager(initialPath?: string): UseFileManagerReturn {
    */
   useEffect(() => {
     console.log('[useFileManager] 初始化')
-    window.electronAPI.system.getUserPaths().then((paths) => {
-      console.log('[useFileManager] 用户路径:', paths)
-      setUserPaths(paths)
-      // 如果没有初始路径，默认打开用户主目录
-      if (!initialPath && paths.home) {
-        navigateTo(paths.home)
-      }
-    })
+    if (initialPath) {
+      // 有初始路径时直接导航，不获取 userPaths
+      navigateTo(initialPath)
+    } else {
+      window.electronAPI.system.getUserPaths().then((paths) => {
+        console.log('[useFileManager] 用户路径:', paths)
+        setUserPaths(paths)
+        // 如果没有初始路径，默认打开用户主目录
+        if (paths.home) {
+          navigateTo(paths.home)
+        }
+      })
+    }
   }, [])
 
   /**
@@ -248,6 +266,16 @@ export function useFileManager(initialPath?: string): UseFileManagerReturn {
    */
   const navigateTo = useCallback(
     async (path: string) => {
+      // 根路径约束：不允许导航到根路径之外
+      if (rootPath) {
+        const normalizedPath = path.replace(/\\/g, '/')
+        const normalizedRoot = rootPath.replace(/\\/g, '/')
+        if (!normalizedPath.startsWith(normalizedRoot)) {
+          console.warn('[useFileManager] 阻止导航到工作空间外:', path)
+          return
+        }
+      }
+
       console.log('[useFileManager] 导航到:', path)
       setIsLoading(true)
       setError(null)
@@ -296,7 +324,7 @@ export function useFileManager(initialPath?: string): UseFileManagerReturn {
         setIsLoading(false)
       }
     },
-    [sortFiles, historyIndex]
+    [sortFiles, historyIndex, rootPath]
   )
 
   /**
@@ -347,6 +375,16 @@ export function useFileManager(initialPath?: string): UseFileManagerReturn {
    */
   const goUp = useCallback(() => {
     if (!currentPath) return
+
+    // 根路径约束：已在根目录时不允许上行
+    if (rootPath) {
+      const normalizedCurrent = currentPath.replace(/\\/g, '/')
+      const normalizedRoot = rootPath.replace(/\\/g, '/')
+      if (normalizedCurrent === normalizedRoot || normalizedCurrent === normalizedRoot + '/') {
+        return
+      }
+    }
+
     // 使用路径分隔符处理
     const normalized = currentPath.replace(/\\/g, '/')
     const parts = normalized.split('/').filter(Boolean)
@@ -358,7 +396,7 @@ export function useFileManager(initialPath?: string): UseFileManagerReturn {
       const parentPath = parts.join('/')
       navigateTo(parentPath.includes(':') ? parentPath : '/' + parentPath)
     }
-  }, [currentPath, navigateTo])
+  }, [currentPath, navigateTo, rootPath])
 
   /**
    * 返回上一个历史记录

@@ -61,7 +61,7 @@ const App: React.FC = () => {
   console.log('[App] useAuth 返回:', { isAuthenticated, hasUser: !!user, hasAccessToken: !!accessToken })
 
   // 连接状态
-  const { isConnected, isConnecting, error: connectionError, connect, disconnect } = useConnectionStatus()
+  const { isConnected, isConnecting, error: connectionError, connect, disconnect, manuallyDisconnected } = useConnectionStatus()
   const { currentRequest, handleResponse } = useConfirmRequests()
 
   // 用户设置
@@ -129,6 +129,11 @@ const App: React.FC = () => {
       return
     }
 
+    // 手动断开后不自动重连
+    if (manuallyDisconnected) {
+      return
+    }
+
     // 强制使用 IPv4 地址，避免 Windows 上 localhost 解析为 IPv6 导致连接失败
     const rawUrl = settings.gateway.url || 'ws://127.0.0.1:18789'
     const gatewayUrl = rawUrl.replace('://localhost:', '://127.0.0.1:')
@@ -187,7 +192,7 @@ const App: React.FC = () => {
     return () => {
       clearInterval(reconnectInterval)
     }
-  }, [isAuthenticated, accessToken, connect, isConnected, settings.gateway.url, settings.gateway.token, settings.gateway.deviceId])
+  }, [isAuthenticated, accessToken, connect, isConnected, manuallyDisconnected, settings.gateway.url, settings.gateway.token, settings.gateway.deviceId])
 
   /**
    * 认证成功回调

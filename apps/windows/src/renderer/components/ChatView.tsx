@@ -198,13 +198,25 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
         attachmentCount: attachments.length,
         attachmentTotalSize: attachments.reduce((sum, a) => sum + (a.content?.length ?? 0), 0),
       })
-      await window.electronAPI.gateway.call('chat.send', {
+      const result = await window.electronAPI.gateway.call<{
+        runId: string
+        status: string
+        pendingChunks?: string[]
+      }>('chat.send', {
         sessionKey,
         message: content,
         idempotencyKey: runId,
         attachments: attachments.length > 0 ? attachments : undefined,
       })
       console.log('[ChatView] chat.send 调用成功，等待流式响应')
+
+      // 如果后端返回了文档分片，将后续分片入队自动续发
+      if (result?.pendingChunks && result.pendingChunks.length > 0) {
+        console.log(`[ChatView] 文档分片: 收到 ${result.pendingChunks.length} 个后续分片，入队自动续发`)
+        for (const chunk of result.pendingChunks) {
+          enqueue(chunk, [])
+        }
+      }
     } catch (error: unknown) {
       console.warn('[ChatView] chat.send 失败，回退到 assistant.chat:', error)
 
@@ -235,7 +247,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
         sessionRunMapRef.current.delete(currentSessionId)
       }
     }
-  }, [isConnected, activeSessionId, activeSession, createSession, addMessage, updateMessage, startStream])
+  }, [isConnected, activeSessionId, activeSession, createSession, addMessage, updateMessage, startStream, enqueue])
 
   /**
    * 监听所有活跃会话的流式响应更新

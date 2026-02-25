@@ -418,7 +418,17 @@ async function initSkillRuntime(): Promise<void> {
   })
 
   // 初始化技能运行时
-  const skillsDir = join(app.getPath('userData'), 'skills')
+  // 优先使用渲染进程设置的工作空间目录，否则使用默认 userData 目录
+  let skillsBaseDir = app.getPath('userData')
+  try {
+    const storedSettings = await getRendererSettings()
+    if (storedSettings?.workspace?.directory) {
+      skillsBaseDir = storedSettings.workspace.directory
+    }
+  } catch {
+    // 读取设置失败，使用默认值
+  }
+  const skillsDir = join(skillsBaseDir, 'skills')
   await skillRuntime.initialize(skillsDir)
 
   // 将 SkillRuntime 设置到 GatewayClient
@@ -458,10 +468,95 @@ function initUpdaterService(): void {
 }
 
 /**
+ * 从渲染进程的 localStorage 读取设置
+ *
+ * 通过 webContents.executeJavaScript 同步读取渲染进程存储的设置。
+ * 由于主进程在初始化时可能还没有渲染进程就绪，需要容错处理。
+ */
+async function getRendererSettings(): Promise<{ workspace?: { directory?: string } } | null> {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return null
+  }
+  try {
+    const json = await mainWindow.webContents.executeJavaScript(
+      `localStorage.getItem('openclaw-assistant-settings')`
+    )
+    if (json) {
+      return JSON.parse(json)
+    }
+  } catch {
+    // 渲染进程可能还没准备好
+  }
+  return null
+}
+
+/**
+ * 获取当前工作空间目录
+ *
+ * 从 localStorage 同步的设置中读取工作空间路径，
+ * 为空则返回默认的 userData 目录。
+ */
+function getWorkspaceDir(): string {
+  // 工作空间目录由渲染进程通过设置管理，主进程通过 IPC 查询时直接返回默认值
+  // 实际的工作空间路径在 initSkillRuntime 时通过 IPC 获取
+  return app.getPath('userData')
+}
+
+/**
  * 设置 IPC 处理器
  */
 function setupIpcHandlers(): void {
   log.info('设置 IPC 处理器')
+
+  // === 工作空间 ===
+  ipcMain.handle('workspace:getDir', async () => {
+    try {
+      const storedSettings = await getRendererSettings()
+      if (storedSettings?.workspace?.directory) {
+        return storedSettings.workspace.directory.replace(/\\/g, '/')
+      }
+    } catch {
+      // 读取设置失败
+    }
+    // 默认工作空间路径: userData/workspace
+    return join(app.getPath('userData'), 'workspace').replace(/\\/g, '/')
+  })
+
+  ipcMain.handle('workspace:setDir', async (_event, dirPath: string) => {
+    if (typeof dirPath !== 'string') {
+      throw new Error('路径必须是字符串')
+    }
+    // 空字符串表示恢复默认
+    if (dirPath !== '') {
+      // 验证目录是否存在
+      try {
+        const stat = await fs.stat(dirPath)
+        if (!stat.isDirectory()) {
+          throw new Error('指定路径不是目录')
+        }
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+          throw new Error('目录不存在')
+        }
+        throw err
+      }
+    }
+    return dirPath
+  })
+
+  ipcMain.handle('workspace:ensureDir', async (_event, dirPath: string) => {
+    if (typeof dirPath !== 'string' || dirPath.length === 0) {
+      throw new Error('路径必须是非空字符串')
+    }
+    // 确保工作空间根目录存在
+    await fs.mkdir(dirPath, { recursive: true })
+    // 确保基本子目录结构存在
+    const subDirs = ['skills', 'sandbox', '.openclaw/hooks']
+    for (const sub of subDirs) {
+      await fs.mkdir(join(dirPath, sub), { recursive: true })
+    }
+    return dirPath
+  })
 
   // === 窗口控制 ===
   ipcMain.on('window:minimize', () => mainWindow?.minimize())
@@ -571,6 +666,8 @@ function setupIpcHandlers(): void {
       '.bmp': 'image/bmp',
       '.svg': 'image/svg+xml',
       '.pdf': 'application/pdf',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       '.txt': 'text/plain',
       '.md': 'text/markdown',
       '.csv': 'text/csv',

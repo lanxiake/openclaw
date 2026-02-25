@@ -609,6 +609,16 @@ export interface ElectronAPI {
     }) => Promise<unknown>
   }
 
+  // 工作空间
+  workspace: {
+    /** 获取当前工作空间目录 */
+    getDir: () => Promise<string>
+    /** 验证并设置工作空间目录 */
+    setDir: (dirPath: string) => Promise<string>
+    /** 确保工作空间目录及基本子结构存在 */
+    ensureDir: (dirPath: string) => Promise<string>
+  }
+
   // 本地技能管理
   skills: {
     /** 列出本地已安装技能 */
@@ -1005,6 +1015,13 @@ const electronAPI: ElectronAPI = {
       contentType: string
       data: string
     }) => ipcRenderer.invoke('api:uploadSkillFile', params),
+  },
+
+  // 工作空间 API
+  workspace: {
+    getDir: () => ipcRenderer.invoke('workspace:getDir'),
+    setDir: (dirPath: string) => ipcRenderer.invoke('workspace:setDir', dirPath),
+    ensureDir: (dirPath: string) => ipcRenderer.invoke('workspace:ensureDir', dirPath),
   },
 
   // 本地技能管理 API

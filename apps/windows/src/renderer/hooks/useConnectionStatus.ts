@@ -20,6 +20,7 @@ interface UseConnectionStatusReturn {
   isConnected: boolean
   isConnecting: boolean
   error: string | null
+  manuallyDisconnected: boolean
   connect: (url: string, options?: ConnectOptions) => Promise<void>
   disconnect: () => Promise<void>
 }
@@ -31,6 +32,7 @@ export function useConnectionStatus(): UseConnectionStatusReturn {
   const [isConnected, setIsConnected] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [manuallyDisconnected, setManuallyDisconnected] = useState(false)
 
   /**
    * 监听连接状态变化
@@ -77,6 +79,7 @@ export function useConnectionStatus(): UseConnectionStatusReturn {
       return
     }
 
+    setManuallyDisconnected(false)
     setIsConnecting(true)
     setError(null)
 
@@ -101,6 +104,8 @@ export function useConnectionStatus(): UseConnectionStatusReturn {
       return
     }
 
+    setManuallyDisconnected(true)
+
     try {
       await window.electronAPI.gateway.disconnect()
       console.log('[useConnectionStatus] 已断开')
@@ -113,6 +118,7 @@ export function useConnectionStatus(): UseConnectionStatusReturn {
     isConnected,
     isConnecting,
     error,
+    manuallyDisconnected,
     connect,
     disconnect,
   }

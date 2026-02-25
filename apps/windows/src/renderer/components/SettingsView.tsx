@@ -22,13 +22,14 @@ interface SettingsViewProps {
 /**
  * 设置分类
  */
-type SettingsCategory = 'account' | 'gateway' | 'theme' | 'notification' | 'privacy' | 'shortcuts' | 'update' | 'about'
+type SettingsCategory = 'account' | 'workspace' | 'gateway' | 'theme' | 'notification' | 'privacy' | 'shortcuts' | 'update' | 'about'
 
 /**
  * 分类配置
  */
 const CATEGORIES: Array<{ id: SettingsCategory; label: string; icon: string }> = [
   { id: 'account', label: '账户设置', icon: '👤' },
+  { id: 'workspace', label: '工作空间', icon: '📂' },
   { id: 'gateway', label: 'Gateway 连接', icon: '🔗' },
   { id: 'theme', label: '外观主题', icon: '🎨' },
   { id: 'notification', label: '通知设置', icon: '🔔' },
@@ -67,6 +68,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
     updatePrivacy,
     updateShortcuts,
     updateSettings,
+    updateWorkspace,
     saveSettings,
     resetSettings,
     exportSettings,
@@ -98,6 +100,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
   const [openAtLogin, setOpenAtLogin] = useState(false)
   const [openAtLoginLoading, setOpenAtLoginLoading] = useState(false)
 
+  /** 工作空间默认路径 */
+  const [defaultWorkspaceDir, setDefaultWorkspaceDir] = useState<string>('')
+
   /**
    * 获取应用版本
    */
@@ -111,6 +116,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
   useEffect(() => {
     window.electronAPI.app.getOpenAtLogin().then(setOpenAtLogin).catch(() => {
       console.warn('[SettingsView] 获取开机启动状态失败')
+    })
+  }, [])
+
+  /**
+   * 获取默认工作空间路径
+   */
+  useEffect(() => {
+    window.electronAPI.workspace?.getDir().then((dir) => {
+      setDefaultWorkspaceDir(dir)
+    }).catch(() => {
+      console.warn('[SettingsView] 获取默认工作空间路径失败')
     })
   }, [])
 
@@ -325,6 +341,88 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
       setOpenAtLoginLoading(false)
     }
   }, [])
+
+  /**
+   * 选择工作空间目录
+   */
+  const handleSelectWorkspaceDir = useCallback(async () => {
+    try {
+      const result = await window.electronAPI.dialog.showOpenDialog({
+        title: '选择工作空间目录',
+        properties: ['openDirectory'],
+        defaultPath: settings.workspace.directory || defaultWorkspaceDir || undefined,
+      })
+      if (!result.canceled && result.filePaths.length > 0) {
+        const selectedDir = result.filePaths[0]
+        console.log('[SettingsView] 选择工作空间目录:', selectedDir)
+        // 验证目录
+        await window.electronAPI.workspace.setDir(selectedDir)
+        updateWorkspace({ directory: selectedDir })
+      }
+    } catch (err) {
+      console.error('[SettingsView] 选择工作空间目录失败:', err)
+      alert(err instanceof Error ? err.message : '选择目录失败')
+    }
+  }, [settings.workspace.directory, defaultWorkspaceDir, updateWorkspace])
+
+  /**
+   * 恢复默认工作空间目录
+   */
+  const handleResetWorkspaceDir = useCallback(() => {
+    console.log('[SettingsView] 恢复默认工作空间目录')
+    updateWorkspace({ directory: '' })
+  }, [updateWorkspace])
+
+  /**
+   * 渲染工作空间设置
+   */
+  const renderWorkspaceSettings = () => (
+    <div className="settings-section">
+      <h3 className="settings-section-title">工作空间</h3>
+
+      <div className="settings-group">
+        <div className="setting-item">
+          <label className="setting-label">工作空间目录</label>
+          <div className="setting-hint">
+            技能、命令、文件等默认存放在工作空间目录中。
+            {!settings.workspace.directory && ' 当前使用默认路径。'}
+          </div>
+          <div className="profile-edit-row">
+            <input
+              type="text"
+              className="setting-input"
+              value={settings.workspace.directory || defaultWorkspaceDir}
+              readOnly
+              placeholder="未设置（使用默认路径）"
+            />
+            <button
+              className="profile-save-btn"
+              onClick={handleSelectWorkspaceDir}
+            >
+              选择目录
+            </button>
+          </div>
+        </div>
+
+        {settings.workspace.directory && (
+          <div className="setting-item">
+            <div className="setting-actions">
+              <button
+                className="setting-action-btn"
+                onClick={handleResetWorkspaceDir}
+              >
+                恢复默认
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <p className="settings-note">
+        更改工作空间目录后需要保存设置并重启应用才能生效。已安装的技能不会自动迁移到新目录。
+      </p>
+    </div>
+  )
 
   /**
    * 渲染账户设置
@@ -915,6 +1013,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
     switch (activeCategory) {
       case 'account':
         return renderAccountSettings()
+      case 'workspace':
+        return renderWorkspaceSettings()
       case 'gateway':
         return renderGatewaySettings()
       case 'theme':
