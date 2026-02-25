@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildMessageWithAttachments,
   type ChatAttachment,
+  chunkAttachmentText,
   formatFileTextsAsAttachmentBlocks,
   parseMessageWithAttachments,
 } from "./chat-attachments.js";
@@ -358,12 +359,12 @@ describe("parseMessageWithAttachments - text file handling", () => {
     expect(parsed.images).toHaveLength(0);
     expect(parsed.fileTexts).toHaveLength(1);
     expect(parsed.fileTexts[0]?.fileName).toBe("report.pdf");
-    // PDF 文本提取暂不支持，返回提示信息
-    expect(parsed.fileTexts[0]?.content).toContain("PDF 文本提取暂不支持");
+    // PDF 解析器处理无效/不完整 PDF 时返回错误信息
+    expect(parsed.fileTexts[0]?.content).toContain("report.pdf");
   });
 
   it("handles binary PDF same as text PDF", async () => {
-    // 纯二进制 PDF 也返回提示信息
+    // 纯二进制 PDF 也通过文档解析器处理
     const binaryPdf = Buffer.from("%PDF-1.4\n\x00\x01\x02\x03").toString("base64");
     const parsed = await parseMessageWithAttachments(
       "read pdf",
@@ -378,7 +379,7 @@ describe("parseMessageWithAttachments - text file handling", () => {
       { log: { warn: () => {} } },
     );
     expect(parsed.fileTexts).toHaveLength(1);
-    expect(parsed.fileTexts[0]?.content).toContain("PDF 文本提取暂不支持");
+    expect(parsed.fileTexts[0]?.content).toContain("scan.pdf");
   });
 
   it("drops unsupported binary types with log", async () => {
@@ -474,5 +475,56 @@ describe("formatFileTextsAsAttachmentBlocks", () => {
     expect(result).not.toContain('plain">');
     expect(result).toContain("&quot;");
     expect(result).toContain("&lt;");
+  });
+});
+
+// ==========================
+// chunkAttachmentText 分片测试
+// ==========================
+
+describe("chunkAttachmentText", () => {
+  it("returns null when content fits within limit", () => {
+    const fileTexts = [{ fileName: "small.txt", content: "Hello World", mimeType: "text/plain" }];
+    const result = chunkAttachmentText(fileTexts, "read this", 5000);
+    expect(result).toBeNull();
+  });
+
+  it("chunks content when exceeding limit", () => {
+    const longContent = "A".repeat(500);
+    const fileTexts = [{ fileName: "big.txt", content: longContent, mimeType: "text/plain" }];
+    // 使用很小的限制来触发分片
+    const result = chunkAttachmentText(fileTexts, "read this", 200);
+    expect(result).not.toBeNull();
+    expect(result!.totalChunks).toBeGreaterThan(1);
+    expect(result!.firstChunk).toContain("文档分片 1/");
+    expect(result!.firstChunk).toContain("big.txt");
+    expect(result!.remainingChunks.length).toBe(result!.totalChunks - 1);
+    expect(result!.fileName).toBe("big.txt");
+  });
+
+  it("labels each chunk with part number", () => {
+    const lines = Array.from({ length: 50 }, (_, i) => `Line ${i + 1}: ${"X".repeat(50)}`);
+    const content = lines.join("\n");
+    const fileTexts = [{ fileName: "doc.md", content, mimeType: "text/markdown" }];
+    const result = chunkAttachmentText(fileTexts, "", 300);
+    expect(result).not.toBeNull();
+    const total = result!.totalChunks;
+    // 验证每个分片的标签格式
+    expect(result!.firstChunk).toMatch(/\[文档分片 1\/\d+: doc\.md\]/);
+    for (let i = 0; i < result!.remainingChunks.length; i++) {
+      expect(result!.remainingChunks[i]).toMatch(
+        new RegExp(`\\[文档分片 ${i + 2}/${total}: doc\\.md\\]`),
+      );
+    }
+  });
+
+  it("handles multiple fileTexts", () => {
+    const fileTexts = [
+      { fileName: "a.txt", content: "A".repeat(200), mimeType: "text/plain" },
+      { fileName: "b.txt", content: "B".repeat(200), mimeType: "text/plain" },
+    ];
+    const result = chunkAttachmentText(fileTexts, "", 250);
+    expect(result).not.toBeNull();
+    expect(result!.totalChunks).toBeGreaterThan(1);
   });
 });

@@ -26,6 +26,7 @@ import {
 } from "../chat-abort.js";
 import {
   type ChatImageContent,
+  chunkAttachmentText,
   formatFileTextsAsAttachmentBlocks,
   parseMessageWithAttachments,
 } from "../chat-attachments.js";
@@ -416,6 +417,8 @@ export const chatHandlers: GatewayRequestHandlers = {
     }
     let parsedMessage = p.message;
     let parsedImages: ChatImageContent[] = [];
+    /** 文档分片：后续分片需通过 ackPayload 返回给前端入队续发 */
+    let pendingChunks: string[] = [];
     if (normalizedAttachments.length > 0) {
       try {
         const parsed = await parseMessageWithAttachments(p.message, normalizedAttachments, {
@@ -426,8 +429,22 @@ export const chatHandlers: GatewayRequestHandlers = {
         parsedImages = parsed.images;
         // 将文件附件的文本内容以 <attachment> 块追加到消息中
         if (parsed.fileTexts.length > 0) {
-          const fileBlocks = formatFileTextsAsAttachmentBlocks(parsed.fileTexts);
-          parsedMessage = parsedMessage.trim() ? `${parsedMessage}\n\n${fileBlocks}` : fileBlocks;
+          // 尝试分片：如果文档内容过长，切分为多片
+          const chunked = chunkAttachmentText(parsed.fileTexts, parsedMessage);
+          if (chunked) {
+            // 需要分片：第一片合并到当前消息，剩余片段通过 ackPayload 返回
+            context.logGateway.warn(
+              `attachment chunked: ${chunked.fileName} → ${chunked.totalChunks} chunks`,
+            );
+            parsedMessage = parsedMessage.trim()
+              ? `${parsedMessage}\n\n${chunked.firstChunk}`
+              : chunked.firstChunk;
+            pendingChunks = chunked.remainingChunks;
+          } else {
+            // 不需要分片：全部合并到消息
+            const fileBlocks = formatFileTextsAsAttachmentBlocks(parsed.fileTexts);
+            parsedMessage = parsedMessage.trim() ? `${parsedMessage}\n\n${fileBlocks}` : fileBlocks;
+          }
         }
       } catch (err) {
         respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, String(err)));
@@ -544,10 +561,14 @@ export const chatHandlers: GatewayRequestHandlers = {
         expiresAtMs: resolveChatRunExpiresAtMs({ now, timeoutMs }),
       });
 
-      const ackPayload = {
+      const ackPayload: Record<string, unknown> = {
         runId: clientRunId,
         status: "started" as const,
       };
+      // 如果有文档分片，将后续分片通过 ackPayload 返回给前端
+      if (pendingChunks.length > 0) {
+        ackPayload.pendingChunks = pendingChunks;
+      }
       respond(true, ackPayload, undefined, { runId: clientRunId });
 
       const trimmedMessage = parsedMessage.trim();

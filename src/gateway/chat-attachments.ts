@@ -1,4 +1,5 @@
 import { detectMime } from "../media/mime.js";
+import { extractDocumentText } from "./document-parser.js";
 
 export type ChatAttachment = {
   type?: string;
@@ -73,6 +74,13 @@ const TEXT_DECODABLE_MIMES = new Set([
   "application/xml",
 ]);
 
+/** 需要专用解析器提取文本的文档 MIME 类型 */
+const DOCUMENT_PARSEABLE_MIMES = new Set([
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+  "application/msword", // .doc
+]);
+
 /**
  * 判断 MIME 类型是否可解码为文本内容。
  * 包括所有 text/* 类型和部分 application/* 类型（如 JSON、XML）。
@@ -81,6 +89,14 @@ function isTextDecodableMime(mime?: string): boolean {
   if (!mime) return false;
   if (mime.startsWith("text/")) return true;
   return TEXT_DECODABLE_MIMES.has(mime);
+}
+
+/**
+ * 判断 MIME 类型是否为可解析的文档格式（PDF、DOCX、DOC）。
+ */
+function isDocumentMime(mime?: string): boolean {
+  if (!mime) return false;
+  return DOCUMENT_PARSEABLE_MIMES.has(mime);
 }
 
 /** 解码后文本内容最大字符数（约 100KB，避免撑爆 LLM context window） */
@@ -108,6 +124,108 @@ export function formatFileTextsAsAttachmentBlocks(fileTexts: FileTextContent[]):
         `<attachment name="${escapeXmlAttr(f.fileName)}" type="${escapeXmlAttr(f.mimeType)}">\n${f.content}\n</attachment>`,
     )
     .join("\n\n");
+}
+
+/**
+ * 每个分片的最大字符数（约 12K 字符，为 LLM context 留充足空间）。
+ * 选择 12K 是因为：一般 LLM 的有效 context 约 8K-128K tokens，
+ * 12K 字符约等于 3K-4K tokens，留出空间给系统提示词、历史对话和回复。
+ */
+const CHUNK_MAX_CHARS = 12_000;
+
+/** 分片结果 */
+export interface ChunkedAttachmentResult {
+  /** 第一片（合并到当前消息发送） */
+  firstChunk: string;
+  /** 后续分片（需要入队自动续发） */
+  remainingChunks: string[];
+  /** 总分片数 */
+  totalChunks: number;
+  /** 原始文件名 */
+  fileName: string;
+}
+
+/**
+ * 将附件文本内容分片。
+ *
+ * 如果 fileTexts 格式化后的总长度超过 CHUNK_MAX_CHARS，
+ * 按段落/行边界智能切分为多个分片。
+ * 每个分片都带有 `[文档分片 N/M]` 前缀标记。
+ *
+ * @returns 如果不需要分片，返回 null；需要分片时返回分片结果
+ */
+export function chunkAttachmentText(
+  fileTexts: FileTextContent[],
+  userMessage: string,
+  maxChars: number = CHUNK_MAX_CHARS,
+): ChunkedAttachmentResult | null {
+  const fullText = formatFileTextsAsAttachmentBlocks(fileTexts);
+  const totalLen = userMessage.length + fullText.length;
+
+  // 不需要分片
+  if (totalLen <= maxChars) {
+    return null;
+  }
+
+  // 获取主文件名（用于分片标记）
+  const fileName = fileTexts[0]?.fileName ?? "document";
+
+  // 按行切分文本
+  const lines = fullText.split("\n");
+  const chunks: string[] = [];
+  let currentChunk = "";
+
+  for (const line of lines) {
+    // 如果加上这行会超出限制，先保存当前 chunk
+    if (currentChunk.length + line.length + 1 > maxChars && currentChunk.length > 0) {
+      chunks.push(currentChunk);
+      currentChunk = "";
+    }
+
+    // 如果单行超过限制，强制按字符切分
+    if (line.length > maxChars) {
+      let remaining = line;
+      while (remaining.length > 0) {
+        const space = maxChars - currentChunk.length - 1;
+        if (space <= 0) {
+          chunks.push(currentChunk);
+          currentChunk = "";
+          continue;
+        }
+        currentChunk += (currentChunk ? "\n" : "") + remaining.slice(0, space);
+        remaining = remaining.slice(space);
+        if (currentChunk.length >= maxChars) {
+          chunks.push(currentChunk);
+          currentChunk = "";
+        }
+      }
+    } else {
+      currentChunk += (currentChunk ? "\n" : "") + line;
+    }
+  }
+
+  // 保存最后一个 chunk
+  if (currentChunk.trim()) {
+    chunks.push(currentChunk);
+  }
+
+  if (chunks.length <= 1) {
+    return null;
+  }
+
+  const totalChunks = chunks.length;
+
+  // 给每个分片加上标记
+  const labeledChunks = chunks.map(
+    (chunk, i) => `[文档分片 ${i + 1}/${totalChunks}: ${fileName}]\n\n${chunk}`,
+  );
+
+  return {
+    firstChunk: labeledChunks[0]!,
+    remainingChunks: labeledChunks.slice(1),
+    totalChunks,
+    fileName,
+  };
 }
 
 /**
@@ -206,14 +324,27 @@ export async function parseMessageWithAttachments(
       }
     }
 
-    // PDF：需要专用解析库（如 pdf-parse）才能可靠提取文本。
-    // 当前不做 naive 解析（会产生垃圾数据），诚实告知用户限制。
-    if (effectiveMime === "application/pdf") {
-      fileTexts.push({
-        fileName: label,
-        content: `[PDF file: ${label} - PDF 文本提取暂不支持，请直接粘贴相关文本内容]`,
-        mimeType: "application/pdf",
-      });
+    // 文档类型（PDF、DOCX、DOC）：使用专用解析器提取文本
+    if (isDocumentMime(effectiveMime) || isDocumentMime(providedMime)) {
+      const docMime = isDocumentMime(effectiveMime) ? effectiveMime : providedMime!;
+      try {
+        const result = await extractDocumentText(b64, label, docMime);
+        console.log(
+          `[chat-attachments] 文档解析完成: ${label}, ok=${result.ok}, textLen=${result.text.length}`,
+        );
+        fileTexts.push({
+          fileName: label,
+          content: result.text,
+          mimeType: docMime,
+        });
+      } catch (err) {
+        log?.warn(`attachment ${label}: document parsing failed: ${String(err)}`);
+        fileTexts.push({
+          fileName: label,
+          content: `[Document: ${label} - 文本提取失败: ${String(err)}]`,
+          mimeType: docMime,
+        });
+      }
       continue;
     }
 
