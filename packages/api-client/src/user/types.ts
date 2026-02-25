@@ -253,7 +253,7 @@ export interface StoreSkill {
   categoryId?: string;
   categoryName?: string;
   authorName?: string;
-  subscriptionLevel: "free" | "basic" | "pro" | "enterprise";
+  subscriptionLevel: "free" | "monthly" | "yearly";
   iconUrl?: string;
   downloadCount: number;
   rating: number;

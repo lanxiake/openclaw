@@ -773,12 +773,12 @@ export function initTestCoupons(): void {
   createCoupon({
     code: "FREETRIAL",
     name: "免费试用月",
-    description: "专业版一个月免费试用",
+    description: "月付版一个月免费试用",
     type: "free_month",
     value: 1,
     scope: {
       orderTypes: ["subscription"],
-      planIds: ["pro"],
+      planIds: ["monthly"],
       newUserOnly: true,
     },
     totalCount: 100,

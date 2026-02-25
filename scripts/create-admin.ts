@@ -90,7 +90,7 @@ async function main() {
   console.log("\n📦 Checking test plans...\n");
 
   const existingPlans =
-    await sql`SELECT code FROM plans WHERE code IN ('free', 'pro', 'enterprise')`;
+    await sql`SELECT code FROM plans WHERE code IN ('free', 'monthly', 'yearly')`;
   const existingCodes = new Set(existingPlans.map((p) => p.code));
 
   if (existingCodes.size === 3) {
@@ -103,38 +103,36 @@ async function main() {
         id: generateId("pln"),
         name: "免费版",
         code: "free",
-        description: "基础功能，适合个人用户体验",
+        description: "注册赠送600积分，邀请好友获取更多",
         priceMonthly: 0,
         priceYearly: 0,
-        features: '{"maxDevices": 1, "maxMessages": 100, "features": ["basic_chat"]}',
+        features: '{"maxDevices": 5, "maxSkills": 100, "maxFileSize": 50}',
         sortOrder: 1,
       });
     }
 
-    if (!existingCodes.has("pro")) {
+    if (!existingCodes.has("monthly")) {
       plansToCreate.push({
         id: generateId("pln"),
-        name: "专业版",
-        code: "pro",
-        description: "专业功能，适合个人深度用户",
-        priceMonthly: 2900,
-        priceYearly: 29000,
-        features:
-          '{"maxDevices": 3, "maxMessages": 10000, "features": ["basic_chat", "advanced_chat", "memory", "skills"]}',
+        name: "月付版",
+        code: "monthly",
+        description: "30元/月，每月2000积分，首月3元",
+        priceMonthly: 3000,
+        priceYearly: 0,
+        features: '{"maxDevices": 5, "maxSkills": 100, "maxFileSize": 50, "firstMonthPrice": 300}',
         sortOrder: 2,
       });
     }
 
-    if (!existingCodes.has("enterprise")) {
+    if (!existingCodes.has("yearly")) {
       plansToCreate.push({
         id: generateId("pln"),
-        name: "企业版",
-        code: "enterprise",
-        description: "企业级功能，适合团队使用",
-        priceMonthly: 9900,
-        priceYearly: 99000,
-        features:
-          '{"maxDevices": 10, "maxMessages": -1, "features": ["basic_chat", "advanced_chat", "memory", "skills", "api_access", "priority_support"]}',
+        name: "年付版",
+        code: "yearly",
+        description: "300元/年，每月2000积分",
+        priceMonthly: 0,
+        priceYearly: 30000,
+        features: '{"maxDevices": 5, "maxSkills": 100, "maxFileSize": 50}',
         sortOrder: 3,
       });
     }

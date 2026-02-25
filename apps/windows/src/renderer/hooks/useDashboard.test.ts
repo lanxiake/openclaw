@@ -62,7 +62,7 @@ describe('useDashboard', () => {
       subscription: {
         id: 'sub-1',
         userId: 'user-1',
-        planId: 'pro',
+        planId: 'monthly',
         status: 'active',
         startDate: '2026-01-01',
         endDate: '2026-02-28',
@@ -70,18 +70,18 @@ describe('useDashboard', () => {
         billingCycle: 'monthly',
       },
       plan: {
-        id: 'pro',
-        name: 'pro',
-        displayName: '专业版',
-        price: 29,
+        id: 'monthly',
+        name: 'monthly',
+        displayName: '月付版',
+        price: 30,
         currency: 'CNY',
         billingCycle: 'monthly',
         features: {
           maxDevices: 5,
-          maxSkills: 20,
-          maxConversations: 100,
+          maxSkills: 100,
+          maxConversations: -1,
           maxMemorySize: 1024,
-          prioritySupport: true,
+          prioritySupport: false,
           customBranding: false,
         },
         isActive: true,
@@ -154,8 +154,8 @@ describe('useDashboard', () => {
 
     // 验证订阅信息
     expect(result.current.subscription).not.toBeNull()
-    expect(result.current.subscription?.planId).toBe('pro')
-    expect(result.current.planName).toBe('专业版')
+    expect(result.current.subscription?.planId).toBe('monthly')
+    expect(result.current.planName).toBe('月付版')
 
     // 验证使用量
     expect(result.current.usage).not.toBeNull()
@@ -232,7 +232,7 @@ describe('useDashboard', () => {
       subscription: {
         id: 'sub-1',
         userId: 'user-1',
-        planId: 'team',
+        planId: 'yearly',
         status: 'active',
         startDate: '2026-01-01',
         endDate: '2026-03-31',
@@ -240,19 +240,19 @@ describe('useDashboard', () => {
         billingCycle: 'yearly',
       },
       plan: {
-        id: 'team',
-        name: 'team',
-        displayName: '团队版',
-        price: 99,
+        id: 'yearly',
+        name: 'yearly',
+        displayName: '年付版',
+        price: 300,
         currency: 'CNY',
         billingCycle: 'yearly',
         features: {
-          maxDevices: 10,
-          maxSkills: 50,
-          maxConversations: 500,
+          maxDevices: 5,
+          maxSkills: 100,
+          maxConversations: -1,
           maxMemorySize: 4096,
           prioritySupport: true,
-          customBranding: true,
+          customBranding: false,
         },
         isActive: true,
       },
@@ -288,7 +288,7 @@ describe('useDashboard', () => {
       await result.current.refresh()
     })
 
-    expect(result.current.planName).toBe('团队版')
+    expect(result.current.planName).toBe('年付版')
     expect(result.current.deviceCount).toBe(3)
     expect(result.current.skillStats.installed).toBe(4)
     expect(result.current.skillStats.limit).toBe(100)

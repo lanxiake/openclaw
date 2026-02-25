@@ -241,9 +241,6 @@ export const CONFIG_KEYS = {
 
   // 订阅配置
   FREE_QUOTA: "free_quota",
-  PRO_QUOTA: "pro_quota",
-  TEAM_QUOTA: "team_quota",
-  ENTERPRISE_QUOTA: "enterprise_quota",
 
   // 积分系统配置
   CREDITS_REGISTER_BONUS: "credits.register_bonus",
@@ -257,6 +254,8 @@ export const CONFIG_KEYS = {
   CREDITS_BOOSTER_PRICE: "credits.booster_price",
   CREDITS_BOOSTER_EXPIRY_MONTHS: "credits.booster_expiry_months",
   CREDITS_GLOBAL_MULTIPLIER: "credits.global_multiplier",
+  CREDITS_PACKS: "credits.packs",
+  CREDITS_FREE_USER_CAP: "credits.free_user_cap",
 
   // 统一用户限制配置
   LIMITS_MAX_DEVICES: "limits.max_devices",

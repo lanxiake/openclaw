@@ -4,15 +4,25 @@
  * 提供用户积分查询入口、模型定价预览和过期清理操作
  */
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Coins, Search, ArrowRight, Trash2 } from 'lucide-react'
+import { Coins, Search, ArrowRight, Trash2, Plus, Edit, Package } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { ROUTES } from '@/lib/constants'
 import { useModelPricingList, useCleanupExpiredCredits } from '@/hooks/useCredits'
+import { useCreditPacks, useUpdateCreditPacks, type CreditPack } from '@/hooks/useConfig'
 
 /**
  * 积分管理概览页组件
@@ -23,6 +33,102 @@ export default function CreditsPage() {
 
   const { data: pricings, isLoading: pricingsLoading } = useModelPricingList(true)
   const cleanupMutation = useCleanupExpiredCredits()
+
+  /** 积分包数据 */
+  const { data: creditPacks, isLoading: packsLoading } = useCreditPacks()
+  const updatePacksMutation = useUpdateCreditPacks()
+
+  /** 积分包编辑弹窗 */
+  const [packDialog, setPackDialog] = useState<{
+    open: boolean
+    mode: 'create' | 'edit'
+    index: number
+  }>({ open: false, mode: 'create', index: -1 })
+
+  /** 积分包表单数据 */
+  const [packForm, setPackForm] = useState<CreditPack>({
+    id: '',
+    name: '',
+    credits: 0,
+    price: 0,
+    expiryMonths: 3,
+  })
+
+  /**
+   * 更新积分包表单字段
+   */
+  const updatePackField = useCallback(<K extends keyof CreditPack>(key: K, value: CreditPack[K]) => {
+    setPackForm((prev) => ({ ...prev, [key]: value }))
+  }, [])
+
+  /**
+   * 打开新建积分包弹窗
+   */
+  const openCreatePack = useCallback(() => {
+    setPackForm({ id: '', name: '', credits: 0, price: 0, expiryMonths: 3 })
+    setPackDialog({ open: true, mode: 'create', index: -1 })
+  }, [])
+
+  /**
+   * 打开编辑积分包弹窗
+   */
+  const openEditPack = useCallback(
+    (pack: CreditPack, index: number) => {
+      setPackForm({ ...pack })
+      setPackDialog({ open: true, mode: 'edit', index })
+    },
+    [],
+  )
+
+  /**
+   * 关闭积分包弹窗
+   */
+  const closePackDialog = useCallback(() => {
+    setPackDialog({ open: false, mode: 'create', index: -1 })
+  }, [])
+
+  /**
+   * 保存积分包
+   */
+  const handleSavePack = useCallback(async () => {
+    const currentPacks = creditPacks ?? []
+    let updatedPacks: CreditPack[]
+
+    if (packDialog.mode === 'create') {
+      const newPack: CreditPack = {
+        ...packForm,
+        id: packForm.id || `pack_${packForm.credits}`,
+      }
+      updatedPacks = [...currentPacks, newPack]
+    } else {
+      updatedPacks = currentPacks.map((p, i) => (i === packDialog.index ? { ...packForm } : p))
+    }
+
+    try {
+      await updatePacksMutation.mutateAsync(updatedPacks)
+      closePackDialog()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '保存失败')
+    }
+  }, [creditPacks, packDialog, packForm, updatePacksMutation, closePackDialog])
+
+  /**
+   * 删除积分包
+   */
+  const handleDeletePack = useCallback(
+    async (index: number) => {
+      const currentPacks = creditPacks ?? []
+      const updatedPacks = currentPacks.filter((_, i) => i !== index)
+      try {
+        await updatePacksMutation.mutateAsync(updatedPacks)
+      } catch (err) {
+        alert(err instanceof Error ? err.message : '删除失败')
+      }
+    },
+    [creditPacks, updatePacksMutation],
+  )
+
+  const canSavePack = packForm.name.trim() !== '' && packForm.credits > 0 && packForm.price > 0
 
   /**
    * 跳转到用户积分详情页
@@ -169,6 +275,161 @@ export default function CreditsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 积分包管理 */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base">积分包管理</CardTitle>
+            </div>
+            <Button variant="outline" size="sm" onClick={openCreatePack}>
+              <Plus className="mr-1 h-4 w-4" />
+              新增积分包
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {packsLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-10 animate-pulse rounded bg-muted" />
+              ))}
+            </div>
+          ) : !creditPacks || creditPacks.length === 0 ? (
+            <p className="text-sm text-muted-foreground">暂无积分包配置</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="pb-2 pr-4 font-medium">ID</th>
+                    <th className="pb-2 pr-4 font-medium">名称</th>
+                    <th className="pb-2 pr-4 font-medium">积分</th>
+                    <th className="pb-2 pr-4 font-medium">价格 (分)</th>
+                    <th className="pb-2 pr-4 font-medium">有效期</th>
+                    <th className="pb-2 font-medium">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {creditPacks.map((pack, index) => (
+                    <tr key={pack.id} className="border-b last:border-0">
+                      <td className="py-2 pr-4 font-mono text-xs">{pack.id}</td>
+                      <td className="py-2 pr-4 font-medium">{pack.name}</td>
+                      <td className="py-2 pr-4">{pack.credits.toLocaleString()}</td>
+                      <td className="py-2 pr-4 font-mono">
+                        {(pack.price / 100).toFixed(2)} 元
+                      </td>
+                      <td className="py-2 pr-4">{pack.expiryMonths} 个月</td>
+                      <td className="py-2">
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEditPack(pack, index)}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeletePack(index)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 积分包编辑弹窗 */}
+      <Dialog open={packDialog.open} onOpenChange={(open) => !open && closePackDialog()}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {packDialog.mode === 'create' ? '新增积分包' : '编辑积分包'}
+            </DialogTitle>
+            <DialogDescription>
+              {packDialog.mode === 'create'
+                ? '配置新的积分包供用户购买'
+                : '修改积分包配置'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="pack-id">积分包 ID</Label>
+              <Input
+                id="pack-id"
+                value={packForm.id}
+                onChange={(e) => updatePackField('id', e.target.value)}
+                placeholder="例如: pack_600"
+                disabled={packDialog.mode === 'edit'}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pack-name">名称</Label>
+              <Input
+                id="pack-name"
+                value={packForm.name}
+                onChange={(e) => updatePackField('name', e.target.value)}
+                placeholder="例如: 600积分包"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="pack-credits">积分数量</Label>
+                <Input
+                  id="pack-credits"
+                  type="number"
+                  value={packForm.credits}
+                  onChange={(e) => updatePackField('credits', Number(e.target.value))}
+                  min={1}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pack-price">价格 (分)</Label>
+                <Input
+                  id="pack-price"
+                  type="number"
+                  value={packForm.price}
+                  onChange={(e) => updatePackField('price', Number(e.target.value))}
+                  min={1}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pack-expiry">有效期 (月)</Label>
+              <Input
+                id="pack-expiry"
+                type="number"
+                value={packForm.expiryMonths}
+                onChange={(e) => updatePackField('expiryMonths', Number(e.target.value))}
+                min={1}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closePackDialog}>
+              取消
+            </Button>
+            <Button
+              onClick={handleSavePack}
+              disabled={!canSavePack || updatePacksMutation.isPending}
+            >
+              {updatePacksMutation.isPending ? '保存中...' : '保存'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

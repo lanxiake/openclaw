@@ -102,12 +102,10 @@ function getSubscriptionVariant(subscription: string) {
   switch (subscription) {
     case 'free':
       return 'secondary'
-    case 'pro':
+    case 'monthly':
       return 'default'
-    case 'team':
+    case 'yearly':
       return 'success'
-    case 'enterprise':
-      return 'destructive'
     default:
       return 'secondary'
   }
@@ -909,9 +907,8 @@ export default function SkillsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="free">免费</SelectItem>
-                    <SelectItem value="pro">Pro</SelectItem>
-                    <SelectItem value="team">Team</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                    <SelectItem value="monthly">月付版</SelectItem>
+                    <SelectItem value="yearly">年付版</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

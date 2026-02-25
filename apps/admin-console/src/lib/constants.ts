@@ -253,9 +253,8 @@ export const SKILL_STATUS_LABELS: Record<string, string> = {
  */
 export const SKILL_SUBSCRIPTION = {
   FREE: 'free',
-  PRO: 'pro',
-  TEAM: 'team',
-  ENTERPRISE: 'enterprise',
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly',
 } as const
 
 /**
@@ -263,9 +262,8 @@ export const SKILL_SUBSCRIPTION = {
  */
 export const SKILL_SUBSCRIPTION_LABELS: Record<string, string> = {
   free: '免费',
-  pro: '专业版',
-  team: '团队版',
-  enterprise: '企业版',
+  monthly: '月付版',
+  yearly: '年付版',
 }
 
 /**

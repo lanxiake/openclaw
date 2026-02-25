@@ -130,14 +130,14 @@ describe("CreditService Integration - grantRegistrationBonus", () => {
 
     console.log("[INT-TEST] 结果:", JSON.stringify(result));
     expect(result.success).toBe(true);
-    expect(result.creditsGranted).toBe(300);
-    expect(result.newBalance).toBe(300);
+    expect(result.creditsGranted).toBe(600);
+    expect(result.newBalance).toBe(600);
 
     // 验证账户数据
     const balance = await service.getBalance(userId);
     expect(balance).not.toBeNull();
-    expect(balance!.totalBalance).toBe(300);
-    expect(balance!.totalEarned).toBe(300);
+    expect(balance!.totalBalance).toBe(600);
+    expect(balance!.totalEarned).toBe(600);
     expect(balance!.totalConsumed).toBe(0);
     expect(balance!.totalExpired).toBe(0);
 
@@ -145,7 +145,7 @@ describe("CreditService Integration - grantRegistrationBonus", () => {
     const transactions = await service.getTransactionHistory(userId);
     expect(transactions.length).toBe(1);
     expect(transactions[0].type).toBe("earn");
-    expect(transactions[0].amount).toBe(300);
+    expect(transactions[0].amount).toBe(600);
     expect(transactions[0].source).toBe("register");
 
     console.log("[INT-TEST] ✓ 注册赠送完整流程验证通过");
@@ -162,7 +162,7 @@ describe("CreditService Integration - grantRegistrationBonus", () => {
 
     expect(result.success).toBe(false);
     expect(result.creditsGranted).toBe(0);
-    expect(result.newBalance).toBe(300);
+    expect(result.newBalance).toBe(600);
 
     console.log("[INT-TEST] ✓ 重复赠送正确拒绝");
   });
@@ -244,11 +244,11 @@ describe("CreditService Integration - consumeCredits (FIFO)", () => {
     console.log("[INT-TEST] 消费结果:", JSON.stringify(result));
     expect(result.success).toBe(true);
     expect(result.consumed).toBe(50);
-    expect(result.newBalance).toBe(250);
+    expect(result.newBalance).toBe(550);
 
     // 验证账户余额同步
     const balance = await service.getBalance(userId);
-    expect(balance!.totalBalance).toBe(250);
+    expect(balance!.totalBalance).toBe(550);
     expect(balance!.totalConsumed).toBe(50);
 
     console.log("[INT-TEST] ✓ 单批次消费验证通过");
@@ -320,9 +320,9 @@ describe("CreditService Integration - consumeCredits (FIFO)", () => {
     const userId = await createTestUser(userRepo, "c3");
     localUserIds.push(userId);
 
-    await service.grantRegistrationBonus(userId); // 300 积分
+    await service.grantRegistrationBonus(userId); // 600 积分
 
-    const result = await service.consumeCredits(userId, 500, {
+    const result = await service.consumeCredits(userId, 800, {
       source: "model_call",
       description: "超额消费",
     });
@@ -333,7 +333,7 @@ describe("CreditService Integration - consumeCredits (FIFO)", () => {
 
     // 余额不应变化
     const balance = await service.getBalance(userId);
-    expect(balance!.totalBalance).toBe(300);
+    expect(balance!.totalBalance).toBe(600);
 
     console.log("[INT-TEST] ✓ 余额不足拒绝验证通过");
   });
@@ -429,13 +429,13 @@ describe("CreditService Integration - grantInviteReward", () => {
 
     console.log("[INT-TEST] 邀请结果:", JSON.stringify(result));
     expect(result.success).toBe(true);
-    expect(result.creditsGranted).toBe(200);
-    expect(result.newBalance).toBe(500); // 300 + 200
+    expect(result.creditsGranted).toBe(300);
+    expect(result.newBalance).toBe(900); // 600 + 300
 
     // 验证账户余额
     const balance = await service.getBalance(inviterId);
-    expect(balance!.totalBalance).toBe(500);
-    expect(balance!.totalEarned).toBe(500);
+    expect(balance!.totalBalance).toBe(900);
+    expect(balance!.totalEarned).toBe(900);
 
     console.log("[INT-TEST] ✓ 邀请奖励发放验证通过");
   });
@@ -549,7 +549,7 @@ describe("CreditService Integration - grantSubscriptionCredits & grantBoosterCre
 
     expect(result.success).toBe(true);
     expect(result.creditsGranted).toBe(2000);
-    expect(result.newBalance).toBe(2300); // 300 + 2000
+    expect(result.newBalance).toBe(2600); // 600 + 2000
 
     // 验证流水中有 subscription 来源
     const txns = await service.getTransactionHistory(userId);
@@ -576,7 +576,7 @@ describe("CreditService Integration - grantSubscriptionCredits & grantBoosterCre
 
     expect(result.success).toBe(true);
     expect(result.creditsGranted).toBe(1500);
-    expect(result.newBalance).toBe(1800); // 300 + 1500
+    expect(result.newBalance).toBe(2100); // 600 + 1500
 
     // 验证流水中有 purchase 来源
     const txns = await service.getTransactionHistory(userId);
@@ -838,7 +838,7 @@ describe("CreditService Integration - 端到端完整流程", () => {
     const regResult = await service.grantRegistrationBonus(userId);
     console.log("[INT-TEST] 1. 注册赠送:", regResult.creditsGranted, "积分");
     expect(regResult.success).toBe(true);
-    expect(regResult.newBalance).toBe(300);
+    expect(regResult.newBalance).toBe(600);
 
     // 2. 邀请好友
     const friendId = await createTestUser(userRepo, "e2");
@@ -847,7 +847,7 @@ describe("CreditService Integration - 端到端完整流程", () => {
     const invResult = await service.grantInviteReward(userId, friendId);
     console.log("[INT-TEST] 2. 邀请奖励:", invResult.creditsGranted, "积分");
     expect(invResult.success).toBe(true);
-    expect(invResult.newBalance).toBe(500); // 300 + 200
+    expect(invResult.newBalance).toBe(900); // 600 + 300
 
     // 3. 购买加油包
     const boostResult = await service.grantBoosterCredits(userId, {
@@ -857,7 +857,7 @@ describe("CreditService Integration - 端到端完整流程", () => {
     });
     console.log("[INT-TEST] 3. 加油包:", boostResult.creditsGranted, "积分");
     expect(boostResult.success).toBe(true);
-    expect(boostResult.newBalance).toBe(2000); // 500 + 1500
+    expect(boostResult.newBalance).toBe(2400); // 900 + 1500
 
     // 4. 设置模型定价
     const modelId = `test-e2e-model-${Date.now()}`;
@@ -905,8 +905,8 @@ describe("CreditService Integration - 端到端完整流程", () => {
     // 8. 验证最终余额
     const finalBalance = await service.getBalance(userId);
     console.log("[INT-TEST] 7. 最终余额:", finalBalance!.totalBalance);
-    expect(finalBalance!.totalBalance).toBe(2000 - cost);
-    expect(finalBalance!.totalEarned).toBe(2000);
+    expect(finalBalance!.totalBalance).toBe(2400 - cost);
+    expect(finalBalance!.totalEarned).toBe(2400);
     expect(finalBalance!.totalConsumed).toBe(cost);
 
     console.log("[INT-TEST] ✓ 端到端完整流程验证通过");

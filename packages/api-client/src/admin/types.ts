@@ -249,7 +249,7 @@ export interface Skill {
   authorId?: string;
   authorName?: string;
   status: "draft" | "pending" | "published" | "rejected";
-  subscriptionLevel: "free" | "basic" | "pro" | "enterprise";
+  subscriptionLevel: "free" | "monthly" | "yearly";
   iconUrl?: string;
   downloadCount: number;
   rating: number;
@@ -309,7 +309,7 @@ export interface CreateSkillRequest {
   version?: string;
   categoryId?: string;
   tags?: string[];
-  subscriptionLevel?: "free" | "pro" | "team" | "enterprise";
+  subscriptionLevel?: "free" | "monthly" | "yearly";
   iconUrl?: string;
   config?: Record<string, unknown>;
 }
@@ -324,7 +324,7 @@ export interface UpdateSkillRequest {
   version?: string;
   categoryId?: string;
   tags?: string[];
-  subscriptionLevel?: "free" | "pro" | "team" | "enterprise";
+  subscriptionLevel?: "free" | "monthly" | "yearly";
   iconUrl?: string;
   config?: Record<string, unknown>;
 }
