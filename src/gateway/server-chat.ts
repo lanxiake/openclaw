@@ -148,8 +148,30 @@ export function createAgentEventHandler({
   resolveSessionKeyForRun,
   clearAgentRunContext,
 }: AgentEventHandlerOptions) {
+  /**
+   * 记录每个 clientRunId 当前轮次的上一次 delta text。
+   * 用于检测 agent 多轮回复（工具调用之间的文本）时新轮次的开始。
+   * 当 text 比上一次的短且不是前缀截断时，说明进入了新轮次。
+   */
+  const roundText = new Map<string, string>();
+
   const emitChatDelta = (sessionKey: string, clientRunId: string, seq: number, text: string) => {
-    chatRunState.buffers.set(clientRunId, text);
+    const prevRound = roundText.get(clientRunId) ?? "";
+    let buffer = chatRunState.buffers.get(clientRunId) ?? "";
+
+    if (prevRound && text.length < prevRound.length && !prevRound.startsWith(text)) {
+      // 新轮次开始：当前 text 比上一次短，且不是前缀截断
+      // 保留 buffer 中之前轮次的内容，追加换行分隔
+      buffer = buffer + "\n\n";
+    } else {
+      // 同一轮次内的累积更新：移除上一次的文本，保留之前轮次
+      buffer = buffer.slice(0, buffer.length - prevRound.length);
+    }
+
+    buffer = buffer + text;
+    chatRunState.buffers.set(clientRunId, buffer);
+    roundText.set(clientRunId, text);
+
     const now = Date.now();
     const last = chatRunState.deltaSentAt.get(clientRunId) ?? 0;
     if (now - last < 150) {
@@ -163,7 +185,7 @@ export function createAgentEventHandler({
       state: "delta" as const,
       message: {
         role: "assistant",
-        content: [{ type: "text", text }],
+        content: [{ type: "text", text: buffer }],
         timestamp: now,
       },
     };
@@ -184,6 +206,7 @@ export function createAgentEventHandler({
     const text = chatRunState.buffers.get(clientRunId)?.trim() ?? "";
     chatRunState.buffers.delete(clientRunId);
     chatRunState.deltaSentAt.delete(clientRunId);
+    roundText.delete(clientRunId);
     if (jobState === "done") {
       /** 双写：agent-run 的 AI 回复持久化到 DB（异步，不阻塞广播） */
       if (text) {
@@ -261,7 +284,14 @@ export function createAgentEventHandler({
     const isAborted =
       chatRunState.abortedRuns.has(clientRunId) || chatRunState.abortedRuns.has(evt.runId);
     // Include sessionKey so Control UI can filter tool streams per session.
-    const agentPayload = sessionKey ? { ...evt, sessionKey } : evt;
+    // Inject clientRunId so node clients (e.g. Windows app) can correlate agent events with chat runs.
+    const agentPayload = sessionKey
+      ? {
+          ...evt,
+          sessionKey,
+          ...(clientRunId !== evt.runId ? { clientRunId } : {}),
+        }
+      : evt;
     const last = agentRunSeq.get(evt.runId) ?? 0;
 
     /** 拦截 TodoWrite 工具调用，持久化到 DB（不受 verbose 设置影响） */
@@ -341,6 +371,7 @@ export function createAgentEventHandler({
         chatRunState.abortedRuns.delete(evt.runId);
         chatRunState.buffers.delete(clientRunId);
         chatRunState.deltaSentAt.delete(clientRunId);
+        roundText.delete(clientRunId);
         if (chatLink) {
           chatRunState.registry.remove(evt.runId, clientRunId, sessionKey);
         }

@@ -24,7 +24,11 @@ import {
   isChatStopCommandText,
   resolveChatRunExpiresAtMs,
 } from "../chat-abort.js";
-import { type ChatImageContent, parseMessageWithAttachments } from "../chat-attachments.js";
+import {
+  type ChatImageContent,
+  formatFileTextsAsAttachmentBlocks,
+  parseMessageWithAttachments,
+} from "../chat-attachments.js";
 import {
   ErrorCodes,
   errorShape,
@@ -420,6 +424,11 @@ export const chatHandlers: GatewayRequestHandlers = {
         });
         parsedMessage = parsed.message;
         parsedImages = parsed.images;
+        // 将文件附件的文本内容以 <attachment> 块追加到消息中
+        if (parsed.fileTexts.length > 0) {
+          const fileBlocks = formatFileTextsAsAttachmentBlocks(parsed.fileTexts);
+          parsedMessage = parsedMessage.trim() ? `${parsedMessage}\n\n${fileBlocks}` : fileBlocks;
+        }
       } catch (err) {
         respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, String(err)));
         return;

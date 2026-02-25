@@ -241,14 +241,14 @@ export class GatewayMemoryService {
       logger.info("已注入 OpenClawConfig 到 episodic/profile provider");
 
       // 知识记忆后端选择逻辑：
-      // 1. 当数据库配置了有效的 embedding 配置（baseUrl + model），使用 PostgreSQL + pgvector
+      // 1. 当数据库配置了有效的 embedding 配置（baseUrl + model），使用 PostgreSQL + Milvus
       // 2. 否则回退到 SQLite 适配器（依赖 MemoryIndexManager）
       const hasValidEmbeddingConfig =
         memoryEmbeddingConfig?.baseUrl && memoryEmbeddingConfig?.model;
 
       if (hasValidEmbeddingConfig) {
-        // 使用 PostgreSQL 知识记忆 provider（含 pgvector 向量搜索）
-        logger.info("启用 PostgreSQL 知识记忆 provider（含 pgvector）", {
+        // 使用 PostgreSQL 知识记忆 provider（含 Milvus 向量搜索）
+        logger.info("启用 PostgreSQL 知识记忆 provider（含 Milvus 向量搜索）", {
           model: memoryEmbeddingConfig.model,
           baseUrl: memoryEmbeddingConfig.baseUrl,
           hasApiKey: !!memoryEmbeddingConfig.apiKey,

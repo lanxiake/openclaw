@@ -185,11 +185,12 @@ function normalizeDbModels(raw: unknown): Array<Record<string, unknown>> {
           return null;
         }
         // 字符串模型 ID → 最小化 ModelDefinitionConfig
+        // 默认声明支持图片输入：主流 LLM 均支持图片，让 provider 层做最终判断
         return {
           id: trimmed,
           name: trimmed,
           reasoning: false,
-          input: ["text"],
+          input: ["text", "image"],
           cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
           contextWindow: 200000,
           maxTokens: 16000,
