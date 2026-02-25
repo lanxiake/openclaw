@@ -10,6 +10,7 @@ import rateLimit from "@fastify/rate-limit";
 
 import { type AppConfig } from "./config.js";
 import { registerErrorHandler } from "./plugins/error-handler.js";
+import { registerAuditMiddleware } from "./plugins/audit-middleware.js";
 import { registerAuthPlugin } from "./plugins/auth.js";
 import { registerAdminAuthPlugin } from "./plugins/admin-auth.js";
 import { registerHealthRoutes } from "./routes/health.js";
@@ -107,6 +108,9 @@ export async function createServer(
   // 4. 认证插件
   registerAuthPlugin(server, config);
   registerAdminAuthPlugin(server, config);
+
+  // 4.5 审计日志中间件（在认证之后注册，以获取用户信息）
+  await registerAuditMiddleware(server);
 
   // 5. 路由注册
   registerHealthRoutes(server);
