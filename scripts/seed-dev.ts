@@ -51,47 +51,48 @@ const SEED_CONFIG = {
     {
       code: "free",
       name: "免费版",
-      description: "基础功能，适合个人体验",
+      description: "注册赠送600积分，邀请好友获取更多",
       priceMonthly: 0,
       priceYearly: 0,
-      tokensPerMonth: 10000,
-      storageMb: 100,
-      maxDevices: 1,
+      tokensPerMonth: 0,
+      storageMb: 50,
+      maxDevices: 5,
       features: {
-        maxAgents: 1,
-        supportLevel: "community",
+        maxSkills: 100,
+        maxFileSize: 50,
       },
       isActive: true,
       sortOrder: 1,
     },
     {
-      code: "pro",
-      name: "专业版",
-      description: "高级功能，适合专业用户",
-      priceMonthly: 4900, // 49 元/月
-      priceYearly: 49900, // 499 元/年
-      tokensPerMonth: 100000,
-      storageMb: 5000,
+      code: "monthly",
+      name: "月付版",
+      description: "30元/月，每月2000积分，首月3元",
+      priceMonthly: 3000, // 30 元/月
+      priceYearly: 0,
+      tokensPerMonth: 2000,
+      storageMb: 50,
       maxDevices: 5,
       features: {
-        maxAgents: 10,
-        supportLevel: "email",
+        maxSkills: 100,
+        maxFileSize: 50,
+        firstMonthPrice: 300, // 首月 3 元
       },
       isActive: true,
       sortOrder: 2,
     },
     {
-      code: "enterprise",
-      name: "企业版",
-      description: "无限制功能，适合团队和企业",
-      priceMonthly: 19900, // 199 元/月
-      priceYearly: 199900, // 1999 元/年
-      tokensPerMonth: -1, // 无限制
-      storageMb: -1,
-      maxDevices: -1,
+      code: "yearly",
+      name: "年付版",
+      description: "300元/年，每月2000积分",
+      priceMonthly: 0,
+      priceYearly: 30000, // 300 元/年
+      tokensPerMonth: 2000,
+      storageMb: 50,
+      maxDevices: 5,
       features: {
-        maxAgents: -1,
-        supportLevel: "priority",
+        maxSkills: 100,
+        maxFileSize: 50,
       },
       isActive: true,
       sortOrder: 3,
@@ -234,8 +235,8 @@ async function seedUsers(db: ReturnType<typeof getDatabase>, planIds: Record<str
     createdUsers.push({ id: user.id, phone: user.phone });
     logger.info(`[seed] Created user: ${userData.displayName} (${userData.phone})`);
 
-    // 为第一个用户创建免费订阅，第二个用户创建专业版订阅
-    const planCode = i === 0 ? "free" : "pro";
+    // 为第一个用户创建免费订阅，第二个用户创建月付版订阅
+    const planCode = i === 0 ? "free" : "monthly";
     const planId = planIds[planCode];
 
     if (planId) {
@@ -402,7 +403,7 @@ export async function runSeed(
   logger.info("");
   logger.info("[seed] Test accounts:");
   logger.info("  User 1: 13800138000 / test123456 (Free plan)");
-  logger.info("  User 2: 13900139000 / vip123456 (Pro plan)");
+  logger.info("  User 2: 13900139000 / vip123456 (Monthly plan)");
   logger.info("  Admin:  super_admin / Admin@2026!");
   logger.info("  Operator: operator / Operator@2026!");
 }
