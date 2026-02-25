@@ -37,6 +37,7 @@ interface PlanFormData {
   tokensPerMonth: number
   storageMb: number
   maxDevices: number
+  maxSkills: number
   sortOrder: number
   isActive: boolean
 }
@@ -53,6 +54,7 @@ const defaultFormData: PlanFormData = {
   tokensPerMonth: 0,
   storageMb: 50,
   maxDevices: 5,
+  maxSkills: 100,
   sortOrder: 0,
   isActive: true,
 }
@@ -90,6 +92,7 @@ export default function PlansPage() {
    * 打开编辑弹窗
    */
   const openEditDialog = useCallback((plan: SubscriptionPlan) => {
+    const features = plan.features as Record<string, unknown> | undefined
     setFormData({
       code: plan.code,
       name: plan.name,
@@ -97,8 +100,9 @@ export default function PlansPage() {
       priceMonthly: plan.price ?? plan.priceMonthly ?? 0,
       priceYearly: plan.priceYearly ?? 0,
       tokensPerMonth: plan.quotas?.maxTokensPerMonth ?? plan.tokensPerMonth ?? 0,
-      storageMb: plan.storageMb ?? 0,
+      storageMb: (features?.maxFileSize as number) ?? plan.storageMb ?? 0,
       maxDevices: plan.quotas?.maxDevices ?? plan.maxDevices ?? 1,
+      maxSkills: (features?.maxSkills as number) ?? plan.quotas?.maxSkills ?? 100,
       sortOrder: plan.displayOrder ?? plan.sortOrder ?? 0,
       isActive: plan.isActive,
     })
@@ -124,6 +128,10 @@ export default function PlansPage() {
    */
   const handleSave = useCallback(async () => {
     try {
+      const features = {
+        maxSkills: formData.maxSkills,
+        maxFileSize: formData.storageMb,
+      }
       if (editDialog.mode === 'create') {
         const input: CreatePlanInput = {
           code: formData.code,
@@ -135,6 +143,7 @@ export default function PlansPage() {
           storageMb: formData.storageMb,
           maxDevices: formData.maxDevices,
           sortOrder: formData.sortOrder,
+          features,
         }
         await createMutation.mutateAsync(input)
       } else if (editDialog.plan) {
@@ -149,6 +158,7 @@ export default function PlansPage() {
           maxDevices: formData.maxDevices,
           sortOrder: formData.sortOrder,
           isActive: formData.isActive,
+          features,
         }
         await updateMutation.mutateAsync(input)
       }
@@ -245,10 +255,20 @@ export default function PlansPage() {
                       : (plan.quotas?.maxTokensPerMonth ?? plan.tokensPerMonth ?? 0).toLocaleString()}
                   </p>
                   <p>
-                    存储空间:{' '}
-                    {(plan.storageMb ?? 0) === -1
-                      ? '无限'
-                      : `${plan.storageMb ?? 0} MB`}
+                    上传文件大小:{' '}
+                    {(() => {
+                      const features = plan.features as Record<string, unknown> | undefined
+                      const size = (features?.maxFileSize as number) ?? plan.storageMb ?? 0
+                      return size === -1 ? '无限' : `${size} MB`
+                    })()}
+                  </p>
+                  <p>
+                    技能上限:{' '}
+                    {(() => {
+                      const features = plan.features as Record<string, unknown> | undefined
+                      const maxSkills = (features?.maxSkills as number) ?? plan.quotas?.maxSkills ?? 100
+                      return maxSkills === -1 ? '无限' : maxSkills
+                    })()}
                   </p>
                 </div>
 
@@ -384,7 +404,7 @@ export default function PlansPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="plan-storage">存储空间 (MB)</Label>
+                <Label htmlFor="plan-storage">上传文件大小 (MB)</Label>
                 <Input
                   id="plan-storage"
                   type="number"
@@ -408,6 +428,20 @@ export default function PlansPage() {
                   placeholder="-1 表示无限"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="plan-skills">最大技能数</Label>
+                <Input
+                  id="plan-skills"
+                  type="number"
+                  value={formData.maxSkills}
+                  onChange={(e) => updateField('maxSkills', Number(e.target.value))}
+                  min={-1}
+                  placeholder="-1 表示无限"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="plan-sort">排序</Label>
                 <Input

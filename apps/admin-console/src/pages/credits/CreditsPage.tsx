@@ -52,6 +52,9 @@ export default function CreditsPage() {
     credits: 0,
     price: 0,
     expiryMonths: 3,
+    recommended: false,
+    sortOrder: 0,
+    isActive: true,
   })
 
   /**
@@ -65,7 +68,7 @@ export default function CreditsPage() {
    * 打开新建积分包弹窗
    */
   const openCreatePack = useCallback(() => {
-    setPackForm({ id: '', name: '', credits: 0, price: 0, expiryMonths: 3 })
+    setPackForm({ id: '', name: '', credits: 0, price: 0, expiryMonths: 3, recommended: false, sortOrder: 0, isActive: true })
     setPackDialog({ open: true, mode: 'create', index: -1 })
   }, [])
 
@@ -98,6 +101,8 @@ export default function CreditsPage() {
       const newPack: CreditPack = {
         ...packForm,
         id: packForm.id || `pack_${packForm.credits}`,
+        code: packForm.code || packForm.id || `pack_${packForm.credits}`,
+        isActive: packForm.isActive ?? true,
       }
       updatedPacks = [...currentPacks, newPack]
     } else {
@@ -309,19 +314,27 @@ export default function CreditsPage() {
                     <th className="pb-2 pr-4 font-medium">积分</th>
                     <th className="pb-2 pr-4 font-medium">价格 (分)</th>
                     <th className="pb-2 pr-4 font-medium">有效期</th>
+                    <th className="pb-2 pr-4 font-medium">排序</th>
+                    <th className="pb-2 pr-4 font-medium">推荐</th>
                     <th className="pb-2 font-medium">操作</th>
                   </tr>
                 </thead>
                 <tbody>
                   {creditPacks.map((pack, index) => (
-                    <tr key={pack.id} className="border-b last:border-0">
-                      <td className="py-2 pr-4 font-mono text-xs">{pack.id}</td>
+                    <tr key={pack.id || pack.code} className="border-b last:border-0">
+                      <td className="py-2 pr-4 font-mono text-xs">{pack.code || pack.id}</td>
                       <td className="py-2 pr-4 font-medium">{pack.name}</td>
                       <td className="py-2 pr-4">{pack.credits.toLocaleString()}</td>
                       <td className="py-2 pr-4 font-mono">
                         {(pack.price / 100).toFixed(2)} 元
                       </td>
                       <td className="py-2 pr-4">{pack.expiryMonths} 个月</td>
+                      <td className="py-2 pr-4">{pack.sortOrder ?? '-'}</td>
+                      <td className="py-2 pr-4">
+                        {pack.recommended ? (
+                          <Badge variant="default">推荐</Badge>
+                        ) : null}
+                      </td>
                       <td className="py-2">
                         <div className="flex gap-1">
                           <Button
@@ -414,6 +427,28 @@ export default function CreditsPage() {
                 onChange={(e) => updatePackField('expiryMonths', Number(e.target.value))}
                 min={1}
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="pack-sort-order">排序</Label>
+                <Input
+                  id="pack-sort-order"
+                  type="number"
+                  value={packForm.sortOrder ?? 0}
+                  onChange={(e) => updatePackField('sortOrder', Number(e.target.value))}
+                  min={0}
+                />
+              </div>
+              <div className="flex items-center gap-3 pt-6">
+                <input
+                  id="pack-recommended"
+                  type="checkbox"
+                  checked={packForm.recommended ?? false}
+                  onChange={(e) => updatePackField('recommended', e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="pack-recommended">推荐标记</Label>
+              </div>
             </div>
           </div>
 

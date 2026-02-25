@@ -247,25 +247,41 @@ export function useAllConfig() {
  */
 export interface CreditPack {
   id: string
+  code?: string
   name: string
   credits: number
   price: number
   expiryMonths: number
+  recommended?: boolean
+  sortOrder?: number
+  isActive?: boolean
 }
 
 /**
  * 获取积分包配置
+ *
+ * 当 credits.packs 配置尚未初始化（404）时返回空数组，不让 query 失败
  */
 export function useCreditPacks() {
   return useQuery({
     queryKey: ['admin', 'config', 'credits', 'packs'],
     queryFn: async (): Promise<CreditPack[]> => {
-      const config = await apiClient.instance.getConfig('credits.packs')
-      const value = config?.value
-      if (Array.isArray(value)) {
-        return value as CreditPack[]
+      try {
+        const config = await apiClient.instance.getConfig('credits.packs')
+        const value = config?.value
+        if (Array.isArray(value)) {
+          return value as CreditPack[]
+        }
+        return []
+      } catch (error: unknown) {
+        // 配置项不存在时（404），返回空数组而非抛错
+        const status = (error as { status?: number })?.status
+        const message = error instanceof Error ? error.message : String(error)
+        if (status === 404 || message.includes('404') || message.includes('不存在')) {
+          return []
+        }
+        throw error
       }
-      return []
     },
     staleTime: 5 * 60 * 1000,
   })

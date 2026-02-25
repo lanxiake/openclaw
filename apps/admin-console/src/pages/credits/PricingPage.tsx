@@ -2,9 +2,10 @@
  * 模型定价管理页
  *
  * 提供定价列表、新建/编辑/删除定价功能
+ * 新建时支持从模型提供商列表选择模型，自动填充 modelId 和 modelName
  */
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,6 +14,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -37,7 +45,11 @@ import {
   useUpsertModelPricing,
   useDeleteModelPricing,
 } from '@/hooks/useCredits'
+import { useModelProviders } from '@/hooks/useModelProviders'
 import type { ModelPricing } from '@/types/credits'
+
+/** 手动输入的占位 key */
+const MANUAL_INPUT_KEY = '__manual__'
 
 /**
  * 编辑弹窗状态
@@ -52,6 +64,7 @@ interface EditDialogState {
  * 定价表单数据
  */
 interface PricingFormData {
+  providerKey: string
   modelId: string
   modelName: string
   inputPrice: string
@@ -63,6 +76,7 @@ interface PricingFormData {
  * 空表单初始值
  */
 const EMPTY_FORM: PricingFormData = {
+  providerKey: '',
   modelId: '',
   modelName: '',
   inputPrice: '0',
@@ -86,6 +100,19 @@ export default function PricingPage() {
   const { data: pricings, isLoading } = useModelPricingList(showInactive ? false : undefined)
   const upsertMutation = useUpsertModelPricing()
   const deleteMutation = useDeleteModelPricing()
+  const { data: providers } = useModelProviders()
+
+  /** 当前选中提供商的 models 列表 */
+  const selectedProviderModels = useMemo(() => {
+    if (!formData.providerKey || formData.providerKey === MANUAL_INPUT_KEY || !providers) {
+      return []
+    }
+    const provider = providers.find((p) => p.providerKey === formData.providerKey)
+    return provider?.models ?? []
+  }, [formData.providerKey, providers])
+
+  /** 是否为手动输入模式 */
+  const isManualMode = formData.providerKey === MANUAL_INPUT_KEY
 
   /**
    * 打开新建弹窗
@@ -100,6 +127,7 @@ export default function PricingPage() {
    */
   const handleEdit = (pricing: ModelPricing) => {
     setFormData({
+      providerKey: '',
       modelId: pricing.modelId,
       modelName: pricing.modelName,
       inputPrice: String(pricing.inputPrice),
@@ -159,6 +187,31 @@ export default function PricingPage() {
    */
   const updateField = (field: keyof PricingFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  /**
+   * 选择提供商时重置模型相关字段
+   */
+  const handleProviderChange = (providerKey: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      providerKey,
+      modelId: '',
+      modelName: '',
+    }))
+  }
+
+  /**
+   * 选择模型时自动填充 modelId 和 modelName
+   */
+  const handleModelSelect = (model: string) => {
+    const provider = providers?.find((p) => p.providerKey === formData.providerKey)
+    const providerKey = provider?.providerKey ?? formData.providerKey
+    setFormData((prev) => ({
+      ...prev,
+      modelId: `${providerKey}/${model}`,
+      modelName: model,
+    }))
   }
 
   return (
@@ -280,18 +333,80 @@ export default function PricingPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {/* 模型提供商选择（仅创建模式） */}
+            {editDialog.mode === 'create' && (
+              <div className="space-y-2">
+                <Label>模型提供商</Label>
+                <Select
+                  value={formData.providerKey}
+                  onValueChange={handleProviderChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择模型提供商" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {providers?.filter((p) => p.enabled).map((p) => (
+                      <SelectItem key={p.providerKey} value={p.providerKey}>
+                        {p.providerName || p.providerKey}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value={MANUAL_INPUT_KEY}>手动输入</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* 模型选择/输入 */}
+            {editDialog.mode === 'create' ? (
+              isManualMode ? (
+                <div className="space-y-2">
+                  <Label htmlFor="modelId">模型 ID</Label>
+                  <Input
+                    id="modelId"
+                    placeholder="例如: anthropic/claude-sonnet-4-20250514"
+                    value={formData.modelId}
+                    onChange={(e) => updateField('modelId', e.target.value)}
+                  />
+                </div>
+              ) : formData.providerKey ? (
+                <div className="space-y-2">
+                  <Label>模型</Label>
+                  <Select
+                    value={formData.modelName}
+                    onValueChange={handleModelSelect}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择模型" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectedProviderModels.map((model) => (
+                        <SelectItem key={model} value={model}>
+                          {model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {formData.modelId && (
+                    <p className="text-xs text-muted-foreground">
+                      模型 ID: <code className="font-mono">{formData.modelId}</code>
+                    </p>
+                  )}
+                </div>
+              ) : null
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="modelId">模型 ID</Label>
+                <Input
+                  id="modelId"
+                  value={formData.modelId}
+                  disabled
+                />
+              </div>
+            )}
+
+            {/* 模型显示名称 */}
             <div className="space-y-2">
-              <Label htmlFor="modelId">模型 ID</Label>
-              <Input
-                id="modelId"
-                placeholder="例如: claude-sonnet-4-20250514"
-                value={formData.modelId}
-                onChange={(e) => updateField('modelId', e.target.value)}
-                disabled={editDialog.mode === 'edit'}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="modelName">模型名称</Label>
+              <Label htmlFor="modelName">模型显示名称</Label>
               <Input
                 id="modelName"
                 placeholder="例如: Claude Sonnet 4"
@@ -299,9 +414,10 @@ export default function PricingPage() {
                 onChange={(e) => updateField('modelName', e.target.value)}
               />
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="inputPrice">输入价格（积分/1K tokens）</Label>
+                <Label htmlFor="inputPrice">输入价格（积分/1M tokens）</Label>
                 <Input
                   id="inputPrice"
                   type="number"
@@ -311,7 +427,7 @@ export default function PricingPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="outputPrice">输出价格（积分/1K tokens）</Label>
+                <Label htmlFor="outputPrice">输出价格（积分/1M tokens）</Label>
                 <Input
                   id="outputPrice"
                   type="number"
