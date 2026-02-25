@@ -28,6 +28,17 @@ export interface ChatEventPayload {
 }
 
 /**
+ * 清理 Gateway 内联指令标记（如 [[reply_to:...]]、[[reply_to_current]]）
+ *
+ * 这些标记是 LLM 输出的消息路由指令，用于消息引用回复。
+ * 在 messaging channel（WhatsApp/Telegram 等）中由 gateway 在发送前清除，
+ * 但 webchat 流式广播路径直接转发原始文本，需要客户端自行清理。
+ */
+function stripInlineDirectives(text: string): string {
+  return text.replace(/\[\[\s*reply_to(?:_current|:\s*[^\]]*?)?\s*\]\]/gi, '').trim()
+}
+
+/**
  * 从 Gateway 的 message 对象中提取纯文本内容
  *
  * Gateway 发送的 message.content 格式为 [{type:"text", text:"..."}] 数组，
@@ -37,10 +48,10 @@ function extractTextFromMessage(message: Record<string, unknown> | undefined): s
   if (!message) return ''
   const content = message.content
   // 如果 content 已经是字符串，直接返回
-  if (typeof content === 'string') return content
+  if (typeof content === 'string') return stripInlineDirectives(content)
   // 如果 content 是数组，提取所有 text 块
   if (Array.isArray(content)) {
-    return content
+    const raw = content
       .filter((block): block is { type: 'text'; text: string } =>
         typeof block === 'object' && block !== null &&
         block.type === 'text' &&
@@ -48,6 +59,7 @@ function extractTextFromMessage(message: Record<string, unknown> | undefined): s
       )
       .map((block) => block.text)
       .join('')
+    return stripInlineDirectives(raw)
   }
   return ''
 }
@@ -86,6 +98,8 @@ export interface UseChatStreamReturn {
   startStream: (runId: string, sessionKey: string) => void
   /** 根据 runId 获取特定 run 的流式状态 */
   getStreamByRunId: (runId: string) => StreamingMessage | null
+  /** streamMap 变化版本号，每次 streamMap 更新时递增 */
+  streamVersion: number
 }
 
 /**
@@ -99,20 +113,31 @@ export function useChatStream(): UseChatStreamReturn {
   const [streamMap, setStreamMap] = useState<Map<string, StreamingMessage>>(new Map())
   /** 最后一次 startStream 的 runId，用于兼容旧的 streamingMessage 返回值 */
   const [lastRunId, setLastRunId] = useState<string | null>(null)
+  /** streamMap 变化版本号，每次 setStreamMap 后递增 */
+  const [streamVersion, setStreamVersion] = useState(0)
   /** 每个 run 的累积内容 ref（避免频繁重建 Map） */
   const contentRefs = useRef<Map<string, string>>(new Map())
   /** 已完成 run 的独立清理定时器（按 runId 跟踪，避免级联取消） */
   const cleanupTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
   /**
+   * 更新 streamMap 并自动递增 streamVersion
+   * 确保任何 streamMap 变化都能被依赖 streamVersion 的 effect 感知
+   */
+  const updateStreamMap = useCallback((updater: (prev: Map<string, StreamingMessage>) => Map<string, StreamingMessage>) => {
+    setStreamMap(updater)
+    setStreamVersion((v) => v + 1)
+  }, [])
+
+  /**
    * 重置所有流式消息状态
    */
   const reset = useCallback(() => {
     console.log('[useChatStream] 重置流式消息状态')
-    setStreamMap(new Map())
+    updateStreamMap(() => new Map())
     setLastRunId(null)
     contentRefs.current.clear()
-  }, [])
+  }, [updateStreamMap])
 
   /**
    * 开始新的流式消息
@@ -121,7 +146,7 @@ export function useChatStream(): UseChatStreamReturn {
     console.log('[useChatStream] 开始新的流式消息:', { runId, sessionKey })
     contentRefs.current.set(runId, '')
     setLastRunId(runId)
-    setStreamMap((prev) => {
+    updateStreamMap((prev) => {
       const next = new Map(prev)
       next.set(runId, {
         runId,
@@ -132,7 +157,7 @@ export function useChatStream(): UseChatStreamReturn {
       })
       return next
     })
-  }, [])
+  }, [updateStreamMap])
 
   /**
    * 根据 runId 获取特定 run 的流式状态
@@ -142,13 +167,38 @@ export function useChatStream(): UseChatStreamReturn {
   }, [streamMap])
 
   /**
+   * 为已完成的 run 设置独立的延迟清理定时器
+   *
+   * 每个 run 有自己的定时器，不会因为其他 run 的事件而被取消。
+   * 5 秒后从 streamMap 中移除，确保 ChatView effect 有时间处理完成事件。
+   */
+  const scheduleRunCleanup = useCallback((runId: string) => {
+    // 如果已有定时器则跳过
+    if (cleanupTimersRef.current.has(runId)) return
+
+    const timer = setTimeout(() => {
+      updateStreamMap((prev) => {
+        const entry = prev.get(runId)
+        if (!entry?.isComplete) return prev
+        const next = new Map(prev)
+        next.delete(runId)
+        contentRefs.current.delete(runId)
+        return next
+      })
+      cleanupTimersRef.current.delete(runId)
+    }, 5000)
+
+    cleanupTimersRef.current.set(runId, timer)
+  }, [updateStreamMap])
+
+  /**
    * 处理 chat 事件
    */
   const handleChatEvent = useCallback((payload: ChatEventPayload) => {
     const { runId, state, message, errorMessage, stopReason } = payload
     console.log('[useChatStream] 收到 chat 事件:', { runId, state })
 
-    setStreamMap((prev) => {
+    updateStreamMap((prev) => {
       const existing = prev.get(runId)
       // 如果这个 runId 没有被追踪（没有对应的 startStream 调用），忽略
       if (!existing) {
@@ -174,8 +224,10 @@ export function useChatStream(): UseChatStreamReturn {
         }
 
         case 'final': {
-          console.log('[useChatStream] 流式完成, runId:', runId)
-          const finalContent = extractTextFromMessage(message) || (contentRefs.current.get(runId) ?? '')
+          const extractedFinalContent = extractTextFromMessage(message)
+          const accumulatedContent = contentRefs.current.get(runId) ?? ''
+          const finalContent = extractedFinalContent || accumulatedContent
+          console.log('[useChatStream] 流式完成, runId:', runId, 'extractedLen:', extractedFinalContent.length, 'accumulatedLen:', accumulatedContent.length, 'finalLen:', finalContent.length)
           next.set(runId, {
             ...existing,
             content: finalContent,
@@ -218,32 +270,7 @@ export function useChatStream(): UseChatStreamReturn {
 
       return next
     })
-  }, [])
-
-  /**
-   * 为已完成的 run 设置独立的延迟清理定时器
-   *
-   * 每个 run 有自己的定时器，不会因为其他 run 的事件而被取消。
-   * 5 秒后从 streamMap 中移除，确保 ChatView effect 有时间处理完成事件。
-   */
-  const scheduleRunCleanup = useCallback((runId: string) => {
-    // 如果已有定时器则跳过
-    if (cleanupTimersRef.current.has(runId)) return
-
-    const timer = setTimeout(() => {
-      setStreamMap((prev) => {
-        const entry = prev.get(runId)
-        if (!entry?.isComplete) return prev
-        const next = new Map(prev)
-        next.delete(runId)
-        contentRefs.current.delete(runId)
-        return next
-      })
-      cleanupTimersRef.current.delete(runId)
-    }, 5000)
-
-    cleanupTimersRef.current.set(runId, timer)
-  }, [])
+  }, [updateStreamMap, scheduleRunCleanup])
 
   /**
    * 监听 Gateway chat 事件
@@ -267,5 +294,6 @@ export function useChatStream(): UseChatStreamReturn {
     reset,
     startStream,
     getStreamByRunId,
+    streamVersion,
   }
 }

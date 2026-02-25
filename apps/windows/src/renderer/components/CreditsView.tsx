@@ -154,6 +154,121 @@ export const CreditsView: React.FC = () => {
   }
 
   /**
+   * 按来源分组的积分统计（含批次详情）
+   *
+   * 将批次按 source 分组，每组显示汇总信息和各批次到期详情
+   */
+  const renderSourceBreakdown = () => {
+    if (batches.length === 0) {
+      return null
+    }
+
+    /** 按来源分组批次 */
+    const sourceMap = new Map<string, {
+      original: number
+      remaining: number
+      batches: CreditBatch[]
+    }>()
+    for (const batch of batches) {
+      const existing = sourceMap.get(batch.source)
+      if (existing) {
+        sourceMap.set(batch.source, {
+          original: existing.original + batch.originalAmount,
+          remaining: existing.remaining + batch.remainingAmount,
+          batches: [...existing.batches, batch],
+        })
+      } else {
+        sourceMap.set(batch.source, {
+          original: batch.originalAmount,
+          remaining: batch.remainingAmount,
+          batches: [batch],
+        })
+      }
+    }
+
+    /** 来源显示顺序 */
+    const sourceOrder = ['register', 'invite', 'subscription', 'purchase', 'admin_grant']
+    const sortedSources = [...sourceMap.entries()].sort((a, b) => {
+      const idxA = sourceOrder.indexOf(a[0])
+      const idxB = sourceOrder.indexOf(b[0])
+      return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB)
+    })
+
+    return (
+      <div className="credits-section">
+        <h3>积分来源明细</h3>
+        <div className="source-breakdown">
+          {sortedSources.map(([source, stats]) => {
+            const usedPercent = stats.original > 0
+              ? Math.round(((stats.original - stats.remaining) / stats.original) * 100)
+              : 0
+            /** 只展示有剩余的批次 */
+            const activeBatches = stats.batches.filter(b => b.remainingAmount > 0)
+            /** 找到最早到期的批次 */
+            const earliestExpiry = activeBatches.length > 0
+              ? activeBatches.reduce((earliest, b) => b.expiresAt < earliest ? b.expiresAt : earliest, activeBatches[0].expiresAt)
+              : null
+            const daysLeft = earliestExpiry ? getDaysUntilExpiry(earliestExpiry) : null
+
+            return (
+              <div key={source} className="source-row">
+                <div className="source-row-header">
+                  <span className={`source-badge source-${source}`}>
+                    {getBatchSourceLabel(source)}
+                  </span>
+                  <span className="source-remaining">
+                    剩余 <strong>{stats.remaining.toLocaleString()}</strong> / {stats.original.toLocaleString()}
+                  </span>
+                </div>
+                <div className="source-bar-container">
+                  <div className="source-bar">
+                    <div
+                      className="source-bar-fill"
+                      style={{ width: `${Math.max(0, 100 - usedPercent)}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="source-row-footer">
+                  <span className="source-used">已使用 {usedPercent}%</span>
+                  {daysLeft !== null && (
+                    <span className={`source-expiry ${daysLeft <= 7 ? 'expiring-soon' : ''}`}>
+                      {daysLeft <= 0 ? '已到期' : `最近到期: ${daysLeft} 天后`}
+                    </span>
+                  )}
+                </div>
+                {/* 展开的批次详情 */}
+                {activeBatches.length > 0 && (
+                  <div className="source-batches">
+                    {activeBatches.map((batch) => {
+                      const batchDays = getDaysUntilExpiry(batch.expiresAt)
+                      const expiryClass = getExpiryClassName(batch.expiresAt)
+                      return (
+                        <div key={batch.id} className={`source-batch-item ${expiryClass}`}>
+                          <span className="source-batch-amount">
+                            {batch.remainingAmount.toLocaleString()} 积分
+                          </span>
+                          <span className={`source-batch-expiry ${expiryClass}`}>
+                            {batchDays <= 0
+                              ? '已过期'
+                              : `${formatDate(batch.expiresAt)} 到期（剩 ${batchDays} 天）`}
+                          </span>
+                          {batch.description && (
+                            <span className="source-batch-desc">{batch.description}</span>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  /**
    * 复制邀请信息到剪贴板
    */
   const handleCopyInvite = async () => {
@@ -261,51 +376,6 @@ export const CreditsView: React.FC = () => {
   }
 
   /**
-   * 渲染有效批次（积分有效期）
-   */
-  const renderBatches = () => {
-    // 只显示还有余额的批次
-    const activeBatches = batches.filter(b => b.remainingAmount > 0)
-
-    if (activeBatches.length === 0) {
-      return null
-    }
-
-    return (
-      <div className="credits-section">
-        <h3>积分有效期</h3>
-        <div className="batches-list">
-          {activeBatches.map((batch: CreditBatch) => {
-            const daysLeft = getDaysUntilExpiry(batch.expiresAt)
-            const expiryClass = getExpiryClassName(batch.expiresAt)
-
-            return (
-              <div key={batch.id} className={`batch-item ${expiryClass}`}>
-                <div className="batch-info">
-                  <span className="batch-source">{getBatchSourceLabel(batch.source)}</span>
-                  <span className="batch-amount">{batch.remainingAmount.toLocaleString()} 积分</span>
-                </div>
-                <div className="batch-expiry">
-                  {daysLeft <= 0 ? (
-                    <span className="expiry-text expired">已过期</span>
-                  ) : (
-                    <span className={`expiry-text ${expiryClass}`}>
-                      {formatDate(batch.expiresAt)} 到期（剩 {daysLeft} 天）
-                    </span>
-                  )}
-                </div>
-                {batch.description && (
-                  <div className="batch-desc">{batch.description}</div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    )
-  }
-
-  /**
    * 渲染流水记录
    */
   const renderTransactions = () => {
@@ -382,11 +452,11 @@ export const CreditsView: React.FC = () => {
       {/* 余额统计 */}
       {renderBalanceCards()}
 
+      {/* 积分来源分组 */}
+      {renderSourceBreakdown()}
+
       {/* 邀请好友 */}
       {renderInviteSection()}
-
-      {/* 积分有效期 */}
-      {renderBatches()}
 
       {/* 流水记录 */}
       {renderTransactions()}

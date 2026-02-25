@@ -572,6 +572,33 @@ function setupIpcHandlers(): void {
       '.svg': 'image/svg+xml',
       '.pdf': 'application/pdf',
       '.txt': 'text/plain',
+      '.md': 'text/markdown',
+      '.csv': 'text/csv',
+      '.json': 'application/json',
+      '.xml': 'text/xml',
+      '.html': 'text/html',
+      '.htm': 'text/html',
+      '.log': 'text/plain',
+      '.ts': 'text/plain',
+      '.tsx': 'text/plain',
+      '.js': 'text/plain',
+      '.jsx': 'text/plain',
+      '.py': 'text/plain',
+      '.yaml': 'text/plain',
+      '.yml': 'text/plain',
+      '.toml': 'text/plain',
+      '.ini': 'text/plain',
+      '.cfg': 'text/plain',
+      '.sh': 'text/plain',
+      '.bat': 'text/plain',
+      '.css': 'text/plain',
+      '.sql': 'text/plain',
+      '.rs': 'text/plain',
+      '.go': 'text/plain',
+      '.java': 'text/plain',
+      '.c': 'text/plain',
+      '.cpp': 'text/plain',
+      '.h': 'text/plain',
     }
     const mimeType = mimeTypes[ext] || 'application/octet-stream'
 
@@ -1723,6 +1750,80 @@ function setupApiIpcHandlers(): void {
     }
     log.info('清除审计日志', { beforeDate })
     return apiClient.clearAuditLogs(beforeDate)
+  })
+
+  // --- 记忆管理接口 ---
+
+  /**
+   * 获取记忆列表
+   */
+  ipcMain.handle('api:getMemories', async (_event, options?: {
+    type?: string
+    category?: string
+    activeOnly?: boolean
+    limit?: number
+    offset?: number
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取记忆列表', { type: options?.type, limit: options?.limit })
+    return apiClient.getMemories(options)
+  })
+
+  /**
+   * 获取记忆详情
+   */
+  ipcMain.handle('api:getMemory', async (_event, id: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('获取记忆详情', { id })
+    return apiClient.getMemory(id)
+  })
+
+  /**
+   * 创建记忆
+   */
+  ipcMain.handle('api:createMemory', async (_event, data: {
+    type: string
+    content: string
+    category?: string
+    summary?: string
+    importance?: number
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('创建记忆', { type: data.type })
+    return apiClient.createMemory(data)
+  })
+
+  /**
+   * 更新记忆
+   */
+  ipcMain.handle('api:updateMemory', async (_event, id: string, data: {
+    content?: string
+    summary?: string
+    category?: string
+    importance?: number
+  }) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('更新记忆', { id })
+    return apiClient.updateMemory(id, data)
+  })
+
+  /**
+   * 删除记忆
+   */
+  ipcMain.handle('api:deleteMemory', async (_event, id: string) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    log.info('删除记忆', { id })
+    return apiClient.deleteMemory(id)
   })
 
   // --- 积分接口 ---

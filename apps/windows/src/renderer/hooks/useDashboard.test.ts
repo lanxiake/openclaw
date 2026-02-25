@@ -32,9 +32,13 @@ vi.mock('../services/device-service', () => ({
 
 // Mock window.electronAPI（在 jsdom window 上添加属性，不覆盖 window 本身）
 const mockGatewayCall = vi.fn()
+const mockGetInstalledSkills = vi.fn()
 ;(window as any).electronAPI = {
   gateway: {
     call: mockGatewayCall,
+  },
+  api: {
+    getInstalledSkills: mockGetInstalledSkills,
   },
 }
 
@@ -118,12 +122,13 @@ describe('useDashboard', () => {
       ],
     })
 
-    // 技能列表通过 Gateway RPC 获取
-    mockGatewayCall.mockResolvedValue({
-      skills: [
-        { id: 'skill-1', name: '翻译', status: 'loaded' },
-        { id: 'skill-2', name: '搜索', status: 'loaded' },
-        { id: 'skill-3', name: '天气', status: 'error' },
+    // 技能列表通过 REST API 获取
+    mockGetInstalledSkills.mockResolvedValue({
+      success: true,
+      data: [
+        { id: 'skill-1', name: '翻译' },
+        { id: 'skill-2', name: '搜索' },
+        { id: 'skill-3', name: '天气' },
       ],
     })
   })
@@ -160,10 +165,9 @@ describe('useDashboard', () => {
     // 验证设备数
     expect(result.current.deviceCount).toBe(2)
 
-    // 验证技能统计
-    expect(result.current.skillStats.total).toBe(3)
-    expect(result.current.skillStats.loaded).toBe(2)
-    expect(result.current.skillStats.errors).toBe(1)
+    // 验证技能统计（REST API 返回 3 个已安装技能）
+    expect(result.current.skillStats.installed).toBe(3)
+    expect(result.current.skillStats.limit).toBe(100)
   })
 
   it('未登录时应设置错误状态', async () => {
@@ -193,8 +197,8 @@ describe('useDashboard', () => {
     expect(result.current.error).toBe('网络超时')
   })
 
-  it('Gateway 不可用时技能统计应为空', async () => {
-    mockGatewayCall.mockRejectedValue(new Error('Gateway 未连接'))
+  it('REST API 不可用时技能统计应为默认值', async () => {
+    mockGetInstalledSkills.mockRejectedValue(new Error('API 未连接'))
 
     const { result } = renderHook(() => useDashboard())
 
@@ -203,9 +207,8 @@ describe('useDashboard', () => {
     })
 
     // 技能统计应为默认值（不影响其他数据加载）
-    expect(result.current.skillStats.total).toBe(0)
-    expect(result.current.skillStats.loaded).toBe(0)
-    expect(result.current.skillStats.errors).toBe(0)
+    expect(result.current.skillStats.installed).toBe(0)
+    expect(result.current.skillStats.limit).toBe(100)
 
     // 订阅和设备数据应正常
     expect(result.current.subscription).not.toBeNull()
@@ -271,12 +274,13 @@ describe('useDashboard', () => {
         { deviceId: 'dev-3', userId: 'user-1', isPrimary: false, linkedAt: '2026-02-15', scopes: [] },
       ],
     })
-    mockGatewayCall.mockResolvedValue({
-      skills: [
-        { id: 'skill-1', name: '翻译', status: 'loaded' },
-        { id: 'skill-2', name: '搜索', status: 'loaded' },
-        { id: 'skill-3', name: '天气', status: 'loaded' },
-        { id: 'skill-4', name: '日历', status: 'loaded' },
+    mockGetInstalledSkills.mockResolvedValue({
+      success: true,
+      data: [
+        { id: 'skill-1', name: '翻译' },
+        { id: 'skill-2', name: '搜索' },
+        { id: 'skill-3', name: '天气' },
+        { id: 'skill-4', name: '日历' },
       ],
     })
 
@@ -286,9 +290,8 @@ describe('useDashboard', () => {
 
     expect(result.current.planName).toBe('团队版')
     expect(result.current.deviceCount).toBe(3)
-    expect(result.current.skillStats.total).toBe(4)
-    expect(result.current.skillStats.loaded).toBe(4)
-    expect(result.current.skillStats.errors).toBe(0)
+    expect(result.current.skillStats.installed).toBe(4)
+    expect(result.current.skillStats.limit).toBe(100)
   })
 
   it('应正确设置 accessToken 到各服务', async () => {

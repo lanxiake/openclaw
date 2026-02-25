@@ -58,11 +58,12 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
     clearCurrentSession,
     addMessage,
     updateMessage,
+    updateMessageInSession,
     syncSessionsFromServer,
     loadServerMessages,
   } = useChatHistory()
 
-  const { streamingMessage, startStream, getStreamByRunId } = useChatStream()
+  const { streamingMessage, startStream, getStreamByRunId, streamVersion } = useChatStream()
   const { getToolCalls } = useToolStream()
   const { todos, completedCount, totalCount } = useAgentTodo()
   const { queue, queueLength, enqueue, dequeue, remove: removeFromQueue, clear: clearQueue } = useMessageQueue(activeSessionId)
@@ -262,10 +263,13 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
           const pending = pendingSendImmediatelyRef.current
           const isSendImmediatelyAbort = pending !== null
 
-          updateMessage(runState.assistantMessageId, {
+          // 保存 toolCalls 快照到消息（流完成后持久化）
+          const abortedToolCalls = getToolCalls(runState.runId)
+          updateMessageInSession(sessionId, runState.assistantMessageId, {
             content: stream.content || '',
             isStreaming: false,
             isAborted: !isSendImmediatelyAbort,
+            toolCalls: abortedToolCalls.length > 0 ? abortedToolCalls : undefined,
           })
 
           if (pending && sessionId === activeSessionId) {
@@ -277,17 +281,23 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
             })
           }
         } else if (stream.error) {
-          updateMessage(runState.assistantMessageId, {
+          // 保存 toolCalls 快照到消息（流完成后持久化）
+          const errorToolCalls = getToolCalls(runState.runId)
+          updateMessageInSession(sessionId, runState.assistantMessageId, {
             content: `错误: ${stream.error}`,
             role: 'system',
             isStreaming: false,
+            toolCalls: errorToolCalls.length > 0 ? errorToolCalls : undefined,
           })
         } else {
           /** 正常完成（空回复时显示提示） */
           const finalContent = stream.content?.trim()
-          updateMessage(runState.assistantMessageId, {
+          // 保存 toolCalls 快照到消息（流完成后持久化）
+          const finalToolCalls = getToolCalls(runState.runId)
+          updateMessageInSession(sessionId, runState.assistantMessageId, {
             content: finalContent || '（未收到有效回复，请检查 AI 模型配置）',
             isStreaming: false,
+            toolCalls: finalToolCalls.length > 0 ? finalToolCalls : undefined,
             ...(finalContent ? {} : { role: 'system' as const }),
           })
         }
@@ -304,7 +314,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
         }
       } else if (sessionId === activeSessionId) {
         /** 仅更新当前活跃会话的实时内容（避免跨会话更新） */
-        updateMessage(runState.assistantMessageId, {
+        updateMessageInSession(sessionId, runState.assistantMessageId, {
           content: stream.content || '',
           isStreaming: stream.isStreaming,
         })
@@ -315,7 +325,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
     for (const id of completedSessionIds) {
       sessionRunMapRef.current.delete(id)
     }
-  }, [streamingMessage, activeSessionId, updateMessage, dequeue, doSend, getStreamByRunId])
+  }, [streamVersion, activeSessionId, updateMessageInSession, dequeue, doSend, getStreamByRunId, getToolCalls])
 
   /**
    * 处理新建会话
@@ -559,10 +569,11 @@ export const ChatView: React.FC<ChatViewProps> = ({ isConnected }) => {
           )}
 
           {currentMessages.map((message) => {
+            // 实时流式期间使用 useToolStream 的 toolCalls，流完成后回退到消息持久化的 toolCalls
             const messageToolCalls =
               currentRunId && message.id === currentAssistantMessageId
                 ? getToolCalls(currentRunId)
-                : undefined
+                : message.toolCalls
 
             return (
               <MessageItem

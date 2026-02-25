@@ -14,6 +14,7 @@ import { CreditsView } from './components/CreditsView'
 import { DashboardView } from './components/DashboardView'
 import { DeviceManagementView } from './components/DeviceManagementView'
 import { FilesView } from './components/FilesView'
+import { MemoriesView } from './components/MemoriesView'
 import { SettingsView } from './components/SettingsView'
 import { Sidebar } from './components/Sidebar'
 import { SkillsView } from './components/SkillsView'
@@ -28,7 +29,7 @@ import { useSettings } from './hooks/useSettings'
 /**
  * 视图类型
  */
-type ViewType = 'dashboard' | 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'settings' | 'devices' | 'credits'
+type ViewType = 'dashboard' | 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'settings' | 'devices' | 'credits' | 'memories'
 
 // localStorage keys for device binding
 const DEVICE_TOKEN_KEY = 'device_token'
@@ -242,7 +243,7 @@ const App: React.FC = () => {
   const renderMainView = () => {
     switch (activeView) {
       case 'dashboard':
-        return <DashboardView displayName={user?.displayName || undefined} isConnected={isConnected} onViewChange={setActiveView} />
+        return <DashboardView displayName={user?.displayName || undefined} isConnected={isConnected} onViewChange={(view) => setActiveView(view as ViewType)} />
       case 'files':
         return <FilesView isConnected={isConnected} />
       case 'system':
@@ -255,6 +256,8 @@ const App: React.FC = () => {
         return <SubscriptionView isConnected={isConnected} onViewChange={setActiveView} />
       case 'credits':
         return <CreditsView />
+      case 'memories':
+        return <MemoriesView />
       case 'settings':
         return <SettingsView isConnected={isConnected} isConnecting={isConnecting} connectionError={connectionError} onConnect={connect} onDisconnect={disconnect} />
       case 'devices':

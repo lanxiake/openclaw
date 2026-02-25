@@ -21,9 +21,19 @@ const MAX_ATTACHMENTS = 5
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 
 /**
- * 允许的图片类型
+ * 允许的文件类型（图片 + 文档 + 代码）
  */
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+const ALLOWED_FILE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'application/pdf',
+  'text/plain',
+  'text/markdown',
+  'text/csv',
+  'application/json',
+]
 
 /**
  * ChatInput Props
@@ -77,6 +87,8 @@ export const ChatInput = memo<ChatInputProps>(({
         properties: ['openFile', 'multiSelections'],
         filters: [
           { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'] },
+          { name: 'Documents', extensions: ['pdf', 'txt', 'md', 'csv', 'json'] },
+          { name: 'All Files', extensions: ['*'] },
         ],
       })
 
@@ -106,19 +118,20 @@ export const ChatInput = memo<ChatInputProps>(({
             continue
           }
 
-          // 验证文件类型
-          if (!ALLOWED_IMAGE_TYPES.includes(fileData.mimeType)) {
+          // 验证文件类型（允许列表内的 MIME 或任意 text/* 类型）
+          if (!ALLOWED_FILE_TYPES.includes(fileData.mimeType) && !fileData.mimeType.startsWith('text/')) {
             console.warn(`[ChatInput] 不支持的文件类型: ${fileData.mimeType}`)
             continue
           }
 
+          const isImage = fileData.mimeType.startsWith('image/')
           const attachment: Attachment = {
             id: `att-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             fileName: fileData.fileName,
             mimeType: fileData.mimeType,
             content: fileData.content,
             size: fileData.size,
-            preview: `data:${fileData.mimeType};base64,${fileData.content}`,
+            preview: isImage ? `data:${fileData.mimeType};base64,${fileData.content}` : undefined,
           }
 
           newAttachments.push(attachment)
@@ -199,10 +212,10 @@ export const ChatInput = memo<ChatInputProps>(({
           className="attachment-button"
           onClick={handleFileSelect}
           disabled={!isConnected || isLoading || pendingAttachments.length >= MAX_ATTACHMENTS}
-          title={pendingAttachments.length >= MAX_ATTACHMENTS ? `最多 ${MAX_ATTACHMENTS} 个附件` : '添加图片'}
+          title={pendingAttachments.length >= MAX_ATTACHMENTS ? `最多 ${MAX_ATTACHMENTS} 个附件` : '添加文件'}
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M4 3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+            <path d="M15.7 5.3l-6.4 6.4c-1.2 1.2-3.1 1.2-4.2 0-1.2-1.2-1.2-3.1 0-4.2L11.5 1c.8-.8 2-.8 2.8 0 .8.8.8 2 0 2.8L8 10.1c-.4.4-1 .4-1.4 0-.4-.4-.4-1 0-1.4l5.7-5.7-.7-.7-5.7 5.7c-.8.8-.8 2 0 2.8.8.8 2 .8 2.8 0l6.4-6.4c1.2-1.2 1.2-3.1 0-4.2-1.2-1.2-3.1-1.2-4.2 0L4.4 6.7c-1.6 1.6-1.6 4.1 0 5.7 1.6 1.6 4.1 1.6 5.7 0l6.4-6.4-.7-.7z"/>
           </svg>
         </button>
 

@@ -460,3 +460,169 @@
     font-size: 11px;
   }
 }
+
+/* 积分来源分组 */
+.source-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.source-row {
+  background: var(--bg-secondary, #1a1a3e);
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.source-row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.source-badge {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+
+.source-badge.source-register {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.source-badge.source-invite {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+}
+
+.source-badge.source-subscription {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.source-badge.source-purchase {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.source-badge.source-admin_grant {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+}
+
+.source-remaining {
+  font-size: 13px;
+  color: var(--text-secondary, #a0aec0);
+}
+
+.source-remaining strong {
+  color: var(--text-primary, #ffffff);
+  font-size: 15px;
+}
+
+.source-bar-container {
+  margin-bottom: 6px;
+}
+
+.source-bar {
+  height: 6px;
+  background: var(--bg-tertiary, #2a2a4a);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.source-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.source-row-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.source-used {
+  font-size: 11px;
+  color: var(--text-tertiary, #6b7280);
+}
+
+.source-expiry {
+  font-size: 11px;
+  color: var(--text-secondary, #a0aec0);
+}
+
+.source-expiry.expiring-soon {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+/* 来源分组内的批次详情 */
+.source-batches {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-color, #3a3a5a);
+}
+
+.source-batch-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.source-batch-item.expiring-soon {
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.source-batch-item.expiring-warning {
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.source-batch-item.expired {
+  opacity: 0.5;
+}
+
+.source-batch-amount {
+  font-weight: 600;
+  color: #6366f1;
+  min-width: 80px;
+}
+
+.source-batch-expiry {
+  color: var(--text-secondary, #a0aec0);
+}
+
+.source-batch-expiry.expiring-soon {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.source-batch-expiry.expiring-warning {
+  color: #f59e0b;
+}
+
+.source-batch-expiry.expired {
+  color: #6b7280;
+}
+
+.source-batch-desc {
+  color: var(--text-tertiary, #6b7280);
+  font-size: 11px;
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}

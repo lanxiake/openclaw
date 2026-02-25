@@ -58,12 +58,14 @@ export interface ChatEventPayload {
   runId: string
   /** 会话 Key */
   sessionKey: string
-  /** 状态: delta (流式累积), final (最终结果), error (错误) */
-  state: 'delta' | 'final' | 'error'
+  /** 状态: delta (流式累积), final (最终结果), error (错误), aborted (用户中断) */
+  state: 'delta' | 'final' | 'error' | 'aborted'
   /** 消息对象，content 为 [{type:"text", text:"..."}] 数组格式 */
   message?: Record<string, unknown>
   /** 错误信息 (state=error 时) */
   errorMessage?: string
+  /** 停止原因 (state=aborted 时) */
+  stopReason?: string
 }
 
 /**
@@ -87,6 +89,8 @@ export interface AgentEventPayload {
   data: AgentEventData
   /** 会话 Key */
   sessionKey?: string
+  /** 客户端 runId（网关注入，用于关联 agent 事件与 chat run） */
+  clientRunId?: string
 }
 
 /**
@@ -504,6 +508,22 @@ export interface ElectronAPI {
     uninstallStoreSkill: (skillId: string) => Promise<unknown>
     /** 获取已安装技能列表 */
     getInstalledSkills: () => Promise<unknown>
+    /** 启用已安装技能 */
+    enableInstalledSkill: (skillId: string) => Promise<unknown>
+    /** 禁用已安装技能 */
+    disableInstalledSkill: (skillId: string) => Promise<unknown>
+    /** 切换已安装技能启用/禁用状态 */
+    toggleInstalledSkill: (skillId: string) => Promise<unknown>
+    /** 提交技能到商店 */
+    submitSkillToStore: (data: {
+      name: string
+      description?: string
+      readme?: string
+      version?: string
+      categoryId?: string
+      tags?: string[]
+      config?: Record<string, unknown>
+    }) => Promise<unknown>
     /** 创建用户自建技能 */
     createUserSkill: (data: {
       name: string
@@ -549,6 +569,18 @@ export interface ElectronAPI {
     }) => Promise<unknown>
     /** 清除审计日志 */
     clearAuditLogs: (beforeDate?: string) => Promise<unknown>
+
+    // --- 记忆管理接口 ---
+    /** 获取记忆列表 */
+    getMemories: (options?: { type?: string; category?: string; activeOnly?: boolean; limit?: number; offset?: number }) => Promise<unknown>
+    /** 获取记忆详情 */
+    getMemory: (id: string) => Promise<unknown>
+    /** 创建记忆 */
+    createMemory: (data: { type: string; content: string; category?: string; summary?: string; importance?: number }) => Promise<unknown>
+    /** 更新记忆 */
+    updateMemory: (id: string, data: { content?: string; summary?: string; category?: string; importance?: number }) => Promise<unknown>
+    /** 删除记忆 */
+    deleteMemory: (id: string) => Promise<unknown>
 
     // --- 积分接口 ---
     /** 获取用户积分余额 */
@@ -936,6 +968,18 @@ const electronAPI: ElectronAPI = {
     }) => ipcRenderer.invoke('api:exportAuditLogs', params),
     clearAuditLogs: (beforeDate?: string) =>
       ipcRenderer.invoke('api:clearAuditLogs', beforeDate),
+
+    // --- 记忆管理接口 ---
+    getMemories: (options?: { type?: string; category?: string; activeOnly?: boolean; limit?: number; offset?: number }) =>
+      ipcRenderer.invoke('api:getMemories', options),
+    getMemory: (id: string) =>
+      ipcRenderer.invoke('api:getMemory', id),
+    createMemory: (data: { type: string; content: string; category?: string; summary?: string; importance?: number }) =>
+      ipcRenderer.invoke('api:createMemory', data),
+    updateMemory: (id: string, data: { content?: string; summary?: string; category?: string; importance?: number }) =>
+      ipcRenderer.invoke('api:updateMemory', id, data),
+    deleteMemory: (id: string) =>
+      ipcRenderer.invoke('api:deleteMemory', id),
 
     // --- 积分接口 ---
     getCreditBalance: () =>

@@ -16,7 +16,7 @@ import './DashboardView.css'
 /**
  * 视图类型（用于快捷操作跳转）
  */
-type ViewType = 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'settings' | 'devices' | 'dashboard'
+type ViewType = 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'credits' | 'settings' | 'devices' | 'dashboard' | 'memories'
 
 interface DashboardViewProps {
   /** 用户显示名称 */
@@ -87,7 +87,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   }
 
   // 获取使用量数据（有默认值）
-  const deviceLimit = usage?.devices?.limit ?? 0
+  const deviceLimit = usage?.devices?.limit ?? 5
   const dailyCalls = usage?.conversations?.daily ?? 0
   const dailyCallLimit = usage?.conversations?.limit ?? 0
 
@@ -156,13 +156,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <span className="stat-card-label">已安装技能</span>
           </div>
-          <div className="stat-card-value">{skillStats.loaded}</div>
-          <div className="stat-card-sub">
-            共 {skillStats.total} 个技能
-            {skillStats.errors > 0 && (
-              <span className="error-count">({skillStats.errors} 个错误)</span>
-            )}
-          </div>
+          <div className="stat-card-value">{skillStats.installed}</div>
+          <div className="stat-card-sub">{formatUsage(skillStats.installed, skillStats.limit)}</div>
+          {skillStats.limit > 0 && (
+            <div className="usage-bar-container">
+              <div className="usage-bar">
+                <div
+                  className={`usage-bar-fill ${getUsageLevel(skillStats.installed, skillStats.limit)}`}
+                  style={{ width: `${Math.min(100, (skillStats.installed / skillStats.limit) * 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 今日调用 */}

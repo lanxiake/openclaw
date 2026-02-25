@@ -22,12 +22,10 @@ import { deviceService } from '../services/device-service'
  * 技能统计信息
  */
 interface SkillStats {
-  /** 技能总数 */
-  total: number
-  /** 已加载数 */
-  loaded: number
-  /** 加载错误数 */
-  errors: number
+  /** 已安装技能数（来自商店） */
+  installed: number
+  /** 技能安装上限 */
+  limit: number
 }
 
 /**
@@ -67,13 +65,18 @@ function calcDaysRemaining(endDate: string | undefined): number {
   return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)))
 }
 
+/** 设备数量上限 */
+const DEVICE_LIMIT = 5
+
+/** 技能安装上限 */
+const SKILL_INSTALL_LIMIT = 100
+
 /**
  * 默认技能统计
  */
 const DEFAULT_SKILL_STATS: SkillStats = {
-  total: 0,
-  loaded: 0,
-  errors: 0,
+  installed: 0,
+  limit: SKILL_INSTALL_LIMIT,
 }
 
 /**
@@ -90,21 +93,21 @@ export function useDashboard(): UseDashboardReturn {
   const [error, setError] = useState<string | null>(null)
 
   /**
-   * 加载技能统计（通过 IPC → Gateway WS，失败不阻塞其他数据）
+   * 加载技能统计（通过 REST API 获取已安装技能数量）
    */
   const loadSkillStats = useCallback(async (): Promise<SkillStats> => {
     try {
-      const result = await window.electronAPI.api.listAllSkills() as {
+      const result = await window.electronAPI.api.getInstalledSkills() as {
         success: boolean
-        data?: { skills?: Array<{ status: string }>; total?: number }
+        data?: Array<unknown>
+        error?: string
       }
-      const skills = result?.data?.skills || []
-      const loaded = skills.filter((s: { status: string }) => s.status === 'loaded').length
-      const errors = skills.filter((s: { status: string }) => s.status === 'error').length
-      console.log('[useDashboard] 技能统计:', { total: skills.length, loaded, errors })
-      return { total: skills.length, loaded, errors }
+
+      const installedCount = result?.success && Array.isArray(result.data) ? result.data.length : 0
+      console.log('[useDashboard] 已安装技能数:', installedCount)
+      return { installed: installedCount, limit: SKILL_INSTALL_LIMIT }
     } catch (err) {
-      console.warn('[useDashboard] 获取技能统计失败（Gateway 可能未连接）:', err)
+      console.warn('[useDashboard] 获取已安装技能统计失败:', err)
       return DEFAULT_SKILL_STATS
     }
   }, [])

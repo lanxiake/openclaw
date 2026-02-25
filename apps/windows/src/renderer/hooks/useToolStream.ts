@@ -87,7 +87,9 @@ export function useToolStream(): UseToolStreamReturn {
       return
     }
 
-    const { runId, data, ts } = payload
+    const { data, ts } = payload
+    // 优先使用 clientRunId（网关注入的客户端 runId），回退到 runId
+    const runId = payload.clientRunId ?? payload.runId
     const { phase, name, toolCallId, args, partialResult, meta, isError, result } = data
 
     // 必须有 toolCallId 和 phase

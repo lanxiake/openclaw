@@ -12,7 +12,7 @@ import './Sidebar.css'
 /**
  * 视图类型
  */
-type ViewType = 'dashboard' | 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'credits' | 'settings' | 'devices'
+type ViewType = 'dashboard' | 'chat' | 'files' | 'system' | 'skills' | 'audit' | 'subscription' | 'credits' | 'settings' | 'devices' | 'memories'
 
 /**
  * 连接选项
@@ -147,6 +147,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <path d="M2 5.5a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm0 3a.5.5 0 01.5-.5h6a.5.5 0 010 1h-6a.5.5 0 01-.5-.5zm0 2a.5.5 0 01.5-.5h3a.5.5 0 010 1h-3a.5.5 0 01-.5-.5z"/>
             </svg>
             <span>积分管理</span>
+          </button>
+
+          <button
+            className={`nav-item ${activeView === 'memories' ? 'active' : ''}`}
+            onClick={() => handleViewChange('memories')}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 1a2.5 2.5 0 012.5 2.5V4h-5v-.5A2.5 2.5 0 018 1zm3.5 3v-.5a3.5 3.5 0 10-7 0V4H1v10a2 2 0 002 2h10a2 2 0 002-2V4h-3.5zM2 5h12v9a1 1 0 01-1 1H3a1 1 0 01-1-1V5z"/>
+            </svg>
+            <span>记忆管理</span>
           </button>
 
           <button

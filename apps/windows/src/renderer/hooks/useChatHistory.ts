@@ -36,6 +36,8 @@ export interface ChatMessage {
   /** 消息是否因用户中断而终止 */
   isAborted?: boolean
   attachments?: MessageAttachment[]
+  /** 持久化的 tool 调用记录（流完成后快照保存） */
+  toolCalls?: import('./useToolStream').ToolCall[]
 }
 
 /**
@@ -676,6 +678,47 @@ export function useChatHistory() {
   }, [activeSessionId])
 
   /**
+   * 更新指定会话中的消息（不依赖 activeSessionId）
+   *
+   * 用于跨会话场景：当用户已切换到另一个会话时，仍能正确更新
+   * 之前会话中正在 streaming 的消息。
+   */
+  const updateMessageInSession = useCallback((sessionId: string, messageId: string, updates: Partial<ChatMessage>) => {
+    setSessions((prev) => {
+      const sessionIdx = prev.findIndex((s) => s.id === sessionId)
+      if (sessionIdx === -1) return prev
+
+      const session = prev[sessionIdx]
+      const msgIdx = session.messages.findIndex((m) => m.id === messageId)
+      if (msgIdx === -1) return prev
+
+      const oldMsg = session.messages[msgIdx]
+
+      /** 浅比较：如果所有更新字段值都和旧值相同，跳过更新 */
+      const hasChanged = Object.keys(updates).some(
+        (key) => (oldMsg as Record<string, unknown>)[key] !== (updates as Record<string, unknown>)[key]
+      )
+      if (!hasChanged) return prev
+
+      const newMsg = { ...oldMsg, ...updates }
+      const newMessages = [...session.messages]
+      newMessages[msgIdx] = newMsg
+
+      /** streaming 期间不更新 updatedAt，避免触发防抖保存和连锁重渲染 */
+      const isStreamingUpdate = updates.isStreaming === true || (oldMsg.isStreaming && !('isStreaming' in updates && updates.isStreaming === false))
+      const newSession = {
+        ...session,
+        messages: newMessages,
+        updatedAt: isStreamingUpdate ? session.updatedAt : new Date(),
+      }
+
+      const newSessions = [...prev]
+      newSessions[sessionIdx] = newSession
+      return newSessions
+    })
+  }, [])
+
+  /**
    * 清空当前会话的消息
    * 对于服务端会话同时调用 sessions.reset 重置服务端数据
    */
@@ -799,6 +842,7 @@ export function useChatHistory() {
     // 消息操作
     addMessage,
     updateMessage,
+    updateMessageInSession,
 
     // 服务端同步
     syncSessionsFromServer,

@@ -1196,6 +1196,85 @@ export class ApiClient {
   }
 
   // ==========================================================================
+  // 记忆管理接口
+  // ==========================================================================
+
+  /**
+   * 获取记忆列表
+   *
+   * @param options - 查询参数（类型、分类、分页等）
+   * @returns 记忆列表和分页信息
+   */
+  async getMemories(options?: {
+    type?: string
+    category?: string
+    activeOnly?: boolean
+    limit?: number
+    offset?: number
+  }): Promise<ApiResponse<unknown>> {
+    log.info('获取记忆列表', { type: options?.type, limit: options?.limit })
+
+    const params = new URLSearchParams()
+    if (options?.type) params.set('type', options.type)
+    if (options?.category) params.set('category', options.category)
+    if (options?.activeOnly !== undefined) params.set('activeOnly', String(options.activeOnly))
+    if (options?.limit !== undefined) params.set('limit', String(options.limit))
+    if (options?.offset !== undefined) params.set('offset', String(options.offset))
+
+    const query = params.toString()
+    const path = query ? `/api/memories?${query}` : '/api/memories'
+
+    return this.request<ApiResponse<unknown>>('GET', path)
+  }
+
+  /**
+   * 获取记忆详情
+   */
+  async getMemory(id: string): Promise<ApiResponse<unknown>> {
+    log.info('获取记忆详情', { id })
+
+    return this.request<ApiResponse<unknown>>('GET', `/api/memories/${id}`)
+  }
+
+  /**
+   * 创建记忆
+   */
+  async createMemory(data: {
+    type: string
+    content: string
+    category?: string
+    summary?: string
+    importance?: number
+  }): Promise<ApiResponse<unknown>> {
+    log.info('创建记忆', { type: data.type })
+
+    return this.request<ApiResponse<unknown>>('POST', '/api/memories', data)
+  }
+
+  /**
+   * 更新记忆
+   */
+  async updateMemory(id: string, data: {
+    content?: string
+    summary?: string
+    category?: string
+    importance?: number
+  }): Promise<ApiResponse<unknown>> {
+    log.info('更新记忆', { id })
+
+    return this.request<ApiResponse<unknown>>('PUT', `/api/memories/${id}`, data)
+  }
+
+  /**
+   * 删除（停用）记忆
+   */
+  async deleteMemory(id: string): Promise<ApiResponse<unknown>> {
+    log.info('删除记忆', { id })
+
+    return this.request<ApiResponse<unknown>>('DELETE', `/api/memories/${id}`)
+  }
+
+  // ==========================================================================
   // 积分接口
   // ==========================================================================
 
@@ -1329,9 +1408,11 @@ export class ApiClient {
 
     log.debug('发送请求', { method, path, hasBody: !!body })
 
-    // 构建请求头
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+    // 构建请求头 - 仅在有请求体时设置 Content-Type，避免 Fastify 报错
+    const headers: Record<string, string> = {}
+
+    if (body !== undefined) {
+      headers['Content-Type'] = 'application/json'
     }
 
     // 添加认证头
