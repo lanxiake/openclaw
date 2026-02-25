@@ -2,8 +2,8 @@
  * 用户订阅 REST API 路由
  *
  * POST   /api/subscriptions              - 创建订阅
- * POST   /api/subscriptions/:id/cancel   - 取消订阅
- * PUT    /api/subscriptions/:id          - 更新订阅
+ * POST   /api/subscriptions/:id/cancel   - 取消订阅（已禁用，仅管理员可操作）
+ * PUT    /api/subscriptions/:id          - 更新订阅（已禁用，仅管理员可操作）
  * POST   /api/subscriptions/quota-check  - 检查配额
  * GET    /api/subscriptions/overview     - 获取订阅概览（订阅+计划+使用量）
  */
@@ -14,8 +14,6 @@ import {
   getUserSubscription,
   getUserPlan,
   createSubscription,
-  updateSubscription,
-  cancelSubscription,
   checkQuota,
   getUserDailyUsage,
   getUserMonthlyUsage,
@@ -186,22 +184,24 @@ export function registerSubscriptionsRoutes(server: FastifyInstance): void {
           startTrial: body.startTrial,
         });
 
-        // 订阅创建成功后自动发放积分
+        // 订阅创建成功后自动发放首月积分
         let creditsGranted = 0;
         try {
           const monthlyCredits = await getConfigValue<number>(
             CONFIG_KEYS.CREDITS_MONTHLY_AMOUNT,
             2000,
           );
-          const expiryMonths = body.billingPeriod === "yearly" ? 12 : 1;
-          const creditAmount = body.billingPeriod === "yearly" ? monthlyCredits * 12 : monthlyCredits;
+          // 无论月付还是年付，每次只发放一个月的积分（2000）
+          // 年付用户每月续发由定时任务处理
+          const creditAmount = monthlyCredits;
+          const expiryMonths = 1;
 
           const creditService = getCreditService();
           const creditResult = await creditService.grantSubscriptionCredits(user.userId, {
             amount: creditAmount,
             expiryMonths,
             sourceId: subscription.id,
-            description: `订阅 ${body.planId} (${body.billingPeriod}) 积分发放`,
+            description: `订阅 ${body.planId} (${body.billingPeriod}) 首月积分发放`,
           });
 
           creditsGranted = creditResult.success ? creditAmount : 0;
@@ -230,101 +230,33 @@ export function registerSubscriptionsRoutes(server: FastifyInstance): void {
 
   /**
    * POST /api/subscriptions/:id/cancel - 取消订阅
+   *
+   * 仅管理员可操作，用户端返回 403
    */
   server.post(
     "/api/subscriptions/:id/cancel",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const user = getRequestUser(request);
-      if (!user) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      const { id } = request.params as { id: string };
-      const body = request.body as {
-        immediately?: boolean;
-        reason?: string;
-        feedback?: string;
-      };
-
-      request.log.info(
-        { userId: user.userId, subscriptionId: id, immediately: body.immediately },
-        "[subscriptions] 取消订阅",
-      );
-
-      try {
-        const subscription = await cancelSubscription({
-          subscriptionId: id,
-          immediately: body.immediately,
-          reason: body.reason,
-          feedback: body.feedback,
-        });
-
-        return {
-          success: true,
-          data: { subscription },
-        };
-      } catch (error) {
-        request.log.error({ error }, "[subscriptions] 取消订阅失败");
-        return reply.code(400).send({
-          success: false,
-          error: error instanceof Error ? error.message : "取消订阅失败",
-          code: "CANCEL_FAILED",
-        });
-      }
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      return reply.code(403).send({
+        success: false,
+        error: "订阅修改和取消请联系管理员",
+        code: "ADMIN_ONLY",
+      });
     },
   );
 
   /**
    * PUT /api/subscriptions/:id - 更新订阅
+   *
+   * 仅管理员可操作，用户端返回 403
    */
   server.put(
     "/api/subscriptions/:id",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const user = getRequestUser(request);
-      if (!user) {
-        return reply.code(401).send({
-          success: false,
-          error: "Authentication required",
-          code: "UNAUTHORIZED",
-        });
-      }
-
-      const { id } = request.params as { id: string };
-      const body = request.body as {
-        planId?: SubscriptionPlanId;
-        billingPeriod?: BillingPeriod;
-        cancelAtPeriodEnd?: boolean;
-      };
-
-      request.log.info(
-        { userId: user.userId, subscriptionId: id, changes: body },
-        "[subscriptions] 更新订阅",
-      );
-
-      try {
-        const subscription = await updateSubscription({
-          subscriptionId: id,
-          planId: body.planId,
-          billingPeriod: body.billingPeriod,
-          cancelAtPeriodEnd: body.cancelAtPeriodEnd,
-        });
-
-        return {
-          success: true,
-          data: { subscription },
-        };
-      } catch (error) {
-        request.log.error({ error }, "[subscriptions] 更新订阅失败");
-        return reply.code(400).send({
-          success: false,
-          error: error instanceof Error ? error.message : "更新订阅失败",
-          code: "UPDATE_FAILED",
-        });
-      }
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      return reply.code(403).send({
+        success: false,
+        error: "订阅修改和取消请联系管理员",
+        code: "ADMIN_ONLY",
+      });
     },
   );
 
