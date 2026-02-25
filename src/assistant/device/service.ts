@@ -37,9 +37,9 @@ const logger = getLogger();
  */
 const DEFAULT_DEVICE_QUOTA = {
   /** 免费用户最大设备数 */
-  free: 2,
+  free: 5,
   /** 基础版最大设备数 */
-  basic: 3,
+  basic: 5,
   /** 专业版最大设备数 */
   pro: 5,
   /** 企业版最大设备数 */
