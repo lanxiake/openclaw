@@ -2,11 +2,14 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { extractMessagingToolSend } from "./pi-embedded-subscribe.tools.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
-import { createTestRegistry } from "../test-utils/channel-plugins.js";
-import { telegramPlugin } from "../../extensions/telegram/src/channel.js";
+import {
+  createTelegramTestPlugin,
+  createTestRegistry,
+} from "../test-utils/channel-plugins.js";
 
 describe("extractMessagingToolSend", () => {
   beforeEach(() => {
+    const telegramPlugin = createTelegramTestPlugin();
     setActivePluginRegistry(
       createTestRegistry([{ pluginId: "telegram", plugin: telegramPlugin, source: "test" }]),
     );
@@ -21,7 +24,7 @@ describe("extractMessagingToolSend", () => {
 
     expect(result?.tool).toBe("message");
     expect(result?.provider).toBe("telegram");
-    expect(result?.to).toBe("telegram:123");
+    expect(result?.to).toBe("123");
   });
 
   it("prefers provider when both provider and channel are set", () => {

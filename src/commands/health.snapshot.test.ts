@@ -7,8 +7,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { HealthSummary } from "./health.js";
 import { getHealthSnapshot } from "./health.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
-import { createTestRegistry } from "../test-utils/channel-plugins.js";
-import { telegramPlugin } from "../../extensions/telegram/src/channel.js";
+import {
+  createTelegramTestPlugin,
+  createTestRegistry,
+} from "../test-utils/channel-plugins.js";
 
 let testConfig: Record<string, unknown> = {};
 let testStore: Record<string, { updatedAt?: number }> = {};
@@ -38,13 +40,11 @@ vi.mock("../web/auth-store.js", () => ({
 }));
 
 describe("getHealthSnapshot", () => {
-  beforeEach(async () => {
+  beforeEach(() => {
+    const telegramPlugin = createTelegramTestPlugin();
     setActivePluginRegistry(
       createTestRegistry([{ pluginId: "telegram", plugin: telegramPlugin, source: "test" }]),
     );
-    const { createPluginRuntime } = await import("../plugins/runtime/index.js");
-    const { setTelegramRuntime } = await import("../../extensions/telegram/src/runtime.js");
-    setTelegramRuntime(createPluginRuntime());
   });
 
   afterEach(() => {

@@ -2,8 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { RuntimeEnv } from "../runtime.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
-import { createIMessageTestPlugin, createTestRegistry } from "../test-utils/channel-plugins.js";
-import { signalPlugin } from "../../extensions/signal/src/channel.js";
+import {
+  createIMessageTestPlugin,
+  createSignalTestPlugin,
+  createTestRegistry,
+} from "../test-utils/channel-plugins.js";
 
 const configMocks = vi.hoisted(() => ({
   readConfigFileSnapshot: vi.fn(),
@@ -62,6 +65,7 @@ describe("channels command", () => {
       version: 1,
       profiles: {},
     });
+    const signalPlugin = createSignalTestPlugin();
     setActivePluginRegistry(
       createTestRegistry([{ pluginId: "signal", source: "test", plugin: signalPlugin }]),
     );

@@ -7,8 +7,8 @@ import type { ChannelPlugin } from "../channels/plugins/types.js";
 import { emitAgentEvent, registerAgentRunContext } from "../infra/agent-events.js";
 import type { PluginRegistry } from "../plugins/registry.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
+import { createWhatsAppTestPlugin } from "../test-utils/channel-plugins.js";
 import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../utils/message-channel.js";
-import { whatsappPlugin } from "../../extensions/whatsapp/src/channel.js";
 import {
   agentCommand,
   connectOk,
@@ -103,6 +103,7 @@ const createMSTeamsPlugin = (params?: { aliases?: string[] }): ChannelPlugin => 
 });
 
 const emptyRegistry = createRegistry([]);
+const whatsappPlugin = createWhatsAppTestPlugin();
 const defaultRegistry = createRegistry([
   {
     pluginId: "whatsapp",
