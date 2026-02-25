@@ -41,7 +41,7 @@ import { useMemoryFacts, useUpdateMemoryFact, useDeleteMemoryFact } from '@/hook
 
 /** 事实分类选项 */
 const CATEGORY_OPTIONS = [
-  { value: '', label: '全部分类' },
+  { value: 'all', label: '全部分类' },
   { value: 'personal', label: '个人信息' },
   { value: 'work', label: '工作' },
   { value: 'hobby', label: '兴趣爱好' },
@@ -85,12 +85,12 @@ interface FactsPanelProps {
  * 事实管理面板组件
  */
 export default function FactsPanel({ userId }: FactsPanelProps) {
-  const [category, setCategory] = useState('')
+  const [category, setCategory] = useState('all')
   const [page, setPage] = useState(0)
   const pageSize = 20
 
   const { data, isLoading } = useMemoryFacts(userId, {
-    category: category || undefined,
+    category: category !== 'all' ? category : undefined,
     activeOnly: true,
     limit: pageSize,
     offset: page * pageSize,

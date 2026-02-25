@@ -20,7 +20,7 @@ import { useMemoryAuditLogs } from '@/hooks/useMemory'
 
 /** 操作类型选项 */
 const ACTION_OPTIONS = [
-  { value: '', label: '全部操作' },
+  { value: 'all', label: '全部操作' },
   { value: 'read_profile', label: '读取档案' },
   { value: 'read_facts', label: '读取事实' },
   { value: 'add_fact', label: '添加事实' },
@@ -35,7 +35,7 @@ const ACTION_OPTIONS = [
 
 /** 来源类型选项 */
 const SOURCE_OPTIONS = [
-  { value: '', label: '全部来源' },
+  { value: 'all', label: '全部来源' },
   { value: 'agent', label: 'Agent' },
   { value: 'admin', label: '管理员' },
   { value: 'api', label: 'API' },
@@ -77,14 +77,14 @@ interface AuditLogPanelProps {
  * 审计日志面板组件
  */
 export default function AuditLogPanel({ userId }: AuditLogPanelProps) {
-  const [action, setAction] = useState('')
-  const [source, setSource] = useState('')
+  const [action, setAction] = useState('all')
+  const [source, setSource] = useState('all')
   const [page, setPage] = useState(0)
   const pageSize = 30
 
   const { data, isLoading } = useMemoryAuditLogs(userId, {
-    action: action || undefined,
-    source: source || undefined,
+    action: action !== 'all' ? action : undefined,
+    source: source !== 'all' ? source : undefined,
     limit: pageSize,
     offset: page * pageSize,
   })
