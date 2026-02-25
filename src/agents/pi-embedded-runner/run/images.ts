@@ -357,8 +357,22 @@ export async function detectAndLoadPromptImages(params: {
   loadedCount: number;
   skippedCount: number;
 }> {
-  // If model doesn't support images, return empty results
+  // 如果模型声明不支持图片，跳过从提示词中检测图片引用。
+  // 但保留用户显式上传的图片（existingImages），让 provider 层做最终判断。
+  // 静默丢弃用户上传的图片比 provider 返回错误更难排查。
   if (!modelSupportsImages(params.model)) {
+    if (params.existingImages && params.existingImages.length > 0) {
+      log.debug(
+        `Native image: model declares no image support, but preserving ${params.existingImages.length} user-uploaded image(s)`,
+      );
+      return {
+        images: params.existingImages,
+        historyImagesByIndex: new Map(),
+        detectedRefs: [],
+        loadedCount: 0,
+        skippedCount: 0,
+      };
+    }
     return {
       images: [],
       historyImagesByIndex: new Map(),

@@ -103,6 +103,8 @@ export function resolveModel(
     }
     const providerCfg = providers[provider];
     if (providerCfg || modelId.startsWith("mock-")) {
+      // 默认声明支持图片输入：主流 LLM（Claude、GPT-4、Gemini）均支持图片。
+      // 对于不支持的模型，provider 会返回明确错误，比静默丢弃图片更易排查。
       const fallbackModel: Model<Api> = normalizeModelCompat({
         id: modelId,
         name: modelId,
@@ -110,7 +112,7 @@ export function resolveModel(
         provider,
         baseUrl: providerCfg?.baseUrl,
         reasoning: false,
-        input: ["text"],
+        input: ["text", "image"],
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
         contextWindow: providerCfg?.models?.[0]?.contextWindow ?? DEFAULT_CONTEXT_TOKENS,
         maxTokens: providerCfg?.models?.[0]?.maxTokens ?? DEFAULT_CONTEXT_TOKENS,
