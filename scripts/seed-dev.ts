@@ -8,7 +8,7 @@
  *   pnpm db:seed --admin-only # 仅创建管理员
  */
 
-import { eq } from "drizzle-orm";
+import { eq, notInArray } from "drizzle-orm";
 
 import { getDatabase } from "../src/db/connection.js";
 import {
@@ -160,10 +160,46 @@ const SEED_CONFIG = {
 };
 
 /**
- * 创建套餐数据
+ * 清理旧计划数据
+ *
+ * 删除 code 不在 ['free','monthly','yearly'] 中的旧计划，
+ * 同时清理关联的 subscriptions 记录。
+ */
+async function cleanupOldPlans(db: ReturnType<typeof getDatabase>) {
+  const validCodes = SEED_CONFIG.plans.map((p) => p.code);
+
+  // 先查找要删除的旧计划
+  const oldPlans = await db
+    .select({ id: plans.id, code: plans.code })
+    .from(plans)
+    .where(notInArray(plans.code, validCodes));
+
+  if (oldPlans.length === 0) {
+    logger.info("[seed] No old plans to clean up");
+    return;
+  }
+
+  for (const oldPlan of oldPlans) {
+    // 删除关联的订阅记录
+    await db.delete(subscriptions).where(eq(subscriptions.planId, oldPlan.id));
+    logger.info(`[seed] Deleted subscriptions for old plan: ${oldPlan.code}`);
+
+    // 删除旧计划
+    await db.delete(plans).where(eq(plans.id, oldPlan.id));
+    logger.info(`[seed] Deleted old plan: ${oldPlan.code}`);
+  }
+
+  logger.info(`[seed] Cleaned up ${oldPlans.length} old plan(s)`);
+}
+
+/**
+ * 创建或更新套餐数据（upsert 逻辑）
  */
 async function seedPlans(db: ReturnType<typeof getDatabase>) {
-  logger.info("[seed] Creating plans...");
+  logger.info("[seed] Creating/updating plans...");
+
+  // 先清理不再需要的旧计划
+  await cleanupOldPlans(db);
 
   const createdPlans: Record<string, string> = {};
 
@@ -174,8 +210,25 @@ async function seedPlans(db: ReturnType<typeof getDatabase>) {
     });
 
     if (existing) {
-      logger.info(`[seed] Plan '${plan.code}' already exists, skipping`);
+      // 已存在则更新
+      await db
+        .update(plans)
+        .set({
+          name: plan.name,
+          description: plan.description,
+          priceMonthly: plan.priceMonthly,
+          priceYearly: plan.priceYearly,
+          tokensPerMonth: plan.tokensPerMonth,
+          storageMb: plan.storageMb,
+          maxDevices: plan.maxDevices,
+          features: plan.features,
+          isActive: plan.isActive,
+          sortOrder: plan.sortOrder,
+        })
+        .where(eq(plans.code, plan.code));
+
       createdPlans[plan.code] = existing.id;
+      logger.info(`[seed] Updated plan: ${plan.name}`);
       continue;
     }
 
