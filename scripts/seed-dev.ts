@@ -5,7 +5,6 @@
  *
  * 使用方式:
  *   pnpm db:seed              # 创建默认测试数据
- *   pnpm db:seed --clean      # 清空后重新创建
  *   pnpm db:seed --admin-only # 仅创建管理员
  */
 
@@ -19,11 +18,13 @@ import {
   skills,
   admins,
   skillCategories,
-  skillStoreItems,
 } from "../src/db/schema/index.js";
 import { hashPassword } from "../src/db/utils/password.js";
 import { generateId } from "../src/db/utils/id.js";
+import { initializeDefaultConfigs } from "../src/assistant/config/config-service.js";
+import { ensureMemorySystemConfigs } from "../src/gateway/config-loader.js";
 import { getLogger } from "../src/logging/logger.js";
+import { fileURLToPath } from "node:url";
 
 const logger = getLogger();
 
@@ -53,11 +54,11 @@ const SEED_CONFIG = {
       description: "基础功能，适合个人体验",
       priceMonthly: 0,
       priceYearly: 0,
+      tokensPerMonth: 10000,
+      storageMb: 100,
+      maxDevices: 1,
       features: {
-        tokensPerMonth: 10000,
-        maxDevices: 1,
         maxAgents: 1,
-        storageMb: 100,
         supportLevel: "community",
       },
       isActive: true,
@@ -69,11 +70,11 @@ const SEED_CONFIG = {
       description: "高级功能，适合专业用户",
       priceMonthly: 4900, // 49 元/月
       priceYearly: 49900, // 499 元/年
+      tokensPerMonth: 100000,
+      storageMb: 5000,
+      maxDevices: 5,
       features: {
-        tokensPerMonth: 100000,
-        maxDevices: 5,
         maxAgents: 10,
-        storageMb: 5000,
         supportLevel: "email",
       },
       isActive: true,
@@ -85,11 +86,11 @@ const SEED_CONFIG = {
       description: "无限制功能，适合团队和企业",
       priceMonthly: 19900, // 199 元/月
       priceYearly: 199900, // 1999 元/年
+      tokensPerMonth: -1, // 无限制
+      storageMb: -1,
+      maxDevices: -1,
       features: {
-        tokensPerMonth: -1, // 无限制
-        maxDevices: -1,
         maxAgents: -1,
-        storageMb: -1,
         supportLevel: "priority",
       },
       isActive: true,
@@ -99,11 +100,11 @@ const SEED_CONFIG = {
 
   // 技能分类
   skillCategories: [
-    { code: "productivity", name: "效率工具", description: "提升工作效率的技能", sortOrder: 1 },
-    { code: "automation", name: "自动化", description: "自动化任务处理", sortOrder: 2 },
-    { code: "media", name: "多媒体", description: "图片、视频、音频处理", sortOrder: 3 },
-    { code: "development", name: "开发工具", description: "编程和开发辅助", sortOrder: 4 },
-    { code: "communication", name: "通讯", description: "消息和通讯相关", sortOrder: 5 },
+    { name: "效率工具", description: "提升工作效率的技能", sortOrder: 1 },
+    { name: "自动化", description: "自动化任务处理", sortOrder: 2 },
+    { name: "多媒体", description: "图片、视频、音频处理", sortOrder: 3 },
+    { name: "开发工具", description: "编程和开发辅助", sortOrder: 4 },
+    { name: "通讯", description: "消息和通讯相关", sortOrder: 5 },
   ],
 
   // 内置技能
@@ -268,12 +269,12 @@ async function seedSkillCategories(db: ReturnType<typeof getDatabase>) {
 
   for (const category of SEED_CONFIG.skillCategories) {
     const existing = await db.query.skillCategories.findFirst({
-      where: eq(skillCategories.code, category.code),
+      where: eq(skillCategories.name, category.name),
     });
 
     if (existing) {
-      logger.info(`[seed] Category '${category.code}' already exists, skipping`);
-      createdCategories[category.code] = existing.id;
+      logger.info(`[seed] Category '${category.name}' already exists, skipping`);
+      createdCategories[category.name] = existing.id;
       continue;
     }
 
@@ -282,11 +283,11 @@ async function seedSkillCategories(db: ReturnType<typeof getDatabase>) {
       .values({
         id: generateId(),
         ...category,
-        icon: `icon-${category.code}`,
+        icon: `icon-${category.name}`,
       })
       .returning();
 
-    createdCategories[category.code] = created.id;
+    createdCategories[category.name] = created.id;
     logger.info(`[seed] Created category: ${category.name}`);
   }
 
@@ -352,51 +353,84 @@ async function seedAdmins(db: ReturnType<typeof getDatabase>) {
 }
 
 /**
- * 主函数
+ * 初始化系统配置
+ *
+ * 调用 initializeDefaultConfigs 和 ensureMemorySystemConfigs
+ * 确保 system_configs 表中存在所有必要的默认配置项。
+ */
+async function seedSystemConfigs(db: ReturnType<typeof getDatabase>) {
+  logger.info("[seed] Initializing system configs...");
+
+  // 初始化通用系统配置（站点名称、安全、Gateway、AI、存储、通知、订阅等）
+  await initializeDefaultConfigs();
+  logger.info("[seed] Default system configs initialized");
+
+  // 初始化记忆系统配置（memory_embedding、memory_llm）
+  await ensureMemorySystemConfigs(db);
+  logger.info("[seed] Memory system configs initialized");
+}
+
+/**
+ * 执行完整的 seed 流程
+ *
+ * 供外部脚本（如 db-reset.ts）调用，按依赖顺序创建所有测试数据。
+ *
+ * @param db - Drizzle 数据库实例
+ * @param options - seed 选项
+ * @param options.adminOnly - 仅创建管理员账户
+ */
+export async function runSeed(
+  db: ReturnType<typeof getDatabase>,
+  options: { adminOnly?: boolean } = {},
+): Promise<void> {
+  logger.info("[seed] Starting database seed...");
+  logger.info(`[seed] Options: adminOnly=${options.adminOnly ?? false}`);
+
+  if (options.adminOnly) {
+    await seedAdmins(db);
+  } else {
+    // 按依赖顺序创建数据
+    const planIds = await seedPlans(db);
+    await seedUsers(db, planIds);
+    await seedSkillCategories(db);
+    await seedSkills(db);
+    await seedAdmins(db);
+    await seedSystemConfigs(db);
+  }
+
+  logger.info("[seed] Database seed completed successfully!");
+  logger.info("");
+  logger.info("[seed] Test accounts:");
+  logger.info("  User 1: 13800138000 / test123456 (Free plan)");
+  logger.info("  User 2: 13900139000 / vip123456 (Pro plan)");
+  logger.info("  Admin:  super_admin / Admin@2026!");
+  logger.info("  Operator: operator / Operator@2026!");
+}
+
+/**
+ * 主函数 — 独立运行入口
  */
 async function main() {
   const args = process.argv.slice(2);
-  const cleanFirst = args.includes("--clean");
   const adminOnly = args.includes("--admin-only");
-
-  logger.info("[seed] Starting database seed...");
-  logger.info(`[seed] Options: clean=${cleanFirst}, adminOnly=${adminOnly}`);
 
   try {
     const db = getDatabase();
-
-    if (cleanFirst) {
-      logger.warn("[seed] Clean mode enabled - this would delete existing data");
-      logger.warn("[seed] Clean mode not implemented for safety. Use migrations instead.");
-    }
-
-    if (adminOnly) {
-      await seedAdmins(db);
-    } else {
-      // 按依赖顺序创建数据
-      const planIds = await seedPlans(db);
-      await seedUsers(db, planIds);
-      await seedSkillCategories(db);
-      await seedSkills(db);
-      await seedAdmins(db);
-    }
-
-    logger.info("[seed] ✅ Database seed completed successfully!");
-    logger.info("");
-    logger.info("[seed] Test accounts:");
-    logger.info("  User 1: 13800138000 / test123456 (Free plan)");
-    logger.info("  User 2: 13900139000 / vip123456 (Pro plan)");
-    logger.info("  Admin:  super_admin / Admin@2026!");
-    logger.info("  Operator: operator / Operator@2026!");
+    await runSeed(db, { adminOnly });
   } catch (error) {
-    logger.error("[seed] ❌ Seed failed:", error);
+    logger.error("[seed] Seed failed:", error);
     process.exit(1);
+  } finally {
+    const { closeConnection } = await import("../src/db/connection.js");
+    await closeConnection();
   }
-
-  process.exit(0);
 }
 
-main().catch((error) => {
-  console.error("Unhandled error:", error);
-  process.exit(1);
-});
+// 仅在直接运行时执行 main（被 import 时不执行）
+const isDirectRun = process.argv[1] === fileURLToPath(import.meta.url);
+if (isDirectRun) {
+  main().catch((error) => {
+    console.error("Unhandled error:", error);
+    process.exit(1);
+  });
+}

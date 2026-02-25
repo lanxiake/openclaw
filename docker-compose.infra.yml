@@ -47,10 +47,11 @@ version: "3.8"
 services:
   # ==================== 核心数据库 ====================
 
-  # PostgreSQL - 主数据库
+  # PostgreSQL - 主数据库 (启用 pgvector 扩展)
   # 用于存储: 用户数据、订阅信息、管理员账户、审计日志等
+  # 使用 pgvector 镜像以支持向量类型 (user_memories.embedding)
   postgres:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:pg17
     container_name: openclaw-postgres
     restart: unless-stopped
     profiles:
