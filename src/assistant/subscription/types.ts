@@ -17,7 +17,7 @@
 /**
  * 订阅计划 ID
  */
-export type SubscriptionPlanId = "free" | "pro" | "team" | "enterprise";
+export type SubscriptionPlanId = "free" | "monthly" | "yearly";
 
 /**
  * 计费周期
@@ -277,28 +277,30 @@ export interface SubscriptionEvent {
 
 /**
  * 默认订阅计划
+ *
+ * 三种计划：免费版、月付版、年付版
+ * 所有用户共享统一的资源限制（设备5台、技能100个、文件50MB）
  */
 export const DEFAULT_SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: "free",
     name: "免费版",
-    description: "适合个人用户体验基础功能",
+    description: "注册赠送600积分，邀请好友获取更多",
     price: { monthly: 0, yearly: 0 },
     features: [
-      { id: "conversations", name: "AI 对话", included: true, limit: "每日 20 次" },
-      { id: "skills", name: "基础技能", included: true, limit: "最多 5 个" },
-      { id: "devices", name: "设备数量", included: true, limit: "1 台设备" },
-      { id: "storage", name: "存储空间", included: true, limit: "100 MB" },
-      { id: "premium_skills", name: "高级技能", included: false },
-      { id: "priority_support", name: "优先支持", included: false },
-      { id: "api_access", name: "API 访问", included: false },
+      { id: "credits", name: "注册赠送积分", included: true, limit: "600积分" },
+      { id: "invite", name: "邀请奖励", included: true, limit: "每人300积分" },
+      { id: "packs", name: "积分包购买", included: true },
+      { id: "devices", name: "设备数量", included: true, limit: "最多5台" },
+      { id: "skills", name: "技能安装", included: true, limit: "最多100个" },
+      { id: "upload", name: "文件上传", included: true, limit: "50MB" },
     ],
     quotas: {
-      dailyConversations: 20,
-      monthlyAiCalls: 500,
-      maxSkills: 5,
-      maxDevices: 1,
-      storageQuotaMb: 100,
+      dailyConversations: -1,
+      monthlyAiCalls: -1,
+      maxSkills: 100,
+      maxDevices: 5,
+      storageQuotaMb: 50,
       premiumSkills: false,
       prioritySupport: false,
       apiAccess: false,
@@ -306,88 +308,54 @@ export const DEFAULT_SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     sortOrder: 1,
   },
   {
-    id: "pro",
-    name: "专业版",
-    description: "适合个人用户深度使用",
-    price: { monthly: 2900, yearly: 29000 }, // 29元/月，290元/年
+    id: "monthly",
+    name: "月付版",
+    description: "30元/月，每月2000积分，首月仅3元",
+    price: { monthly: 3000, yearly: 0 },
     features: [
-      { id: "conversations", name: "AI 对话", included: true, limit: "无限制" },
-      { id: "skills", name: "全部技能", included: true, limit: "无限制" },
-      { id: "devices", name: "设备数量", included: true, limit: "3 台设备" },
-      { id: "storage", name: "存储空间", included: true, limit: "5 GB" },
-      { id: "premium_skills", name: "高级技能", included: true },
-      { id: "priority_support", name: "优先支持", included: true },
-      { id: "api_access", name: "API 访问", included: false },
+      { id: "credits", name: "每月积分", included: true, limit: "2000积分/月" },
+      { id: "first_month", name: "首月优惠", included: true, limit: "首月3元" },
+      { id: "packs", name: "积分包购买", included: true },
+      { id: "devices", name: "设备数量", included: true, limit: "最多5台" },
+      { id: "skills", name: "技能安装", included: true, limit: "最多100个" },
+      { id: "upload", name: "文件上传", included: true, limit: "50MB" },
     ],
     quotas: {
       dailyConversations: -1,
       monthlyAiCalls: -1,
-      maxSkills: -1,
-      maxDevices: 3,
-      storageQuotaMb: 5120,
+      maxSkills: 100,
+      maxDevices: 5,
+      storageQuotaMb: 50,
       premiumSkills: true,
-      prioritySupport: true,
+      prioritySupport: false,
       apiAccess: false,
     },
     recommended: true,
     sortOrder: 2,
   },
   {
-    id: "team",
-    name: "团队版",
-    description: "适合小型团队协作使用",
-    price: { monthly: 9900, yearly: 99000 }, // 99元/月，990元/年
+    id: "yearly",
+    name: "年付版",
+    description: "300元/年，每月2000积分，等效25元/月",
+    price: { monthly: 0, yearly: 30000 },
     features: [
-      { id: "conversations", name: "AI 对话", included: true, limit: "无限制" },
-      { id: "skills", name: "全部技能", included: true, limit: "无限制" },
-      { id: "devices", name: "设备数量", included: true, limit: "10 台设备" },
-      { id: "storage", name: "存储空间", included: true, limit: "50 GB" },
-      { id: "premium_skills", name: "高级技能", included: true },
-      { id: "priority_support", name: "优先支持", included: true },
-      { id: "api_access", name: "API 访问", included: true },
-      { id: "team_management", name: "团队管理", included: true },
+      { id: "credits", name: "每月积分", included: true, limit: "2000积分/月" },
+      { id: "packs", name: "积分包购买", included: true },
+      { id: "devices", name: "设备数量", included: true, limit: "最多5台" },
+      { id: "skills", name: "技能安装", included: true, limit: "最多100个" },
+      { id: "upload", name: "文件上传", included: true, limit: "50MB" },
     ],
     quotas: {
       dailyConversations: -1,
       monthlyAiCalls: -1,
-      maxSkills: -1,
-      maxDevices: 10,
-      storageQuotaMb: 51200,
+      maxSkills: 100,
+      maxDevices: 5,
+      storageQuotaMb: 50,
       premiumSkills: true,
       prioritySupport: true,
-      apiAccess: true,
+      apiAccess: false,
     },
     sortOrder: 3,
-  },
-  {
-    id: "enterprise",
-    name: "企业版",
-    description: "适合大型企业定制需求",
-    price: { monthly: -1, yearly: -1 }, // 联系销售
-    features: [
-      { id: "conversations", name: "AI 对话", included: true, limit: "无限制" },
-      { id: "skills", name: "全部技能", included: true, limit: "无限制" },
-      { id: "devices", name: "设备数量", included: true, limit: "无限制" },
-      { id: "storage", name: "存储空间", included: true, limit: "无限制" },
-      { id: "premium_skills", name: "高级技能", included: true },
-      { id: "priority_support", name: "专属支持", included: true },
-      { id: "api_access", name: "API 访问", included: true },
-      { id: "team_management", name: "团队管理", included: true },
-      { id: "sso", name: "SSO 单点登录", included: true },
-      { id: "audit_log", name: "审计日志", included: true },
-      { id: "custom_deployment", name: "私有部署", included: true },
-    ],
-    quotas: {
-      dailyConversations: -1,
-      monthlyAiCalls: -1,
-      maxSkills: -1,
-      maxDevices: -1,
-      storageQuotaMb: -1,
-      premiumSkills: true,
-      prioritySupport: true,
-      apiAccess: true,
-    },
-    sortOrder: 4,
   },
 ];
 
@@ -413,9 +381,9 @@ export function getPlanDisplayPrice(planId: SubscriptionPlanId, period: BillingP
   const plan = DEFAULT_SUBSCRIPTION_PLANS.find((p) => p.id === planId);
   if (!plan) return "¥0";
 
-  if (plan.price.monthly === -1) return "联系销售";
-  if (plan.price.monthly === 0) return "免费";
+  if (plan.price.monthly === 0 && plan.price.yearly === 0) return "免费";
 
   const price = period === "yearly" ? plan.price.yearly : plan.price.monthly;
+  if (price === 0) return "—";
   return `¥${(price / 100).toFixed(0)}`;
 }

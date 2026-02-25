@@ -81,7 +81,7 @@ describe("SubscriptionService - 获取订阅", () => {
     // 创建订阅
     const sub = await create({
       userId: "user-get-001",
-      planId: "pro",
+      planId: "monthly",
       billingPeriod: "monthly",
     });
 
@@ -90,7 +90,7 @@ describe("SubscriptionService - 获取订阅", () => {
 
     expect(result).not.toBeNull();
     expect(result!.id).toBe(sub.id);
-    expect(result!.planId).toBe("pro");
+    expect(result!.planId).toBe("monthly");
     expect(result!.status).toBe("active");
     expect(result!.billingPeriod).toBe("monthly");
   });
@@ -127,13 +127,13 @@ describe("SubscriptionService - 创建订阅", () => {
 
     const sub = await create({
       userId: "user-create-001",
-      planId: "pro",
+      planId: "monthly",
       billingPeriod: "monthly",
     });
 
     expect(sub).toBeDefined();
     expect(sub.userId).toBe("user-create-001");
-    expect(sub.planId).toBe("pro");
+    expect(sub.planId).toBe("monthly");
     expect(sub.status).toBe("active");
     expect(sub.billingPeriod).toBe("monthly");
     expect(sub.cancelAtPeriodEnd).toBe(false);
@@ -154,7 +154,7 @@ describe("SubscriptionService - 创建订阅", () => {
 
     const sub = await create({
       userId: "user-create-002",
-      planId: "team",
+      planId: "yearly",
       billingPeriod: "yearly",
     });
 
@@ -173,7 +173,7 @@ describe("SubscriptionService - 创建订阅", () => {
 
     const sub = await create({
       userId: "user-create-003",
-      planId: "pro",
+      planId: "monthly",
       billingPeriod: "monthly",
       startTrial: true,
     });
@@ -194,7 +194,7 @@ describe("SubscriptionService - 创建订阅", () => {
 
     const sub = await create({
       userId: "user-create-004",
-      planId: "pro",
+      planId: "monthly",
       billingPeriod: "lifetime",
     });
 
@@ -213,7 +213,7 @@ describe("SubscriptionService - 创建订阅", () => {
     // 先创建一个订阅
     await create({
       userId: "user-create-005",
-      planId: "pro",
+      planId: "monthly",
       billingPeriod: "monthly",
     });
 
@@ -221,7 +221,7 @@ describe("SubscriptionService - 创建订阅", () => {
     await expect(
       create({
         userId: "user-create-005",
-        planId: "team",
+        planId: "yearly",
         billingPeriod: "monthly",
       }),
     ).rejects.toThrow("已有活跃订阅");
@@ -259,16 +259,16 @@ describe("SubscriptionService - 更新订阅", () => {
 
     const sub = await create({
       userId: "user-update-001",
-      planId: "pro",
+      planId: "monthly",
       billingPeriod: "monthly",
     });
 
     const updated = await update({
       subscriptionId: sub.id,
-      planId: "team",
+      planId: "yearly",
     });
 
-    expect(updated.planId).toBe("team");
+    expect(updated.planId).toBe("yearly");
     expect(updated.id).toBe(sub.id);
   });
 
@@ -278,7 +278,7 @@ describe("SubscriptionService - 更新订阅", () => {
     await expect(
       update({
         subscriptionId: "non-existent-id",
-        planId: "team",
+        planId: "yearly",
       }),
     ).rejects.toThrow("订阅不存在");
   });
@@ -288,7 +288,7 @@ describe("SubscriptionService - 更新订阅", () => {
 
     const sub = await create({
       userId: "user-update-003",
-      planId: "pro",
+      planId: "monthly",
       billingPeriod: "monthly",
     });
 
@@ -332,7 +332,7 @@ describe("SubscriptionService - 取消订阅", () => {
 
     const sub = await create({
       userId: "user-cancel-001",
-      planId: "pro",
+      planId: "monthly",
       billingPeriod: "monthly",
     });
 
@@ -351,7 +351,7 @@ describe("SubscriptionService - 取消订阅", () => {
 
     const sub = await create({
       userId: "user-cancel-002",
-      planId: "pro",
+      planId: "monthly",
       billingPeriod: "monthly",
     });
 
@@ -407,7 +407,7 @@ describe("SubscriptionService - 续订", () => {
 
     const sub = await create({
       userId: "user-renew-001",
-      planId: "pro",
+      planId: "monthly",
       billingPeriod: "monthly",
     });
 
@@ -462,18 +462,18 @@ describe("SubscriptionService - 配额检查", () => {
     const result = await check("user-quota-001", "conversations");
 
     expect(result.allowed).toBe(true);
-    expect(result.limit).toBe(20); // 免费计划每日 20 次
+    expect(result.limit).toBe(-1); // 积分制下免费计划无对话次数限制
     expect(result.current).toBe(0);
-    expect(result.remaining).toBe(20);
+    expect(result.remaining).toBe(-1);
   });
 
-  it("QUOTA-CHECK-002: Pro 用户无限对话", async () => {
+  it("QUOTA-CHECK-002: 月付用户无限对话", async () => {
     const { createSubscription: create, checkQuota: check } = await import("./service.js");
 
-    // 创建 Pro 订阅
+    // 创建月付订阅
     await create({
       userId: "user-quota-002",
-      planId: "pro",
+      planId: "monthly",
       billingPeriod: "monthly",
     });
 
@@ -484,21 +484,21 @@ describe("SubscriptionService - 配额检查", () => {
     expect(result.remaining).toBe(-1);
   });
 
-  it("QUOTA-CHECK-003: 使用量耗尽时应拒绝", async () => {
+  it("QUOTA-CHECK-003: 积分制下对话次数不受限制", async () => {
     const { incrementUsage: inc, checkQuota: check } = await import("./service.js");
 
-    // 模拟消耗 20 次对话（免费计划上限）
+    // 模拟消耗 20 次对话（积分制下不限制次数）
     for (let i = 0; i < 20; i++) {
       await inc("user-quota-003", "conversations");
     }
 
     const result = await check("user-quota-003", "conversations");
 
-    expect(result.allowed).toBe(false);
+    // 积分制下所有计划对话次数无限制
+    expect(result.allowed).toBe(true);
     expect(result.current).toBe(20);
-    expect(result.limit).toBe(20);
-    expect(result.remaining).toBe(0);
-    expect(result.reason).toContain("配额上限");
+    expect(result.limit).toBe(-1);
+    expect(result.remaining).toBe(-1);
   });
 });
 
@@ -574,17 +574,16 @@ describe("SubscriptionService - 使用量追踪", () => {
 describe("SubscriptionService - 计划查询", () => {
   it("PLAN-001: 获取所有计划", () => {
     const plans = getAllPlans();
-    expect(plans.length).toBe(4);
+    expect(plans.length).toBe(3);
     expect(plans[0].id).toBe("free");
-    expect(plans[1].id).toBe("pro");
-    expect(plans[2].id).toBe("team");
-    expect(plans[3].id).toBe("enterprise");
+    expect(plans[1].id).toBe("monthly");
+    expect(plans[2].id).toBe("yearly");
   });
 
   it("PLAN-002: 获取指定计划", () => {
-    const plan = getPlan("pro");
+    const plan = getPlan("monthly");
     expect(plan).not.toBeNull();
-    expect(plan!.name).toBe("专业版");
+    expect(plan!.name).toBe("月付版");
     expect(plan!.recommended).toBe(true);
   });
 
@@ -594,21 +593,21 @@ describe("SubscriptionService - 计划查询", () => {
   });
 
   it("PLAN-004: 比较计划", () => {
-    expect(comparePlans("free", "pro")).toBeLessThan(0);
-    expect(comparePlans("pro", "free")).toBeGreaterThan(0);
-    expect(comparePlans("pro", "pro")).toBe(0);
+    expect(comparePlans("free", "monthly")).toBeLessThan(0);
+    expect(comparePlans("monthly", "free")).toBeGreaterThan(0);
+    expect(comparePlans("monthly", "monthly")).toBe(0);
   });
 
   it("PLAN-005: 检查升级", () => {
-    expect(canUpgrade("free", "pro")).toBe(true);
-    expect(canUpgrade("pro", "free")).toBe(false);
-    expect(canUpgrade("pro", "team")).toBe(true);
+    expect(canUpgrade("free", "monthly")).toBe(true);
+    expect(canUpgrade("monthly", "free")).toBe(false);
+    expect(canUpgrade("monthly", "yearly")).toBe(true);
   });
 
   it("PLAN-006: 检查降级", () => {
-    expect(canDowngrade("pro", "free")).toBe(true);
-    expect(canDowngrade("free", "pro")).toBe(false);
-    expect(canDowngrade("team", "pro")).toBe(true);
+    expect(canDowngrade("monthly", "free")).toBe(true);
+    expect(canDowngrade("free", "monthly")).toBe(false);
+    expect(canDowngrade("yearly", "monthly")).toBe(true);
   });
 });
 
@@ -617,7 +616,7 @@ describe("SubscriptionService - 订阅状态检查", () => {
     const sub: UserSubscription = {
       id: "sub-1",
       userId: "user-1",
-      planId: "pro",
+      planId: "monthly",
       status: "active",
       billingPeriod: "monthly",
       currentPeriodStart: new Date().toISOString(),
@@ -634,7 +633,7 @@ describe("SubscriptionService - 订阅状态检查", () => {
     const sub: UserSubscription = {
       id: "sub-2",
       userId: "user-2",
-      planId: "pro",
+      planId: "monthly",
       status: "canceled",
       billingPeriod: "monthly",
       currentPeriodStart: new Date().toISOString(),
@@ -651,7 +650,7 @@ describe("SubscriptionService - 订阅状态检查", () => {
     const sub: UserSubscription = {
       id: "sub-3",
       userId: "user-3",
-      planId: "pro",
+      planId: "monthly",
       status: "active",
       billingPeriod: "monthly",
       currentPeriodStart: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
@@ -668,7 +667,7 @@ describe("SubscriptionService - 订阅状态检查", () => {
     const sub: UserSubscription = {
       id: "sub-4",
       userId: "user-4",
-      planId: "pro",
+      planId: "monthly",
       status: "trialing",
       billingPeriod: "monthly",
       currentPeriodStart: new Date().toISOString(),

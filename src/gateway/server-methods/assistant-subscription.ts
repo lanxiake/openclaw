@@ -19,8 +19,6 @@ import {
   getUserSubscription,
   getUserPlan,
   createSubscription,
-  updateSubscription,
-  cancelSubscription,
   getUserDailyUsage,
   getUserMonthlyUsage,
   checkQuota,
@@ -232,83 +230,17 @@ export const assistantSubscriptionMethods: GatewayRequestHandlers = {
   },
 
   /**
-   * 更新订阅
+   * 更新订阅（已禁用，仅管理员可操作）
    */
-  "assistant.subscription.update": async ({ params, respond }) => {
-    try {
-      const subscriptionId = validateStringParam(params, "subscriptionId", true);
-      const planId = validateStringParam(params, "planId") as SubscriptionPlanId | undefined;
-      const billingPeriod = validateStringParam(params, "billingPeriod") as
-        | BillingPeriod
-        | undefined;
-      const cancelAtPeriodEnd = validateBooleanParam(params, "cancelAtPeriodEnd");
-
-      if (!subscriptionId) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing subscriptionId"));
-        return;
-      }
-
-      log.info("更新订阅", { subscriptionId, planId, billingPeriod });
-
-      const subscription = await updateSubscription({
-        subscriptionId,
-        planId,
-        billingPeriod,
-        cancelAtPeriodEnd,
-      });
-
-      respond(
-        true,
-        {
-          success: true,
-          subscription,
-          message: "订阅已更新",
-        },
-        undefined,
-      );
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, errorMessage));
-    }
+  "assistant.subscription.update": async ({ respond }) => {
+    respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "订阅修改和取消请联系管理员"));
   },
 
   /**
-   * 取消订阅
+   * 取消订阅（已禁用，仅管理员可操作）
    */
-  "assistant.subscription.cancel": async ({ params, respond }) => {
-    try {
-      const subscriptionId = validateStringParam(params, "subscriptionId", true);
-      const immediately = validateBooleanParam(params, "immediately");
-      const reason = validateStringParam(params, "reason");
-      const feedback = validateStringParam(params, "feedback");
-
-      if (!subscriptionId) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "Missing subscriptionId"));
-        return;
-      }
-
-      log.info("取消订阅", { subscriptionId, immediately });
-
-      const subscription = await cancelSubscription({
-        subscriptionId,
-        immediately,
-        reason,
-        feedback,
-      });
-
-      respond(
-        true,
-        {
-          success: true,
-          subscription,
-          message: immediately ? "订阅已立即取消" : "订阅将在周期结束后取消",
-        },
-        undefined,
-      );
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, errorMessage));
-    }
+  "assistant.subscription.cancel": async ({ respond }) => {
+    respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "订阅修改和取消请联系管理员"));
   },
 
   /**

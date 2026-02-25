@@ -85,8 +85,8 @@ describe("CreditService - grantRegistrationBonus", () => {
 
     console.log("[TEST] 赠送结果:", JSON.stringify(result));
     expect(result.success).toBe(true);
-    expect(result.creditsGranted).toBe(300);
-    expect(result.newBalance).toBe(300);
+    expect(result.creditsGranted).toBe(600);
+    expect(result.newBalance).toBe(600);
     console.log("[TEST] ✓ 注册积分赠送成功");
   });
 
@@ -98,8 +98,8 @@ describe("CreditService - grantRegistrationBonus", () => {
     // 验证账户已创建
     const account = await service.getBalance("user-002");
     expect(account).not.toBeNull();
-    expect(account!.totalBalance).toBe(300);
-    expect(account!.totalEarned).toBe(300);
+    expect(account!.totalBalance).toBe(600);
+    expect(account!.totalEarned).toBe(600);
 
     console.log("[TEST] ✓ 账户、批次、流水均已正确创建");
   });
@@ -160,9 +160,9 @@ describe("CreditService - grantInviteReward", () => {
 
     console.log("[TEST] 邀请奖励结果:", JSON.stringify(result));
     expect(result.success).toBe(true);
-    expect(result.creditsGranted).toBe(200);
-    // 300（注册） + 200（邀请） = 500
-    expect(result.newBalance).toBe(500);
+    expect(result.creditsGranted).toBe(300);
+    // 600（注册） + 300（邀请） = 900
+    expect(result.newBalance).toBe(900);
     console.log("[TEST] ✓ 邀请奖励发放成功");
   });
 
@@ -171,7 +171,7 @@ describe("CreditService - grantInviteReward", () => {
 
     await service.grantRegistrationBonus("inviter-002");
 
-    // 邀请 10 人，每次 200 积分，总计 2000 = 上限
+    // 邀请 10 人，每次 300 积分，总计 3000 = 上限
     for (let i = 1; i <= 10; i++) {
       await service.grantInviteReward("inviter-002", `invitee-${i}`);
     }
@@ -248,7 +248,7 @@ describe("CreditService - consumeCredits", () => {
     console.log("[TEST] 消费结果:", JSON.stringify(result));
     expect(result.success).toBe(true);
     expect(result.consumed).toBe(50);
-    expect(result.newBalance).toBe(250);
+    expect(result.newBalance).toBe(550);
     console.log("[TEST] ✓ 单批次扣减成功");
   });
 
@@ -257,7 +257,7 @@ describe("CreditService - consumeCredits", () => {
 
     await service.grantRegistrationBonus("user-consume-002");
 
-    const result = await service.consumeCredits("user-consume-002", 500, {
+    const result = await service.consumeCredits("user-consume-002", 800, {
       source: "model_call",
       description: "大量消费",
     });
@@ -358,8 +358,8 @@ describe("CreditService - getBalance", () => {
 
     console.log("[TEST] 余额:", JSON.stringify(balance));
     expect(balance).not.toBeNull();
-    expect(balance!.totalBalance).toBe(300);
-    expect(balance!.totalEarned).toBe(300);
+    expect(balance!.totalBalance).toBe(600);
+    expect(balance!.totalEarned).toBe(600);
     expect(balance!.totalConsumed).toBe(0);
     console.log("[TEST] ✓ 余额查询成功");
   });
@@ -571,8 +571,8 @@ describe("CreditService - grantSubscriptionCredits", () => {
     console.log("[TEST] 发放结果:", JSON.stringify(result));
     expect(result.success).toBe(true);
     expect(result.creditsGranted).toBe(2000);
-    // 300（注册） + 2000（包月） = 2300
-    expect(result.newBalance).toBe(2300);
+    // 600（注册） + 2000（包月） = 2600
+    expect(result.newBalance).toBe(2600);
     console.log("[TEST] ✓ 包月积分发放成功");
   });
 
@@ -590,7 +590,7 @@ describe("CreditService - grantSubscriptionCredits", () => {
     // 验证有 subscription 来源的批次
     const balance = await service.getBalance("user-sub-002");
     expect(balance).not.toBeNull();
-    expect(balance!.totalEarned).toBe(2300); // 300 + 2000
+    expect(balance!.totalEarned).toBe(2600); // 600 + 2000
     console.log("[TEST] ✓ 批次来源验证成功");
   });
 });
@@ -628,8 +628,8 @@ describe("CreditService - grantBoosterCredits", () => {
     console.log("[TEST] 发放结果:", JSON.stringify(result));
     expect(result.success).toBe(true);
     expect(result.creditsGranted).toBe(1500);
-    // 300（注册） + 1500（加油包） = 1800
-    expect(result.newBalance).toBe(1800);
+    // 600（注册） + 1500（加油包） = 2100
+    expect(result.newBalance).toBe(2100);
     console.log("[TEST] ✓ 加油包积分发放成功");
   });
 });
@@ -734,7 +734,7 @@ describe("CreditService - adminGrantCredits", () => {
     console.log("[TEST] 发放结果:", JSON.stringify(result));
     expect(result.success).toBe(true);
     expect(result.creditsGranted).toBe(500);
-    expect(result.newBalance).toBe(800); // 300 注册 + 500 管理员发放
+    expect(result.newBalance).toBe(1100); // 600 注册 + 500 管理员发放
     console.log("[TEST] ✓ 管理员发放成功");
   });
 

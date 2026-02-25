@@ -667,7 +667,7 @@ export async function initializeDefaultConfigs(options: ConfigServiceOptions = {
       description: "是否启用通知",
       defaultValue: true,
     },
-    // 订阅配置
+    // 订阅配置（积分制统一配额，不再按套餐区分）
     {
       key: CONFIG_KEYS.FREE_QUOTA,
       value: 100,
@@ -677,24 +677,33 @@ export async function initializeDefaultConfigs(options: ConfigServiceOptions = {
       defaultValue: 100,
       validationRules: { min: 0, max: 10000 },
     },
-    {
-      key: CONFIG_KEYS.PRO_QUOTA,
-      value: 1000,
-      valueType: "number" as ConfigValueType,
-      group: CONFIG_GROUPS.SUBSCRIPTION,
-      description: "Pro 用户每日配额",
-      defaultValue: 1000,
-      validationRules: { min: 0, max: 100000 },
-    },
     // 用户限制配置
     {
       key: CONFIG_KEYS.LIMITS_MAX_DEVICES,
-      value: 2,
+      value: 5,
       valueType: "number" as ConfigValueType,
       group: CONFIG_GROUPS.LIMITS,
-      description: "免费用户最大设备数（无订阅时使用）",
-      defaultValue: 2,
+      description: "用户最大设备数",
+      defaultValue: 5,
       validationRules: { min: 1, max: 50 },
+    },
+    {
+      key: CONFIG_KEYS.LIMITS_MAX_SKILLS,
+      value: 100,
+      valueType: "number" as ConfigValueType,
+      group: CONFIG_GROUPS.LIMITS,
+      description: "用户最大技能安装数",
+      defaultValue: 100,
+      validationRules: { min: 1, max: 1000 },
+    },
+    {
+      key: CONFIG_KEYS.LIMITS_MAX_FILE_SIZE_MB,
+      value: 50,
+      valueType: "number" as ConfigValueType,
+      group: CONFIG_GROUPS.LIMITS,
+      description: "用户单文件上传大小限制(MB)",
+      defaultValue: 50,
+      validationRules: { min: 1, max: 500 },
     },
     // 积分系统配置
     {
@@ -708,29 +717,53 @@ export async function initializeDefaultConfigs(options: ConfigServiceOptions = {
     },
     {
       key: CONFIG_KEYS.CREDITS_REGISTER_BONUS,
-      value: 300,
+      value: 600,
       valueType: "number" as ConfigValueType,
       group: CONFIG_GROUPS.CREDITS,
       description: "注册赠送积分数",
-      defaultValue: 300,
+      defaultValue: 600,
       validationRules: { min: 0, max: 10000 },
     },
     {
       key: CONFIG_KEYS.CREDITS_INVITE_BONUS,
-      value: 200,
+      value: 300,
       valueType: "number" as ConfigValueType,
       group: CONFIG_GROUPS.CREDITS,
       description: "每次邀请奖励积分数",
-      defaultValue: 200,
+      defaultValue: 300,
       validationRules: { min: 0, max: 10000 },
     },
     {
       key: CONFIG_KEYS.CREDITS_INVITE_MAX,
-      value: 2000,
+      value: 3000,
       valueType: "number" as ConfigValueType,
       group: CONFIG_GROUPS.CREDITS,
       description: "邀请积分总上限",
-      defaultValue: 2000,
+      defaultValue: 3000,
+      validationRules: { min: 0, max: 100000 },
+    },
+    // Bundled 技能管控
+    // 积分包配置
+    {
+      key: CONFIG_KEYS.CREDITS_PACKS,
+      value: [
+        { id: "pack_600", name: "600积分包", credits: 600, price: 1000, expiryMonths: 3 },
+        { id: "pack_1200", name: "1200积分包", credits: 1200, price: 2000, expiryMonths: 3 },
+        { id: "pack_3200", name: "3200积分包", credits: 3200, price: 5000, expiryMonths: 3 },
+      ],
+      valueType: "json" as ConfigValueType,
+      group: CONFIG_GROUPS.CREDITS,
+      description: "可购买的积分包列表（price 单位：分）",
+      defaultValue: [],
+    },
+    // 免费用户积分持有上限
+    {
+      key: CONFIG_KEYS.CREDITS_FREE_USER_CAP,
+      value: 3000,
+      valueType: "number" as ConfigValueType,
+      group: CONFIG_GROUPS.CREDITS,
+      description: "免费用户积分持有上限",
+      defaultValue: 3000,
       validationRules: { min: 0, max: 100000 },
     },
     // Bundled 技能管控

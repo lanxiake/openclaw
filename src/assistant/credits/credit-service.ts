@@ -49,7 +49,7 @@ export interface CreditServiceDeps {
 
 /** 注册赠送选项 */
 export interface RegistrationBonusOptions {
-  /** 赠送积分数（默认 300） */
+  /** 赠送积分数（默认 600） */
   amount?: number;
   /** 过期月数（默认 3） */
   expiryMonths?: number;
@@ -57,9 +57,9 @@ export interface RegistrationBonusOptions {
 
 /** 邀请奖励选项 */
 export interface InviteRewardOptions {
-  /** 奖励积分数（默认 200） */
+  /** 奖励积分数（默认 300） */
   amount?: number;
-  /** 邀请积分总上限（默认 2000） */
+  /** 邀请积分总上限（默认 3000） */
   maxTotal?: number;
   /** 过期月数（默认 3） */
   expiryMonths?: number;
@@ -135,13 +135,16 @@ export interface SetModelPricingParams {
 // ============================================================================
 
 /** 注册赠送默认积分 */
-const DEFAULT_REGISTER_BONUS = 300;
+const DEFAULT_REGISTER_BONUS = 600;
 
 /** 邀请奖励默认积分 */
-const DEFAULT_INVITE_BONUS = 200;
+const DEFAULT_INVITE_BONUS = 300;
 
 /** 邀请积分默认上限 */
-const DEFAULT_INVITE_MAX = 2000;
+const DEFAULT_INVITE_MAX = 3000;
+
+/** 免费用户积分持有上限 */
+const FREE_USER_CREDIT_CAP = 3000;
 
 /** 默认过期月数 */
 const DEFAULT_EXPIRY_MONTHS = 3;
@@ -320,30 +323,56 @@ export class CreditService {
       };
     }
 
-    // 3. 创建邀请记录
+    // 3. 获取或创建账户
+    const account = await this.accountRepo.getOrCreate(inviterUserId);
+
+    // 3.5 免费用户积分持有上限检查
+    let actualAmount = amount;
+    if (account.totalBalance + amount > FREE_USER_CREDIT_CAP) {
+      actualAmount = Math.max(0, FREE_USER_CREDIT_CAP - account.totalBalance);
+      if (actualAmount === 0) {
+        logger.info("[credit-service] 免费用户积分已达持有上限", {
+          inviterUserId,
+          currentBalance: account.totalBalance,
+          cap: FREE_USER_CREDIT_CAP,
+        });
+        return {
+          success: false,
+          creditsGranted: 0,
+          newBalance: account.totalBalance,
+          reason: `积分已达持有上限 ${FREE_USER_CREDIT_CAP}`,
+        };
+      }
+      logger.info("[credit-service] 免费用户积分接近上限，部分发放", {
+        inviterUserId,
+        requestedAmount: amount,
+        actualAmount,
+        currentBalance: account.totalBalance,
+        cap: FREE_USER_CREDIT_CAP,
+      });
+    }
+
+    // 4. 创建邀请记录
     await this.inviteRepo.create({
       inviterUserId,
       inviteeUserId,
-      creditsAwarded: amount,
+      creditsAwarded: actualAmount,
     });
-
-    // 4. 获取或创建账户
-    const account = await this.accountRepo.getOrCreate(inviterUserId);
 
     // 5. 创建积分批次
     const expiresAt = this.calculateExpiryDate(expiryMonths);
     await this.batchRepo.create({
       userId: inviterUserId,
       source: "invite",
-      originalAmount: amount,
-      remainingAmount: amount,
+      originalAmount: actualAmount,
+      remainingAmount: actualAmount,
       expiresAt,
-      description: `邀请用户 ${inviteeUserId} 奖励 ${amount} 积分`,
+      description: `邀请用户 ${inviteeUserId} 奖励 ${actualAmount} 积分`,
     });
 
     // 6. 更新账户余额
-    const newBalance = account.totalBalance + amount;
-    const newEarned = account.totalEarned + amount;
+    const newBalance = account.totalBalance + actualAmount;
+    const newEarned = account.totalEarned + actualAmount;
     await this.accountRepo.updateBalance(account.id, {
       totalBalance: newBalance,
       totalEarned: newEarned,
@@ -353,22 +382,22 @@ export class CreditService {
     await this.txnRepo.create({
       userId: inviterUserId,
       type: "earn",
-      amount,
+      amount: actualAmount,
       balanceAfter: newBalance,
       source: "invite",
-      description: `邀请用户 ${inviteeUserId} 奖励 ${amount} 积分`,
+      description: `邀请用户 ${inviteeUserId} 奖励 ${actualAmount} 积分`,
     });
 
     logger.info("[credit-service] 邀请奖励发放完成", {
       inviterUserId,
       inviteeUserId,
-      amount,
+      amount: actualAmount,
       newBalance,
     });
 
     return {
       success: true,
-      creditsGranted: amount,
+      creditsGranted: actualAmount,
       newBalance,
     };
   }
