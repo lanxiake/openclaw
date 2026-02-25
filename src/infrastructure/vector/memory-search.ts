@@ -211,14 +211,8 @@ export async function storeMemoryWithEmbedding(
   // 生成嵌入向量
   const embedding = await embedText(memory.content);
 
-  // 写入 PostgreSQL（元数据，不存 embedding）
-  const [result] = await db
-    .insert(userMemories)
-    .values({
-      ...memory,
-      embedding: null,
-    })
-    .returning();
+  // 写入 PostgreSQL（元数据）
+  const [result] = await db.insert(userMemories).values(memory).returning();
 
   if (!result) {
     throw new Error("Failed to insert memory");

@@ -22,7 +22,7 @@ const logger = getLogger();
 /** Collection 名称 */
 const COLLECTION_NAME = "openclaw_memories";
 
-/** 向量维度 (匹配 schema memories.ts 中的 vector(1024)) */
+/** 向量维度 (匹配 Qwen3-Embedding-0.6B 模型输出) */
 const VECTOR_DIM = 1024;
 
 /**

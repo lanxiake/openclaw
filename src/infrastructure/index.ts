@@ -13,5 +13,5 @@ export * from "./minio/index.js";
 // Milvus 向量数据库模块
 export * from "./milvus/index.js";
 
-// 向量搜索模块（Milvus + pgvector fallback）
+// 向量搜索模块（Milvus）
 export * from "./vector/index.js";
