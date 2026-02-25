@@ -1,6 +1,6 @@
 {
-  "id": "e5e7dab9-3ac8-4d3e-8d79-526287ae3676",
-  "prevId": "42596924-5674-42c9-9c64-ccd2b5d31865",
+  "id": "32000d07-2f5e-46dd-8200-0c93b550791a",
+  "prevId": "e5e7dab9-3ac8-4d3e-8d79-526287ae3676",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -7577,12 +7577,6 @@
         "summary": {
           "name": "summary",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "embedding": {
-          "name": "embedding",
-          "type": "vector(1024)",
           "primaryKey": false,
           "notNull": false
         },

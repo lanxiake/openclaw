@@ -1,7 +1,7 @@
 CREATE TABLE "agent_configs" (
-	"id" varchar(32) PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"config_type" varchar(20) DEFAULT 'system' NOT NULL,
-	"user_id" varchar(32),
+	"user_id" text,
 	"primary_model" varchar(100) DEFAULT 'claude-opus-4-5-20251101',
 	"workspace_path" varchar(500),
 	"compaction_mode" varchar(50) DEFAULT 'safeguard',
@@ -10,16 +10,16 @@ CREATE TABLE "agent_configs" (
 	"extra_config" jsonb,
 	"created_at" timestamp with time zone DEFAULT now(),
 	"updated_at" timestamp with time zone DEFAULT now(),
-	"created_by" varchar(32),
-	"updated_by" varchar(32),
+	"created_by" text,
+	"updated_by" text,
 	CONSTRAINT "agent_configs_system_unique" UNIQUE("config_type"),
 	CONSTRAINT "agent_configs_tenant_unique" UNIQUE("user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "gateway_configs" (
-	"id" varchar(32) PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"config_type" varchar(20) DEFAULT 'system' NOT NULL,
-	"user_id" varchar(32),
+	"user_id" text,
 	"gateway_mode" varchar(20) DEFAULT 'local' NOT NULL,
 	"gateway_port" integer DEFAULT 18789,
 	"gateway_bind" varchar(50) DEFAULT 'loopback',
@@ -34,16 +34,16 @@ CREATE TABLE "gateway_configs" (
 	"extra_config" jsonb,
 	"created_at" timestamp with time zone DEFAULT now(),
 	"updated_at" timestamp with time zone DEFAULT now(),
-	"created_by" varchar(32),
-	"updated_by" varchar(32),
+	"created_by" text,
+	"updated_by" text,
 	CONSTRAINT "gateway_configs_system_unique" UNIQUE("config_type"),
 	CONSTRAINT "gateway_configs_tenant_unique" UNIQUE("user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "model_providers" (
-	"id" varchar(32) PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"config_type" varchar(20) DEFAULT 'system' NOT NULL,
-	"user_id" varchar(32),
+	"user_id" text,
 	"provider_key" varchar(100) NOT NULL,
 	"provider_name" varchar(200),
 	"base_url" varchar(500) NOT NULL,
@@ -54,8 +54,8 @@ CREATE TABLE "model_providers" (
 	"priority" integer DEFAULT 100,
 	"created_at" timestamp with time zone DEFAULT now(),
 	"updated_at" timestamp with time zone DEFAULT now(),
-	"created_by" varchar(32),
-	"updated_by" varchar(32),
+	"created_by" text,
+	"updated_by" text,
 	CONSTRAINT "model_providers_unique" UNIQUE("config_type","user_id","provider_key")
 );
 --> statement-breakpoint

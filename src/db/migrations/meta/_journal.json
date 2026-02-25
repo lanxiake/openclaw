@@ -113,6 +113,27 @@
       "when": 1771780082756,
       "tag": "0015_clean_lake",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1771931766503,
+      "tag": "0016_needy_rafael_vega",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1771932000000,
+      "tag": "0017_missing_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1772006400000,
+      "tag": "0018_skill_store_missing_columns",
+      "breakpoints": true
     }
   ]
 }

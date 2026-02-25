@@ -309,6 +309,15 @@ class MockQueryBuilder {
     return this;
   }
 
+  /**
+   * Mock leftJoin 方法
+   *
+   * Mock 环境下不做实际 JOIN，仅保持链式调用
+   */
+  leftJoin(..._args: unknown[]): this {
+    return this;
+  }
+
   async execute(): Promise<unknown[]> {
     const table = ensureTable(this.tableName);
     let results = Array.from(table.values());

@@ -7,46 +7,14 @@
  * - L3 档案记忆 (profile/preference/fact): 用户画像、偏好、事实知识
  * - L4 知识记忆 (knowledge): 文档、知识库内容
  *
- * embedding 字段使用 pgvector 的 vector(1024) 类型，支持语义搜索。
+ * 向量搜索已完全迁移到 Milvus，PG 仅存储元数据。
  */
 
-import {
-  pgTable,
-  text,
-  timestamp,
-  integer,
-  jsonb,
-  boolean,
-  index,
-  customType,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, jsonb, boolean, index } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations, sql } from "drizzle-orm";
 
 import { users } from "./users.js";
-
-// ==================== pgvector 自定义类型 ====================
-
-/**
- * pgvector vector 类型
- *
- * 用于存储向量嵌入，支持语义搜索（1024 维，匹配 Qwen3-Embedding-0.6B 模型）
- */
-const vector = customType<{ data: number[]; driverData: string }>({
-  dataType() {
-    return "vector(1024)";
-  },
-  toDriver(value: number[]): string {
-    return `[${value.join(",")}]`;
-  },
-  fromDriver(value: string): number[] {
-    // 解析 PostgreSQL 返回的向量格式 "[1,2,3]"
-    return value
-      .slice(1, -1)
-      .split(",")
-      .map((v) => parseFloat(v));
-  },
-});
 
 // ==================== user_memories 表 ====================
 
@@ -74,8 +42,6 @@ export const userMemories = pgTable(
     content: text("content").notNull(),
     /** 记忆摘要（用于展示） */
     summary: text("summary"),
-    /** 向量嵌入（pgvector vector(1024)，用于语义搜索） */
-    embedding: vector("embedding"),
     /** 重要性 1-10（影响检索权重） */
     importance: integer("importance").default(5).notNull(),
     /** 来源类型 */
@@ -104,9 +70,6 @@ export const userMemories = pgTable(
     index("user_memories_user_category_idx").on(table.userId, table.category),
     // 按重要性排序
     index("user_memories_importance_idx").on(table.importance),
-    // 向量索引（使用 HNSW 算法，余弦距离）
-    // 注意：需要在 migration 中手动创建，因为 Drizzle 不直接支持 HNSW 索引
-    // CREATE INDEX user_memories_embedding_idx ON user_memories USING hnsw (embedding vector_cosine_ops);
   ],
 );
 

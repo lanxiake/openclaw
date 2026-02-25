@@ -37,6 +37,8 @@ export class MemoryRepository extends TenantScopedRepository {
   async create(
     data: Omit<NewUserMemory, "id" | "userId" | "createdAt" | "updatedAt" | "isActive"> & {
       isActive?: boolean;
+      /** 向量嵌入（写入 Milvus，不存 PG） */
+      embedding?: number[];
     },
   ): Promise<UserMemory> {
     const id = generateId();
@@ -46,7 +48,7 @@ export class MemoryRepository extends TenantScopedRepository {
       `[MemoryRepository] 创建记忆, id=${id}, userId=${this.tenantId}, type=${data.type}`,
     );
 
-    // PostgreSQL 存元数据（不存 embedding）
+    // PostgreSQL 存元数据（向量存储在 Milvus）
     const [mem] = await this.db
       .insert(userMemories)
       .values({
@@ -56,7 +58,6 @@ export class MemoryRepository extends TenantScopedRepository {
         category: data.category,
         content: data.content,
         summary: data.summary,
-        embedding: null,
         importance: data.importance ?? 5,
         sourceType: data.sourceType,
         sourceId: data.sourceId,
@@ -178,12 +179,15 @@ export class MemoryRepository extends TenantScopedRepository {
   async update(
     id: string,
     data: Partial<
-      Pick<UserMemory, "content" | "summary" | "category" | "importance" | "embedding" | "metadata">
-    >,
+      Pick<UserMemory, "content" | "summary" | "category" | "importance" | "metadata">
+    > & {
+      /** 向量嵌入（写入 Milvus，不存 PG） */
+      embedding?: number[];
+    },
   ): Promise<UserMemory | null> {
     logger.debug(`[MemoryRepository] 更新记忆, id=${id}, userId=${this.tenantId}`);
 
-    // 将 embedding 从 PG 更新数据中分离
+    // 将 embedding 从 PG 更新数据中分离（embedding 只写 Milvus）
     const { embedding, ...pgData } = data;
 
     const [mem] = await this.db

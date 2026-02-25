@@ -5,7 +5,7 @@
  * 支持按用户、模型、Provider、状态、频道和时间范围过滤。
  */
 
-import { eq, and, gte, lte, lt, desc, sql, like } from "drizzle-orm";
+import { eq, and, gte, lte, lt, desc, sql, like, inArray } from "drizzle-orm";
 
 import { getDatabase, type Database } from "../connection.js";
 import { llmCallLogs, type LlmCallLog, type LlmCallStatus, users } from "../schema/index.js";
@@ -218,14 +218,10 @@ export class LlmCallLogRepository {
     logger.debug("[LlmCallLogRepo] query", { limit, offset, filters: conditions.length });
 
     /** 并行获取日志数据（含用户名）和总数 */
-    const [rows, [countResult]] = await Promise.all([
+    const [logRows, [countResult]] = await Promise.all([
       this.db
-        .select({
-          log: llmCallLogs,
-          userName: users.displayName,
-        })
+        .select()
         .from(llmCallLogs)
-        .leftJoin(users, eq(llmCallLogs.userId, users.id))
         .where(whereClause)
         .orderBy(desc(llmCallLogs.calledAt))
         .limit(limit)
@@ -233,16 +229,28 @@ export class LlmCallLogRepository {
       this.db
         .select({ count: sql<number>`count(*)::int` })
         .from(llmCallLogs)
-        .leftJoin(users, eq(llmCallLogs.userId, users.id))
         .where(whereClause),
     ]);
 
     const total = countResult?.count ?? 0;
 
+    /** 收集需要查找的 userId，批量获取用户名 */
+    const userIds = [...new Set(logRows.filter((r) => r.userId).map((r) => r.userId as string))];
+    let userNameMap: Record<string, string | null> = {};
+    if (userIds.length > 0) {
+      const userRows = await this.db
+        .select({ id: users.id, displayName: users.displayName })
+        .from(users)
+        .where(inArray(users.id, userIds));
+      for (const u of userRows) {
+        userNameMap[u.id] = u.displayName;
+      }
+    }
+
     /** 合并日志数据与用户名 */
-    const logs = rows.map((row) => ({
-      ...row.log,
-      userName: row.userName,
+    const logs = logRows.map((row) => ({
+      ...row,
+      userName: row.userId ? (userNameMap[row.userId] ?? null) : null,
     }));
 
     return {
