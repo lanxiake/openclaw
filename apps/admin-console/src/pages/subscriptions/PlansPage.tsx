@@ -51,8 +51,8 @@ const defaultFormData: PlanFormData = {
   priceMonthly: 0,
   priceYearly: 0,
   tokensPerMonth: 0,
-  storageMb: 0,
-  maxDevices: 1,
+  storageMb: 50,
+  maxDevices: 5,
   sortOrder: 0,
   isActive: true,
 }
@@ -207,14 +207,27 @@ export default function PlansPage() {
               <CardContent className="space-y-4">
                 {/* 价格 */}
                 <div>
-                  <span className="text-3xl font-bold">
-                    {(plan.price ?? plan.priceMonthly ?? 0) === 0
-                      ? '免费'
-                      : formatCurrency(plan.price ?? plan.priceMonthly ?? 0)}
-                  </span>
-                  {(plan.price ?? plan.priceMonthly ?? 0) > 0 && (
-                    <span className="text-muted-foreground">/月</span>
-                  )}
+                  {(() => {
+                    const monthly = plan.price ?? plan.priceMonthly ?? 0
+                    const yearly = plan.priceYearly ?? 0
+                    if (monthly === 0 && yearly === 0) {
+                      return <span className="text-3xl font-bold">免费</span>
+                    }
+                    if (monthly > 0) {
+                      return (
+                        <>
+                          <span className="text-3xl font-bold">{formatCurrency(monthly)}</span>
+                          <span className="text-muted-foreground">/月</span>
+                        </>
+                      )
+                    }
+                    return (
+                      <>
+                        <span className="text-3xl font-bold">{formatCurrency(yearly)}</span>
+                        <span className="text-muted-foreground">/年</span>
+                      </>
+                    )
+                  })()}
                 </div>
 
                 {/* 配额 */}
@@ -226,7 +239,7 @@ export default function PlansPage() {
                       : (plan.quotas?.maxDevices ?? plan.maxDevices ?? 0)}
                   </p>
                   <p>
-                    月 Token 额度:{' '}
+                    每月积分:{' '}
                     {(plan.quotas?.maxTokensPerMonth ?? plan.tokensPerMonth ?? 0) === -1
                       ? '无限'
                       : (plan.quotas?.maxTokensPerMonth ?? plan.tokensPerMonth ?? 0).toLocaleString()}
@@ -305,7 +318,7 @@ export default function PlansPage() {
                 id="plan-code"
                 value={formData.code}
                 onChange={(e) => updateField('code', e.target.value)}
-                placeholder="例如：free, basic, pro"
+                placeholder="例如：free, monthly, yearly"
                 disabled={editDialog.mode === 'edit'}
               />
             </div>
@@ -317,7 +330,7 @@ export default function PlansPage() {
                 id="plan-name"
                 value={formData.name}
                 onChange={(e) => updateField('name', e.target.value)}
-                placeholder="例如：免费版、基础版"
+                placeholder="例如：免费版、月付版、年付版"
               />
             </div>
 
@@ -360,7 +373,7 @@ export default function PlansPage() {
             {/* 配额 */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="plan-tokens">月 Token 额度</Label>
+                <Label htmlFor="plan-tokens">每月积分</Label>
                 <Input
                   id="plan-tokens"
                   type="number"

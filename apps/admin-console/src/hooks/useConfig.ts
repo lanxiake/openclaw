@@ -241,3 +241,49 @@ export function useAllConfig() {
     staleTime: 5 * 60 * 1000,
   })
 }
+
+/**
+ * 积分包定义
+ */
+export interface CreditPack {
+  id: string
+  name: string
+  credits: number
+  price: number
+  expiryMonths: number
+}
+
+/**
+ * 获取积分包配置
+ */
+export function useCreditPacks() {
+  return useQuery({
+    queryKey: ['admin', 'config', 'credits', 'packs'],
+    queryFn: async (): Promise<CreditPack[]> => {
+      const config = await apiClient.instance.getConfig('credits.packs')
+      const value = config?.value
+      if (Array.isArray(value)) {
+        return value as CreditPack[]
+      }
+      return []
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+/**
+ * 更新积分包配置
+ */
+export function useUpdateCreditPacks() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (packs: CreditPack[]) => {
+      await apiClient.instance.updateConfig('credits.packs', packs)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'config', 'credits', 'packs'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'config', 'all'] })
+    },
+  })
+}

@@ -10,7 +10,7 @@ export type SkillStatus = 'published' | 'pending' | 'unpublished' | 'rejected'
 /**
  * 技能订阅级别
  */
-export type SkillSubscription = 'free' | 'pro' | 'team' | 'enterprise'
+export type SkillSubscription = 'free' | 'monthly' | 'yearly'
 
 /**
  * 技能运行模式
