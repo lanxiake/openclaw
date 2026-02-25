@@ -1,7 +1,7 @@
 /**
  * PostgreSQL 知识记忆提供者
  *
- * 使用 PostgreSQL + pgvector 存储知识文档和向量嵌入，
+ * 使用 PostgreSQL 存储知识文档元数据，Milvus 存储向量嵌入，
  * 支持向量相似度搜索和混合搜索（向量 + 文本匹配）。
  *
  * 数据存储在 user_memories 表中：
@@ -118,7 +118,7 @@ function toKnowledgeDocument(record: UserMemory): KnowledgeDocument {
 /**
  * PostgreSQL 知识记忆提供者
  *
- * 使用 user_memories 表 + pgvector 扩展实现知识记忆。
+ * 使用 user_memories 表 + Milvus 向量搜索实现知识记忆。
  * 支持文档管理、向量索引和混合搜索。
  *
  * @example
@@ -465,7 +465,7 @@ export class PostgresKnowledgeMemoryProvider implements IKnowledgeMemoryProvider
   /**
    * 向量相似度搜索
    *
-   * 将查询文本转换为 embedding，使用 pgvector 进行余弦相似度搜索。
+   * 将查询文本转换为 embedding，使用 Milvus 进行余弦相似度搜索。
    * 无 embedding provider 时降级为文本匹配搜索。
    */
   async searchSimilar(

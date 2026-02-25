@@ -583,9 +583,9 @@ export class PostgresEpisodicMemoryProvider implements IEpisodicMemoryProvider {
   /**
    * 搜索情节
    *
-   * 当前使用简单文本匹配。后续可接入 pgvector 进行语义搜索。
+   * 当前使用简单文本匹配。后续可接入 Milvus 进行语义搜索。
    *
-   * @future 接入 pgvector 向量搜索
+   * @future 接入 Milvus 向量搜索
    */
   async searchEpisodes(
     userId: string,
