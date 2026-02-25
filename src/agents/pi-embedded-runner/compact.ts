@@ -94,6 +94,8 @@ export type CompactEmbeddedPiSessionParams = {
   skillsSnapshot?: SkillSnapshot;
   provider?: string;
   model?: string;
+  /** 用户 ID，用于记录 LLM 调用日志 */
+  userId?: string;
   thinkLevel?: ThinkLevel;
   reasoningLevel?: ReasoningLevel;
   bashElevated?: ExecElevatedDefaults;
@@ -466,6 +468,34 @@ export async function compactEmbeddedPiSessionDirect(
           // If estimation fails, leave tokensAfter undefined
           tokensAfter = undefined;
         }
+        // ---- Compaction LLM 调用日志（不扣减积分） ----
+        try {
+          const { getLlmCallLogRepository } =
+            await import("../../db/repositories/llm-call-logs.js");
+          const llmLogRepo = getLlmCallLogRepository();
+          await llmLogRepo.insert({
+            userId: params.userId ?? null,
+            sessionId: params.sessionId,
+            runId: null,
+            channel: params.messageChannel ?? params.messageProvider ?? null,
+            provider,
+            model: modelId,
+            inputTokens: result.tokensBefore,
+            outputTokens: null,
+            totalTokens: null,
+            durationMs: null,
+            status: "success",
+            errorMessage: null,
+            inputContent: null,
+            outputContent: result.summary?.slice(0, 4096) ?? null,
+            creditsConsumed: null,
+            metadata: { type: "compaction", tokensBefore: result.tokensBefore },
+            calledAt: new Date(),
+          });
+        } catch (llmLogErr) {
+          log.debug(`[LLM-LOG] failed to log compaction: ${llmLogErr}`);
+        }
+
         return {
           ok: true,
           compacted: true,

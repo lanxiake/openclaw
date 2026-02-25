@@ -346,6 +346,34 @@ export async function runEmbeddedPiAgent(
         }
       }
 
+      // ---- 前置积分余额检查 ----
+      if (!isProbeSession) {
+        try {
+          const { checkCreditsBalance } = await import("./credits.js");
+          const hasCredits = await checkCreditsBalance(params.userId);
+          if (!hasCredits) {
+            return {
+              payloads: [
+                {
+                  text: "Your credit balance is exhausted. Please top up to continue.",
+                  isError: true,
+                },
+              ],
+              meta: {
+                durationMs: Date.now() - started,
+                agentMeta: {
+                  sessionId: params.sessionId,
+                  provider,
+                  model: modelId,
+                },
+              },
+            };
+          }
+        } catch (err) {
+          log.debug(`[CREDITS] pre-check failed, allowing call: ${err}`);
+        }
+      }
+
       let overflowCompactionAttempted = false;
       try {
         while (true) {
@@ -436,6 +464,7 @@ export async function runEmbeddedPiAgent(
                   skillsSnapshot: params.skillsSnapshot,
                   provider,
                   model: modelId,
+                  userId: params.userId,
                   thinkLevel,
                   reasoningLevel: params.reasoningLevel,
                   bashElevated: params.bashElevated,
@@ -746,6 +775,22 @@ export async function runEmbeddedPiAgent(
               ? JSON.stringify(attempt.lastAssistant.content).slice(0, 16384)
               : null;
 
+            // ---- 后置积分扣减 ----
+            let creditsConsumed: number | null = null;
+            try {
+              const { deductCreditsForLlmCall } = await import("./credits.js");
+              const deducted = await deductCreditsForLlmCall({
+                userId: params.userId,
+                provider: agentMeta.provider,
+                model: agentMeta.model,
+                inputTokens: usage?.input ?? null,
+                outputTokens: usage?.output ?? null,
+              });
+              if (deducted > 0) creditsConsumed = deducted;
+            } catch (err) {
+              log.debug(`[CREDITS] failed to deduct: ${err}`);
+            }
+
             await llmLogRepo.insert({
               userId: params.userId ?? null,
               sessionId: sessionIdUsed,
@@ -763,7 +808,7 @@ export async function runEmbeddedPiAgent(
               errorMessage: null,
               inputContent,
               outputContent,
-              creditsConsumed: null,
+              creditsConsumed,
               metadata: {
                 authProfileId: lastProfileId ?? undefined,
                 contextTokens: ctxInfo.tokens,
