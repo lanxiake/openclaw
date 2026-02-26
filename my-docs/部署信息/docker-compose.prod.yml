@@ -57,6 +57,9 @@ services:
       start_period: 40s
     volumes:
       - ./logs/api-server:/app/logs
+      # 临时文件和编译缓存持久化到宿主机
+      - ./data/api-server/tmp:/tmp/openclaw
+      - ./data/api-server/tsx-cache:/tmp/tsx-1001
     deploy:
       resources:
         limits:
@@ -145,7 +148,12 @@ services:
       start_period: 40s
     volumes:
       - ./logs/gateway:/home/node/.openclaw/logs
-      - gateway-workspace:/home/node/.openclaw/workspace
+      # 工作空间映射到宿主机（agent 会话文件、配置等）
+      - ./data/gateway/workspace:/home/node/.openclaw/workspace
+      # 临时文件和编译缓存持久化到宿主机
+      - ./data/gateway/tmp:/tmp/openclaw
+      - ./data/gateway/lock:/tmp/openclaw-1000
+      - ./data/gateway/jiti-cache:/tmp/jiti
     deploy:
       resources:
         limits:
@@ -169,8 +177,3 @@ networks:
   openclaw-network:
     external: true
     name: openclaw-network
-
-# ==================== 数据卷 ====================
-volumes:
-  gateway-workspace:
-    name: openclaw-gateway-workspace
