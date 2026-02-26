@@ -1,8 +1,19 @@
 FROM node:22-bookworm
 
-# Install Bun (required for build scripts)
-RUN curl -fsSL https://bun.sh/install | bash
-ENV PATH="/root/.bun/bin:${PATH}"
+# Install Bun (optional, used by db:seed only)
+# Primary: npmmirror China CDN; Fallback: official bun.sh
+RUN BUN_VERSION="1.2.4" && \
+    BUN_ARCHIVE="bun-linux-x64.zip" && \
+    (curl -fsSL --connect-timeout 15 -o /tmp/bun.zip \
+      "https://registry.npmmirror.com/-/binary/bun/v${BUN_VERSION}/${BUN_ARCHIVE}" || \
+     curl -fsSL --connect-timeout 15 -o /tmp/bun.zip \
+      "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/${BUN_ARCHIVE}") && \
+    unzip -q /tmp/bun.zip -d /tmp/bun-extract && \
+    mv /tmp/bun-extract/bun-linux-x64/bun /usr/local/bin/bun && \
+    chmod +x /usr/local/bin/bun && \
+    rm -rf /tmp/bun.zip /tmp/bun-extract || \
+    echo "Bun install skipped (network unavailable)"
+ENV PATH="/usr/local/bin:${PATH}"
 
 RUN corepack enable
 
