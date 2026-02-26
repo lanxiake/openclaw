@@ -1,26 +1,14 @@
 /**
- * FilesView Component - 文件管理视图
+ * FilesView Component - 工作空间视图
  *
- * 文件浏览器，支持导航、搜索、文件操作
+ * 以工作空间目录为根的文件浏览器，支持导航、搜索、文件操作。
+ * 与 Gateway 工作空间概念对齐：展示 skills/、配置文件、sandbox 等结构。
  */
 
 import React, { useState, useCallback, useEffect } from 'react'
 import { useFileManager, formatFileSize, type FileItem, type FileSortBy } from '../hooks/useFileManager'
+import { useWorkspace, type WorkspaceLocation } from '../hooks/useWorkspace'
 import './FilesView.css'
-
-interface FilesViewProps {
-  isConnected: boolean
-}
-
-/**
- * 快捷位置配置
- */
-const QUICK_LOCATIONS = [
-  { id: 'home', label: '主目录', icon: '🏠' },
-  { id: 'desktop', label: '桌面', icon: '🖥️' },
-  { id: 'documents', label: '文档', icon: '📁' },
-  { id: 'downloads', label: '下载', icon: '📥' },
-]
 
 /**
  * 格式化日期
@@ -154,15 +142,25 @@ const RenameDialog: React.FC<{
 }
 
 /**
- * 文件管理视图
+ * 工作空间视图
  */
-export const FilesView: React.FC<FilesViewProps> = ({ isConnected }) => {
+export const FilesView: React.FC = () => {
+  // 工作空间管理
+  const {
+    workspaceDir,
+    isInitializing,
+    initError,
+    locations,
+    toRelativePath,
+    toAbsolutePath,
+  } = useWorkspace()
+
+  // 文件管理，以工作空间为根
   const {
     currentPath,
     files,
     isLoading,
     error,
-    userPaths,
     selectedFiles,
     sortBy,
     sortOrder,
@@ -180,9 +178,12 @@ export const FilesView: React.FC<FilesViewProps> = ({ isConnected }) => {
     createFolder,
     deleteSelected,
     renameFile,
-  } = useFileManager()
+  } = useFileManager(
+    workspaceDir
+      ? { initialPath: workspaceDir, rootPath: workspaceDir }
+      : undefined
+  )
 
-  const [searchQuery, setSearchQuery] = useState('')
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false)
   const [renameTarget, setRenameTarget] = useState<FileItem | null>(null)
   const [contextMenu, setContextMenu] = useState<{
@@ -226,25 +227,20 @@ export const FilesView: React.FC<FilesViewProps> = ({ isConnected }) => {
   }, [])
 
   /**
-   * 处理快捷位置点击
+   * 处理工作空间快捷位置点击
    */
-  const handleQuickLocation = useCallback(
-    (locationId: string) => {
-      if (!userPaths) return
-
-      const pathMap: Record<string, string> = {
-        home: userPaths.home,
-        desktop: userPaths.desktop,
-        documents: userPaths.documents,
-        downloads: userPaths.downloads,
-      }
-
-      const path = pathMap[locationId]
-      if (path) {
-        navigateTo(path)
+  const handleLocationClick = useCallback(
+    (location: WorkspaceLocation) => {
+      const targetPath = toAbsolutePath(location.relativePath)
+      if (location.group === 'config') {
+        // 配置文件用系统默认编辑器打开
+        window.electronAPI.app.openExternal(targetPath)
+      } else {
+        // 目录则导航
+        navigateTo(targetPath)
       }
     },
-    [userPaths, navigateTo]
+    [toAbsolutePath, navigateTo]
   )
 
   /**
@@ -254,10 +250,11 @@ export const FilesView: React.FC<FilesViewProps> = ({ isConnected }) => {
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
         const input = e.target as HTMLInputElement
-        navigateTo(input.value)
+        const absolute = toAbsolutePath(input.value)
+        navigateTo(absolute)
       }
     },
-    [navigateTo]
+    [navigateTo, toAbsolutePath]
   )
 
   /**
@@ -344,12 +341,25 @@ export const FilesView: React.FC<FilesViewProps> = ({ isConnected }) => {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [selectAll, clearSelection, selectedFiles, files, handleDelete])
 
-  if (!isConnected) {
+  // 工作空间初始化中
+  if (isInitializing) {
     return (
-      <div className="files-view disconnected">
-        <div className="disconnected-message">
-          <span className="icon">🔌</span>
-          <p>请先连接 Gateway 以使用文件管理</p>
+      <div className="files-view">
+        <div className="workspace-loading">
+          <span className="spinner">⏳</span>
+          <p>初始化工作空间...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // 工作空间初始化失败
+  if (initError) {
+    return (
+      <div className="files-view">
+        <div className="workspace-error">
+          <span className="icon">❌</span>
+          <p>工作空间初始化失败: {initError}</p>
         </div>
       </div>
     )
@@ -385,12 +395,13 @@ export const FilesView: React.FC<FilesViewProps> = ({ isConnected }) => {
         </div>
 
         <div className="path-bar">
+          <span className="path-prefix">workspace://</span>
           <input
             type="text"
-            value={currentPath}
-            onChange={(e) => {}}
+            value={toRelativePath(currentPath)}
+            onChange={() => {}}
             onKeyDown={handlePathSubmit}
-            placeholder="输入路径..."
+            placeholder="路径..."
           />
         </div>
 
@@ -415,20 +426,54 @@ export const FilesView: React.FC<FilesViewProps> = ({ isConnected }) => {
 
       {/* 主体内容 */}
       <div className="files-content">
-        {/* 侧边栏 - 快捷位置 */}
+        {/* 侧边栏 - 工作空间导航 */}
         <div className="files-sidebar">
-          <h4>快捷位置</h4>
+          <h4>工作空间</h4>
           <nav className="quick-locations">
-            {QUICK_LOCATIONS.map((loc) => (
-              <button
-                key={loc.id}
-                className="quick-location-item"
-                onClick={() => handleQuickLocation(loc.id)}
-              >
-                <span className="loc-icon">{loc.icon}</span>
-                <span className="loc-label">{loc.label}</span>
-              </button>
-            ))}
+            {locations
+              .filter((loc) => loc.group === 'root')
+              .map((loc) => (
+                <button
+                  key={loc.id}
+                  className={`quick-location-item ${currentPath === toAbsolutePath(loc.relativePath) ? 'active' : ''}`}
+                  onClick={() => handleLocationClick(loc)}
+                >
+                  <span className="loc-icon">{loc.icon}</span>
+                  <span className="loc-label">{loc.label}</span>
+                </button>
+              ))}
+          </nav>
+
+          <h4>配置文件</h4>
+          <nav className="quick-locations">
+            {locations
+              .filter((loc) => loc.group === 'config')
+              .map((loc) => (
+                <button
+                  key={loc.id}
+                  className="quick-location-item"
+                  onClick={() => handleLocationClick(loc)}
+                >
+                  <span className="loc-icon">{loc.icon}</span>
+                  <span className="loc-label">{loc.label}</span>
+                </button>
+              ))}
+          </nav>
+
+          <h4>目录</h4>
+          <nav className="quick-locations">
+            {locations
+              .filter((loc) => loc.group === 'directories')
+              .map((loc) => (
+                <button
+                  key={loc.id}
+                  className={`quick-location-item ${currentPath === toAbsolutePath(loc.relativePath) ? 'active' : ''}`}
+                  onClick={() => handleLocationClick(loc)}
+                >
+                  <span className="loc-icon">{loc.icon}</span>
+                  <span className="loc-label">{loc.label}</span>
+                </button>
+              ))}
           </nav>
 
           {selectedFiles.size > 0 && (

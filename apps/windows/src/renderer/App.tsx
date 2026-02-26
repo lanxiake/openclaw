@@ -250,7 +250,7 @@ const App: React.FC = () => {
       case 'dashboard':
         return <DashboardView displayName={user?.displayName || undefined} isConnected={isConnected} onViewChange={(view) => setActiveView(view as ViewType)} />
       case 'files':
-        return <FilesView isConnected={isConnected} />
+        return <FilesView />
       case 'system':
         return <SystemView isConnected={isConnected} />
       case 'skills':

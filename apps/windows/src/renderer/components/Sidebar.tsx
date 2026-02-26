@@ -84,12 +84,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             className={`nav-item ${activeView === 'files' ? 'active' : ''}`}
             onClick={() => handleViewChange('files')}
-            disabled={!isConnected}
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
               <path d="M1.5 1A1.5 1.5 0 000 2.5v11A1.5 1.5 0 001.5 15h6.086a1.5 1.5 0 001.06-.44l4.915-4.914A1.5 1.5 0 0014 8.586V2.5A1.5 1.5 0 0012.5 1h-11zM1 2.5a.5.5 0 01.5-.5h11a.5.5 0 01.5.5v6H9.5A1.5 1.5 0 008 10.5V14H1.5a.5.5 0 01-.5-.5v-11z" />
             </svg>
-            <span>文件管理</span>
+            <span>工作空间</span>
           </button>
 
           <button
