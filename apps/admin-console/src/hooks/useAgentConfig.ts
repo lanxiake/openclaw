@@ -6,7 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
-import type { AgentConfig, UpdateAgentConfigRequest } from '@openclaw/api-client/admin'
+import type { AgentConfig, UpdateAgentConfigRequest } from '@mtbot/api-client/admin'
 
 const QUERY_KEY = ['admin', 'agent-config'] as const
 

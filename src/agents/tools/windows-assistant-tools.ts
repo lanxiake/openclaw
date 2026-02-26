@@ -6,7 +6,7 @@
  */
 
 import { Type } from "@sinclair/typebox";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { resolveSessionAgentId } from "../agent-scope.js";
 import { stringEnum } from "../schema/typebox.js";
 import { type AnyAgentTool, jsonResult, readStringParam, readNumberParam } from "./common.js";
@@ -51,7 +51,7 @@ const WindowsFileToolSchema = Type.Object({
  */
 export function createWindowsFileTool(options?: {
   agentSessionKey?: string;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
 }): AnyAgentTool {
   const sessionKey = options?.agentSessionKey?.trim() || undefined;
   // 为将来扩展保留 agentId 解析
@@ -201,7 +201,7 @@ const WindowsSystemToolSchema = Type.Object({
  */
 export function createWindowsSystemTool(options?: {
   agentSessionKey?: string;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
 }): AnyAgentTool {
   const sessionKey = options?.agentSessionKey?.trim() || undefined;
 

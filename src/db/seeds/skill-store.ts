@@ -151,7 +151,7 @@ function hello(){console.log("Hello")}
 \`\`\`
 `,
       authorId: null,
-      authorName: "OpenClaw 官方",
+      authorName: "MtBot 官方",
       version: "1.0.0",
       categoryId: devCategory?.id,
       tags: ["代码", "格式化", "开发"],
@@ -195,7 +195,7 @@ function hello(){console.log("Hello")}
 \`\`\`
 `,
       authorId: null,
-      authorName: "OpenClaw 官方",
+      authorName: "MtBot 官方",
       version: "1.0.0",
       categoryId: textCategory?.id,
       tags: ["markdown", "转换", "文档"],

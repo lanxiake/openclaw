@@ -1,4 +1,4 @@
-import { resolveOpenClawPackageRoot } from "../../infra/openclaw-root.js";
+import { resolveMtBotPackageRoot } from "../../infra/mtbot-root.js";
 import { scheduleGatewaySigusr1Restart } from "../../infra/restart.js";
 import {
   formatDoctorNonInteractiveHint,
@@ -49,7 +49,7 @@ export const updateHandlers: GatewayRequestHandlers = {
     let result: Awaited<ReturnType<typeof runGatewayUpdate>>;
     try {
       const root =
-        (await resolveOpenClawPackageRoot({
+        (await resolveMtBotPackageRoot({
           moduleUrl: import.meta.url,
           argv1: process.argv[1],
           cwd: process.cwd(),

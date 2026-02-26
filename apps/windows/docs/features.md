@@ -1,6 +1,6 @@
-# OpenClaw Assistant 功能使用说明
+# MtBot Assistant 功能使用说明
 
-本文档详细介绍 OpenClaw Assistant 的各项功能及使用方法。
+本文档详细介绍 MtBot Assistant 的各项功能及使用方法。
 
 ## 目录
 
@@ -266,4 +266,4 @@
 
 ---
 
-如需更多帮助，请查看 [常见问题](./faq.md) 或访问 [GitHub Issues](https://github.com/openclaw/openclaw/issues)。
+如需更多帮助，请查看 [常见问题](./faq.md) 或访问 [GitHub Issues](https://github.com/mtbot/mtbot/issues)。

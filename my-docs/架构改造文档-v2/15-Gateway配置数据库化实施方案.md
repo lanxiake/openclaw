@@ -342,7 +342,7 @@ import { GatewayConfigRepository } from "../src/db/repositories/gateway-configs.
 
 async function migrateConfigToDatabase() {
   // 1. 读取现有配置文件
-  const configPath = "~/.openclaw/openclaw.json";
+  const configPath = "~/.mtbot/mtbot.json";
   const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 
   // 2. 提取 Gateway 配置

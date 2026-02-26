@@ -5,7 +5,7 @@
  * 支持查询、过滤、分页、清理和统计
  *
  * 日志目录结构：
- *   ~/.openclaw/logs/skills/
+ *   ~/.mtbot/logs/skills/
  *   ├── execution-2026-02-24.jsonl
  *   ├── execution-2026-02-23.jsonl
  *   └── ...

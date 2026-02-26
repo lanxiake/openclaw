@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { OpenClawSchema } from "./zod-schema.js";
+import { MtBotSchema } from "./zod-schema.js";
 
 describe("telegram custom commands schema", () => {
   it("normalizes custom commands", () => {
-    const res = OpenClawSchema.safeParse({
+    const res = MtBotSchema.safeParse({
       channels: {
         telegram: {
           customCommands: [{ command: "/Backup", description: "  Git backup  " }],
@@ -23,7 +23,7 @@ describe("telegram custom commands schema", () => {
   });
 
   it("rejects custom commands with invalid names", () => {
-    const res = OpenClawSchema.safeParse({
+    const res = MtBotSchema.safeParse({
       channels: {
         telegram: {
           customCommands: [{ command: "Bad-Name", description: "Override status" }],

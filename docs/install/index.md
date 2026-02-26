@@ -1,7 +1,7 @@
 ---
-summary: "Install OpenClaw (recommended installer, global install, or from source)"
+summary: "Install MtBot (recommended installer, global install, or from source)"
 read_when:
-  - Installing OpenClaw
+  - Installing MtBot
   - You want to install from GitHub
 ---
 
@@ -12,19 +12,19 @@ Use the installer unless you have a reason not to. It sets up the CLI and runs o
 ## Quick install (recommended)
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash
+curl -fsSL https://mtbot.bot/install.sh | bash
 ```
 
 Windows (PowerShell):
 
 ```powershell
-iwr -useb https://openclaw.ai/install.ps1 | iex
+iwr -useb https://mtbot.top/install.ps1 | iex
 ```
 
 Next step (if you skipped onboarding):
 
 ```bash
-openclaw onboard --install-daemon
+mtbot onboard --install-daemon
 ```
 
 ## System requirements
@@ -37,16 +37,16 @@ openclaw onboard --install-daemon
 
 ### 1) Installer script (recommended)
 
-Installs `openclaw` globally via npm and runs onboarding.
+Installs `mtbot` globally via npm and runs onboarding.
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash
+curl -fsSL https://mtbot.bot/install.sh | bash
 ```
 
 Installer flags:
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash -s -- --help
+curl -fsSL https://mtbot.bot/install.sh | bash -s -- --help
 ```
 
 Details: [Installer internals](/install/installer).
@@ -54,7 +54,7 @@ Details: [Installer internals](/install/installer).
 Non-interactive (skip onboarding):
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash -s -- --no-onboard
+curl -fsSL https://mtbot.bot/install.sh | bash -s -- --no-onboard
 ```
 
 ### 2) Global install (manual)
@@ -62,13 +62,13 @@ curl -fsSL https://openclaw.bot/install.sh | bash -s -- --no-onboard
 If you already have Node:
 
 ```bash
-npm install -g openclaw@latest
+npm install -g mtbot@latest
 ```
 
 If you have libvips installed globally (common on macOS via Homebrew) and `sharp` fails to install, force prebuilt binaries:
 
 ```bash
-SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install -g openclaw@latest
+SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install -g mtbot@latest
 ```
 
 If you see `sharp: Please add node-gyp to your dependencies`, either install build tooling (macOS: Xcode CLT + `npm install -g node-gyp`) or use the `SHARP_IGNORE_GLOBAL_LIBVIPS=1` workaround above to skip the native build.
@@ -76,27 +76,27 @@ If you see `sharp: Please add node-gyp to your dependencies`, either install bui
 Or:
 
 ```bash
-pnpm add -g openclaw@latest
+pnpm add -g mtbot@latest
 ```
 
 Then:
 
 ```bash
-openclaw onboard --install-daemon
+mtbot onboard --install-daemon
 ```
 
 ### 3) From source (contributors/dev)
 
 ```bash
-git clone https://github.com/openclaw/openclaw.git
-cd openclaw
+git clone https://github.com/mtbot/mtbot.git
+cd mtbot
 pnpm install
 pnpm ui:build # auto-installs UI deps on first run
 pnpm build
-openclaw onboard --install-daemon
+mtbot onboard --install-daemon
 ```
 
-Tip: if you don’t have a global install yet, run repo commands via `pnpm openclaw ...`.
+Tip: if you don’t have a global install yet, run repo commands via `pnpm mtbot ...`.
 
 ### 4) Other install options
 
@@ -107,32 +107,32 @@ Tip: if you don’t have a global install yet, run repo commands via `pnpm openc
 
 ## After install
 
-- Run onboarding: `openclaw onboard --install-daemon`
-- Quick check: `openclaw doctor`
-- Check gateway health: `openclaw status` + `openclaw health`
-- Open the dashboard: `openclaw dashboard`
+- Run onboarding: `mtbot onboard --install-daemon`
+- Quick check: `mtbot doctor`
+- Check gateway health: `mtbot status` + `mtbot health`
+- Open the dashboard: `mtbot dashboard`
 
 ## Install method: npm vs git (installer)
 
 The installer supports two methods:
 
-- `npm` (default): `npm install -g openclaw@latest`
+- `npm` (default): `npm install -g mtbot@latest`
 - `git`: clone/build from GitHub and run from a source checkout
 
 ### CLI flags
 
 ```bash
 # Explicit npm
-curl -fsSL https://openclaw.bot/install.sh | bash -s -- --install-method npm
+curl -fsSL https://mtbot.bot/install.sh | bash -s -- --install-method npm
 
 # Install from GitHub (source checkout)
-curl -fsSL https://openclaw.bot/install.sh | bash -s -- --install-method git
+curl -fsSL https://mtbot.bot/install.sh | bash -s -- --install-method git
 ```
 
 Common flags:
 
 - `--install-method npm|git`
-- `--git-dir <path>` (default: `~/openclaw`)
+- `--git-dir <path>` (default: `~/mtbot`)
 - `--no-git-update` (skip `git pull` when using an existing checkout)
 - `--no-prompt` (disable prompts; required in CI/automation)
 - `--dry-run` (print what would happen; make no changes)
@@ -142,15 +142,15 @@ Common flags:
 
 Equivalent env vars (useful for automation):
 
-- `OPENCLAW_INSTALL_METHOD=git|npm`
-- `OPENCLAW_GIT_DIR=...`
-- `OPENCLAW_GIT_UPDATE=0|1`
-- `OPENCLAW_NO_PROMPT=1`
-- `OPENCLAW_DRY_RUN=1`
-- `OPENCLAW_NO_ONBOARD=1`
+- `MTBOT_INSTALL_METHOD=git|npm`
+- `MTBOT_GIT_DIR=...`
+- `MTBOT_GIT_UPDATE=0|1`
+- `MTBOT_NO_PROMPT=1`
+- `MTBOT_DRY_RUN=1`
+- `MTBOT_NO_ONBOARD=1`
 - `SHARP_IGNORE_GLOBAL_LIBVIPS=0|1` (default: `1`; avoids `sharp` building against system libvips)
 
-## Troubleshooting: `openclaw` not found (PATH)
+## Troubleshooting: `mtbot` not found (PATH)
 
 Quick diagnosis:
 
@@ -161,7 +161,7 @@ npm prefix -g
 echo "$PATH"
 ```
 
-If `$(npm prefix -g)/bin` (macOS/Linux) or `$(npm prefix -g)` (Windows) is **not** present inside `echo "$PATH"`, your shell can’t find global npm binaries (including `openclaw`).
+If `$(npm prefix -g)/bin` (macOS/Linux) or `$(npm prefix -g)` (Windows) is **not** present inside `echo "$PATH"`, your shell can’t find global npm binaries (including `mtbot`).
 
 Fix: add it to your shell startup file (zsh: `~/.zshrc`, bash: `~/.bashrc`):
 

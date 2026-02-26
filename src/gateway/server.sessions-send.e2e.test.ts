@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { createOpenClawTools } from "../agents/openclaw-tools.js";
+import { createMtBotTools } from "../agents/mtbot-tools.js";
 import { resolveSessionTranscriptPath } from "../config/sessions.js";
 import { emitAgentEvent } from "../infra/agent-events.js";
 import {
@@ -20,32 +20,32 @@ let prevGatewayPort: string | undefined;
 let prevGatewayToken: string | undefined;
 
 beforeAll(async () => {
-  prevGatewayPort = process.env.OPENCLAW_GATEWAY_PORT;
-  prevGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+  prevGatewayPort = process.env.MTBOT_GATEWAY_PORT;
+  prevGatewayToken = process.env.MTBOT_GATEWAY_TOKEN;
   gatewayPort = await getFreePort();
   // testState.gatewayAuth.token 由 resetGatewayTestState 设置，Gateway 使用该 token 验证
-  // process.env.OPENCLAW_GATEWAY_TOKEN 被 createOpenClawTools 内部使用来连接 Gateway
+  // process.env.MTBOT_GATEWAY_TOKEN 被 createMtBotTools 内部使用来连接 Gateway
   // 两者必须一致，否则会出现 token mismatch
   const authToken =
     typeof (testState.gatewayAuth as { token?: unknown } | undefined)?.token === "string"
       ? (testState.gatewayAuth as { token?: string }).token!
       : "test-token";
-  process.env.OPENCLAW_GATEWAY_PORT = String(gatewayPort);
-  process.env.OPENCLAW_GATEWAY_TOKEN = authToken;
+  process.env.MTBOT_GATEWAY_PORT = String(gatewayPort);
+  process.env.MTBOT_GATEWAY_TOKEN = authToken;
   server = await startGatewayServer(gatewayPort);
 });
 
 afterAll(async () => {
   await server.close();
   if (prevGatewayPort === undefined) {
-    delete process.env.OPENCLAW_GATEWAY_PORT;
+    delete process.env.MTBOT_GATEWAY_PORT;
   } else {
-    process.env.OPENCLAW_GATEWAY_PORT = prevGatewayPort;
+    process.env.MTBOT_GATEWAY_PORT = prevGatewayPort;
   }
   if (prevGatewayToken === undefined) {
-    delete process.env.OPENCLAW_GATEWAY_TOKEN;
+    delete process.env.MTBOT_GATEWAY_TOKEN;
   } else {
-    process.env.OPENCLAW_GATEWAY_TOKEN = prevGatewayToken;
+    process.env.MTBOT_GATEWAY_TOKEN = prevGatewayToken;
   }
 });
 
@@ -94,7 +94,7 @@ describe("sessions_send gateway loopback", () => {
       });
     });
 
-    const tool = createOpenClawTools().find((candidate) => candidate.name === "sessions_send");
+    const tool = createMtBotTools().find((candidate) => candidate.name === "sessions_send");
     if (!tool) {
       throw new Error("missing sessions_send tool");
     }
@@ -161,7 +161,7 @@ describe("sessions_send label lookup", () => {
       timeoutMs: 5000,
     });
 
-    const tool = createOpenClawTools().find((candidate) => candidate.name === "sessions_send");
+    const tool = createMtBotTools().find((candidate) => candidate.name === "sessions_send");
     if (!tool) {
       throw new Error("missing sessions_send tool");
     }
@@ -183,7 +183,7 @@ describe("sessions_send label lookup", () => {
   });
 
   it("returns error when label not found", { timeout: 60_000 }, async () => {
-    const tool = createOpenClawTools().find((candidate) => candidate.name === "sessions_send");
+    const tool = createMtBotTools().find((candidate) => candidate.name === "sessions_send");
     if (!tool) {
       throw new Error("missing sessions_send tool");
     }
@@ -199,7 +199,7 @@ describe("sessions_send label lookup", () => {
   });
 
   it("returns error when neither sessionKey nor label provided", { timeout: 60_000 }, async () => {
-    const tool = createOpenClawTools().find((candidate) => candidate.name === "sessions_send");
+    const tool = createMtBotTools().find((candidate) => candidate.name === "sessions_send");
     if (!tool) {
       throw new Error("missing sessions_send tool");
     }

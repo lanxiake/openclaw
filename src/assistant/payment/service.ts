@@ -13,7 +13,7 @@
  * - 微信支付 (预留)
  * - Stripe (预留)
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import * as fs from "node:fs";
@@ -55,7 +55,7 @@ const log = createSubsystemLogger("payment");
  */
 function getPaymentDataDir(): string {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "";
-  return path.join(homeDir, ".openclaw", "payment");
+  return path.join(homeDir, ".mtbot", "payment");
 }
 
 /**

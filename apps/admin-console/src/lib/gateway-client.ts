@@ -1,8 +1,8 @@
 /**
- * Gateway WebSocket 客户端 (OpenClaw 协议 v3)
+ * Gateway WebSocket 客户端 (MtBot 协议 v3)
  *
- * 用于与 OpenClaw Gateway 进行 WebSocket 通信
- * 管理员后台专用版本 - 使用 OpenClaw Protocol v3 握手流程
+ * 用于与 MtBot Gateway 进行 WebSocket 通信
+ * 管理员后台专用版本 - 使用 MtBot Protocol v3 握手流程
  */
 
 import { GATEWAY_WS_URL } from './constants'
@@ -27,12 +27,12 @@ const PROTOCOL_VERSION = 3
 let requestIdCounter = 0
 
 /**
- * 消息类型 (OpenClaw 协议)
+ * 消息类型 (MtBot 协议)
  */
 type MessageType = 'req' | 'res' | 'event'
 
 /**
- * 消息结构 (OpenClaw 协议)
+ * 消息结构 (MtBot 协议)
  */
 interface Message {
   type: MessageType
@@ -164,8 +164,8 @@ function sendConnectRequest(connectResolve: () => void, connectReject: (error: E
     minProtocol: PROTOCOL_VERSION,
     maxProtocol: PROTOCOL_VERSION,
     client: {
-      id: 'openclaw-control-ui',
-      displayName: 'OpenClaw Admin Console',
+      id: 'mtbot-control-ui',
+      displayName: 'MtBot Admin Console',
       version: '1.0.0',
       platform: 'web',
       mode: 'ui',
@@ -272,7 +272,7 @@ function handleMessage(
 }
 
 /**
- * 连接到 Gateway（含 OpenClaw Protocol v3 握手）
+ * 连接到 Gateway（含 MtBot Protocol v3 握手）
  * @returns 连接成功 Promise
  */
 export function connect(): Promise<void> {
@@ -362,7 +362,7 @@ export function disconnect(): void {
 }
 
 /**
- * 发送 RPC 请求（OpenClaw Protocol v3 格式）
+ * 发送 RPC 请求（MtBot Protocol v3 格式）
  *
  * @param method - RPC 方法名
  * @param params - 请求参数

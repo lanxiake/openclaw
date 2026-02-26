@@ -2,7 +2,7 @@ import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/ag
 import { listChannelPluginCatalogEntries } from "../../channels/plugins/catalog.js";
 import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
 import type { ChannelId } from "../../channels/plugins/types.js";
-import { writeConfigFile, type OpenClawConfig } from "../../config/config.js";
+import { writeConfigFile, type MtBotConfig } from "../../config/config.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../routing/session-key.js";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
 import { createClackPrompter } from "../../wizard/clack-prompter.js";
@@ -62,7 +62,7 @@ function parseList(value: string | undefined): string[] | undefined {
   return parsed.length > 0 ? parsed : undefined;
 }
 
-function resolveCatalogChannelEntry(raw: string, cfg: OpenClawConfig | null) {
+function resolveCatalogChannelEntry(raw: string, cfg: MtBotConfig | null) {
   const trimmed = raw.trim().toLowerCase();
   if (!trimmed) {
     return undefined;

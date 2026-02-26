@@ -102,9 +102,9 @@ Exception: 未找到微信窗口：None，如您是4.0微信客户端，请在�
 
 如果必须使用微信 4.x，考虑以下替代方案：
 
-#### 方案 A: 使用 OpenClaw 的 WeChat 扩展
+#### 方案 A: 使用 MtBot 的 WeChat 扩展
 
-- OpenClaw 项目本身有微信集成计划
+- MtBot 项目本身有微信集成计划
 - 位置: `extensions/wechat/`
 - 可能支持更新的微信版本
 
@@ -168,35 +168,35 @@ wxauto 项目已停止维护，但可以 fork 并适配：
 1. 评估 wxauto 的维护状态（已停止维护）
 2. 考虑迁移到更稳定的方案
 3. 使用官方 API 或企业微信接口
-4. 关注 OpenClaw 的 WeChat 扩展开发进度
+4. 关注 MtBot 的 WeChat 扩展开发进度
 
 ## 附录：测试命令
 
 ### 运行完整测试（交互模式）
 
 ```bash
-cd e:\open-source-project\openclaw\my-docs\wxauto-main
+cd e:\open-source-project\mtbot\my-docs\wxauto-main
 python test_wechat.py
 ```
 
 ### 运行完整测试（自动模式）
 
 ```bash
-cd e:\open-source-project\openclaw\my-docs\wxauto-main
+cd e:\open-source-project\mtbot\my-docs\wxauto-main
 python test_wechat.py --auto
 ```
 
 ### 运行诊断工具
 
 ```bash
-cd e:\open-source-project\openclaw\my-docs\wxauto-main
+cd e:\open-source-project\mtbot\my-docs\wxauto-main
 python diagnose_wechat.py
 ```
 
 ### 使用批处理脚本
 
 ```bash
-cd e:\open-source-project\openclaw\my-docs\wxauto-main
+cd e:\open-source-project\mtbot\my-docs\wxauto-main
 run_test.bat
 ```
 

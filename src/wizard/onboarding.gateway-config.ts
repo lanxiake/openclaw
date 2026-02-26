@@ -1,6 +1,6 @@
 import { normalizeGatewayTokenInput, randomToken } from "../commands/onboard-helpers.js";
 import type { GatewayAuthChoice } from "../commands/onboard-types.js";
-import type { GatewayBindMode, GatewayTailscaleMode, OpenClawConfig } from "../config/config.js";
+import type { GatewayBindMode, GatewayTailscaleMode, MtBotConfig } from "../config/config.js";
 import { findTailscaleBinary } from "../infra/tailscale.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type {
@@ -12,8 +12,8 @@ import type { WizardPrompter } from "./prompts.js";
 
 type ConfigureGatewayOptions = {
   flow: WizardFlow;
-  baseConfig: OpenClawConfig;
-  nextConfig: OpenClawConfig;
+  baseConfig: MtBotConfig;
+  nextConfig: MtBotConfig;
   localPort: number;
   quickstartGateway: QuickstartGatewayDefaults;
   prompter: WizardPrompter;
@@ -21,7 +21,7 @@ type ConfigureGatewayOptions = {
 };
 
 type ConfigureGatewayResult = {
-  nextConfig: OpenClawConfig;
+  nextConfig: MtBotConfig;
   settings: GatewayWizardSettings;
 };
 
@@ -147,7 +147,7 @@ export async function configureGatewayForOnboarding(
   let tailscaleResetOnExit = flow === "quickstart" ? quickstartGateway.tailscaleResetOnExit : false;
   if (tailscaleMode !== "off" && flow !== "quickstart") {
     await prompter.note(
-      ["Docs:", "https://docs.openclaw.ai/gateway/tailscale", "https://docs.openclaw.ai/web"].join(
+      ["Docs:", "https://docs.mtbot.top/gateway/tailscale", "https://docs.mtbot.top/web"].join(
         "\n",
       ),
       "Tailscale",

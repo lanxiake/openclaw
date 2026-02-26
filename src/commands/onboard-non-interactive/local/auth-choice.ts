@@ -1,7 +1,7 @@
 import { upsertAuthProfile } from "../../../agents/auth-profiles.js";
 import { normalizeProviderId } from "../../../agents/model-selection.js";
 import { parseDurationMs } from "../../../cli/parse-duration.js";
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { MtBotConfig } from "../../../config/config.js";
 import { upsertSharedEnvVar } from "../../../infra/env-file.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import { buildTokenProfileId, validateAnthropicSetupToken } from "../../auth-token.js";
@@ -37,12 +37,12 @@ import { resolveNonInteractiveApiKey } from "../api-keys.js";
 import { shortenHomePath } from "../../../utils.js";
 
 export async function applyNonInteractiveAuthChoice(params: {
-  nextConfig: OpenClawConfig;
+  nextConfig: MtBotConfig;
   authChoice: AuthChoice;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
-  baseConfig: OpenClawConfig;
-}): Promise<OpenClawConfig | null> {
+  baseConfig: MtBotConfig;
+}): Promise<MtBotConfig | null> {
   const { authChoice, opts, runtime, baseConfig } = params;
   let nextConfig = params.nextConfig;
 

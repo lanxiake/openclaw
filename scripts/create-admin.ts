@@ -69,7 +69,7 @@ async function main() {
         'admin',
         ${passwordHash},
         '超级管理员',
-        'admin@openclaw.ai',
+        'admin@mtbot.top',
         'super_admin',
         'active',
         false,
@@ -82,7 +82,7 @@ async function main() {
     console.log("  Username: admin");
     console.log("  Password: Admin@2026!");
     console.log("  Role: super_admin");
-    console.log("  Email: admin@openclaw.ai");
+    console.log("  Email: admin@mtbot.top");
     console.log(`  ID: ${adminId}`);
   }
 

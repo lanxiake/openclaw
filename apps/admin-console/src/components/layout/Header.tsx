@@ -172,7 +172,7 @@ export function Header() {
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-6">
       {/* 左侧：页面标题区域 */}
       <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold">OpenClaw Admin Console</h1>
+        <h1 className="text-lg font-semibold">MtBot Admin Console</h1>
       </div>
 
       {/* 右侧：操作区域 */}

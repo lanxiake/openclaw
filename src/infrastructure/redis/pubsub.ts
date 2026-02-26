@@ -16,7 +16,7 @@ import { getRedisConfigFromEnv } from "./connection.js";
 const logger = getLogger();
 
 // 事件频道前缀
-const CHANNEL_PREFIX = "openclaw:events:";
+const CHANNEL_PREFIX = "mtbot:events:";
 
 // 事件类型定义
 export type EventType =

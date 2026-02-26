@@ -3,7 +3,7 @@
  *
  * 导出订阅系统的所有公共 API
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 // 类型导出

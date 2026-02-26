@@ -63,7 +63,7 @@ describe("TrayManager", () => {
   describe("WIN-TRAY-001: 托盘菜单", () => {
     it("应创建托盘并设置菜单", () => {
       // Tray 应被创建 — 直接检查 mockTrayInstance 的方法调用
-      expect(mockTrayInstance.setToolTip).toHaveBeenCalledWith("OpenClaw Assistant");
+      expect(mockTrayInstance.setToolTip).toHaveBeenCalledWith("MtBot Assistant");
 
       // 应设置右键菜单
       expect(mockTrayInstance.setContextMenu).toHaveBeenCalled();
@@ -93,14 +93,14 @@ describe("TrayManager", () => {
     it("更新连接状态为已连接应更新 tooltip", () => {
       tray.updateConnectionStatus(true);
       expect(mockTrayInstance.setToolTip).toHaveBeenCalledWith(
-        "OpenClaw Assistant - 已连接",
+        "MtBot Assistant - 已连接",
       );
     });
 
     it("更新连接状态为未连接应更新 tooltip", () => {
       tray.updateConnectionStatus(false);
       expect(mockTrayInstance.setToolTip).toHaveBeenCalledWith(
-        "OpenClaw Assistant - 未连接",
+        "MtBot Assistant - 未连接",
       );
     });
 

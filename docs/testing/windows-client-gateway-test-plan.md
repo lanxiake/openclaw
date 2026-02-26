@@ -4,7 +4,7 @@
 
 验证 Windows 客户端能够：
 
-1. 成功连接到 OpenClaw Gateway
+1. 成功连接到 MtBot Gateway
 2. 接收来自网关的消息和事件
 3. 执行网关下发的命令
 4. 执行网关下发的技能（Skills）
@@ -14,7 +14,7 @@
 
 ### 1. 网关服务启动问题
 
-- **问题**：使用 `pnpm openclaw gateway start` 启动后，服务注册成功但实际未运行
+- **问题**：使用 `pnpm mtbot gateway start` 启动后，服务注册成功但实际未运行
 - **原因**：Windows 计划任务可能配置有误或权限不足
 - **解决方案**：使用前台运行模式进行测试
 
@@ -39,7 +39,7 @@
 
 ```bash
 # 停止所有网关进程
-pnpm openclaw gateway stop
+pnpm mtbot gateway stop
 
 # 清理旧的日志和 PID 文件
 rm -rf logs/gateway.log logs/.pids/gateway.pid
@@ -61,7 +61,7 @@ ls dist/
 
 ```bash
 # 在单独的终端窗口运行
-pnpm openclaw gateway run --bind loopback --port 18789 --force --verbose
+pnpm mtbot gateway run --bind loopback --port 18789 --force --verbose
 ```
 
 **预期输出**：
@@ -86,7 +86,7 @@ TCP    127.0.0.1:18789        0.0.0.0:0              LISTENING       <PID>
 #### 2.3 测试网关健康检查
 
 ```bash
-pnpm openclaw gateway health --json
+pnpm mtbot gateway health --json
 ```
 
 **预期输出**：
@@ -201,19 +201,19 @@ pnpm dev
 
 ```bash
 # 1. 查看连接状态
-pnpm openclaw gateway status
+pnpm mtbot gateway status
 
 # 2. 查看健康状态
-pnpm openclaw gateway health
+pnpm mtbot gateway health
 
 # 3. 发现网关
-pnpm openclaw gateway discover
+pnpm mtbot gateway discover
 
 # 4. 调用网关方法
-pnpm openclaw gateway call health
+pnpm mtbot gateway call health
 
 # 5. 查看使用成本
-pnpm openclaw gateway usage-cost --days 7
+pnpm mtbot gateway usage-cost --days 7
 ```
 
 ## 自动化测试脚本
@@ -224,7 +224,7 @@ pnpm openclaw gateway usage-cost --days 7
 
 ```powershell
 # 检查网关环境
-Write-Host "=== OpenClaw Gateway 环境检查 ===" -ForegroundColor Cyan
+Write-Host "=== MtBot Gateway 环境检查 ===" -ForegroundColor Cyan
 
 # 1. 检查 Node.js 版本
 Write-Host "`n[1/5] 检查 Node.js 版本..." -ForegroundColor Yellow
@@ -250,7 +250,7 @@ if ($port) {
 
 # 5. 检查配置文件
 Write-Host "`n[5/5] 检查配置文件..." -ForegroundColor Yellow
-$configPath = "$env:USERPROFILE\.openclaw\openclaw.json"
+$configPath = "$env:USERPROFILE\.mtbot\mtbot.json"
 if (Test-Path $configPath) {
     Write-Host "配置文件存在: $configPath" -ForegroundColor Green
 } else {
@@ -270,12 +270,12 @@ param(
     [switch]$Clean = $false
 )
 
-Write-Host "=== 启动 OpenClaw Gateway 测试环境 ===" -ForegroundColor Cyan
+Write-Host "=== 启动 MtBot Gateway 测试环境 ===" -ForegroundColor Cyan
 
 # 清理环境
 if ($Clean) {
     Write-Host "`n清理旧环境..." -ForegroundColor Yellow
-    pnpm openclaw gateway stop
+    pnpm mtbot gateway stop
     Start-Sleep -Seconds 2
 
     if (Test-Path "logs/gateway.log") {
@@ -288,7 +288,7 @@ if ($Clean) {
 
 # 启动网关
 Write-Host "`n启动网关服务..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "pnpm openclaw gateway run --bind loopback --port 18789 --force --verbose"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "pnpm mtbot gateway run --bind loopback --port 18789 --force --verbose"
 
 # 等待启动
 Write-Host "`n等待网关启动..." -ForegroundColor Yellow
@@ -307,7 +307,7 @@ if ($port) {
 
 # 健康检查
 Write-Host "`n执行健康检查..." -ForegroundColor Yellow
-pnpm openclaw gateway health --json
+pnpm mtbot gateway health --json
 
 Write-Host "`n=== 网关启动完成 ===" -ForegroundColor Cyan
 ```
@@ -325,7 +325,7 @@ $testResults = @()
 # 测试 1：网关连接测试
 Write-Host "`n[测试 1/5] 网关连接测试..." -ForegroundColor Yellow
 try {
-    $health = pnpm openclaw gateway health --json | ConvertFrom-Json
+    $health = pnpm mtbot gateway health --json | ConvertFrom-Json
     if ($health.ok) {
         Write-Host "✓ 网关连接成功" -ForegroundColor Green
         $testResults += @{Test="网关连接"; Result="通过"}
@@ -359,9 +359,9 @@ $cliCommands = @(
 )
 
 foreach ($cmd in $cliCommands) {
-    Write-Host "  测试命令: openclaw $cmd" -ForegroundColor Gray
+    Write-Host "  测试命令: mtbot $cmd" -ForegroundColor Gray
     try {
-        $output = Invoke-Expression "pnpm openclaw $cmd --json" 2>&1
+        $output = Invoke-Expression "pnpm mtbot $cmd --json" 2>&1
         Write-Host "  ✓ 命令执行成功" -ForegroundColor Green
     } catch {
         Write-Host "  ✗ 命令执行失败: $_" -ForegroundColor Red
@@ -403,10 +403,10 @@ Write-Host "`n=== 集成测试完成 ===" -ForegroundColor Cyan
 
 ### CLI 测试
 
-- [ ] `openclaw gateway status` 正常
-- [ ] `openclaw gateway health` 正常
-- [ ] `openclaw gateway discover` 正常
-- [ ] `openclaw gateway call` 正常
+- [ ] `mtbot gateway status` 正常
+- [ ] `mtbot gateway health` 正常
+- [ ] `mtbot gateway discover` 正常
+- [ ] `mtbot gateway call` 正常
 
 ## 常见问题排查
 
@@ -416,7 +416,7 @@ Write-Host "`n=== 集成测试完成 ===" -ForegroundColor Cyan
 
 1. 检查端口是否被占用：`netstat -ano | findstr ":18789"`
 2. 检查日志文件：查看 `logs/gateway.log`
-3. 检查配置文件：`~/.openclaw/openclaw.json`
+3. 检查配置文件：`~/.mtbot/mtbot.json`
 4. 尝试使用不同端口：`--port 18790`
 
 ### 问题 2：客户端无法连接

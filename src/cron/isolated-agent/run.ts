@@ -38,7 +38,7 @@ import {
   supportsXHighThinking,
 } from "../../auto-reply/thinking.js";
 import { createOutboundSendDeps, type CliDeps } from "../../cli/outbound-send-deps.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { resolveSessionTranscriptPath, updateSessionStore } from "../../config/sessions.js";
 import type { AgentDefaultsConfig } from "../../config/types.js";
 import { registerAgentRunContext } from "../../infra/agent-events.js";
@@ -90,7 +90,7 @@ export type RunCronAgentTurnResult = {
 };
 
 export async function runCronIsolatedAgentTurn(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   deps: CliDeps;
   job: CronJob;
   message: string;
@@ -121,7 +121,7 @@ export async function runCronIsolatedAgentTurn(params: {
   } else if (overrideModel) {
     agentCfg.model = overrideModel;
   }
-  const cfgWithAgentDefaults: OpenClawConfig = {
+  const cfgWithAgentDefaults: MtBotConfig = {
     ...params.cfg,
     agents: Object.assign({}, params.cfg.agents, { defaults: agentCfg }),
   };

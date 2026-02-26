@@ -1,14 +1,14 @@
 ---
-summary: "CLI reference for `openclaw browser` (profiles, tabs, actions, extension relay)"
+summary: "CLI reference for `mtbot browser` (profiles, tabs, actions, extension relay)"
 read_when:
-  - You use `openclaw browser` and want examples for common tasks
+  - You use `mtbot browser` and want examples for common tasks
   - You want to control a browser running on another machine via a node host
   - You want to use the Chrome extension relay (attach/detach via toolbar button)
 ---
 
-# `openclaw browser`
+# `mtbot browser`
 
-Manage OpenClaw’s browser control server and run browser actions (tabs, snapshots, screenshots, navigation, clicks, typing).
+Manage MtBot’s browser control server and run browser actions (tabs, snapshots, screenshots, navigation, clicks, typing).
 
 Related:
 
@@ -26,38 +26,38 @@ Related:
 ## Quick start (local)
 
 ```bash
-openclaw browser --browser-profile chrome tabs
-openclaw browser --browser-profile openclaw start
-openclaw browser --browser-profile openclaw open https://example.com
-openclaw browser --browser-profile openclaw snapshot
+mtbot browser --browser-profile chrome tabs
+mtbot browser --browser-profile mtbot start
+mtbot browser --browser-profile mtbot open https://example.com
+mtbot browser --browser-profile mtbot snapshot
 ```
 
 ## Profiles
 
 Profiles are named browser routing configs. In practice:
 
-- `openclaw`: launches/attaches to a dedicated OpenClaw-managed Chrome instance (isolated user data dir).
+- `mtbot`: launches/attaches to a dedicated MtBot-managed Chrome instance (isolated user data dir).
 - `chrome`: controls your existing Chrome tab(s) via the Chrome extension relay.
 
 ```bash
-openclaw browser profiles
-openclaw browser create-profile --name work --color "#FF5A36"
-openclaw browser delete-profile --name work
+mtbot browser profiles
+mtbot browser create-profile --name work --color "#FF5A36"
+mtbot browser delete-profile --name work
 ```
 
 Use a specific profile:
 
 ```bash
-openclaw browser --browser-profile work tabs
+mtbot browser --browser-profile work tabs
 ```
 
 ## Tabs
 
 ```bash
-openclaw browser tabs
-openclaw browser open https://docs.openclaw.ai
-openclaw browser focus <targetId>
-openclaw browser close <targetId>
+mtbot browser tabs
+mtbot browser open https://docs.mtbot.top
+mtbot browser focus <targetId>
+mtbot browser close <targetId>
 ```
 
 ## Snapshot / screenshot / actions
@@ -65,21 +65,21 @@ openclaw browser close <targetId>
 Snapshot:
 
 ```bash
-openclaw browser snapshot
+mtbot browser snapshot
 ```
 
 Screenshot:
 
 ```bash
-openclaw browser screenshot
+mtbot browser screenshot
 ```
 
 Navigate/click/type (ref-based UI automation):
 
 ```bash
-openclaw browser navigate https://example.com
-openclaw browser click <ref>
-openclaw browser type <ref> "hello"
+mtbot browser navigate https://example.com
+mtbot browser click <ref>
+mtbot browser type <ref> "hello"
 ```
 
 ## Chrome extension relay (attach via toolbar button)
@@ -89,8 +89,8 @@ This mode lets the agent control an existing Chrome tab that you attach manually
 Install the unpacked extension to a stable path:
 
 ```bash
-openclaw browser extension install
-openclaw browser extension path
+mtbot browser extension install
+mtbot browser extension path
 ```
 
 Then Chrome → `chrome://extensions` → enable “Developer mode” → “Load unpacked” → select the printed folder.

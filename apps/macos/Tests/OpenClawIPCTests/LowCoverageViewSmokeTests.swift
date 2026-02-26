@@ -1,9 +1,9 @@
 import AppKit
-import OpenClawProtocol
+import MtBotProtocol
 import SwiftUI
 import Testing
 
-@testable import OpenClaw
+@testable import MtBot
 
 @Suite(.serialized)
 @MainActor

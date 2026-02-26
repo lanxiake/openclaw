@@ -1,4 +1,4 @@
-# OpenClaw Docker 部署完整指南
+# MtBot Docker 部署完整指南
 
 > 版本: 1.0 | 创建日期: 2026-02-17 | 状态: 生产就绪
 
@@ -23,7 +23,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        OpenClaw 系统架构                          │
+│                        MtBot 系统架构                          │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐     │
@@ -99,8 +99,8 @@
 
 ```bash
 # 克隆代码仓库
-git clone https://github.com/your-org/openclaw.git
-cd openclaw
+git clone https://github.com/your-org/mtbot.git
+cd mtbot
 
 # 切换到部署分支
 git checkout feat/ai-assistant-platform
@@ -182,7 +182,7 @@ open http://localhost:3001
 NODE_ENV=production
 
 # 应用名称
-APP_NAME=OpenClaw
+APP_NAME=MtBot
 
 # 应用版本
 APP_VERSION=2026.1.30
@@ -190,7 +190,7 @@ APP_VERSION=2026.1.30
 # ==================== 数据库配置 ====================
 
 # PostgreSQL 连接
-DATABASE_URL=postgresql://openclaw_admin:Oc@2026!Pg#Secure@localhost:22001/openclaw_prod
+DATABASE_URL=postgresql://mtbot_admin:Oc@2026!Pg#Secure@localhost:22001/mtbot_prod
 
 # 数据库连接池
 DATABASE_POOL_MIN=2
@@ -213,16 +213,16 @@ REDIS_POOL_MAX=10
 # MinIO 连接
 MINIO_ENDPOINT=localhost
 MINIO_PORT=22003
-MINIO_ACCESS_KEY=openclaw_minio
+MINIO_ACCESS_KEY=mtbot_minio
 MINIO_SECRET_KEY=Oc@2026!Mn#Secure
 MINIO_USE_SSL=false
 
 # MinIO 存储桶
-MINIO_BUCKET_DOCUMENTS=openclaw-documents
-MINIO_BUCKET_MEDIA=openclaw-media
-MINIO_BUCKET_TEMP=openclaw-temp
-MINIO_BUCKET_EXPORTS=openclaw-exports
-MINIO_BUCKET_SKILLS=openclaw-skills
+MINIO_BUCKET_DOCUMENTS=mtbot-documents
+MINIO_BUCKET_MEDIA=mtbot-media
+MINIO_BUCKET_TEMP=mtbot-temp
+MINIO_BUCKET_EXPORTS=mtbot-exports
+MINIO_BUCKET_SKILLS=mtbot-skills
 
 # ==================== API Server 配置 ====================
 
@@ -259,7 +259,7 @@ JWT_REFRESH_TOKEN_EXPIRES_IN=7d
 # 初始管理员账户
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=Admin@2026!Secure
-ADMIN_EMAIL=admin@openclaw.ai
+ADMIN_EMAIL=admin@mtbot.top
 
 # ==================== 日志配置 ====================
 
@@ -270,7 +270,7 @@ LOG_LEVEL=info
 LOG_FORMAT=json
 
 # 日志文件路径
-LOG_FILE_PATH=./logs/openclaw.log
+LOG_FILE_PATH=./logs/mtbot.log
 
 # ==================== 安全配置 ====================
 
@@ -314,7 +314,7 @@ services:
     build:
       context: .
       dockerfile: apps/api-server/Dockerfile
-    container_name: openclaw-api-server
+    container_name: mtbot-api-server
     restart: unless-stopped
     env_file:
       - .env.production
@@ -325,7 +325,7 @@ services:
       - redis
       - minio
     networks:
-      - openclaw-network
+      - mtbot-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -339,7 +339,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: openclaw-gateway
+    container_name: mtbot-gateway
     restart: unless-stopped
     env_file:
       - .env.production
@@ -349,7 +349,7 @@ services:
       - postgres
       - redis
     networks:
-      - openclaw-network
+      - mtbot-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
       interval: 30s
@@ -363,7 +363,7 @@ services:
     build:
       context: .
       dockerfile: apps/web-admin/Dockerfile
-    container_name: openclaw-web-admin
+    container_name: mtbot-web-admin
     restart: unless-stopped
     env_file:
       - .env.production
@@ -372,12 +372,12 @@ services:
     depends_on:
       - api-server
     networks:
-      - openclaw-network
+      - mtbot-network
 
 networks:
-  openclaw-network:
+  mtbot-network:
     external: true
-    name: openclaw-network
+    name: mtbot-network
 ```
 
 ---
@@ -467,23 +467,23 @@ pnpm db:seed --admin-only
 
 MinIO 存储桶会在 `minio-init` 服务中自动创建，包括：
 
-- `openclaw-documents` - 文档存储
-- `openclaw-media` - 多媒体文件
-- `openclaw-temp` - 临时文件
-- `openclaw-exports` - 导出文件
-- `openclaw-skills` - 技能包存储
+- `mtbot-documents` - 文档存储
+- `mtbot-media` - 多媒体文件
+- `mtbot-temp` - 临时文件
+- `mtbot-exports` - 导出文件
+- `mtbot-skills` - 技能包存储
 
 如需手动创建：
 
 ```bash
 # 进入 MinIO 容器
-docker exec -it openclaw-minio mc alias set myminio http://localhost:9000 openclaw_minio 'Oc@2026!Mn#Secure'
+docker exec -it mtbot-minio mc alias set myminio http://localhost:9000 mtbot_minio 'Oc@2026!Mn#Secure'
 
 # 创建存储桶
-docker exec -it openclaw-minio mc mb myminio/openclaw-skills
+docker exec -it mtbot-minio mc mb myminio/mtbot-skills
 
 # 设置公开访问（仅用于媒体文件）
-docker exec -it openclaw-minio mc anonymous set download myminio/openclaw-media
+docker exec -it mtbot-minio mc anonymous set download myminio/mtbot-media
 ```
 
 ---
@@ -500,10 +500,10 @@ curl http://localhost:3000/health
 curl http://localhost:18789/health
 
 # PostgreSQL 健康检查
-docker exec openclaw-postgres pg_isready -U openclaw_admin
+docker exec mtbot-postgres pg_isready -U mtbot_admin
 
 # Redis 健康检查
-docker exec openclaw-redis redis-cli -a 'Oc@2026!Rd#Secure' ping
+docker exec mtbot-redis redis-cli -a 'Oc@2026!Rd#Secure' ping
 
 # MinIO 健康检查
 curl http://localhost:22003/minio/health/live
@@ -516,10 +516,10 @@ curl http://localhost:22003/minio/health/live
 docker stats
 
 # 查看特定服务资源使用
-docker stats openclaw-api-server openclaw-gateway
+docker stats mtbot-api-server mtbot-gateway
 
 # 查看数据库连接数
-docker exec openclaw-postgres psql -U openclaw_admin -d openclaw_prod -c "SELECT count(*) FROM pg_stat_activity;"
+docker exec mtbot-postgres psql -U mtbot_admin -d mtbot_prod -c "SELECT count(*) FROM pg_stat_activity;"
 ```
 
 ### 日志收集
@@ -528,8 +528,8 @@ docker exec openclaw-postgres psql -U openclaw_admin -d openclaw_prod -c "SELECT
 
 - API Server: `./logs/api-server.log`
 - Gateway: `./logs/gateway.log`
-- PostgreSQL: `docker logs openclaw-postgres`
-- Redis: `docker logs openclaw-redis`
+- PostgreSQL: `docker logs mtbot-postgres`
+- Redis: `docker logs mtbot-redis`
 
 ---
 
@@ -548,10 +548,10 @@ docker exec openclaw-postgres psql -U openclaw_admin -d openclaw_prod -c "SELECT
 docker ps | grep postgres
 
 # 检查 PostgreSQL 日志
-docker logs openclaw-postgres
+docker logs mtbot-postgres
 
 # 测试数据库连接
-docker exec openclaw-postgres psql -U openclaw_admin -d openclaw_prod -c "SELECT 1;"
+docker exec mtbot-postgres psql -U mtbot_admin -d mtbot_prod -c "SELECT 1;"
 
 # 检查防火墙规则
 sudo ufw status
@@ -565,14 +565,14 @@ sudo ufw status
 
 ```bash
 # 检查 MinIO 配置
-docker exec openclaw-minio mc admin info myminio
+docker exec mtbot-minio mc admin info myminio
 
 # 验证访问密钥
 echo $MINIO_ACCESS_KEY
 echo $MINIO_SECRET_KEY
 
 # 重新创建存储桶
-docker exec openclaw-minio mc mb --ignore-existing myminio/openclaw-skills
+docker exec mtbot-minio mc mb --ignore-existing myminio/mtbot-skills
 ```
 
 #### 3. Gateway 连接断开
@@ -583,10 +583,10 @@ docker exec openclaw-minio mc mb --ignore-existing myminio/openclaw-skills
 
 ```bash
 # 检查 Gateway 日志
-docker logs openclaw-gateway
+docker logs mtbot-gateway
 
 # 检查 Redis 连接
-docker exec openclaw-redis redis-cli -a 'Oc@2026!Rd#Secure' ping
+docker exec mtbot-redis redis-cli -a 'Oc@2026!Rd#Secure' ping
 
 # 重启 Gateway
 docker-compose -f docker-compose.prod.yml restart gateway
@@ -625,14 +625,14 @@ sudo swapon /swapfile
 
 ```bash
 # 修改 PostgreSQL 密码
-docker exec -it openclaw-postgres psql -U openclaw_admin -d openclaw_prod
-ALTER USER openclaw_admin WITH PASSWORD 'new-secure-password';
+docker exec -it mtbot-postgres psql -U mtbot_admin -d mtbot_prod
+ALTER USER mtbot_admin WITH PASSWORD 'new-secure-password';
 
 # 修改 Redis 密码
 # 编辑 docker-compose.infra.yml 中的 REDIS_PASSWORD
 
 # 修改 MinIO 密码
-docker exec -it openclaw-minio mc admin user add myminio newuser newsecurepassword
+docker exec -it mtbot-minio mc admin user add myminio newuser newsecurepassword
 ```
 
 ### 2. 启用 HTTPS
@@ -702,7 +702,7 @@ docker-compose -f docker-compose.prod.yml up -d
 mkdir -p ./backups
 
 # 备份 PostgreSQL
-docker exec openclaw-postgres pg_dump -U openclaw_admin openclaw_prod > ./backups/postgres-$(date +%Y%m%d-%H%M%S).sql
+docker exec mtbot-postgres pg_dump -U mtbot_admin mtbot_prod > ./backups/postgres-$(date +%Y%m%d-%H%M%S).sql
 
 # 自动化备份脚本
 cat > backup.sh << 'EOF'
@@ -711,7 +711,7 @@ BACKUP_DIR="./backups"
 DATE=$(date +%Y%m%d-%H%M%S)
 
 # PostgreSQL 备份
-docker exec openclaw-postgres pg_dump -U openclaw_admin openclaw_prod | gzip > $BACKUP_DIR/postgres-$DATE.sql.gz
+docker exec mtbot-postgres pg_dump -U mtbot_admin mtbot_prod | gzip > $BACKUP_DIR/postgres-$DATE.sql.gz
 
 # 保留最近 7 天的备份
 find $BACKUP_DIR -name "postgres-*.sql.gz" -mtime +7 -delete
@@ -729,20 +729,20 @@ chmod +x backup.sh
 
 ```bash
 # 恢复 PostgreSQL
-docker exec -i openclaw-postgres psql -U openclaw_admin openclaw_prod < ./backups/postgres-20260217-020000.sql
+docker exec -i mtbot-postgres psql -U mtbot_admin mtbot_prod < ./backups/postgres-20260217-020000.sql
 
 # 或从压缩文件恢复
-gunzip -c ./backups/postgres-20260217-020000.sql.gz | docker exec -i openclaw-postgres psql -U openclaw_admin openclaw_prod
+gunzip -c ./backups/postgres-20260217-020000.sql.gz | docker exec -i mtbot-postgres psql -U mtbot_admin mtbot_prod
 ```
 
 ### MinIO 备份
 
 ```bash
 # 备份 MinIO 数据
-docker exec openclaw-minio mc mirror myminio/openclaw-skills ./backups/minio-skills
+docker exec mtbot-minio mc mirror myminio/mtbot-skills ./backups/minio-skills
 
 # 恢复 MinIO 数据
-docker exec openclaw-minio mc mirror ./backups/minio-skills myminio/openclaw-skills
+docker exec mtbot-minio mc mirror ./backups/minio-skills myminio/mtbot-skills
 ```
 
 ---
@@ -792,11 +792,11 @@ docker exec openclaw-minio mc mirror ./backups/minio-skills myminio/openclaw-ski
 
 1. 查看日志文件
 2. 参考故障排查章节
-3. 提交 Issue: https://github.com/your-org/openclaw/issues
-4. 联系技术支持: support@openclaw.ai
+3. 提交 Issue: https://github.com/your-org/mtbot/issues
+4. 联系技术支持: support@mtbot.top
 
 ---
 
 **文档版本**: 1.0
 **最后更新**: 2026-02-17
-**维护者**: OpenClaw Team
+**维护者**: MtBot Team

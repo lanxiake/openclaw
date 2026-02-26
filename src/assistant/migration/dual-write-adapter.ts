@@ -4,7 +4,7 @@
  * 在迁移过程中同时写入 JSON 文件和 PostgreSQL 数据库
  * 支持渐进式迁移，读取可以从任一来源
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import { getLogger } from "../../logging/logger.js";

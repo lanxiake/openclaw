@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 
 import { describe, expect, it, vi } from "vitest";
 
@@ -8,7 +8,7 @@ describe("noteMacLaunchctlGatewayEnvOverrides", () => {
   it("prints clear unsetenv instructions for token override", async () => {
     const noteFn = vi.fn();
     const getenv = vi.fn(async (name: string) =>
-      name === "OPENCLAW_GATEWAY_TOKEN" ? "launchctl-token" : undefined,
+      name === "MTBOT_GATEWAY_TOKEN" ? "launchctl-token" : undefined,
     );
     const cfg = {
       gateway: {
@@ -16,7 +16,7 @@ describe("noteMacLaunchctlGatewayEnvOverrides", () => {
           token: "config-token",
         },
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
     await noteMacLaunchctlGatewayEnvOverrides(cfg, { platform: "darwin", getenv, noteFn });
 
@@ -26,15 +26,15 @@ describe("noteMacLaunchctlGatewayEnvOverrides", () => {
     const [message, title] = noteFn.mock.calls[0] ?? [];
     expect(title).toBe("Gateway (macOS)");
     expect(message).toContain("launchctl environment overrides detected");
-    expect(message).toContain("OPENCLAW_GATEWAY_TOKEN");
-    expect(message).toContain("launchctl unsetenv OPENCLAW_GATEWAY_TOKEN");
-    expect(message).not.toContain("OPENCLAW_GATEWAY_PASSWORD");
+    expect(message).toContain("MTBOT_GATEWAY_TOKEN");
+    expect(message).toContain("launchctl unsetenv MTBOT_GATEWAY_TOKEN");
+    expect(message).not.toContain("MTBOT_GATEWAY_PASSWORD");
   });
 
   it("does nothing when config has no gateway credentials", async () => {
     const noteFn = vi.fn();
     const getenv = vi.fn(async () => "launchctl-token");
-    const cfg = {} as OpenClawConfig;
+    const cfg = {} as MtBotConfig;
 
     await noteMacLaunchctlGatewayEnvOverrides(cfg, { platform: "darwin", getenv, noteFn });
 
@@ -51,7 +51,7 @@ describe("noteMacLaunchctlGatewayEnvOverrides", () => {
           token: "config-token",
         },
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
     await noteMacLaunchctlGatewayEnvOverrides(cfg, { platform: "linux", getenv, noteFn });
 

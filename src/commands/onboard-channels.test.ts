@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import { setupChannels } from "./onboard-channels.js";
@@ -84,7 +84,7 @@ describe("setupChannels", () => {
       }),
     };
 
-    await setupChannels({} as OpenClawConfig, runtime, prompter, {
+    await setupChannels({} as MtBotConfig, runtime, prompter, {
       skipConfirm: true,
       quickstartDefaults: true,
       forceAllowFromChannels: ["whatsapp"],
@@ -139,7 +139,7 @@ describe("setupChannels", () => {
             botToken: "token",
           },
         },
-      } as OpenClawConfig,
+      } as MtBotConfig,
       runtime,
       prompter,
       {
@@ -203,7 +203,7 @@ describe("setupChannels", () => {
             enabled: false,
           },
         },
-      } as OpenClawConfig,
+      } as MtBotConfig,
       runtime,
       prompter,
       {

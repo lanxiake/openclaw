@@ -85,7 +85,7 @@ function createMockFactRecord(overrides?: Partial<UserFactRecord>): UserFactReco
     userId: "user-123",
     category: "work",
     key: "company",
-    value: "OpenClaw",
+    value: "MtBot",
     confidence: 0.9,
     source: "explicit",
     extractedFrom: null,
@@ -218,7 +218,7 @@ describe("PostgresProfileMemoryProvider", () => {
       const factId = await provider.addFact("user-123", {
         category: "work",
         key: "company",
-        value: "OpenClaw",
+        value: "MtBot",
         confidence: 0.9,
         source: "explicit",
         sensitive: false,
@@ -229,7 +229,7 @@ describe("PostgresProfileMemoryProvider", () => {
         expect.objectContaining({
           category: "work",
           key: "company",
-          value: "OpenClaw",
+          value: "MtBot",
           confidence: 0.9,
           source: "explicit",
           sensitive: false,
@@ -275,7 +275,7 @@ describe("PostgresProfileMemoryProvider", () => {
         id: "fact-001",
         category: "work",
         key: "company",
-        value: "OpenClaw",
+        value: "MtBot",
       });
     });
 
@@ -292,10 +292,10 @@ describe("PostgresProfileMemoryProvider", () => {
     it("searchFacts 应该调用 factRepo.search", async () => {
       mockFactRepo.search.mockResolvedValue([createMockFactRecord()]);
 
-      const results = await provider.searchFacts("user-123", "OpenClaw");
+      const results = await provider.searchFacts("user-123", "MtBot");
 
       expect(results).toHaveLength(1);
-      expect(mockFactRepo.search).toHaveBeenCalledWith("OpenClaw");
+      expect(mockFactRepo.search).toHaveBeenCalledWith("MtBot");
     });
   });
 
@@ -416,7 +416,7 @@ describe("PostgresProfileMemoryProvider", () => {
   describe("自动提取", () => {
     it("extractFromConversation 应该返回空结果（LLM 待实现）", async () => {
       const result = await provider.extractFromConversation("user-123", [
-        { role: "user", content: "我在 OpenClaw 工作" },
+        { role: "user", content: "我在 MtBot 工作" },
       ]);
 
       expect(result).toMatchObject({
@@ -545,7 +545,7 @@ describe("PostgresProfileMemoryProvider", () => {
     it("无 LLM 服务时应返回空结果（优雅降级）", async () => {
       // provider 没有传入 cfg，所以没有 LLM 服务
       const result = await provider.extractFromConversation("user-123", [
-        { role: "user", content: "我叫张三，在 OpenClaw 工作" },
+        { role: "user", content: "我叫张三，在 MtBot 工作" },
       ]);
 
       expect(result).toEqual({
@@ -567,7 +567,7 @@ describe("PostgresProfileMemoryProvider", () => {
             confidence: 0.9,
           },
           {
-            content: "OpenClaw",
+            content: "MtBot",
             category: "work" as const,
             key: "company",
             confidence: 0.9,
@@ -620,7 +620,7 @@ describe("PostgresProfileMemoryProvider", () => {
       await llmProvider.initialize();
 
       const result = await llmProvider.extractFromConversation("user-123", [
-        { role: "user", content: "我叫张三，在 OpenClaw 工作" },
+        { role: "user", content: "我叫张三，在 MtBot 工作" },
       ]);
 
       expect(result.newFacts).toHaveLength(2);

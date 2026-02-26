@@ -2,14 +2,14 @@
 
 **测试日期**: 2026-02-09
 **测试人员**: Claude AI Assistant
-**网关版本**: openclaw@2026.1.30
-**客户端版本**: openclaw-assistant-windows@0.1.0
+**网关版本**: mtbot@2026.1.30
+**客户端版本**: mtbot-assistant-windows@0.1.0
 
 ---
 
 ## 执行摘要
 
-本次测试验证了Windows Electron客户端与OpenClaw Gateway的集成功能，包括：
+本次测试验证了Windows Electron客户端与MtBot Gateway的集成功能，包括：
 
 - 应用程序启动和初始化
 - WebSocket连接建立
@@ -87,7 +87,7 @@
 11. **技能运行时 (ClientSkillRuntime)**
     - 初始化: ✅ 完成
     - 内置技能数量: 4
-    - 技能目录: C:\\Users\\Administrator\\AppData\\Roaming\\openclaw-assistant-windows\\skills
+    - 技能目录: C:\\Users\\Administrator\\AppData\\Roaming\\mtbot-assistant-windows\\skills
     - 沙箱模式: 禁用
 
 12. **自动更新服务**
@@ -107,7 +107,7 @@
 
 ```
 [Security] 安全工具初始化完成
-[Main] OpenClaw Assistant 启动中...
+[Main] MtBot Assistant 启动中...
 [Main] 应用已就绪
 [Main] 创建主窗口
 [TrayManager] 创建系统托盘
@@ -120,7 +120,7 @@
 [SkillRuntime] ClientSkillRuntime created { builtinSkills: 4 }
 [SkillRuntime] SkillRuntime initialized
 [GatewayClient] SkillRuntime 已设置
-[Main] OpenClaw Assistant 启动完成
+[Main] MtBot Assistant 启动完成
 [Main] 窗口准备就绪
 ```
 
@@ -172,7 +172,7 @@
 
 ### 测试目标
 
-验证客户端能否正确实现OpenClaw Gateway握手协议。
+验证客户端能否正确实现MtBot Gateway握手协议。
 
 ### 握手协议流程
 
@@ -227,7 +227,7 @@
     "maxProtocol": 3,
     "client": {
       "id": "gateway-client",
-      "displayName": "OpenClaw Windows Test",
+      "displayName": "MtBot Windows Test",
       "version": "0.1.0",
       "platform": "win32",
       "mode": "ui"
@@ -298,7 +298,7 @@
 
 ### 结论
 
-✅ **握手协议测试通过** - 客户端正确实现了OpenClaw Gateway握手协议，消息格式和流程完全符合规范。
+✅ **握手协议测试通过** - 客户端正确实现了MtBot Gateway握手协议，消息格式和流程完全符合规范。
 
 ---
 
@@ -326,9 +326,9 @@
 ```json
 {
   "deviceId": "cf6d7210-f9ad-448d-ab6f-fb584cef430f",
-  "displayName": "HOSTNAME - OpenClaw Assistant",
+  "displayName": "HOSTNAME - MtBot Assistant",
   "platform": "win32 10.0.22631",
-  "clientId": "openclaw-windows",
+  "clientId": "mtbot-windows",
   "clientMode": "assistant",
   "createdAt": 1770647000000
 }
@@ -399,13 +399,13 @@
 
 - PID: 161536
 - 监听地址: ws://0.0.0.0:18789
-- 日志文件: \\tmp\\openclaw\\openclaw-2026-02-09.log
+- 日志文件: \\tmp\\mtbot\\mtbot-2026-02-09.log
 
 **启动日志**:
 
 ```
 [plugins] WeChat WebSocket upgrade handler registered at /channels/wechat
-[canvas] host mounted at http://0.0.0.0:18789/__openclaw__/canvas/
+[canvas] host mounted at http://0.0.0.0:18789/__mtbot__/canvas/
 [heartbeat] started
 [gateway] agent model: anyrouter/claude-opus-4-5-20251101
 [gateway] listening on ws://0.0.0.0:18789 (PID 161536)
@@ -441,7 +441,7 @@
 [ws] webchat connected
   conn=cb8ff99c-08d6-491d-8c1a-00c08940fdae
   remote=127.0.0.1
-  client=openclaw-control-ui webchat vdev
+  client=mtbot-control-ui webchat vdev
 
 [ws] ⇄ res ✓ chat.history 111ms
   conn=cb8ff99c…fdae
@@ -506,7 +506,7 @@
 /**
  * Gateway 客户端类
  *
- * 实现 OpenClaw Gateway 握手协议：
+ * 实现 MtBot Gateway 握手协议：
  * 1. 建立 WebSocket 连接
  * 2. 等待 connect.challenge 事件
  * 3. 发送 connect 请求
@@ -765,8 +765,8 @@ electron: Failed to load URL: http://localhost:5173/ with error: ERR_CONNECTION_
 Node.js: v22+
 pnpm: 最新版本
 Electron: 最新版本
-网关版本: openclaw@2026.1.30
-客户端版本: openclaw-assistant-windows@0.1.0
+网关版本: mtbot@2026.1.30
+客户端版本: mtbot-assistant-windows@0.1.0
 ```
 
 ### B. 关键文件路径
@@ -806,9 +806,9 @@ URL: ws://127.0.0.1:18789
 ```json
 {
   "deviceId": "cf6d7210-f9ad-448d-ab6f-fb584cef430f",
-  "displayName": "HOSTNAME - OpenClaw Assistant",
+  "displayName": "HOSTNAME - MtBot Assistant",
   "platform": "win32",
-  "clientId": "openclaw-windows",
+  "clientId": "mtbot-windows",
   "clientMode": "assistant"
 }
 ```

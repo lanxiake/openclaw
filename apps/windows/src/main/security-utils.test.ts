@@ -113,7 +113,7 @@ describe("SecurityUtils", () => {
     });
 
     it("应允许临时目录下的路径", () => {
-      const tmpFile = path.join(os.tmpdir(), "openclaw-test", "data.json");
+      const tmpFile = path.join(os.tmpdir(), "mtbot-test", "data.json");
       const result = security.validatePath(tmpFile);
       expect(result).toBe(path.normalize(tmpFile));
     });

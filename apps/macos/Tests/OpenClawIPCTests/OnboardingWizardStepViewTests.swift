@@ -1,9 +1,9 @@
-import OpenClawProtocol
+import MtBotProtocol
 import SwiftUI
 import Testing
-@testable import OpenClaw
+@testable import MtBot
 
-private typealias ProtoAnyCodable = OpenClawProtocol.AnyCodable
+private typealias ProtoAnyCodable = MtBotProtocol.AnyCodable
 
 @Suite(.serialized)
 @MainActor

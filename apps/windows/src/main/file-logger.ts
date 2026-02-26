@@ -89,7 +89,7 @@ function cleanOldLogs(logDir: string): void {
     if (!existsSync(logDir)) return
 
     const files = readdirSync(logDir)
-      .filter(f => f.startsWith('openclaw-') && f.endsWith('.log'))
+      .filter(f => f.startsWith('mtbot-') && f.endsWith('.log'))
       .map(f => ({
         name: f,
         path: join(logDir, f),
@@ -157,7 +157,7 @@ class FileLogger {
    * 打开日志文件流
    */
   private openStream(): void {
-    const logFile = join(this.logDir, `openclaw-${this.currentDate}.log`)
+    const logFile = join(this.logDir, `mtbot-${this.currentDate}.log`)
     this.stream = createWriteStream(logFile, { flags: 'a', encoding: 'utf8' })
 
     this.stream.on('error', (err) => {

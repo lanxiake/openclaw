@@ -15,14 +15,14 @@ import postgres from "postgres";
 const CONFIG = {
   baseUrl: "http://localhost:5176",
   edgePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-  screenshotDir: "D:\\AI-workspace\\openclaw\\test-browser\\screenshots",
+  screenshotDir: "D:\\AI-workspace\\mtbot\\test-browser\\screenshots",
   timeout: 15000,
   credentials: { username: "admin", password: "Admin@123456" },
 };
 
 const results = [];
 const DATABASE_URL =
-  "postgresql://openclaw_admin:Oc%402026!Pg%23Secure@10.157.152.40:22001/openclaw_prod";
+  "postgresql://mtbot_admin:Oc%402026!Pg%23Secure@10.157.152.40:22001/mtbot_prod";
 
 function recordResult(id, name, status, detail) {
   results.push({ id, name, status, detail, timestamp: new Date().toISOString() });

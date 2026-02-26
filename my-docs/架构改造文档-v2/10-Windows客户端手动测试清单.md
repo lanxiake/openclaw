@@ -78,7 +78,7 @@ pnpm dev
 
 #### 测试步骤
 
-1. ✅ 清除本地设备信息（删除 `~/.openclaw/device.json`）
+1. ✅ 清除本地设备信息（删除 `~/.mtbot/device.json`）
 2. ✅ 启动 Windows 客户端
 3. ✅ 登录账户
 4. ✅ 观察设备配对流程

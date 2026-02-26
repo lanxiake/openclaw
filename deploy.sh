@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# OpenClaw 快速部署脚本
-# 用于在远程服务器上快速部署 OpenClaw 系统
+# MtBot 快速部署脚本
+# 用于在远程服务器上快速部署 MtBot 系统
 #
 # 使用方式:
 #   chmod +x deploy.sh
@@ -73,8 +73,8 @@ init_environment() {
 
     # 创建必要的目录
     log_info "创建数据目录..."
-    mkdir -p ./docker-data/openclaw-config
-    mkdir -p ./docker-data/openclaw-workspace
+    mkdir -p ./docker-data/mtbot-config
+    mkdir -p ./docker-data/mtbot-workspace
     mkdir -p ./logs/api-server
     mkdir -p ./logs/gateway
     mkdir -p ./backups
@@ -102,7 +102,7 @@ init_environment() {
 
     # 创建 Docker 网络
     log_info "创建 Docker 网络..."
-    docker network create openclaw-network 2>/dev/null || log_info "网络已存在"
+    docker network create mtbot-network 2>/dev/null || log_info "网络已存在"
 
     # 启动基础设施
     log_info "启动基础设施服务..."
@@ -136,7 +136,7 @@ start_services() {
     log_info "启动应用服务..."
 
     # 检查基础设施是否运行
-    if ! docker ps | grep -q openclaw-postgres; then
+    if ! docker ps | grep -q mtbot-postgres; then
         log_warn "基础设施未运行，正在启动..."
         docker-compose -f docker-compose.infra.yml up -d
         sleep 10
@@ -209,7 +209,7 @@ backup_database() {
     mkdir -p $BACKUP_DIR
 
     # 备份 PostgreSQL
-    docker exec openclaw-postgres pg_dump -U openclaw_admin openclaw_prod | gzip > $BACKUP_FILE
+    docker exec mtbot-postgres pg_dump -U mtbot_admin mtbot_prod | gzip > $BACKUP_FILE
 
     if [ $? -eq 0 ]; then
         log_info "备份成功: $BACKUP_FILE"
@@ -284,14 +284,14 @@ health_check() {
     fi
 
     # PostgreSQL
-    if docker exec openclaw-postgres pg_isready -U openclaw_admin &> /dev/null; then
+    if docker exec mtbot-postgres pg_isready -U mtbot_admin &> /dev/null; then
         log_info "✓ PostgreSQL 健康"
     else
         log_error "✗ PostgreSQL 不健康"
     fi
 
     # Redis
-    if docker exec openclaw-redis redis-cli -a "${REDIS_PASSWORD:-Oc@2026!Rd#Secure}" ping &> /dev/null; then
+    if docker exec mtbot-redis redis-cli -a "${REDIS_PASSWORD:-Oc@2026!Rd#Secure}" ping &> /dev/null; then
         log_info "✓ Redis 健康"
     else
         log_error "✗ Redis 不健康"
@@ -339,7 +339,7 @@ main() {
             health_check
             ;;
         *)
-            echo "OpenClaw 部署脚本"
+            echo "MtBot 部署脚本"
             echo ""
             echo "使用方式: $0 [command]"
             echo ""

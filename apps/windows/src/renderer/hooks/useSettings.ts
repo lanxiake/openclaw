@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from 'react'
 
 // 设置更新事件名
-const SETTINGS_UPDATE_EVENT = 'openclaw-settings-update'
+const SETTINGS_UPDATE_EVENT = 'mtbot-settings-update'
 
 /**
  * Gateway 连接配置
@@ -155,7 +155,7 @@ const DEFAULT_SETTINGS: AppSettings = {
 /**
  * 存储键
  */
-const STORAGE_KEY = 'openclaw-assistant-settings'
+const STORAGE_KEY = 'mtbot-assistant-settings'
 
 interface UseSettingsReturn {
   /** 当前设置 */

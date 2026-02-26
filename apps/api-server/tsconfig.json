@@ -15,9 +15,9 @@
     "rootDir": "src",
     "baseUrl": ".",
     "paths": {
-      "@openclaw/db/*": ["../../src/db/*"],
-      "@openclaw/auth/*": ["../../src/assistant/auth/*"],
-      "@openclaw/admin-auth/*": ["../../src/assistant/admin-auth/*"]
+      "@mtbot/db/*": ["../../src/db/*"],
+      "@mtbot/auth/*": ["../../src/assistant/auth/*"],
+      "@mtbot/admin-auth/*": ["../../src/assistant/admin-auth/*"]
     }
   },
   "include": ["src/**/*"],

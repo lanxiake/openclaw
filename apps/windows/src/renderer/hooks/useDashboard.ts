@@ -120,7 +120,7 @@ export function useDashboard(): UseDashboardReturn {
     setIsLoading(true)
     setError(null)
 
-    const accessToken = localStorage.getItem('openclaw_access_token')
+    const accessToken = localStorage.getItem('mtbot_access_token')
     if (!accessToken) {
       console.warn('[useDashboard] 未登录，跳过加载')
       setIsLoading(false)

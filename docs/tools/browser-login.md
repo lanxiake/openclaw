@@ -9,7 +9,7 @@ read_when:
 
 ## Manual login (recommended)
 
-When a site requires login, **sign in manually** in the **host** browser profile (the openclaw browser).
+When a site requires login, **sign in manually** in the **host** browser profile (the mtbot browser).
 
 Do **not** give the model your credentials. Automated logins often trigger anti‑bot defenses and can lock the account.
 
@@ -17,7 +17,7 @@ Back to the main browser docs: [Browser](/tools/browser).
 
 ## Which Chrome profile is used?
 
-OpenClaw controls a **dedicated Chrome profile** (named `openclaw`, orange‑tinted UI). This is separate from your daily browser profile.
+MtBot controls a **dedicated Chrome profile** (named `mtbot`, orange‑tinted UI). This is separate from your daily browser profile.
 
 Two easy ways to access it:
 
@@ -25,11 +25,11 @@ Two easy ways to access it:
 2. **Open it via CLI**:
 
 ```bash
-openclaw browser start
-openclaw browser open https://x.com
+mtbot browser start
+mtbot browser open https://x.com
 ```
 
-If you have multiple profiles, pass `--browser-profile <name>` (the default is `openclaw`).
+If you have multiple profiles, pass `--browser-profile <name>` (the default is `mtbot`).
 
 ## X/Twitter: recommended flow
 
@@ -61,7 +61,7 @@ If the agent is sandboxed, the browser tool defaults to the sandbox. To allow ho
 Then target the host browser:
 
 ```bash
-openclaw browser open https://x.com --browser-profile openclaw --target host
+mtbot browser open https://x.com --browser-profile mtbot --target host
 ```
 
 Or disable sandboxing for the agent that posts updates.

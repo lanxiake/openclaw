@@ -32,7 +32,7 @@
 
 | 文件路径                                         | 侧      | 修改内容                                       |
 | ------------------------------------------------ | ------- | ---------------------------------------------- |
-| `src/agents/openclaw-tools.ts`                   | Gateway | 注册 skill_create 工具                         |
+| `src/agents/mtbot-tools.ts`                   | Gateway | 注册 skill_create 工具                         |
 | `src/gateway/server-methods/assistant-skills.ts` | Gateway | 新增 `assistant.skills.createAndPush` RPC 方法 |
 | `apps/windows/src/main/skill-runtime.ts`         | Windows | 新增 `handleSkillInstallPush` 处理远程推送安装 |
 | `apps/windows/src/preload/index.ts`              | Windows | skill.install 事件监听                         |
@@ -261,7 +261,7 @@ const SkillCreateToolSchema = Type.Object({
 
 export function createSkillCreateTool(options?: {
   agentSessionKey?: string;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
 }): AnyAgentTool;
 ```
 
@@ -274,7 +274,7 @@ export function createSkillCreateTool(options?: {
 | `detail`  | `assistant.skills.get`           | 技能详情           |
 | `execute` | `assistant.skills.execute`       | 执行技能           |
 
-**注册到 Agent：修改 `src/agents/openclaw-tools.ts`**
+**注册到 Agent：修改 `src/agents/mtbot-tools.ts`**
 
 在 L74-142 的 tools 数组中增加：
 
@@ -458,4 +458,4 @@ pnpm test
 > - Gateway 侧：37 个新增测试全绿（skill-packager 8 + skill-push 6 + skill-create-tool 9 + client-dispatch 14）
 > - Windows 侧：240 个测试通过（14/15 文件，api-client.test.ts 4 个失败是已有问题）
 > - 新增文件：skill-packager.ts, skill-push.ts, skill-create-tool.ts + 对应测试
-> - 修改文件：openclaw-tools.ts, assistant-skills.ts, server-methods-list.ts, server-methods.ts, skill-runtime.ts, gateway-client.ts
+> - 修改文件：mtbot-tools.ts, assistant-skills.ts, server-methods-list.ts, server-methods.ts, skill-runtime.ts, gateway-client.ts

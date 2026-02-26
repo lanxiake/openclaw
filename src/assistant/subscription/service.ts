@@ -6,7 +6,7 @@
  * - 配额检查和使用量追踪
  * - 订阅状态查询
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import * as fs from "node:fs";
@@ -40,7 +40,7 @@ const log = createSubsystemLogger("subscription");
  */
 function getSubscriptionDataDir(): string {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "";
-  return path.join(homeDir, ".openclaw", "subscription");
+  return path.join(homeDir, ".mtbot", "subscription");
 }
 
 /**

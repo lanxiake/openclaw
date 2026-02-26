@@ -5,19 +5,19 @@ import { describe, expect, it } from "vitest";
 import handler from "./handler.js";
 import { createHookEvent } from "../../hooks.js";
 import type { AgentBootstrapHookContext } from "../../hooks.js";
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { MtBotConfig } from "../../../config/config.js";
 import { makeTempWorkspace, writeWorkspaceFile } from "../../../test-helpers/workspace.js";
 
 describe("soul-evil hook", () => {
   it("skips subagent sessions", async () => {
-    const tempDir = await makeTempWorkspace("openclaw-soul-");
+    const tempDir = await makeTempWorkspace("mtbot-soul-");
     await writeWorkspaceFile({
       dir: tempDir,
       name: "SOUL_EVIL.md",
       content: "chaotic",
     });
 
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       hooks: {
         internal: {
           entries: {

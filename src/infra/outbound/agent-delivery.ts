@@ -14,7 +14,7 @@ import {
   resolveSessionDeliveryTarget,
   type SessionDeliveryTarget,
 } from "./targets.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import type { OutboundTargetResolution } from "./targets.js";
 
 export type AgentDeliveryPlan = {
@@ -102,7 +102,7 @@ export function resolveAgentDeliveryPlan(params: {
 }
 
 export function resolveAgentOutboundTarget(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   plan: AgentDeliveryPlan;
   targetMode?: ChannelOutboundTargetMode;
   validateExplicitTarget?: boolean;

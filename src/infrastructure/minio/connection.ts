@@ -30,13 +30,13 @@ export interface MinioConfig {
 // 预定义的存储桶
 export const BUCKETS = {
   /** 用户文件存储桶 */
-  FILES: "openclaw-files",
+  FILES: "mtbot-files",
   /** 媒体文件存储桶（公开访问） */
-  MEDIA: "openclaw-media",
+  MEDIA: "mtbot-media",
   /** 临时文件存储桶 */
-  TEMP: "openclaw-temp",
+  TEMP: "mtbot-temp",
   /** 技能包存储桶 */
-  SKILLS: "openclaw-skills",
+  SKILLS: "mtbot-skills",
 } as const;
 
 export type BucketName = (typeof BUCKETS)[keyof typeof BUCKETS];
@@ -54,8 +54,8 @@ export function getMinioConfigFromEnv(): MinioConfig {
     endPoint: process.env["MINIO_ENDPOINT"] || "localhost",
     port: parseInt(process.env["MINIO_PORT"] || "9000", 10),
     useSSL: process.env["MINIO_USE_SSL"] === "true",
-    accessKey: process.env["MINIO_ACCESS_KEY"] || "openclaw",
-    secretKey: process.env["MINIO_SECRET_KEY"] || "openclaw_dev",
+    accessKey: process.env["MINIO_ACCESS_KEY"] || "mtbot",
+    secretKey: process.env["MINIO_SECRET_KEY"] || "mtbot_dev",
     region: process.env["MINIO_REGION"],
   };
 }
@@ -102,8 +102,8 @@ export function createMinioClient(config: MinioConfig): Minio.Client {
 export function getMinio(): Minio.Client {
   // 检查是否处于 Mock 模式（用于单元测试）
   const g = globalThis as Record<string, unknown>;
-  if (g.__OPENCLAW_MOCK_ENABLED__ && g.__OPENCLAW_MOCK_MINIO__) {
-    return g.__OPENCLAW_MOCK_MINIO__ as Minio.Client;
+  if (g.__MTBOT_MOCK_ENABLED__ && g.__MTBOT_MOCK_MINIO__) {
+    return g.__MTBOT_MOCK_MINIO__ as Minio.Client;
   }
 
   if (!minioClient) {

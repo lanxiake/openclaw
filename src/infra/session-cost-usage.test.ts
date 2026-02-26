@@ -4,12 +4,12 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { loadCostUsageSummary, loadSessionCostSummary } from "./session-cost-usage.js";
 
 describe("session cost usage", () => {
   it("aggregates daily totals with log cost and pricing fallback", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-cost-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-cost-"));
     const sessionsDir = path.join(root, "agents", "main", "sessions");
     await fs.mkdir(sessionsDir, { recursive: true });
     const sessionFile = path.join(sessionsDir, "sess-1.jsonl");
@@ -92,10 +92,10 @@ describe("session cost usage", () => {
           },
         },
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
-    const originalState = process.env.OPENCLAW_STATE_DIR;
-    process.env.OPENCLAW_STATE_DIR = root;
+    const originalState = process.env.MTBOT_STATE_DIR;
+    process.env.MTBOT_STATE_DIR = root;
     try {
       const summary = await loadCostUsageSummary({ days: 30, config });
       expect(summary.daily.length).toBe(1);
@@ -103,15 +103,15 @@ describe("session cost usage", () => {
       expect(summary.totals.totalCost).toBeCloseTo(0.03003, 5);
     } finally {
       if (originalState === undefined) {
-        delete process.env.OPENCLAW_STATE_DIR;
+        delete process.env.MTBOT_STATE_DIR;
       } else {
-        process.env.OPENCLAW_STATE_DIR = originalState;
+        process.env.MTBOT_STATE_DIR = originalState;
       }
     }
   });
 
   it("summarizes a single session file", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-cost-session-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-cost-session-"));
     const sessionFile = path.join(root, "session.jsonl");
     const now = new Date();
 

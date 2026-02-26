@@ -14,7 +14,7 @@
 import { randomUUID } from "node:crypto";
 
 import { createSubsystemLogger } from "../../../../logging/subsystem.js";
-import type { OpenClawConfig } from "../../../../config/config.js";
+import type { MtBotConfig } from "../../../../config/config.js";
 import type { Database } from "../../../../db/connection.js";
 import type { UserMemory } from "../../../../db/schema/memories.js";
 import {
@@ -45,8 +45,8 @@ const logger = createSubsystemLogger("memory/knowledge/postgres");
 interface PostgresKnowledgeConfig extends ProviderConfig {
   /** 已有的 DB 实例（优先于自动获取） */
   db?: Database;
-  /** OpenClaw 配置（用于 embedding provider 初始化） */
-  cfg?: OpenClawConfig;
+  /** MtBot 配置（用于 embedding provider 初始化） */
+  cfg?: MtBotConfig;
   /** 已有的 embedding provider（测试用） */
   embeddingProvider?: EmbeddingProvider;
   /** 外部 embedding 配置（从数据库 system_configs 读取） */

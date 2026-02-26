@@ -8,7 +8,7 @@
  * - 执行回滚
  * - 双写模式管理
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import { getLogger } from "../../logging/logger.js";

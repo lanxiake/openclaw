@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct OpenClawApp: App {
+struct MtBotApp: App {
     @State private var appModel: NodeAppModel
     @State private var gatewayController: GatewayConnectionController
     @Environment(\.scenePhase) private var scenePhase

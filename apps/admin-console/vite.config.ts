@@ -5,7 +5,7 @@ import { defineConfig } from 'vite'
 /**
  * Vite 配置
  *
- * OpenClaw 服务端管理后台构建配置
+ * MtBot 服务端管理后台构建配置
  */
 export default defineConfig({
   plugins: [react()],

@@ -2,13 +2,13 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { withTempHome as withTempHomeBase } from "../../test/helpers/temp-home.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 
 async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
-  return withTempHomeBase(fn, { prefix: "openclaw-models-" });
+  return withTempHomeBase(fn, { prefix: "mtbot-models-" });
 }
 
-const _MODELS_CONFIG: OpenClawConfig = {
+const _MODELS_CONFIG: MtBotConfig = {
   models: {
     providers: {
       "custom-proxy": {
@@ -46,10 +46,10 @@ describe("models-config", () => {
   it("normalizes gemini 3 ids to preview for google providers", async () => {
     await withTempHome(async () => {
       vi.resetModules();
-      const { ensureOpenClawModelsJson } = await import("./models-config.js");
-      const { resolveOpenClawAgentDir } = await import("./agent-paths.js");
+      const { ensureMtBotModelsJson } = await import("./models-config.js");
+      const { resolveMtBotAgentDir } = await import("./agent-paths.js");
 
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         models: {
           providers: {
             google: {
@@ -83,9 +83,9 @@ describe("models-config", () => {
         },
       };
 
-      await ensureOpenClawModelsJson(cfg);
+      await ensureMtBotModelsJson(cfg);
 
-      const modelPath = path.join(resolveOpenClawAgentDir(), "models.json");
+      const modelPath = path.join(resolveMtBotAgentDir(), "models.json");
       const raw = await fs.readFile(modelPath, "utf8");
       const parsed = JSON.parse(raw) as {
         providers: Record<string, { models: Array<{ id: string }> }>;

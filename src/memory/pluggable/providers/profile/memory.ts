@@ -54,7 +54,7 @@ interface UserProfileData {
  * await provider.addFact('user-1', {
  *   category: 'work',
  *   key: 'company',
- *   value: 'OpenClaw',
+ *   value: 'MtBot',
  *   confidence: 1.0,
  *   source: 'explicit',
  *   sensitive: false,

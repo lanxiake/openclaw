@@ -1,12 +1,12 @@
 {
-  "name": "@openclaw/llm-task",
+  "name": "@mtbot/llm-task",
   "version": "2026.1.30",
-  "description": "OpenClaw JSON-only LLM task plugin",
+  "description": "MtBot JSON-only LLM task plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "mtbot": "workspace:*"
   },
-  "openclaw": {
+  "mtbot": {
     "extensions": [
       "./index.ts"
     ]

@@ -7,7 +7,7 @@ See also: [AGENTS.md](AGENTS.md) for repository guidelines, agent-specific notes
 ## Project Structure
 
 ```
-openclaw/
+mtbot/
 ├── src/                          # Core platform source
 │   ├── gateway/                  # WebSocket server, HTTP, protocol, auth, bridge
 │   ├── agents/                   # Pi RPC agent runtime, tool exec, model auth
@@ -29,7 +29,7 @@ openclaw/
 │   ├── canvas-host/              # A2UI visual workspace host
 │   ├── security/                 # Sandboxing, tool approval
 │   ├── hooks/bundled/            # Extensible event hooks
-│   ├── plugin-sdk/               # Extension SDK (openclaw/plugin-sdk)
+│   ├── plugin-sdk/               # Extension SDK (mtbot/plugin-sdk)
 │   ├── services/                 # Business logic services
 │   ├── sessions/                 # Session management
 │   ├── assistant/                # AI assistant module
@@ -41,7 +41,7 @@ openclaw/
 │   ├── macos/                    # macOS menu bar app (Swift/SwiftUI)
 │   ├── ios/                      # iOS companion (Swift)
 │   ├── android/                  # Android companion (Kotlin)
-│   └── shared/                   # Shared code (OpenClawKit for iOS/macOS)
+│   └── shared/                   # Shared code (MtBotKit for iOS/macOS)
 ├── ui/                           # Control UI / WebChat (React + Vite)
 ├── extensions/                   # 40+ channel plugins (pnpm workspace packages)
 ├── skills/                       # 50+ pre-built skills/tools
@@ -91,7 +91,7 @@ cd apps/api-server && pnpm dev
 
 | Variable            | Default                                | Description                               |
 | ------------------- | -------------------------------------- | ----------------------------------------- |
-| `DATABASE_URL`      | `postgresql://localhost:5432/openclaw` | PostgreSQL connection string              |
+| `DATABASE_URL`      | `postgresql://localhost:5432/mtbot` | PostgreSQL connection string              |
 | `JWT_SECRET`        | —                                      | JWT signing key (required for API Server) |
 | `GATEWAY_PORT`      | `18789`                                | Gateway WebSocket port                    |
 | `API_SERVER_PORT`   | `3000`                                 | API Server HTTP port                      |
@@ -99,7 +99,7 @@ cd apps/api-server && pnpm dev
 | `CORS_ORIGINS`      | `http://localhost:5173,5174`           | CORS allowed origins                      |
 | `NODE_ENV`          | `development`                          | Environment mode                          |
 
-See `src/gateway/config-loader.ts` for all Gateway env vars (`OPENCLAW_SKIP_*`, `OPENCLAW_DISABLE_*`, etc.).
+See `src/gateway/config-loader.ts` for all Gateway env vars (`MTBOT_SKIP_*`, `MTBOT_DISABLE_*`, etc.).
 
 ## Build, Test, and Lint Commands
 
@@ -121,7 +121,7 @@ pnpm test                    # unit tests (vitest, parallel forks)
 pnpm test:coverage           # unit tests + V8 coverage report
 pnpm test:e2e                # e2e tests (separate vitest config)
 pnpm test:watch              # vitest in watch mode
-pnpm test:live               # real API key tests (needs OPENCLAW_LIVE_TEST=1)
+pnpm test:live               # real API key tests (needs MTBOT_LIVE_TEST=1)
 
 # Run a single test file
 pnpm vitest run src/path/to/file.test.ts
@@ -130,7 +130,7 @@ pnpm vitest run src/path/to/file.test.ts
 pnpm test:docker:all
 
 # Dev run
-pnpm openclaw ...            # run CLI via tsx
+pnpm mtbot ...            # run CLI via tsx
 pnpm dev                     # alias for node scripts/run-node.mjs
 pnpm gateway:dev             # gateway without channels
 pnpm gateway:watch           # gateway with auto-reload on TS changes
@@ -159,7 +159,7 @@ pnpm android:test            # run Android unit tests
 
 ## Architecture Overview
 
-OpenClaw is a personal AI assistant platform with a **dual-service architecture**: Gateway (real-time WebSocket control plane) + API Server (RESTful business logic). The Gateway bridges messaging channels, agent sessions, companion apps, and tools; the API Server handles user management, skill store, subscriptions, payments, and admin operations.
+MtBot is a personal AI assistant platform with a **dual-service architecture**: Gateway (real-time WebSocket control plane) + API Server (RESTful business logic). The Gateway bridges messaging channels, agent sessions, companion apps, and tools; the API Server handles user management, skill store, subscriptions, payments, and admin operations.
 
 ### Core Data Flow
 
@@ -177,7 +177,7 @@ Messaging Channels (WhatsApp/Telegram/Slack/Discord/Signal/iMessage/Teams/etc.)
 │  └─────────┘  └──────────────┘ │    │  └──────────┘  └─────────────┘ │
 └────────────────┬────────────────┘    └────────────────┬────────────────┘
                  │                                      │
-    ├─ CLI (openclaw ...)                 ├─ admin-console (React)
+    ├─ CLI (mtbot ...)                 ├─ admin-console (React)
     ├─ WebChat UI                         └─ Windows client (REST)
     ├─ macOS menu bar app
     └─ iOS / Android nodes
@@ -205,7 +205,7 @@ Messaging Channels (WhatsApp/Telegram/Slack/Discord/Signal/iMessage/Teams/etc.)
 | `src/canvas-host/`                                                            | A2UI visual workspace host                                                                  |
 | `src/security/`                                                               | Sandboxing, tool approval                                                                   |
 | `src/hooks/bundled/`                                                          | Extensible event hooks                                                                      |
-| `src/plugin-sdk/`                                                             | Extension SDK (exported as `openclaw/plugin-sdk`)                                           |
+| `src/plugin-sdk/`                                                             | Extension SDK (exported as `mtbot/plugin-sdk`)                                           |
 | `apps/admin-console/`                                                         | Admin dashboard (React + TailwindCSS + Zustand + TanStack Query)                            |
 | `apps/api-server/`                                                            | REST API server (Fastify 5 + JWT auth + Drizzle ORM)                                        |
 | `apps/windows/`                                                               | Windows desktop client (Electron 28 + React + WebSocket)                                    |
@@ -221,7 +221,7 @@ Messaging Channels (WhatsApp/Telegram/Slack/Discord/Signal/iMessage/Teams/etc.)
 The Gateway exposes a JSON-RPC 2.0-style WebSocket protocol at `/ws` with methods namespaced as:
 `agent.*`, `chat.*`, `config.*`, `sessions.*`, `nodes.*`, `cron.*`, `skills.*`, `browser.*`, `talk.*`, `send.*`
 
-Protocol schema is defined in `src/gateway/protocol/` and auto-generated to `dist/protocol.schema.json` + Swift models (`apps/macos/Sources/OpenClawProtocol/GatewayModels.swift`). Run `pnpm protocol:check` to verify they stay in sync.
+Protocol schema is defined in `src/gateway/protocol/` and auto-generated to `dist/protocol.schema.json` + Swift models (`apps/macos/Sources/MtBotProtocol/GatewayModels.swift`). Run `pnpm protocol:check` to verify they stay in sync.
 
 ### Database Layer
 
@@ -230,7 +230,7 @@ Protocol schema is defined in `src/gateway/protocol/` and auto-generated to `dis
 - **Repositories**: `src/db/repositories/` (data access layer with tenant-scoped base class)
 - **Migrations**: `src/db/migrations/` (managed via `drizzle-kit`)
 - **Connection**: `src/db/connection.ts` (pool with graceful shutdown)
-- **Config**: `DATABASE_URL` env var, defaults to `postgresql://localhost:5432/openclaw`
+- **Config**: `DATABASE_URL` env var, defaults to `postgresql://localhost:5432/mtbot`
 
 ### Memory System
 
@@ -258,7 +258,7 @@ External services managed via `src/infrastructure/`:
 
 ### Plugin/Extension System
 
-Extensions live in `extensions/` as workspace packages. Plugin deps go in the extension's own `package.json`, not root. Runtime resolves `openclaw/plugin-sdk` via jiti alias. Install runs `npm install --omit=dev` in plugin dir.
+Extensions live in `extensions/` as workspace packages. Plugin deps go in the extension's own `package.json`, not root. Runtime resolves `mtbot/plugin-sdk` via jiti alias. Install runs `npm install --omit=dev` in plugin dir.
 
 ## Tech Stack
 
@@ -282,7 +282,7 @@ Extensions live in `extensions/` as workspace packages. Plugin deps go in the ex
 
 ## Coding Conventions
 
-- Naming: **OpenClaw** for product/docs headings; `openclaw` for CLI/package/paths/config keys.
+- Naming: **MtBot** for product/docs headings; `mtbot` for CLI/package/paths/config keys.
 - Files: aim for ~500 LOC, split when clarity improves. Max guideline ~700 LOC.
 - Tests: colocated `*.test.ts`; e2e in `*.e2e.test.ts`; live in `*.live.test.ts`.
 - Dependency injection via `createDefaultDeps()` pattern.

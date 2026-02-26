@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import type { OpenClawConfig } from "../config/types.openclaw.js";
+import type { MtBotConfig } from "../config/types.mtbot.js";
 
 import {
   mergeFileAndDbConfigs,
@@ -31,7 +31,7 @@ function emptyDbConfigs(): DatabaseConfigs {
 }
 
 /** 创建一个最小化的文件配置 */
-function baseFileConfig(): OpenClawConfig {
+function baseFileConfig(): MtBotConfig {
   return {
     gateway: {
       port: 18789,
@@ -284,7 +284,7 @@ describe("mergeFileAndDbConfigs", () => {
       fileConfig.agents = {
         defaults: {
           model: "claude-opus-4-5",
-          workspace: "~/openclaw-workspace",
+          workspace: "~/mtbot-workspace",
         },
       };
 
@@ -309,7 +309,7 @@ describe("mergeFileAndDbConfigs", () => {
 
       expect(result.agents?.defaults?.model).toBe("claude-sonnet-4-20250514");
       // workspace 保留文件值（数据库 workspacePath 为 null）
-      expect(result.agents?.defaults?.workspace).toBe("~/openclaw-workspace");
+      expect(result.agents?.defaults?.workspace).toBe("~/mtbot-workspace");
     });
 
     it("agentConfig 为 null 时保留文件配置", () => {
@@ -385,7 +385,7 @@ describe("mergeFileAndDbConfigs", () => {
       const fileConfig = baseFileConfig();
       fileConfig.session = {
         autoExpireTimeoutMinutes: 30,
-      } as OpenClawConfig["session"];
+      } as MtBotConfig["session"];
 
       const dbConfigs = emptyDbConfigs();
       dbConfigs.systemConfigs = {
@@ -526,7 +526,7 @@ describe("mergeFileAndDbConfigs", () => {
   // =========================================================================
   describe("边界场景", () => {
     it("文件配置为空对象时也能正常合并", () => {
-      const fileConfig: OpenClawConfig = {};
+      const fileConfig: MtBotConfig = {};
       const dbConfigs = emptyDbConfigs();
       dbConfigs.systemConfigs = {
         logging: { level: "error" },
@@ -538,7 +538,7 @@ describe("mergeFileAndDbConfigs", () => {
     });
 
     it("文件没有 gateway 段时，数据库创建新的 gateway 段", () => {
-      const fileConfig: OpenClawConfig = {};
+      const fileConfig: MtBotConfig = {};
       const dbConfigs = emptyDbConfigs();
       dbConfigs.gatewayConfig = {
         id: "gw-1",
@@ -570,7 +570,7 @@ describe("mergeFileAndDbConfigs", () => {
     });
 
     it("文件没有 models 段时，数据库的 providers 创建新的 models 段", () => {
-      const fileConfig: OpenClawConfig = {};
+      const fileConfig: MtBotConfig = {};
       const dbConfigs = emptyDbConfigs();
       dbConfigs.modelProviders = [
         {
@@ -604,7 +604,7 @@ describe("mergeFileAndDbConfigs", () => {
 
   describe("auth profiles 合并", () => {
     it("数据库 auth profiles 覆盖文件 auth.profiles", () => {
-      const fileConfig: OpenClawConfig = {
+      const fileConfig: MtBotConfig = {
         auth: {
           profiles: {
             "anthropic-main": { provider: "anthropic", mode: "api_key" },
@@ -683,7 +683,7 @@ describe("mergeFileAndDbConfigs", () => {
     });
 
     it("数据库 auth_profile_order 覆盖文件 auth.order", () => {
-      const fileConfig: OpenClawConfig = {
+      const fileConfig: MtBotConfig = {
         auth: {
           order: { default: ["a", "b"], anthropic: ["x"] },
         },
@@ -713,7 +713,7 @@ describe("mergeFileAndDbConfigs", () => {
     });
 
     it("禁用的 profile 不合并到配置中", () => {
-      const fileConfig: OpenClawConfig = {};
+      const fileConfig: MtBotConfig = {};
 
       const dbConfigs = emptyDbConfigs();
       dbConfigs.authProfiles = [
@@ -748,7 +748,7 @@ describe("mergeFileAndDbConfigs", () => {
     });
 
     it("cooldownConfig 从数据库 profile 合并到 auth.cooldowns", () => {
-      const fileConfig: OpenClawConfig = {
+      const fileConfig: MtBotConfig = {
         auth: {
           cooldowns: { billingBackoffHours: 5 },
         },
@@ -790,7 +790,7 @@ describe("mergeFileAndDbConfigs", () => {
     });
 
     it("auth profiles 和 order 同时为空时保留文件配置", () => {
-      const fileConfig: OpenClawConfig = {
+      const fileConfig: MtBotConfig = {
         auth: {
           profiles: { existing: { provider: "anthropic", mode: "api_key" } },
           order: { default: ["existing"] },

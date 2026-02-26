@@ -17,11 +17,11 @@ export async function registerSwaggerPlugin(server: FastifyInstance): Promise<vo
     openapi: {
       openapi: "3.0.0",
       info: {
-        title: "OpenClaw API Server",
-        description: "OpenClaw 多租户 AI 助手平台 REST API",
+        title: "MtBot API Server",
+        description: "MtBot 多租户 AI 助手平台 REST API",
         version: "1.0.0",
         contact: {
-          name: "OpenClaw Team",
+          name: "MtBot Team",
         },
       },
       servers: [

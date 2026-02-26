@@ -65,7 +65,7 @@ import {
   useUpdateModelProvider,
   useDeleteModelProvider,
 } from '@/hooks/useModelProviders'
-import type { ModelProvider } from '@openclaw/api-client/admin'
+import type { ModelProvider } from '@mtbot/api-client/admin'
 
 /** 表单数据结构 */
 interface ProviderFormData {

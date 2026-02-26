@@ -30,8 +30,8 @@ const logger = createSubsystemLogger(LOG_TAG);
 
 // 审计日志目录
 const AUDIT_LOG_DIR =
-  process.env.OPENCLAW_AUDIT_DIR ||
-  path.join(process.env.HOME || process.env.USERPROFILE || "/tmp", ".openclaw", "audit");
+  process.env.MTBOT_AUDIT_DIR ||
+  path.join(process.env.HOME || process.env.USERPROFILE || "/tmp", ".mtbot", "audit");
 
 // 日志文件前缀
 const LOG_FILE_PREFIX = "assistant-audit";

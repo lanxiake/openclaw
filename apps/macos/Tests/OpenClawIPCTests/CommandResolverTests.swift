@@ -1,7 +1,7 @@
 import Darwin
 import Foundation
 import Testing
-@testable import OpenClaw
+@testable import MtBot
 
 @Suite(.serialized) struct CommandResolverTests {
     private func makeDefaults() -> UserDefaults {
@@ -24,18 +24,18 @@ import Testing
         try FileManager().setAttributes([.posixPermissions: 0o755], ofItemAtPath: path.path)
     }
 
-    @Test func prefersOpenClawBinary() async throws {
+    @Test func prefersMtBotBinary() async throws {
         let defaults = self.makeDefaults()
         defaults.set(AppState.ConnectionMode.local.rawValue, forKey: connectionModeKey)
 
         let tmp = try makeTempDir()
         CommandResolver.setProjectRoot(tmp.path)
 
-        let openclawPath = tmp.appendingPathComponent("node_modules/.bin/openclaw")
-        try self.makeExec(at: openclawPath)
+        let mtbotPath = tmp.appendingPathComponent("node_modules/.bin/mtbot")
+        try self.makeExec(at: mtbotPath)
 
-        let cmd = CommandResolver.openclawCommand(subcommand: "gateway", defaults: defaults, configRoot: [:])
-        #expect(cmd.prefix(2).elementsEqual([openclawPath.path, "gateway"]))
+        let cmd = CommandResolver.mtbotCommand(subcommand: "gateway", defaults: defaults, configRoot: [:])
+        #expect(cmd.prefix(2).elementsEqual([mtbotPath.path, "gateway"]))
     }
 
     @Test func fallsBackToNodeAndScript() async throws {
@@ -46,13 +46,13 @@ import Testing
         CommandResolver.setProjectRoot(tmp.path)
 
         let nodePath = tmp.appendingPathComponent("node_modules/.bin/node")
-        let scriptPath = tmp.appendingPathComponent("bin/openclaw.js")
+        let scriptPath = tmp.appendingPathComponent("bin/mtbot.js")
         try self.makeExec(at: nodePath)
         try "#!/bin/sh\necho v22.0.0\n".write(to: nodePath, atomically: true, encoding: .utf8)
         try FileManager().setAttributes([.posixPermissions: 0o755], ofItemAtPath: nodePath.path)
         try self.makeExec(at: scriptPath)
 
-        let cmd = CommandResolver.openclawCommand(
+        let cmd = CommandResolver.mtbotCommand(
             subcommand: "rpc",
             defaults: defaults,
             configRoot: [:],
@@ -76,9 +76,9 @@ import Testing
         let pnpmPath = tmp.appendingPathComponent("node_modules/.bin/pnpm")
         try self.makeExec(at: pnpmPath)
 
-        let cmd = CommandResolver.openclawCommand(subcommand: "rpc", defaults: defaults, configRoot: [:])
+        let cmd = CommandResolver.mtbotCommand(subcommand: "rpc", defaults: defaults, configRoot: [:])
 
-        #expect(cmd.prefix(4).elementsEqual([pnpmPath.path, "--silent", "openclaw", "rpc"]))
+        #expect(cmd.prefix(4).elementsEqual([pnpmPath.path, "--silent", "mtbot", "rpc"]))
     }
 
     @Test func pnpmKeepsExtraArgsAfterSubcommand() async throws {
@@ -91,13 +91,13 @@ import Testing
         let pnpmPath = tmp.appendingPathComponent("node_modules/.bin/pnpm")
         try self.makeExec(at: pnpmPath)
 
-        let cmd = CommandResolver.openclawCommand(
+        let cmd = CommandResolver.mtbotCommand(
             subcommand: "health",
             extraArgs: ["--json", "--timeout", "5"],
             defaults: defaults,
             configRoot: [:])
 
-        #expect(cmd.prefix(5).elementsEqual([pnpmPath.path, "--silent", "openclaw", "health", "--json"]))
+        #expect(cmd.prefix(5).elementsEqual([pnpmPath.path, "--silent", "mtbot", "health", "--json"]))
         #expect(cmd.suffix(2).elementsEqual(["--timeout", "5"]))
     }
 
@@ -112,11 +112,11 @@ import Testing
     @Test func buildsSSHCommandForRemoteMode() async throws {
         let defaults = self.makeDefaults()
         defaults.set(AppState.ConnectionMode.remote.rawValue, forKey: connectionModeKey)
-        defaults.set("openclaw@example.com:2222", forKey: remoteTargetKey)
+        defaults.set("mtbot@example.com:2222", forKey: remoteTargetKey)
         defaults.set("/tmp/id_ed25519", forKey: remoteIdentityKey)
-        defaults.set("/srv/openclaw", forKey: remoteProjectRootKey)
+        defaults.set("/srv/mtbot", forKey: remoteProjectRootKey)
 
-        let cmd = CommandResolver.openclawCommand(
+        let cmd = CommandResolver.mtbotCommand(
             subcommand: "status",
             extraArgs: ["--json"],
             defaults: defaults,
@@ -124,16 +124,16 @@ import Testing
 
         #expect(cmd.first == "/usr/bin/ssh")
         if let marker = cmd.firstIndex(of: "--") {
-            #expect(cmd[marker + 1] == "openclaw@example.com")
+            #expect(cmd[marker + 1] == "mtbot@example.com")
         } else {
             #expect(Bool(false))
         }
         #expect(cmd.contains("-i"))
         #expect(cmd.contains("/tmp/id_ed25519"))
         if let script = cmd.last {
-            #expect(script.contains("PRJ='/srv/openclaw'"))
+            #expect(script.contains("PRJ='/srv/mtbot'"))
             #expect(script.contains("cd \"$PRJ\""))
-            #expect(script.contains("openclaw"))
+            #expect(script.contains("mtbot"))
             #expect(script.contains("status"))
             #expect(script.contains("--json"))
             #expect(script.contains("CLI="))
@@ -149,20 +149,20 @@ import Testing
     @Test func configRootLocalOverridesRemoteDefaults() async throws {
         let defaults = self.makeDefaults()
         defaults.set(AppState.ConnectionMode.remote.rawValue, forKey: connectionModeKey)
-        defaults.set("openclaw@example.com:2222", forKey: remoteTargetKey)
+        defaults.set("mtbot@example.com:2222", forKey: remoteTargetKey)
 
         let tmp = try makeTempDir()
         CommandResolver.setProjectRoot(tmp.path)
 
-        let openclawPath = tmp.appendingPathComponent("node_modules/.bin/openclaw")
-        try self.makeExec(at: openclawPath)
+        let mtbotPath = tmp.appendingPathComponent("node_modules/.bin/mtbot")
+        try self.makeExec(at: mtbotPath)
 
-        let cmd = CommandResolver.openclawCommand(
+        let cmd = CommandResolver.mtbotCommand(
             subcommand: "daemon",
             defaults: defaults,
             configRoot: ["gateway": ["mode": "local"]])
 
-        #expect(cmd.first == openclawPath.path)
+        #expect(cmd.first == mtbotPath.path)
         #expect(cmd.count >= 2)
         if cmd.count >= 2 {
             #expect(cmd[1] == "daemon")

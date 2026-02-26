@@ -26,7 +26,7 @@ export default defineConfig({
   dialect: "postgresql",
   // 数据库连接配置
   dbCredentials: {
-    url: connectionString || "postgresql://localhost:5432/openclaw",
+    url: connectionString || "postgresql://localhost:5432/mtbot",
   },
   // 详细日志
   verbose: true,

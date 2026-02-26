@@ -120,8 +120,8 @@ export function createConnection(config: DatabaseConfig): {
 export function getDatabase(): Database {
   // 检查是否处于 Mock 模式（用于单元测试）
   const g = globalThis as Record<string, unknown>;
-  if (g.__OPENCLAW_MOCK_ENABLED__ && g.__OPENCLAW_MOCK_DB__) {
-    return g.__OPENCLAW_MOCK_DB__ as Database;
+  if (g.__MTBOT_MOCK_ENABLED__ && g.__MTBOT_MOCK_DB__) {
+    return g.__MTBOT_MOCK_DB__ as Database;
   }
 
   if (!dbInstance) {

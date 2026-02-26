@@ -6,7 +6,7 @@ import {
 import { resolveModelRefFromString } from "../../agents/model-selection.js";
 import { resolveAgentTimeoutMs } from "../../agents/timeout.js";
 import { DEFAULT_AGENT_WORKSPACE_DIR, ensureAgentWorkspace } from "../../agents/workspace.js";
-import { type OpenClawConfig, loadConfig } from "../../config/config.js";
+import { type MtBotConfig, loadConfig } from "../../config/config.js";
 import { defaultRuntime } from "../../runtime.js";
 import { resolveCommandAuthorization } from "../command-auth.js";
 import type { MsgContext } from "../templating.js";
@@ -30,9 +30,9 @@ const log = createSubsystemLogger("reply/model-trace");
 export async function getReplyFromConfig(
   ctx: MsgContext,
   opts?: GetReplyOptions,
-  configOverride?: OpenClawConfig,
+  configOverride?: MtBotConfig,
 ): Promise<ReplyPayload | ReplyPayload[] | undefined> {
-  const isFastTestEnv = process.env.OPENCLAW_TEST_FAST === "1";
+  const isFastTestEnv = process.env.MTBOT_TEST_FAST === "1";
   const cfg = configOverride ?? loadConfig();
   const targetSessionKey =
     ctx.CommandSource === "native" ? ctx.CommandTargetSessionKey?.trim() : undefined;

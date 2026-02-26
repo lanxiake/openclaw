@@ -6,7 +6,7 @@ const { cleanBuild } = require('./clean-build')
  * 完整的打包流程：清理 -> 构建 -> 打包
  */
 async function packageWindows() {
-  console.log('📦 OpenClaw Windows 打包工具\n')
+  console.log('📦 MtBot Windows 打包工具\n')
   console.log('=' .repeat(60) + '\n')
 
   try {
@@ -90,7 +90,7 @@ async function packageWindows() {
     console.error('\n错误信息:')
     console.error(error.message)
     console.error('\n可能的解决方案:')
-    console.error('  1. 检查是否有 OpenClaw 进程正在运行，手动关闭后重试')
+    console.error('  1. 检查是否有 MtBot 进程正在运行，手动关闭后重试')
     console.error('  2. 以管理员权限运行终端')
     console.error('  3. 临时禁用 Windows Defender 实时保护')
     console.error('  4. 删除 release 和 out 目录后重试')

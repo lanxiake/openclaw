@@ -4,7 +4,7 @@ import { telegramOutbound } from "../channels/plugins/outbound/telegram.js";
 import { whatsappOutbound } from "../channels/plugins/outbound/whatsapp.js";
 import { discordOutbound } from "../channels/plugins/outbound/discord.js";
 import fs from "node:fs";
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { normalizeWhatsAppTarget } from "../whatsapp/normalize.js";
 import type {
   ChannelCapabilities,
@@ -21,7 +21,7 @@ import { normalizeIMessageHandle } from "../imessage/targets.js";
  * Returns a channel-scoped config object and normalized account id.
  */
 function resolveChannelConfigRecord(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   channelId: ChannelId;
   accountId?: string | null;
 }) {
@@ -42,10 +42,10 @@ function resolveChannelConfigRecord(params: {
  * Produces a shallow-cloned config with updated channel block.
  */
 function withUpdatedChannelConfig(
-  cfg: OpenClawConfig,
+  cfg: MtBotConfig,
   channelId: ChannelId,
   updater: (channelConfig: Record<string, unknown>) => Record<string, unknown>,
-): OpenClawConfig {
+): MtBotConfig {
   const channels = { ...(cfg.channels as Record<string, unknown> | undefined) };
   const current = (channels[channelId] as Record<string, unknown> | undefined) ?? {};
   channels[channelId] = updater({ ...current });
@@ -93,9 +93,9 @@ function migrateRootFieldsToDefaultAccount(channelConfig: Record<string, unknown
 function applySetupInputToChannelConfig(params: {
   channelId: ChannelId;
   accountId: string;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   input: Record<string, unknown>;
-}): OpenClawConfig {
+}): MtBotConfig {
   return withUpdatedChannelConfig(params.cfg, params.channelId, (current) => {
     const channelConfig: Record<string, unknown> = {
       ...current,
@@ -232,7 +232,7 @@ export const createBasicChannelTestPlugin = (params: {
   },
   capabilities: params.capabilities ?? { chatTypes: ["direct"] },
   config: {
-    listAccountIds: (cfg: OpenClawConfig) => {
+    listAccountIds: (cfg: MtBotConfig) => {
       const channels = (cfg.channels as Record<string, unknown> | undefined) ?? {};
       const raw = channels[params.id] as
         | { accounts?: Record<string, unknown> }
@@ -240,7 +240,7 @@ export const createBasicChannelTestPlugin = (params: {
       const accountIds = raw?.accounts ? Object.keys(raw.accounts) : [];
       return accountIds.length > 0 ? accountIds : ["default"];
     },
-    resolveAccount: (cfg: OpenClawConfig, accountId?: string | null) => {
+    resolveAccount: (cfg: MtBotConfig, accountId?: string | null) => {
       const { raw, resolvedAccountId, accountConfig } = resolveChannelConfigRecord({
         cfg,
         channelId: params.id,
@@ -516,7 +516,7 @@ export const createWhatsAppTestPlugin = (): ChannelPlugin =>
     }),
     config: {
       ...createBasicChannelTestPlugin({ id: "whatsapp", label: "WhatsApp" }).config,
-      resolveAllowFrom: ({ cfg }: { cfg: OpenClawConfig }) => cfg.channels?.whatsapp?.allowFrom,
+      resolveAllowFrom: ({ cfg }: { cfg: MtBotConfig }) => cfg.channels?.whatsapp?.allowFrom,
     },
     messaging: {
       targetResolver: {

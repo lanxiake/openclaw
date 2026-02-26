@@ -10,7 +10,7 @@ async function build() {
   await fs.ensureDir(assetsDir);
 
   const config = {
-    name: "OpenClaw",
+    name: "MtBot",
     version: "2026.1.30",
     gateway: {
       port: 18789,
@@ -39,22 +39,22 @@ async function build() {
 
   try {
     // 使用 node14 替代 node16，更稳定
-    execSync("npx pkg@5.8.1 . --target node14-win-x64 --output dist/openclaw.exe", {
+    execSync("npx pkg@5.8.1 . --target node14-win-x64 --output dist/mtbot.exe", {
       cwd: __dirname,
       stdio: "inherit",
     });
 
     console.log("\n✅ PKG 打包完成！");
     console.log("\n📂 输出文件:");
-    console.log(`   ${path.join(distDir, "openclaw.exe")}`);
+    console.log(`   ${path.join(distDir, "mtbot.exe")}`);
 
     // 检查文件大小
-    const stats = await fs.stat(path.join(distDir, "openclaw.exe"));
+    const stats = await fs.stat(path.join(distDir, "mtbot.exe"));
     console.log(`   大小: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
 
     console.log("\n🎯 测试命令:");
     console.log("   cd windows-packaging/pkg-test");
-    console.log("   dist\\openclaw.exe");
+    console.log("   dist\\mtbot.exe");
   } catch (error) {
     console.error("\n❌ 打包失败:", error.message);
     process.exit(1);

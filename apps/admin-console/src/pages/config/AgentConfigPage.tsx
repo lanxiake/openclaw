@@ -32,7 +32,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useAgentConfig, useUpdateAgentConfig, useResetAgentConfig } from '@/hooks/useAgentConfig'
 import { useModelProviders } from '@/hooks/useModelProviders'
-import type { ModelProvider, UpdateAgentConfigRequest } from '@openclaw/api-client/admin'
+import type { ModelProvider, UpdateAgentConfigRequest } from '@mtbot/api-client/admin'
 
 /** 压缩模式选项 */
 const COMPACTION_MODES = [

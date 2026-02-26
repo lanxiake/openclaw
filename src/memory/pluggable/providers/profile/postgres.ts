@@ -9,7 +9,7 @@
  */
 
 import { getLogger } from "../../../../logging/logger.js";
-import type { OpenClawConfig } from "../../../../config/config.js";
+import type { MtBotConfig } from "../../../../config/config.js";
 import type { Database } from "../../../../db/connection.js";
 import {
   getUserFactRepository,
@@ -114,8 +114,8 @@ interface PostgresProfileConfig extends ProviderConfig {
   url?: string;
   /** 已有的 DB 实例（优先于 url） */
   db?: Database;
-  /** OpenClaw 配置（用于 LLM 服务初始化） */
-  cfg?: OpenClawConfig;
+  /** MtBot 配置（用于 LLM 服务初始化） */
+  cfg?: MtBotConfig;
 }
 
 // ==================== Provider 实现 ====================
@@ -135,7 +135,7 @@ interface PostgresProfileConfig extends ProviderConfig {
  * await provider.addFact('user-123', {
  *   category: 'work',
  *   key: 'company',
- *   value: 'OpenClaw',
+ *   value: 'MtBot',
  *   confidence: 1.0,
  *   source: 'explicit',
  *   sensitive: false,

@@ -117,9 +117,9 @@ export class DevicePairingService {
 
     return {
       deviceId: randomUUID(),
-      displayName: `${hostname} - OpenClaw Assistant`,
+      displayName: `${hostname} - MtBot Assistant`,
       platform,
-      clientId: 'openclaw-windows',
+      clientId: 'mtbot-windows',
       clientMode: 'assistant',
       createdAt: Date.now(),
     }

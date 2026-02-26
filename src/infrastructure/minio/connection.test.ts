@@ -59,9 +59,9 @@ describe("MinIO Connection", () => {
     it("应该定义预设存储桶", async () => {
       const { BUCKETS } = await import("./connection.js");
 
-      expect(BUCKETS.FILES).toBe("openclaw-files");
-      expect(BUCKETS.MEDIA).toBe("openclaw-media");
-      expect(BUCKETS.TEMP).toBe("openclaw-temp");
+      expect(BUCKETS.FILES).toBe("mtbot-files");
+      expect(BUCKETS.MEDIA).toBe("mtbot-media");
+      expect(BUCKETS.TEMP).toBe("mtbot-temp");
     });
   });
 });

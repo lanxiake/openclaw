@@ -1,6 +1,6 @@
 import AVFoundation
-import OpenClawIPC
-import OpenClawKit
+import MtBotIPC
+import MtBotKit
 import CoreGraphics
 import Foundation
 import OSLog
@@ -36,7 +36,7 @@ actor CameraCaptureService {
         }
     }
 
-    private let logger = Logger(subsystem: "ai.openclaw", category: "camera")
+    private let logger = Logger(subsystem: "com.yunkun.mtbot", category: "camera")
 
     func listDevices() -> [CameraDeviceInfo] {
         Self.availableCameras().map { device in
@@ -168,7 +168,7 @@ actor CameraCaptureService {
         await Self.warmUpCaptureSession()
 
         let tmpMovURL = FileManager().temporaryDirectory
-            .appendingPathComponent("openclaw-camera-\(UUID().uuidString).mov")
+            .appendingPathComponent("mtbot-camera-\(UUID().uuidString).mov")
         defer { try? FileManager().removeItem(at: tmpMovURL) }
 
         let outputURL: URL = {
@@ -176,7 +176,7 @@ actor CameraCaptureService {
                 return URL(fileURLWithPath: outPath)
             }
             return FileManager().temporaryDirectory
-                .appendingPathComponent("openclaw-camera-\(UUID().uuidString).mp4")
+                .appendingPathComponent("mtbot-camera-\(UUID().uuidString).mp4")
         }()
 
         // Ensure we don't fail exporting due to an existing file.

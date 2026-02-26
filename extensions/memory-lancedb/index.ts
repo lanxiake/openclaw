@@ -1,5 +1,5 @@
 /**
- * OpenClaw Memory (LanceDB) Plugin
+ * MtBot Memory (LanceDB) Plugin
  *
  * Long-term memory with vector search for AI conversations.
  * Uses LanceDB for storage and OpenAI for embeddings.
@@ -10,8 +10,8 @@ import { Type } from "@sinclair/typebox";
 import * as lancedb from "@lancedb/lancedb";
 import OpenAI from "openai";
 import { randomUUID } from "node:crypto";
-import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
-import { stringEnum } from "openclaw/plugin-sdk";
+import type { MtBotPluginApi } from "mtbot/plugin-sdk";
+import { stringEnum } from "mtbot/plugin-sdk";
 
 import {
   MEMORY_CATEGORIES,
@@ -234,7 +234,7 @@ const memoryPlugin = {
   kind: "memory" as const,
   configSchema: memoryConfigSchema,
 
-  register(api: OpenClawPluginApi) {
+  register(api: MtBotPluginApi) {
     const cfg = memoryConfigSchema.parse(api.pluginConfig);
     const resolvedDbPath = api.resolvePath(cfg.dbPath!);
     const vectorDim = vectorDimsForModel(cfg.embedding.model ?? "text-embedding-3-small");

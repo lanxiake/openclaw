@@ -1,5 +1,5 @@
 ================================================================
-  OpenClaw Windows 打包测试环境
+  MtBot Windows 打包测试环境
 ================================================================
 
 本目录包含三种 Windows EXE 打包方案的完整测试项目。
@@ -27,13 +27,13 @@ windows-packaging/
    1. cd pkg-test
    2. npm install fs-extra
    3. node build.js
-   4. dist\openclaw.exe
+   4. dist\mtbot.exe
    
    NEXE 测试:
    1. cd nexe-test
    2. npm install fs-extra
    3. node build.js
-   4. dist\openclaw.exe
+   4. dist\mtbot.exe
    
    Electron 测试:
    1. cd electron-test

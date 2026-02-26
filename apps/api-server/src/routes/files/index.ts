@@ -216,7 +216,7 @@ export function registerFilesRoutes(server: FastifyInstance): void {
 
       // 删除 MinIO 中的实际文件
       try {
-        const bucket = file.storageBucket === "openclaw-media" ? BUCKETS.MEDIA : BUCKETS.FILES;
+        const bucket = file.storageBucket === "mtbot-media" ? BUCKETS.MEDIA : BUCKETS.FILES;
         await deleteMinioFile(bucket, file.storageKey);
         request.log.info(
           { bucket, storageKey: file.storageKey },
@@ -355,7 +355,7 @@ export function registerFilesRoutes(server: FastifyInstance): void {
         });
       }
 
-      const bucket = file.storageBucket === "openclaw-media" ? BUCKETS.MEDIA : BUCKETS.FILES;
+      const bucket = file.storageBucket === "mtbot-media" ? BUCKETS.MEDIA : BUCKETS.FILES;
 
       // 如果请求重定向，返回预签名 URL
       if (query.redirect === "true") {

@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import type { UserAgentContext } from "../agents/user-context.js";
 import { runWithUserContextAsync } from "../agents/user-context-store.js";
 import type { FinalizedMsgContext, MsgContext } from "./templating.js";
@@ -18,7 +18,7 @@ export type DispatchInboundResult = DispatchFromConfigResult;
 
 export async function dispatchInboundMessage(params: {
   ctx: MsgContext | FinalizedMsgContext;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   dispatcher: ReplyDispatcher;
   replyOptions?: Omit<GetReplyOptions, "onToolResult" | "onBlockReply">;
   replyResolver?: typeof import("./reply.js").getReplyFromConfig;
@@ -48,7 +48,7 @@ export async function dispatchInboundMessage(params: {
 
 export async function dispatchInboundMessageWithBufferedDispatcher(params: {
   ctx: MsgContext | FinalizedMsgContext;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   dispatcherOptions: ReplyDispatcherWithTypingOptions;
   replyOptions?: Omit<GetReplyOptions, "onToolResult" | "onBlockReply">;
   replyResolver?: typeof import("./reply.js").getReplyFromConfig;
@@ -77,7 +77,7 @@ export async function dispatchInboundMessageWithBufferedDispatcher(params: {
 
 export async function dispatchInboundMessageWithDispatcher(params: {
   ctx: MsgContext | FinalizedMsgContext;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   dispatcherOptions: ReplyDispatcherOptions;
   replyOptions?: Omit<GetReplyOptions, "onToolResult" | "onBlockReply">;
   replyResolver?: typeof import("./reply.js").getReplyFromConfig;

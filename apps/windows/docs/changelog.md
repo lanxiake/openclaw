@@ -1,6 +1,6 @@
-# OpenClaw Assistant 更新日志
+# MtBot Assistant 更新日志
 
-记录 OpenClaw Assistant Windows 客户端的版本更新历史。
+记录 MtBot Assistant Windows 客户端的版本更新历史。
 
 ---
 
@@ -8,7 +8,7 @@
 
 ### 首个公开版本
 
-这是 OpenClaw Assistant Windows 客户端的首个公开发布版本。
+这是 MtBot Assistant Windows 客户端的首个公开发布版本。
 
 ### 新增功能
 
@@ -100,5 +100,5 @@
 
 如果您在使用中遇到问题或有功能建议，欢迎通过以下渠道反馈：
 
-- **GitHub Issues**: https://github.com/openclaw/openclaw/issues
-- **邮箱**: support@openclaw.ai
+- **GitHub Issues**: https://github.com/mtbot/mtbot/issues
+- **邮箱**: support@mtbot.top

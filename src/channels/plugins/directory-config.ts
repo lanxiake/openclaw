@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../../config/types.js";
+import type { MtBotConfig } from "../../config/types.js";
 import type { ChannelDirectoryEntry } from "./types.js";
 import { resolveSlackAccount } from "../../slack/accounts.js";
 import { resolveDiscordAccount } from "../../discord/accounts.js";
@@ -8,7 +8,7 @@ import { normalizeSlackMessagingTarget } from "./normalize/slack.js";
 import { isWhatsAppGroupJid, normalizeWhatsAppTarget } from "../../whatsapp/normalize.js";
 
 export type DirectoryConfigParams = {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   accountId?: string | null;
   query?: string | null;
   limit?: number | null;

@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { getChannelDock } from "../channels/dock.js";
 import { resolveChannelGroupToolsPolicy } from "../config/group-policy.js";
 import { resolveAgentConfig, resolveAgentIdFromSessionKey } from "./agent-scope.js";
@@ -95,7 +95,7 @@ const DEFAULT_SUBAGENT_TOOL_DENY = [
   "memory_get",
 ];
 
-export function resolveSubagentToolPolicy(cfg?: OpenClawConfig): SandboxToolPolicy {
+export function resolveSubagentToolPolicy(cfg?: MtBotConfig): SandboxToolPolicy {
   const configured = cfg?.tools?.subagents?.tools;
   const deny = [
     ...DEFAULT_SUBAGENT_TOOL_DENY,
@@ -228,7 +228,7 @@ function resolveProviderToolPolicy(params: {
 }
 
 export function resolveEffectiveToolPolicy(params: {
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
   sessionKey?: string;
   modelProvider?: string;
   modelId?: string;
@@ -273,7 +273,7 @@ export function resolveEffectiveToolPolicy(params: {
 }
 
 export function resolveGroupToolPolicy(params: {
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
   sessionKey?: string;
   spawnedBy?: string | null;
   messageProvider?: string;

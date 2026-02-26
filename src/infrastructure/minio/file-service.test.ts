@@ -18,9 +18,9 @@ const mockMinioClient = {
 vi.mock("./connection.js", () => ({
   getMinio: () => mockMinioClient,
   BUCKETS: {
-    FILES: "openclaw-files",
-    MEDIA: "openclaw-media",
-    TEMP: "openclaw-temp",
+    FILES: "mtbot-files",
+    MEDIA: "mtbot-media",
+    TEMP: "mtbot-temp",
   },
   getPresignedPutUrl: vi.fn().mockResolvedValue("https://example.com/upload"),
   getPresignedGetUrl: vi.fn().mockResolvedValue("https://example.com/download"),
@@ -88,9 +88,9 @@ describe("File Service", () => {
     it("应该上传文件并返回结果", async () => {
       const buffer = Buffer.from("test content");
 
-      const result = await uploadFile("openclaw-files", "test/file.txt", buffer, testMetadata);
+      const result = await uploadFile("mtbot-files", "test/file.txt", buffer, testMetadata);
 
-      expect(result.bucket).toBe("openclaw-files");
+      expect(result.bucket).toBe("mtbot-files");
       expect(result.key).toBe("test/file.txt");
       expect(result.etag).toBe("test-etag");
       expect(result.size).toBe(buffer.length);
@@ -100,9 +100,9 @@ describe("File Service", () => {
 
   describe("deleteFile", () => {
     it("应该删除文件", async () => {
-      await deleteFile("openclaw-files", "test/file.txt");
+      await deleteFile("mtbot-files", "test/file.txt");
 
-      expect(mockMinioClient.removeObject).toHaveBeenCalledWith("openclaw-files", "test/file.txt");
+      expect(mockMinioClient.removeObject).toHaveBeenCalledWith("mtbot-files", "test/file.txt");
     });
   });
 
@@ -110,9 +110,9 @@ describe("File Service", () => {
     it("应该批量删除文件", async () => {
       const keys = ["file1.txt", "file2.txt", "file3.txt"];
 
-      await deleteFiles("openclaw-files", keys);
+      await deleteFiles("mtbot-files", keys);
 
-      expect(mockMinioClient.removeObjects).toHaveBeenCalledWith("openclaw-files", keys);
+      expect(mockMinioClient.removeObjects).toHaveBeenCalledWith("mtbot-files", keys);
     });
   });
 
@@ -130,7 +130,7 @@ describe("File Service", () => {
         },
       });
 
-      const info = await getFileInfo("openclaw-files", "test/file.txt");
+      const info = await getFileInfo("mtbot-files", "test/file.txt");
 
       expect(info).not.toBeNull();
       expect(info!.key).toBe("test/file.txt");
@@ -141,7 +141,7 @@ describe("File Service", () => {
     it("文件不存在时应返回 null", async () => {
       mockMinioClient.statObject.mockRejectedValue({ code: "NotFound" });
 
-      const info = await getFileInfo("openclaw-files", "non-existent.txt");
+      const info = await getFileInfo("mtbot-files", "non-existent.txt");
 
       expect(info).toBeNull();
     });
@@ -155,7 +155,7 @@ describe("File Service", () => {
         etag: "test-etag",
       });
 
-      const exists = await fileExists("openclaw-files", "test/file.txt");
+      const exists = await fileExists("mtbot-files", "test/file.txt");
 
       expect(exists).toBe(true);
     });
@@ -163,7 +163,7 @@ describe("File Service", () => {
     it("文件不存在时应返回 false", async () => {
       mockMinioClient.statObject.mockRejectedValue({ code: "NotFound" });
 
-      const exists = await fileExists("openclaw-files", "non-existent.txt");
+      const exists = await fileExists("mtbot-files", "non-existent.txt");
 
       expect(exists).toBe(false);
     });
@@ -171,7 +171,7 @@ describe("File Service", () => {
 
   describe("getUploadUrl", () => {
     it("应该返回上传预签名 URL", async () => {
-      const url = await getUploadUrl("openclaw-files", "test/file.txt");
+      const url = await getUploadUrl("mtbot-files", "test/file.txt");
 
       expect(url).toBe("https://example.com/upload");
     });
@@ -179,7 +179,7 @@ describe("File Service", () => {
 
   describe("getDownloadUrl", () => {
     it("应该返回下载预签名 URL", async () => {
-      const url = await getDownloadUrl("openclaw-files", "test/file.txt");
+      const url = await getDownloadUrl("mtbot-files", "test/file.txt");
 
       expect(url).toBe("https://example.com/download");
     });

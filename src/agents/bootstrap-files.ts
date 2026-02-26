@@ -6,7 +6,7 @@
  * 不存在时 fallback 到文件系统加载。
  */
 
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { applyBootstrapHookOverrides } from "./bootstrap-hooks.js";
 import {
   filterBootstrapFilesForSession,
@@ -55,7 +55,7 @@ function buildBootstrapFilesFromMap(workspaceFiles: Map<string, string>): Worksp
 
 export async function resolveBootstrapFilesForRun(params: {
   workspaceDir: string;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
   sessionKey?: string;
   sessionId?: string;
   agentId?: string;
@@ -92,7 +92,7 @@ export async function resolveBootstrapFilesForRun(params: {
 
 export async function resolveBootstrapContextForRun(params: {
   workspaceDir: string;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
   sessionKey?: string;
   sessionId?: string;
   agentId?: string;

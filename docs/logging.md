@@ -8,7 +8,7 @@ read_when:
 
 # Logging
 
-OpenClaw logs in two places:
+MtBot logs in two places:
 
 - **File logs** (JSON lines) written by the Gateway.
 - **Console output** shown in terminals and the Control UI.
@@ -20,16 +20,16 @@ levels and formats.
 
 By default, the Gateway writes a rolling log file under:
 
-`/tmp/openclaw/openclaw-YYYY-MM-DD.log`
+`/tmp/mtbot/mtbot-YYYY-MM-DD.log`
 
 The date uses the gateway host's local timezone.
 
-You can override this in `~/.openclaw/openclaw.json`:
+You can override this in `~/.mtbot/mtbot.json`:
 
 ```json
 {
   "logging": {
-    "file": "/path/to/openclaw.log"
+    "file": "/path/to/mtbot.log"
   }
 }
 ```
@@ -41,7 +41,7 @@ You can override this in `~/.openclaw/openclaw.json`:
 Use the CLI to tail the gateway log file via RPC:
 
 ```bash
-openclaw logs --follow
+mtbot logs --follow
 ```
 
 Output modes:
@@ -62,7 +62,7 @@ In JSON mode, the CLI emits `type`-tagged objects:
 If the Gateway is unreachable, the CLI prints a short hint to run:
 
 ```bash
-openclaw doctor
+mtbot doctor
 ```
 
 ### Control UI (web)
@@ -75,7 +75,7 @@ See [/web/control-ui](/web/control-ui) for how to open it.
 To filter channel activity (WhatsApp/Telegram/etc), use:
 
 ```bash
-openclaw channels logs --channel whatsapp
+mtbot channels logs --channel whatsapp
 ```
 
 ## Log formats
@@ -97,13 +97,13 @@ Console formatting is controlled by `logging.consoleStyle`.
 
 ## Configuring logging
 
-All logging configuration lives under `logging` in `~/.openclaw/openclaw.json`.
+All logging configuration lives under `logging` in `~/.mtbot/mtbot.json`.
 
 ```json
 {
   "logging": {
     "level": "info",
-    "file": "/tmp/openclaw/openclaw-YYYY-MM-DD.log",
+    "file": "/tmp/mtbot/mtbot-YYYY-MM-DD.log",
     "consoleLevel": "info",
     "consoleStyle": "pretty",
     "redactSensitive": "tools",
@@ -149,7 +149,7 @@ diagnostics + the exporter plugin are enabled.
 
 - **OpenTelemetry (OTel)**: the data model + SDKs for traces, metrics, and logs.
 - **OTLP**: the wire protocol used to export OTel data to a collector/backend.
-- OpenClaw exports via **OTLP/HTTP (protobuf)** today.
+- MtBot exports via **OTLP/HTTP (protobuf)** today.
 
 ### Signals exported
 
@@ -209,7 +209,7 @@ Flags are case-insensitive and support wildcards (e.g. `telegram.*` or `*`).
 Env override (one-off):
 
 ```
-OPENCLAW_DIAGNOSTICS=telegram.http,telegram.payload
+MTBOT_DIAGNOSTICS=telegram.http,telegram.payload
 ```
 
 Notes:
@@ -239,7 +239,7 @@ works with any OpenTelemetry collector/backend that accepts OTLP/HTTP.
       "enabled": true,
       "endpoint": "http://otel-collector:4318",
       "protocol": "http/protobuf",
-      "serviceName": "openclaw-gateway",
+      "serviceName": "mtbot-gateway",
       "traces": true,
       "metrics": true,
       "logs": true,
@@ -252,7 +252,7 @@ works with any OpenTelemetry collector/backend that accepts OTLP/HTTP.
 
 Notes:
 
-- You can also enable the plugin with `openclaw plugins enable diagnostics-otel`.
+- You can also enable the plugin with `mtbot plugins enable diagnostics-otel`.
 - `protocol` currently supports `http/protobuf` only. `grpc` is ignored.
 - Metrics include token usage, cost, context size, run duration, and message-flow
   counters/histograms (webhooks, queueing, session state, queue depth/wait).
@@ -266,60 +266,60 @@ Notes:
 
 Model usage:
 
-- `openclaw.tokens` (counter, attrs: `openclaw.token`, `openclaw.channel`,
-  `openclaw.provider`, `openclaw.model`)
-- `openclaw.cost.usd` (counter, attrs: `openclaw.channel`, `openclaw.provider`,
-  `openclaw.model`)
-- `openclaw.run.duration_ms` (histogram, attrs: `openclaw.channel`,
-  `openclaw.provider`, `openclaw.model`)
-- `openclaw.context.tokens` (histogram, attrs: `openclaw.context`,
-  `openclaw.channel`, `openclaw.provider`, `openclaw.model`)
+- `mtbot.tokens` (counter, attrs: `mtbot.token`, `mtbot.channel`,
+  `mtbot.provider`, `mtbot.model`)
+- `mtbot.cost.usd` (counter, attrs: `mtbot.channel`, `mtbot.provider`,
+  `mtbot.model`)
+- `mtbot.run.duration_ms` (histogram, attrs: `mtbot.channel`,
+  `mtbot.provider`, `mtbot.model`)
+- `mtbot.context.tokens` (histogram, attrs: `mtbot.context`,
+  `mtbot.channel`, `mtbot.provider`, `mtbot.model`)
 
 Message flow:
 
-- `openclaw.webhook.received` (counter, attrs: `openclaw.channel`,
-  `openclaw.webhook`)
-- `openclaw.webhook.error` (counter, attrs: `openclaw.channel`,
-  `openclaw.webhook`)
-- `openclaw.webhook.duration_ms` (histogram, attrs: `openclaw.channel`,
-  `openclaw.webhook`)
-- `openclaw.message.queued` (counter, attrs: `openclaw.channel`,
-  `openclaw.source`)
-- `openclaw.message.processed` (counter, attrs: `openclaw.channel`,
-  `openclaw.outcome`)
-- `openclaw.message.duration_ms` (histogram, attrs: `openclaw.channel`,
-  `openclaw.outcome`)
+- `mtbot.webhook.received` (counter, attrs: `mtbot.channel`,
+  `mtbot.webhook`)
+- `mtbot.webhook.error` (counter, attrs: `mtbot.channel`,
+  `mtbot.webhook`)
+- `mtbot.webhook.duration_ms` (histogram, attrs: `mtbot.channel`,
+  `mtbot.webhook`)
+- `mtbot.message.queued` (counter, attrs: `mtbot.channel`,
+  `mtbot.source`)
+- `mtbot.message.processed` (counter, attrs: `mtbot.channel`,
+  `mtbot.outcome`)
+- `mtbot.message.duration_ms` (histogram, attrs: `mtbot.channel`,
+  `mtbot.outcome`)
 
 Queues + sessions:
 
-- `openclaw.queue.lane.enqueue` (counter, attrs: `openclaw.lane`)
-- `openclaw.queue.lane.dequeue` (counter, attrs: `openclaw.lane`)
-- `openclaw.queue.depth` (histogram, attrs: `openclaw.lane` or
-  `openclaw.channel=heartbeat`)
-- `openclaw.queue.wait_ms` (histogram, attrs: `openclaw.lane`)
-- `openclaw.session.state` (counter, attrs: `openclaw.state`, `openclaw.reason`)
-- `openclaw.session.stuck` (counter, attrs: `openclaw.state`)
-- `openclaw.session.stuck_age_ms` (histogram, attrs: `openclaw.state`)
-- `openclaw.run.attempt` (counter, attrs: `openclaw.attempt`)
+- `mtbot.queue.lane.enqueue` (counter, attrs: `mtbot.lane`)
+- `mtbot.queue.lane.dequeue` (counter, attrs: `mtbot.lane`)
+- `mtbot.queue.depth` (histogram, attrs: `mtbot.lane` or
+  `mtbot.channel=heartbeat`)
+- `mtbot.queue.wait_ms` (histogram, attrs: `mtbot.lane`)
+- `mtbot.session.state` (counter, attrs: `mtbot.state`, `mtbot.reason`)
+- `mtbot.session.stuck` (counter, attrs: `mtbot.state`)
+- `mtbot.session.stuck_age_ms` (histogram, attrs: `mtbot.state`)
+- `mtbot.run.attempt` (counter, attrs: `mtbot.attempt`)
 
 ### Exported spans (names + key attributes)
 
-- `openclaw.model.usage`
-  - `openclaw.channel`, `openclaw.provider`, `openclaw.model`
-  - `openclaw.sessionKey`, `openclaw.sessionId`
-  - `openclaw.tokens.*` (input/output/cache_read/cache_write/total)
-- `openclaw.webhook.processed`
-  - `openclaw.channel`, `openclaw.webhook`, `openclaw.chatId`
-- `openclaw.webhook.error`
-  - `openclaw.channel`, `openclaw.webhook`, `openclaw.chatId`,
-    `openclaw.error`
-- `openclaw.message.processed`
-  - `openclaw.channel`, `openclaw.outcome`, `openclaw.chatId`,
-    `openclaw.messageId`, `openclaw.sessionKey`, `openclaw.sessionId`,
-    `openclaw.reason`
-- `openclaw.session.stuck`
-  - `openclaw.state`, `openclaw.ageMs`, `openclaw.queueDepth`,
-    `openclaw.sessionKey`, `openclaw.sessionId`
+- `mtbot.model.usage`
+  - `mtbot.channel`, `mtbot.provider`, `mtbot.model`
+  - `mtbot.sessionKey`, `mtbot.sessionId`
+  - `mtbot.tokens.*` (input/output/cache_read/cache_write/total)
+- `mtbot.webhook.processed`
+  - `mtbot.channel`, `mtbot.webhook`, `mtbot.chatId`
+- `mtbot.webhook.error`
+  - `mtbot.channel`, `mtbot.webhook`, `mtbot.chatId`,
+    `mtbot.error`
+- `mtbot.message.processed`
+  - `mtbot.channel`, `mtbot.outcome`, `mtbot.chatId`,
+    `mtbot.messageId`, `mtbot.sessionKey`, `mtbot.sessionId`,
+    `mtbot.reason`
+- `mtbot.session.stuck`
+  - `mtbot.state`, `mtbot.ageMs`, `mtbot.queueDepth`,
+    `mtbot.sessionKey`, `mtbot.sessionId`
 
 ### Sampling + flushing
 
@@ -343,7 +343,7 @@ Queues + sessions:
 
 ## Troubleshooting tips
 
-- **Gateway not reachable?** Run `openclaw doctor` first.
+- **Gateway not reachable?** Run `mtbot doctor` first.
 - **Logs empty?** Check that the Gateway is running and writing to the file path
   in `logging.file`.
 - **Need more detail?** Set `logging.level` to `debug` or `trace` and retry.

@@ -3,7 +3,7 @@ import type { Api, AssistantMessage, ImageContent, Model } from "@mariozechner/p
 import type { AuthStorage, ModelRegistry } from "../../pi-model-discovery.js";
 
 import type { ReasoningLevel, ThinkLevel, VerboseLevel } from "../../../auto-reply/thinking.js";
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { MtBotConfig } from "../../../config/config.js";
 import type { AgentStreamParams } from "../../../commands/agent/types.js";
 import type { ExecElevatedDefaults, ExecToolDefaults } from "../../bash-tools.js";
 import type { MessagingToolSend } from "../../pi-embedded-messaging.js";
@@ -39,7 +39,7 @@ export type EmbeddedRunAttemptParams = {
   sessionFile: string;
   workspaceDir: string;
   agentDir?: string;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
   skillsSnapshot?: SkillSnapshot;
   prompt: string;
   images?: ImageContent[];

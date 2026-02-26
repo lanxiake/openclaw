@@ -7,7 +7,7 @@ import {
   normalizeProviderId,
   modelKey,
 } from "./model-selection.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 
 describe("model-selection", () => {
   describe("normalizeProviderId", () => {
@@ -50,7 +50,7 @@ describe("model-selection", () => {
 
   describe("buildModelAliasIndex", () => {
     it("should build alias index from config", () => {
-      const cfg: Partial<OpenClawConfig> = {
+      const cfg: Partial<MtBotConfig> = {
         agents: {
           defaults: {
             models: {
@@ -62,7 +62,7 @@ describe("model-selection", () => {
       };
 
       const index = buildModelAliasIndex({
-        cfg: cfg as OpenClawConfig,
+        cfg: cfg as MtBotConfig,
         defaultProvider: "anthropic",
       });
 
@@ -106,7 +106,7 @@ describe("model-selection", () => {
   describe("resolveConfiguredModelRef", () => {
     it("should fall back to anthropic and warn if provider is missing for non-alias", () => {
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      const cfg: Partial<OpenClawConfig> = {
+      const cfg: Partial<MtBotConfig> = {
         agents: {
           defaults: {
             model: "claude-3-5-sonnet",
@@ -115,7 +115,7 @@ describe("model-selection", () => {
       };
 
       const result = resolveConfiguredModelRef({
-        cfg: cfg as OpenClawConfig,
+        cfg: cfg as MtBotConfig,
         defaultProvider: "google",
         defaultModel: "gemini-pro",
       });
@@ -128,9 +128,9 @@ describe("model-selection", () => {
     });
 
     it("should use default provider/model if config is empty", () => {
-      const cfg: Partial<OpenClawConfig> = {};
+      const cfg: Partial<MtBotConfig> = {};
       const result = resolveConfiguredModelRef({
-        cfg: cfg as OpenClawConfig,
+        cfg: cfg as MtBotConfig,
         defaultProvider: "openai",
         defaultModel: "gpt-4",
       });
@@ -138,7 +138,7 @@ describe("model-selection", () => {
     });
 
     it("should correctly parse custom provider/model format like new-api/model-id", () => {
-      const cfg: Partial<OpenClawConfig> = {
+      const cfg: Partial<MtBotConfig> = {
         agents: {
           defaults: {
             model: "new-api/claude-opus-4-5-20251101",
@@ -147,7 +147,7 @@ describe("model-selection", () => {
       };
 
       const result = resolveConfiguredModelRef({
-        cfg: cfg as OpenClawConfig,
+        cfg: cfg as MtBotConfig,
         defaultProvider: "anthropic",
         defaultModel: "claude-sonnet-4-20250514",
       });
@@ -159,7 +159,7 @@ describe("model-selection", () => {
     });
 
     it("should correctly parse anthropic/model format", () => {
-      const cfg: Partial<OpenClawConfig> = {
+      const cfg: Partial<MtBotConfig> = {
         agents: {
           defaults: {
             model: "anthropic/claude-opus-4-5-20251101",
@@ -168,7 +168,7 @@ describe("model-selection", () => {
       };
 
       const result = resolveConfiguredModelRef({
-        cfg: cfg as OpenClawConfig,
+        cfg: cfg as MtBotConfig,
         defaultProvider: "anthropic",
         defaultModel: "claude-sonnet-4-20250514",
       });

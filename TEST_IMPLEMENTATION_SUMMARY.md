@@ -2,7 +2,7 @@
 
 ## 任务概览
 
-完成了OpenClaw认证服务（用户和管理员）的前后端集成测试，包括单元测试、集成测试和测试脚本。
+完成了MtBot认证服务（用户和管理员）的前后端集成测试，包括单元测试、集成测试和测试脚本。
 
 ## 交付物清单
 
@@ -10,7 +10,7 @@
 
 #### 集成测试文件
 
-**文件位置:** `/e/open-source-project/openclaw-windows-exe/src/assistant/auth/integration.test.ts`
+**文件位置:** `/e/open-source-project/mtbot-windows-exe/src/assistant/auth/integration.test.ts`
 
 **内容描述:**
 
@@ -126,8 +126,8 @@
 #### 步骤1: 克隆项目
 
 ```bash
-git clone https://github.com/openclaw/openclaw.git
-cd openclaw-windows-exe
+git clone https://github.com/mtbot/mtbot.git
+cd mtbot-windows-exe
 ```
 
 #### 步骤2: 安装依赖
@@ -362,8 +362,8 @@ src/assistant/auth/jwt.test.ts                 (JWT单元测试)
 
 ## 联系和支持
 
-- 项目地址: https://github.com/openclaw/openclaw
-- 文档: https://docs.openclaw.ai
+- 项目地址: https://github.com/mtbot/mtbot
+- 文档: https://docs.mtbot.top
 - 问题报告: GitHub Issues
 
 ---
@@ -371,7 +371,7 @@ src/assistant/auth/jwt.test.ts                 (JWT单元测试)
 ## 版本信息
 
 - **创建日期:** 2026-02-10
-- **OpenClaw版本:** 2026.1.30
+- **MtBot版本:** 2026.1.30
 - **Node.js版本:** 22+
 - **Vitest版本:** 4.0+
 

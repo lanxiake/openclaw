@@ -8,7 +8,7 @@
  * - 配额检查
  * - 使用量统计
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import { createSubsystemLogger } from "../../logging/subsystem.js";

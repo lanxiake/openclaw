@@ -25,8 +25,8 @@ datasources:
   - name: PostgreSQL
     type: postgres
     url: postgres:5432
-    database: openclaw_prod
-    user: openclaw_admin
+    database: mtbot_prod
+    user: mtbot_admin
     secureJsonData:
       password: Oc@2026!Pg#Secure
     jsonData:

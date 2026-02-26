@@ -4,7 +4,7 @@
  * 清理 Windows 系统中的临时文件、缓存和垃圾文件，释放磁盘空间
  * 支持预览模式，在实际删除前查看清理计划
  *
- * @author OpenClaw
+ * @author MtBot
  * @version 1.0.0
  */
 

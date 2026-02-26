@@ -2,7 +2,7 @@
 import "dotenv/config";
 import postgres from "postgres";
 
-const sql = postgres(process.env.DATABASE_URL || "postgresql://localhost:5432/openclaw");
+const sql = postgres(process.env.DATABASE_URL || "postgresql://localhost:5432/mtbot");
 
 try {
   // 查询 model_providers 表的列信息

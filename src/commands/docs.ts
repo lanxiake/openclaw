@@ -5,7 +5,7 @@ import { formatDocsLink } from "../terminal/links.js";
 import { isRich, theme } from "../terminal/theme.js";
 import { formatCliCommand } from "../cli/command-format.js";
 
-const SEARCH_TOOL = "https://docs.openclaw.ai/mcp.SearchOpenClaw";
+const SEARCH_TOOL = "https://docs.mtbot.top/mcp.SearchMtBot";
 const SEARCH_TIMEOUT_MS = 30_000;
 const DEFAULT_SNIPPET_MAX = 220;
 
@@ -160,13 +160,13 @@ async function renderMarkdown(markdown: string, runtime: RuntimeEnv) {
 export async function docsSearchCommand(queryParts: string[], runtime: RuntimeEnv) {
   const query = queryParts.join(" ").trim();
   if (!query) {
-    const docs = formatDocsLink("/", "docs.openclaw.ai");
+    const docs = formatDocsLink("/", "docs.mtbot.top");
     if (isRich()) {
       runtime.log(`${theme.muted("Docs:")} ${docs}`);
-      runtime.log(`${theme.muted("Search:")} ${formatCliCommand('openclaw docs "your query"')}`);
+      runtime.log(`${theme.muted("Search:")} ${formatCliCommand('mtbot docs "your query"')}`);
     } else {
-      runtime.log("Docs: https://docs.openclaw.ai/");
-      runtime.log(`Search: ${formatCliCommand('openclaw docs "your query"')}`);
+      runtime.log("Docs: https://docs.mtbot.top/");
+      runtime.log(`Search: ${formatCliCommand('mtbot docs "your query"')}`);
     }
     return;
   }

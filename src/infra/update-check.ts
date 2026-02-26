@@ -317,7 +317,7 @@ export async function fetchNpmTagVersion(params: {
   const tag = params.tag;
   try {
     const res = await fetchWithTimeout(
-      `https://registry.npmjs.org/openclaw/${encodeURIComponent(tag)}`,
+      `https://registry.npmjs.org/mtbot/${encodeURIComponent(tag)}`,
       timeoutMs,
     );
     if (!res.ok) {

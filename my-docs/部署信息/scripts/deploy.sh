@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# OpenClaw 部署脚本（本地运行）
+# MtBot 部署脚本（本地运行）
 #
 # 功能: rsync 源码到远程服务器 → 触发远程构建和部署
 #
@@ -199,7 +199,7 @@ deploy_nginx() {
 
     # 上传 Nginx 配置
     ${SCP_CMD} "${DEPLOY_DIR}/nginx.conf.example" \
-        "${REMOTE_USER}@${REMOTE_HOST}:/tmp/openclaw-nginx.conf"
+        "${REMOTE_USER}@${REMOTE_HOST}:/tmp/mtbot-nginx.conf"
 
     # 上传 SSL 证书
     ${SCP_CMD} -r "${DEPLOY_DIR}/mtbot.top_nginx/" \

@@ -7,7 +7,7 @@
  * - 技能分类和统计
  * - 技能安装和更新检查
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import { eq, and, desc, asc, ilike, or, sql, count } from "drizzle-orm";

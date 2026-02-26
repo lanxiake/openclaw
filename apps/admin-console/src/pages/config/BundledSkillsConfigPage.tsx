@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { apiClient } from '@/lib/api-client'
-import type { BundledSkillInfo } from '@openclaw/api-client/admin'
+import type { BundledSkillInfo } from '@mtbot/api-client/admin'
 
 const QUERY_KEY = ['admin', 'bundled-skills'] as const
 

@@ -9,10 +9,10 @@
  *
  * 选项:
  *   --dry-run     模拟运行，不实际写入数据库
- *   --base-dir    指定设备数据目录 (默认: ~/.openclaw/devices)
+ *   --base-dir    指定设备数据目录 (默认: ~/.mtbot/devices)
  *   --verbose     显示详细日志
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import { randomUUID } from "node:crypto";
@@ -365,7 +365,7 @@ async function main(): Promise<void> {
 
 选项:
   --dry-run     模拟运行，不实际写入数据库
-  --base-dir    指定设备数据目录 (默认: ~/.openclaw)
+  --base-dir    指定设备数据目录 (默认: ~/.mtbot)
   --verbose     显示详细日志
   --help        显示帮助信息
 `);

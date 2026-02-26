@@ -4,7 +4,7 @@
 
 ## 1. 背景
 
-OpenClaw Gateway 当前使用全局 token/password 认证，不区分用户。所有连接共享 `DEFAULT_USER_ID = "default"`。
+MtBot Gateway 当前使用全局 token/password 认证，不区分用户。所有连接共享 `DEFAULT_USER_ID = "default"`。
 
 DB 层（19 个 TenantScopedRepository）已全面支持 userId 隔离，但运行时（认证、Session Key、NodeRegistry）未启用用户维度。
 

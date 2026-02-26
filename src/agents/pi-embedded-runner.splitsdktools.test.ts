@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import type { AgentTool, AgentToolResult } from "@mariozechner/pi-agent-core";
 import { describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig } from "../config/config.js";
-import { ensureOpenClawModelsJson } from "./models-config.js";
+import type { MtBotConfig } from "../config/config.js";
+import { ensureMtBotModelsJson } from "./models-config.js";
 import { splitSdkTools } from "./pi-embedded-runner.js";
 
 vi.mock("@mariozechner/pi-ai", async () => {
@@ -68,10 +68,10 @@ const _makeOpenAiConfig = (modelIds: string[]) =>
         },
       },
     },
-  }) satisfies OpenClawConfig;
+  }) satisfies MtBotConfig;
 
-const _ensureModels = (cfg: OpenClawConfig, agentDir: string) =>
-  ensureOpenClawModelsJson(cfg, agentDir) as unknown;
+const _ensureModels = (cfg: MtBotConfig, agentDir: string) =>
+  ensureMtBotModelsJson(cfg, agentDir) as unknown;
 
 const _textFromContent = (content: unknown) => {
   if (typeof content === "string") {

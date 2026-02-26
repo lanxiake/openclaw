@@ -10,7 +10,7 @@ read_when:
 The workspace is the agent's home. It is the only working directory used for
 file tools and for workspace context. Keep it private and treat it as memory.
 
-This is separate from `~/.openclaw/`, which stores config, credentials, and
+This is separate from `~/.mtbot/`, which stores config, credentials, and
 sessions.
 
 **Important:** the workspace is the **default cwd**, not a hard sandbox. Tools
@@ -18,24 +18,24 @@ resolve relative paths against the workspace, but absolute paths can still reach
 elsewhere on the host unless sandboxing is enabled. If you need isolation, use
 [`agents.defaults.sandbox`](/gateway/sandboxing) (and/or per‑agent sandbox config).
 When sandboxing is enabled and `workspaceAccess` is not `"rw"`, tools operate
-inside a sandbox workspace under `~/.openclaw/sandboxes`, not your host workspace.
+inside a sandbox workspace under `~/.mtbot/sandboxes`, not your host workspace.
 
 ## Default location
 
-- Default: `~/.openclaw/workspace`
-- If `OPENCLAW_PROFILE` is set and not `"default"`, the default becomes
-  `~/.openclaw/workspace-<profile>`.
-- Override in `~/.openclaw/openclaw.json`:
+- Default: `~/.mtbot/workspace`
+- If `MTBOT_PROFILE` is set and not `"default"`, the default becomes
+  `~/.mtbot/workspace-<profile>`.
+- Override in `~/.mtbot/mtbot.json`:
 
 ```json5
 {
   agent: {
-    workspace: "~/.openclaw/workspace",
+    workspace: "~/.mtbot/workspace",
   },
 }
 ```
 
-`openclaw onboard`, `openclaw configure`, or `openclaw setup` will create the
+`mtbot onboard`, `mtbot configure`, or `mtbot setup` will create the
 workspace and seed the bootstrap files if they are missing.
 
 If you already manage the workspace files yourself, you can disable bootstrap
@@ -47,20 +47,20 @@ file creation:
 
 ## Extra workspace folders
 
-Older installs may have created `~/openclaw`. Keeping multiple workspace
+Older installs may have created `~/mtbot`. Keeping multiple workspace
 directories around can cause confusing auth or state drift, because only one
 workspace is active at a time.
 
 **Recommendation:** keep a single active workspace. If you no longer use the
-extra folders, archive or move them to Trash (for example `trash ~/openclaw`).
+extra folders, archive or move them to Trash (for example `trash ~/mtbot`).
 If you intentionally keep multiple workspaces, make sure
 `agents.defaults.workspace` points to the active one.
 
-`openclaw doctor` warns when it detects extra workspace directories.
+`mtbot doctor` warns when it detects extra workspace directories.
 
 ## Workspace file map (what each file means)
 
-These are the standard files OpenClaw expects inside the workspace:
+These are the standard files MtBot expects inside the workspace:
 
 - `AGENTS.md`
   - Operating instructions for the agent and how it should use memory.
@@ -113,20 +113,20 @@ See [Memory](/concepts/memory) for the workflow and automatic memory flush.
 - `canvas/` (optional)
   - Canvas UI files for node displays (for example `canvas/index.html`).
 
-If any bootstrap file is missing, OpenClaw injects a "missing file" marker into
+If any bootstrap file is missing, MtBot injects a "missing file" marker into
 the session and continues. Large bootstrap files are truncated when injected;
 adjust the limit with `agents.defaults.bootstrapMaxChars` (default: 20000).
-`openclaw setup` can recreate missing defaults without overwriting existing
+`mtbot setup` can recreate missing defaults without overwriting existing
 files.
 
 ## What is NOT in the workspace
 
-These live under `~/.openclaw/` and should NOT be committed to the workspace repo:
+These live under `~/.mtbot/` and should NOT be committed to the workspace repo:
 
-- `~/.openclaw/openclaw.json` (config)
-- `~/.openclaw/credentials/` (OAuth tokens, API keys)
-- `~/.openclaw/agents/<agentId>/sessions/` (session transcripts + metadata)
-- `~/.openclaw/skills/` (managed skills)
+- `~/.mtbot/mtbot.json` (config)
+- `~/.mtbot/credentials/` (OAuth tokens, API keys)
+- `~/.mtbot/agents/<agentId>/sessions/` (session transcripts + metadata)
+- `~/.mtbot/skills/` (managed skills)
 
 If you need to migrate sessions or config, copy them separately and keep them
 out of version control.
@@ -145,7 +145,7 @@ If git is installed, brand-new workspaces are initialized automatically. If this
 workspace is not already a repo, run:
 
 ```bash
-cd ~/.openclaw/workspace
+cd ~/.mtbot/workspace
 git init
 git add AGENTS.md SOUL.md TOOLS.md IDENTITY.md USER.md HEARTBEAT.md memory/
 git commit -m "Add agent workspace"
@@ -170,7 +170,7 @@ Option B: GitHub CLI (`gh`)
 
 ```bash
 gh auth login
-gh repo create openclaw-workspace --private --source . --remote origin --push
+gh repo create mtbot-workspace --private --source . --remote origin --push
 ```
 
 Option C: GitLab web UI
@@ -200,11 +200,11 @@ git push
 Even in a private repo, avoid storing secrets in the workspace:
 
 - API keys, OAuth tokens, passwords, or private credentials.
-- Anything under `~/.openclaw/`.
+- Anything under `~/.mtbot/`.
 - Raw dumps of chats or sensitive attachments.
 
 If you must store sensitive references, use placeholders and keep the real
-secret elsewhere (password manager, environment variables, or `~/.openclaw/`).
+secret elsewhere (password manager, environment variables, or `~/.mtbot/`).
 
 Suggested `.gitignore` starter:
 
@@ -218,10 +218,10 @@ Suggested `.gitignore` starter:
 
 ## Moving the workspace to a new machine
 
-1. Clone the repo to the desired path (default `~/.openclaw/workspace`).
-2. Set `agents.defaults.workspace` to that path in `~/.openclaw/openclaw.json`.
-3. Run `openclaw setup --workspace <path>` to seed any missing files.
-4. If you need sessions, copy `~/.openclaw/agents/<agentId>/sessions/` from the
+1. Clone the repo to the desired path (default `~/.mtbot/workspace`).
+2. Set `agents.defaults.workspace` to that path in `~/.mtbot/mtbot.json`.
+3. Run `mtbot setup --workspace <path>` to seed any missing files.
+4. If you need sessions, copy `~/.mtbot/agents/<agentId>/sessions/` from the
    old machine separately.
 
 ## Advanced notes

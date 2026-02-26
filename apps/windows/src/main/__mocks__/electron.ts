@@ -19,7 +19,7 @@ export const app = {
     };
     return paths[name] || `/mock/${name}`;
   }),
-  getName: vi.fn(() => "OpenClaw Assistant"),
+  getName: vi.fn(() => "MtBot Assistant"),
   getVersion: vi.fn(() => "0.1.0"),
   quit: vi.fn(),
   on: vi.fn(),

@@ -43,7 +43,7 @@ describe("FileRepository", () => {
         fileSize: 1024000,
         mimeType: "application/pdf",
         storageKey: "user-file-test-001/documents/test.pdf",
-        storageBucket: "openclaw-media",
+        storageBucket: "mtbot-media",
       });
 
       console.log("[TEST] 文件ID:", file.id);
@@ -56,7 +56,7 @@ describe("FileRepository", () => {
       expect(file.fileSize).toBe(1024000);
       expect(file.mimeType).toBe("application/pdf");
       expect(file.storageKey).toBe("user-file-test-001/documents/test.pdf");
-      expect(file.storageBucket).toBe("openclaw-media");
+      expect(file.storageBucket).toBe("mtbot-media");
       expect(file.category).toBe("attachment");
       expect(file.isPublic).toBe(false);
 
@@ -72,7 +72,7 @@ describe("FileRepository", () => {
         fileSize: 50000,
         mimeType: "image/png",
         storageKey: "user-file-test-001/avatars/avatar.png",
-        storageBucket: "openclaw-media",
+        storageBucket: "mtbot-media",
         category: "avatar",
         sourceType: "upload",
         thumbnailKey: "user-file-test-001/avatars/avatar_thumb.png",
@@ -106,7 +106,7 @@ describe("FileRepository", () => {
         fileSize: 2048,
         mimeType: "application/pdf",
         storageKey: "user-file-test-001/documents/doc.pdf",
-        storageBucket: "openclaw-media",
+        storageBucket: "mtbot-media",
       });
 
       const found = await fileRepo.findById(created.id);
@@ -142,7 +142,7 @@ describe("FileRepository", () => {
         fileSize: 5000,
         mimeType: "application/pdf",
         storageKey,
-        storageBucket: "openclaw-media",
+        storageBucket: "mtbot-media",
       });
 
       const found = await fileRepo.findByStorageKey(storageKey);

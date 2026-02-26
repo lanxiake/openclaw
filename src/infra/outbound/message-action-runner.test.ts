@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
 import {
   createIMessageTestPlugin,
@@ -29,7 +29,7 @@ const slackConfig = {
       appToken: "xapp-test",
     },
   },
-} as OpenClawConfig;
+} as MtBotConfig;
 
 const whatsappConfig = {
   channels: {
@@ -37,7 +37,7 @@ const whatsappConfig = {
       allowFrom: ["*"],
     },
   },
-} as OpenClawConfig;
+} as MtBotConfig;
 
 describe("runMessageAction context isolation", () => {
   beforeEach(() => {
@@ -261,7 +261,7 @@ describe("runMessageAction context isolation", () => {
           token: "tg-test",
         },
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
     const result = await runMessageAction({
       cfg: multiConfig,
@@ -303,7 +303,7 @@ describe("runMessageAction context isolation", () => {
           },
         },
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
     await expect(
       runMessageAction({
@@ -421,7 +421,7 @@ describe("runMessageAction sendAttachment hydration", () => {
           password: "test-password",
         },
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
     const result = await runMessageAction({
       cfg,
@@ -489,7 +489,7 @@ describe("runMessageAction accountId defaults", () => {
 
   it("propagates defaultAccountId into params", async () => {
     await runMessageAction({
-      cfg: {} as OpenClawConfig,
+      cfg: {} as MtBotConfig,
       action: "send",
       params: {
         channel: "discord",

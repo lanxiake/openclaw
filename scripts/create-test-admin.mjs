@@ -13,7 +13,7 @@ async function createTestAdmin() {
   try {
     const username = "testadmin2";
     const password = "Test@2026";
-    const email = "test2@openclaw.ai";
+    const email = "test2@mtbot.top";
 
     // 检查是否已存在
     const existing = await sql`

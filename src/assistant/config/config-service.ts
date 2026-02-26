@@ -528,11 +528,11 @@ export async function initializeDefaultConfigs(options: ConfigServiceOptions = {
     // 通用配置
     {
       key: CONFIG_KEYS.SITE_NAME,
-      value: "OpenClaw Assistant",
+      value: "MtBot Assistant",
       valueType: "string" as ConfigValueType,
       group: CONFIG_GROUPS.GENERAL,
       description: "站点名称",
-      defaultValue: "OpenClaw Assistant",
+      defaultValue: "MtBot Assistant",
     },
     {
       key: CONFIG_KEYS.SITE_DESCRIPTION,

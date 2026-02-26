@@ -1,6 +1,6 @@
 # wxauto-bridge
 
-微信桥接器 - 通过 wxauto 实现 OpenClaw 与微信的消息桥接。
+微信桥接器 - 通过 wxauto 实现 MtBot 与微信的消息桥接。
 
 ## 架构
 
@@ -8,7 +8,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                      Windows 机器                            │
 │  ┌─────────────────┐                  ┌──────────────────┐  │
-│  │  wxauto-bridge  │ ──WebSocket───► │   OpenClaw       │  │
+│  │  wxauto-bridge  │ ──WebSocket───► │   MtBot       │  │
 │  │  (Python Client)│    连接          │   Gateway        │  │
 │  │                 │                  │   (Node.js)      │  │
 │  │  wxauto library │ ◄──JSON-RPC────  │                  │  │
@@ -19,7 +19,7 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
-wxauto-bridge 作为 WebSocket **客户端**，主动连接到 OpenClaw Gateway。
+wxauto-bridge 作为 WebSocket **客户端**，主动连接到 MtBot Gateway。
 
 ## 系统要求
 
@@ -46,8 +46,8 @@ pip install -r requirements.txt
 
 # 2. 启动微信客户端并登录（手动）
 
-# 3. 启动 OpenClaw 网关
-openclaw gateway run --port 18789
+# 3. 启动 MtBot 网关
+mtbot gateway run --port 18789
 
 # 4. 启动 wxauto-bridge
 python bridge_app.py
@@ -55,7 +55,7 @@ python bridge_app.py
 
 ## 配置说明
 
-配置文件位置：`~/.openclaw/wechat-bridge.json`
+配置文件位置：`~/.mtbot/wechat-bridge.json`
 
 ```json
 {
@@ -72,7 +72,7 @@ python bridge_app.py
 
 | 配置项         | 说明                              | 默认值                 |
 | -------------- | --------------------------------- | ---------------------- |
-| `gateway_url`  | OpenClaw Gateway WebSocket 地址   | `ws://localhost:18789` |
+| `gateway_url`  | MtBot Gateway WebSocket 地址   | `ws://localhost:18789` |
 | `auth_token`   | 认证 Token（与 Gateway 配置一致） | 自动生成               |
 | `listen_chats` | 监听的聊天列表                    | `[]`                   |
 
@@ -149,7 +149,7 @@ package.bat
 
 ### WebSocket 连接失败
 
-- 确保 OpenClaw Gateway 已启动
+- 确保 MtBot Gateway 已启动
 - 检查 Gateway 地址和端口是否正确
 - 检查防火墙设置
 - 确认 auth_token 与 Gateway 配置一致

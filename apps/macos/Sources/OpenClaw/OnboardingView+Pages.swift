@@ -1,7 +1,7 @@
 import AppKit
-import OpenClawChatUI
-import OpenClawDiscovery
-import OpenClawIPC
+import MtBotChatUI
+import MtBotDiscovery
+import MtBotIPC
 import SwiftUI
 
 extension OnboardingView {
@@ -32,9 +32,9 @@ extension OnboardingView {
     func welcomePage() -> some View {
         self.onboardingPage {
             VStack(spacing: 22) {
-                Text("Welcome to OpenClaw")
+                Text("Welcome to MtBot")
                     .font(.largeTitle.weight(.semibold))
-                Text("OpenClaw is a powerful personal AI assistant that can connect to WhatsApp or Telegram.")
+                Text("MtBot is a powerful personal AI assistant that can connect to WhatsApp or Telegram.")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -57,7 +57,7 @@ extension OnboardingView {
                                 "The connected AI agent (e.g. Claude) can trigger powerful actions on your Mac, " +
                                     "including running commands, reading/writing files, and capturing screenshots — " +
                                     "depending on the permissions you grant.\n\n" +
-                                    "Only enable OpenClaw if you understand the risks and trust the prompts and " +
+                                    "Only enable MtBot if you understand the risks and trust the prompts and " +
                                     "integrations you use.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
@@ -76,7 +76,7 @@ extension OnboardingView {
             Text("Choose your Gateway")
                 .font(.largeTitle.weight(.semibold))
             Text(
-                "OpenClaw uses a single Gateway that stays running. Pick this Mac, " +
+                "MtBot uses a single Gateway that stays running. Pick this Mac, " +
                     "connect to a discovered gateway nearby, or configure later.")
                 .font(.body)
                 .foregroundStyle(.secondary)
@@ -228,7 +228,7 @@ extension OnboardingView {
                                         Text("Project root")
                                             .font(.callout.weight(.semibold))
                                             .frame(width: labelWidth, alignment: .leading)
-                                        TextField("/home/you/Projects/openclaw", text: self.$state.remoteProjectRoot)
+                                        TextField("/home/you/Projects/mtbot", text: self.$state.remoteProjectRoot)
                                             .textFieldStyle(.roundedBorder)
                                             .frame(width: fieldWidth)
                                     }
@@ -237,7 +237,7 @@ extension OnboardingView {
                                             .font(.callout.weight(.semibold))
                                             .frame(width: labelWidth, alignment: .leading)
                                         TextField(
-                                            "/Applications/OpenClaw.app/.../openclaw",
+                                            "/Applications/MtBot.app/.../mtbot",
                                             text: self.$state.remoteCliPath)
                                             .textFieldStyle(.roundedBorder)
                                             .frame(width: fieldWidth)
@@ -335,7 +335,7 @@ extension OnboardingView {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 540)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("OpenClaw supports any model — we strongly recommend Opus 4.5 for the best experience.")
+            Text("MtBot supports any model — we strongly recommend Opus 4.5 for the best experience.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -375,14 +375,14 @@ extension OnboardingView {
                 }
 
                 Text(
-                    "This lets OpenClaw use Claude immediately. Credentials are stored at " +
-                        "`~/.openclaw/credentials/oauth.json` (owner-only).")
+                    "This lets MtBot use Claude immediately. Credentials are stored at " +
+                        "`~/.mtbot/credentials/oauth.json` (owner-only).")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 HStack(spacing: 12) {
-                    Text(OpenClawOAuthStore.oauthURL().path)
+                    Text(MtBotOAuthStore.oauthURL().path)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -391,7 +391,7 @@ extension OnboardingView {
                     Spacer()
 
                     Button("Reveal") {
-                        NSWorkspace.shared.activateFileViewerSelecting([OpenClawOAuthStore.oauthURL()])
+                        NSWorkspace.shared.activateFileViewerSelecting([MtBotOAuthStore.oauthURL()])
                     }
                     .buttonStyle(.bordered)
 
@@ -493,7 +493,7 @@ extension OnboardingView {
         self.onboardingPage {
             Text("Grant permissions")
                 .font(.largeTitle.weight(.semibold))
-            Text("These macOS permissions let OpenClaw automate apps and capture context on this Mac.")
+            Text("These macOS permissions let MtBot automate apps and capture context on this Mac.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -534,7 +534,7 @@ extension OnboardingView {
         self.onboardingPage {
             Text("Install the CLI")
                 .font(.largeTitle.weight(.semibold))
-            Text("Required for local mode: installs `openclaw` so launchd can run the gateway.")
+            Text("Required for local mode: installs `mtbot` so launchd can run the gateway.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -594,7 +594,7 @@ extension OnboardingView {
             Text("Agent workspace")
                 .font(.largeTitle.weight(.semibold))
             Text(
-                "OpenClaw runs the agent from a dedicated workspace so it can load `AGENTS.md` " +
+                "MtBot runs the agent from a dedicated workspace so it can load `AGENTS.md` " +
                     "and write files there without mixing into your other projects.")
                 .font(.body)
                 .foregroundStyle(.secondary)
@@ -621,7 +621,7 @@ extension OnboardingView {
                         Text("Workspace folder")
                             .font(.headline)
                         TextField(
-                            AgentWorkspace.displayPath(for: OpenClawConfigFile.defaultWorkspaceURL()),
+                            AgentWorkspace.displayPath(for: MtBotConfigFile.defaultWorkspaceURL()),
                             text: self.$workspacePath)
                             .textFieldStyle(.roundedBorder)
 
@@ -651,7 +651,7 @@ extension OnboardingView {
                                     let saved = await self.saveAgentWorkspace(AgentWorkspace.displayPath(for: url))
                                     if saved {
                                         self.workspaceStatus =
-                                            "Saved to ~/.openclaw/openclaw.json (agents.defaults.workspace)"
+                                            "Saved to ~/.mtbot/mtbot.json (agents.defaults.workspace)"
                                     }
                                 }
                             }
@@ -693,7 +693,7 @@ extension OnboardingView {
                 .fixedSize(horizontal: false, vertical: true)
 
             self.onboardingGlassCard(padding: 8) {
-                OpenClawChatView(viewModel: self.onboardingChatModel, style: .onboarding)
+                MtBotChatView(viewModel: self.onboardingChatModel, style: .onboarding)
                     .frame(maxHeight: .infinity)
             }
             .frame(maxHeight: .infinity)
@@ -719,8 +719,8 @@ extension OnboardingView {
                     self.featureRow(
                         title: "Remote gateway checklist",
                         subtitle: """
-                        On your gateway host: install/update the `openclaw` package and make sure credentials exist
-                        (typically `~/.openclaw/credentials/oauth.json`). Then connect again if needed.
+                        On your gateway host: install/update the `mtbot` package and make sure credentials exist
+                        (typically `~/.mtbot/credentials/oauth.json`). Then connect again if needed.
                         """,
                         systemImage: "network")
                     Divider()
@@ -728,7 +728,7 @@ extension OnboardingView {
                 }
                 self.featureRow(
                     title: "Open the menu bar panel",
-                    subtitle: "Click the OpenClaw menu bar icon for quick chat and status.",
+                    subtitle: "Click the MtBot menu bar icon for quick chat and status.",
                     systemImage: "bubble.left.and.bubble.right")
                 self.featureActionRow(
                     title: "Connect WhatsApp or Telegram",

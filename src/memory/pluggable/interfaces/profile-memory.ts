@@ -176,7 +176,7 @@ export interface ExtractedProfile {
  * await provider.addFact('user-123', {
  *   category: 'work',
  *   key: 'company',
- *   value: 'OpenClaw',
+ *   value: 'MtBot',
  *   confidence: 1.0,
  *   source: 'explicit',
  *   sensitive: false,

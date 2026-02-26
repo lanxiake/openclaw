@@ -4,7 +4,7 @@ import type {
   ChannelMessageActionName,
   ChannelThreadingToolContext,
 } from "../../channels/plugins/types.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { getChannelMessageAdapter } from "./channel-adapters.js";
 import { formatTargetDisplay, lookupDirectoryDisplay } from "./target-resolver.js";
 
@@ -88,7 +88,7 @@ export function enforceCrossContextPolicy(params: {
   action: ChannelMessageActionName;
   args: Record<string, unknown>;
   toolContext?: ChannelThreadingToolContext;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
 }): void {
   const currentTarget = params.toolContext?.currentChannelId?.trim();
   if (!currentTarget) {
@@ -136,7 +136,7 @@ export function enforceCrossContextPolicy(params: {
 }
 
 export async function buildCrossContextDecoration(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   channel: ChannelId;
   target: string;
   toolContext?: ChannelThreadingToolContext;

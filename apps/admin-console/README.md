@@ -1,6 +1,6 @@
 # Admin Console - 管理员控制台
 
-OpenClaw 管理员控制台是一个基于 React + TypeScript 的现代化 Web 管理平台，用于管理用户、订阅、技能商店、系统配置和运营数据分析。
+MtBot 管理员控制台是一个基于 React + TypeScript 的现代化 Web 管理平台，用于管理用户、订阅、技能商店、系统配置和运营数据分析。
 
 ## 功能特性
 
@@ -160,7 +160,7 @@ CMD ["nginx", "-g", "daemon off;"]
 
 ## 相关文档
 
-- [OpenClaw 主项目](../../README.md)
+- [MtBot 主项目](../../README.md)
 - [API 文档](../../docs/api/)
 - [部署指南](../../docs/deployment/)
 

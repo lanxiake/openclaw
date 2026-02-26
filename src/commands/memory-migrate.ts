@@ -4,7 +4,7 @@
  * 将本地文件系统中的 workspace .md 文件迁移到数据库。
  * 支持 --dry-run 预览模式和 --user-id 指定目标用户。
  *
- * 用法: openclaw memory migrate [--dry-run] [--user-id <id>] [--workspace-dir <path>]
+ * 用法: mtbot memory migrate [--dry-run] [--user-id <id>] [--workspace-dir <path>]
  */
 
 import fs from "node:fs/promises";

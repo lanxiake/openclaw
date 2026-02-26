@@ -6,7 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
-import type { GatewayConfig, UpdateGatewayConfigRequest } from '@openclaw/api-client/admin'
+import type { GatewayConfig, UpdateGatewayConfigRequest } from '@mtbot/api-client/admin'
 
 const QUERY_KEY = ['admin', 'gateway-config'] as const
 

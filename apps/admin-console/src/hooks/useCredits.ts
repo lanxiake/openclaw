@@ -6,7 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
-import type { FullResponse } from '@openclaw/api-client'
+import type { FullResponse } from '@mtbot/api-client'
 import type {
   CreditBalance,
   CreditHistoryQuery,

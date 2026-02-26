@@ -70,7 +70,7 @@ function build() {
  * 主流程
  */
 function main() {
-  console.log('[package] === OpenClaw Windows Portable Packager ===')
+  console.log('[package] === MtBot Windows Portable Packager ===')
   console.log('')
 
   try {

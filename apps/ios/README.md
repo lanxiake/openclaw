@@ -1,4 +1,4 @@
-# OpenClaw (iOS)
+# MtBot (iOS)
 
 Internal-only SwiftUI app scaffold.
 
@@ -11,11 +11,11 @@ brew install swiftformat swiftlint
 ```bash
 cd apps/ios
 xcodegen generate
-open OpenClaw.xcodeproj
+open MtBot.xcodeproj
 ```
 
 ## Shared packages
-- `../shared/OpenClawKit` — shared types/constants used by iOS (and later macOS bridge + gateway routing).
+- `../shared/MtBotKit` — shared types/constants used by iOS (and later macOS bridge + gateway routing).
 
 ## fastlane
 ```bash

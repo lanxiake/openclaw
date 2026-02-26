@@ -17,7 +17,7 @@ import type { UserProfileMemory } from "./user-context.js";
 describe("buildAgentSystemPrompt — profileMemory 注入", () => {
   it("PM-001: profileMemory 为 undefined 时不注入任何记忆段", () => {
     const prompt = buildAgentSystemPrompt({
-      workspaceDir: "/tmp/openclaw",
+      workspaceDir: "/tmp/mtbot",
     });
 
     expect(prompt).not.toContain("## User Profile");
@@ -44,7 +44,7 @@ describe("buildAgentSystemPrompt — profileMemory 注入", () => {
     };
 
     const prompt = buildAgentSystemPrompt({
-      workspaceDir: "/tmp/openclaw",
+      workspaceDir: "/tmp/mtbot",
       profileMemory,
     });
 
@@ -101,7 +101,7 @@ describe("buildAgentSystemPrompt — profileMemory 注入", () => {
     };
 
     const prompt = buildAgentSystemPrompt({
-      workspaceDir: "/tmp/openclaw",
+      workspaceDir: "/tmp/mtbot",
       profileMemory,
     });
 
@@ -132,7 +132,7 @@ describe("buildAgentSystemPrompt — profileMemory 注入", () => {
     };
 
     const prompt = buildAgentSystemPrompt({
-      workspaceDir: "/tmp/openclaw",
+      workspaceDir: "/tmp/mtbot",
       profileMemory,
     });
 
@@ -156,7 +156,7 @@ describe("buildAgentSystemPrompt — profileMemory 注入", () => {
     };
 
     const prompt = buildAgentSystemPrompt({
-      workspaceDir: "/tmp/openclaw",
+      workspaceDir: "/tmp/mtbot",
       profileMemory,
     });
 

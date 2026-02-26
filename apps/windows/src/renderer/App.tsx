@@ -1,7 +1,7 @@
 /**
  * App Component - 主应用组件
  *
- * OpenClaw Assistant 的根组件
+ * MtBot Assistant 的根组件
  * 集成用户认证流程
  */
 

@@ -12,7 +12,7 @@
  */
 
 import { getLogger } from "../../../../logging/logger.js";
-import type { OpenClawConfig } from "../../../../config/config.js";
+import type { MtBotConfig } from "../../../../config/config.js";
 import type { Database } from "../../../../db/connection.js";
 import type { UserMemory } from "../../../../db/schema/memories.js";
 import {
@@ -159,8 +159,8 @@ function estimateTokens(text: string): number {
 interface PostgresEpisodicConfig extends ProviderConfig {
   /** 已有的 DB 实例（优先于自动获取） */
   db?: Database;
-  /** OpenClaw 配置（用于 LLM 服务初始化） */
-  cfg?: OpenClawConfig;
+  /** MtBot 配置（用于 LLM 服务初始化） */
+  cfg?: MtBotConfig;
 }
 
 // ==================== Provider 实现 ====================

@@ -9,7 +9,7 @@
  * - 自动续费
  * - 支付回调处理
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 // 导出类型

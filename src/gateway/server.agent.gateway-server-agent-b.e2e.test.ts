@@ -138,7 +138,7 @@ describe("gateway server agent", () => {
     ]);
     registryState.registry = registry;
     setActivePluginRegistry(registry);
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-gw-"));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-gw-"));
     testState.sessionStorePath = path.join(dir, "sessions.json");
     await writeSessionStore({
       entries: {
@@ -178,7 +178,7 @@ describe("gateway server agent", () => {
     ]);
     registryState.registry = registry;
     setActivePluginRegistry(registry);
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-gw-"));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-gw-"));
     testState.sessionStorePath = path.join(dir, "sessions.json");
     await writeSessionStore({
       entries: {
@@ -232,7 +232,7 @@ describe("gateway server agent", () => {
 
   test("agent ignores webchat last-channel for routing", async () => {
     testState.allowFrom = ["+1555"];
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-gw-"));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-gw-"));
     testState.sessionStorePath = path.join(dir, "sessions.json");
     await writeSessionStore({
       entries: {
@@ -263,7 +263,7 @@ describe("gateway server agent", () => {
   });
 
   test("agent uses webchat for internal runs when last provider is webchat", async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-gw-"));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-gw-"));
     testState.sessionStorePath = path.join(dir, "sessions.json");
     await writeSessionStore({
       entries: {
@@ -396,7 +396,7 @@ describe("gateway server agent", () => {
   });
 
   test("agent events stream to webchat clients when run context is registered", async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-gw-"));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-gw-"));
     testState.sessionStorePath = path.join(dir, "sessions.json");
     await writeSessionStore({
       entries: {

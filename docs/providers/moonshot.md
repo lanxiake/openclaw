@@ -23,13 +23,13 @@ Current Kimi K2 model IDs:
   {/_ moonshot-kimi-k2-ids:end _/}
 
 ```bash
-openclaw onboard --auth-choice moonshot-api-key
+mtbot onboard --auth-choice moonshot-api-key
 ```
 
 Kimi Coding:
 
 ```bash
-openclaw onboard --auth-choice kimi-code-api-key
+mtbot onboard --auth-choice kimi-code-api-key
 ```
 
 Note: Moonshot and Kimi Coding are separate providers. Keys are not interchangeable, endpoints differ, and model refs differ (Moonshot uses `moonshot/...`, Kimi Coding uses `kimi-coding/...`).

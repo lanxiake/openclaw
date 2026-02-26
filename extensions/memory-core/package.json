@@ -1,15 +1,15 @@
 {
-  "name": "@openclaw/memory-core",
+  "name": "@mtbot/memory-core",
   "version": "2026.1.30",
-  "description": "OpenClaw core memory search plugin",
+  "description": "MtBot core memory search plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "mtbot": "workspace:*"
   },
   "peerDependencies": {
-    "openclaw": ">=2026.1.26"
+    "mtbot": ">=2026.1.26"
   },
-  "openclaw": {
+  "mtbot": {
     "extensions": [
       "./index.ts"
     ]

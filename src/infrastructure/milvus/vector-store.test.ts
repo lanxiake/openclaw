@@ -288,8 +288,8 @@ describe("Milvus Vector Store", () => {
       expect(VECTOR_DIM).toBe(1024);
     });
 
-    it("MILVUS-STORE-017: COLLECTION_NAME 应该是 openclaw_memories", () => {
-      expect(COLLECTION_NAME).toBe("openclaw_memories");
+    it("MILVUS-STORE-017: COLLECTION_NAME 应该是 mtbot_memories", () => {
+      expect(COLLECTION_NAME).toBe("mtbot_memories");
     });
   });
 });

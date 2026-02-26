@@ -4,7 +4,7 @@
 
 ### 问题
 
-OpenClaw 的 Agent 记忆系统存在**架构断裂**：数据库层（schema、repository、RPC 方法）已完整实现，但 Agent 运行时仍从文件系统读取 `workspace-dev/*.md` 文件（USER.md、SOUL.md、IDENTITY.md 等）。这导致：
+MtBot 的 Agent 记忆系统存在**架构断裂**：数据库层（schema、repository、RPC 方法）已完整实现，但 Agent 运行时仍从文件系统读取 `workspace-dev/*.md` 文件（USER.md、SOUL.md、IDENTITY.md 等）。这导致：
 
 1. 记忆数据无法按用户隔离，不支持多租户
 2. 用户无法通过对话或客户端修改自己的 Agent 性格/记忆

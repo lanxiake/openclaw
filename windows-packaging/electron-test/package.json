@@ -1,7 +1,7 @@
 {
-  "name": "openclaw-electron",
+  "name": "mtbot-electron",
   "version": "1.0.0",
-  "description": "OpenClaw Windows Desktop Application",
+  "description": "MtBot Windows Desktop Application",
   "main": "main.js",
   "scripts": {
     "build": "node build.js",
@@ -9,7 +9,7 @@
     "clean:win": "rmdir /s /q dist 2>nul || echo 已清理",
     "rebuild": "npm run clean && npm run build",
     "start": "electron .",
-    "test": "electron dist/win-unpacked/OpenClaw.exe",
+    "test": "electron dist/win-unpacked/MtBot.exe",
     "test-log": "node test-log.js"
   },
   "dependencies": {
@@ -21,8 +21,8 @@
     "electron-builder": "^26.7.0"
   },
   "build": {
-    "appId": "ai.openclaw.desktop",
-    "productName": "OpenClaw",
+    "appId": "com.yunkun.mtbot.desktop",
+    "productName": "MtBot",
     "directories": {
       "output": "dist"
     },
@@ -35,8 +35,8 @@
         ]
       },
       {
-        "from": "bundled-openclaw",
-        "to": "bundled-openclaw",
+        "from": "bundled-mtbot",
+        "to": "bundled-mtbot",
         "filter": [
           "**/*"
         ]

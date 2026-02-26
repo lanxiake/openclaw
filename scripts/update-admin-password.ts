@@ -7,7 +7,7 @@ import { hashPassword } from "../src/db/utils/password.js";
 
 const connectionString =
   process.env["DATABASE_URL"] ||
-  "postgresql://openclaw_admin:Oc@2026!Pg#Secure@10.157.152.40:22001/openclaw_prod";
+  "postgresql://mtbot_admin:Oc@2026!Pg#Secure@10.157.152.40:22001/mtbot_prod";
 
 async function updateAdminPassword() {
   console.log("[TEST] 连接数据库...");

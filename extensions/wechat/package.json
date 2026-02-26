@@ -1,9 +1,9 @@
 {
-  "name": "@openclaw/wechat",
+  "name": "@mtbot/wechat",
   "version": "2026.1.31",
-  "description": "OpenClaw WeChat channel plugin via wxauto-bridge",
+  "description": "MtBot WeChat channel plugin via wxauto-bridge",
   "type": "module",
-  "openclaw": {
+  "mtbot": {
     "extensions": [
       "./index.ts"
     ]

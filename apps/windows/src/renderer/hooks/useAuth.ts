@@ -75,9 +75,9 @@ interface AuthResponse {
 
 // localStorage keys
 const STORAGE_KEYS = {
-  USER: 'openclaw_user',
-  ACCESS_TOKEN: 'openclaw_access_token',
-  REFRESH_TOKEN: 'openclaw_refresh_token',
+  USER: 'mtbot_user',
+  ACCESS_TOKEN: 'mtbot_access_token',
+  REFRESH_TOKEN: 'mtbot_refresh_token',
 }
 
 /**

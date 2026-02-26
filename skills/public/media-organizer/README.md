@@ -170,4 +170,4 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 ## License
 
-This skill is part of the OpenClaw project.
+This skill is part of the MtBot project.

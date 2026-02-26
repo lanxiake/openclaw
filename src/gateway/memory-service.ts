@@ -11,7 +11,7 @@
  * @module gateway/memory-service
  */
 
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import {
   type MemoryManager,
   type MemoryManagerConfig,
@@ -30,9 +30,9 @@ const logger = createSubsystemLogger("gateway/memory-service");
  */
 export interface GatewayMemoryServiceConfig {
   /**
-   * OpenClaw 配置
+   * MtBot 配置
    */
-  openclawConfig: OpenClawConfig;
+  mtbotConfig: MtBotConfig;
 
   /**
    * Agent ID
@@ -76,7 +76,7 @@ export type GatewayMemoryServiceStatus =
  * @example
  * ```typescript
  * const service = new GatewayMemoryService({
- *   openclawConfig: config,
+ *   mtbotConfig: config,
  *   agentId: 'main',
  *   useSQLiteKnowledge: true,
  * })
@@ -165,11 +165,11 @@ export class GatewayMemoryService {
       // 构建记忆管理器配置
       let memoryConfig = this.config.memoryConfig ?? { ...DEFAULT_DEV_CONFIG };
 
-      // 注入 OpenClawConfig 到 episodic 和 profile provider，启用 LLM 功能
-      const openclawConfig = this.config.openclawConfig;
+      // 注入 MtBotConfig 到 episodic 和 profile provider，启用 LLM 功能
+      const mtbotConfig = this.config.mtbotConfig;
 
-      // 从 openclawConfig 中提取数据库记忆系统配置（通过 system_configs 合并进来的）
-      const cfgAny = openclawConfig as Record<string, unknown>;
+      // 从 mtbotConfig 中提取数据库记忆系统配置（通过 system_configs 合并进来的）
+      const cfgAny = mtbotConfig as Record<string, unknown>;
       const memoryEmbeddingConfig = cfgAny.memory_embedding as
         | {
             provider?: string;
@@ -226,19 +226,19 @@ export class GatewayMemoryService {
           ...memoryConfig.episodic,
           options: {
             ...memoryConfig.episodic.options,
-            cfg: openclawConfig,
+            cfg: mtbotConfig,
           },
         },
         profile: {
           ...memoryConfig.profile,
           options: {
             ...memoryConfig.profile.options,
-            cfg: openclawConfig,
+            cfg: mtbotConfig,
           },
         },
       };
 
-      logger.info("已注入 OpenClawConfig 到 episodic/profile provider");
+      logger.info("已注入 MtBotConfig 到 episodic/profile provider");
 
       // 知识记忆后端选择逻辑：
       // 1. 当数据库配置了有效的 embedding 配置（baseUrl + model），使用 PostgreSQL + Milvus
@@ -258,7 +258,7 @@ export class GatewayMemoryService {
           knowledge: {
             provider: "postgres",
             options: {
-              cfg: openclawConfig,
+              cfg: mtbotConfig,
               embeddingConfig: {
                 provider: memoryEmbeddingConfig.provider ?? "openai",
                 model: memoryEmbeddingConfig.model ?? "Qwen3-Embedding-0.6B",
@@ -274,7 +274,7 @@ export class GatewayMemoryService {
 
         // 创建 SQLite 适配器
         this.sqliteAdapter = new SQLiteKnowledgeMemoryAdapter({
-          openclawConfig: this.config.openclawConfig,
+          mtbotConfig: this.config.mtbotConfig,
           agentId: this.config.agentId,
         });
 

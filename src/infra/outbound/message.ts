@@ -1,5 +1,5 @@
 import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { loadConfig } from "../../config/config.js";
 import { callGateway, randomIdempotencyKey } from "../../gateway/call.js";
 import type { PollInput } from "../../polls.js";
@@ -39,7 +39,7 @@ type MessageSendParams = {
   dryRun?: boolean;
   bestEffort?: boolean;
   deps?: OutboundSendDeps;
-  cfg?: OpenClawConfig;
+  cfg?: MtBotConfig;
   gateway?: MessageGatewayOptions;
   idempotencyKey?: string;
   mirror?: {
@@ -69,7 +69,7 @@ type MessagePollParams = {
   durationHours?: number;
   channel?: string;
   dryRun?: boolean;
-  cfg?: OpenClawConfig;
+  cfg?: MtBotConfig;
   gateway?: MessageGatewayOptions;
   idempotencyKey?: string;
 };

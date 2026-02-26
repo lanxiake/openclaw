@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { DEFAULT_ASSISTANT_IDENTITY, resolveAssistantIdentity } from "./assistant-identity.js";
 
 describe("resolveAssistantIdentity avatar normalization", () => {
   it("drops sentence-like avatar placeholders", () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       ui: {
         assistant: {
           avatar: "workspace-relative path, http(s) URL, or data URI",
@@ -19,7 +19,7 @@ describe("resolveAssistantIdentity avatar normalization", () => {
   });
 
   it("keeps short text avatars", () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       ui: {
         assistant: {
           avatar: "PS",
@@ -31,14 +31,14 @@ describe("resolveAssistantIdentity avatar normalization", () => {
   });
 
   it("keeps path avatars", () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       ui: {
         assistant: {
-          avatar: "avatars/openclaw.png",
+          avatar: "avatars/mtbot.png",
         },
       },
     };
 
-    expect(resolveAssistantIdentity({ cfg, workspaceDir: "" }).avatar).toBe("avatars/openclaw.png");
+    expect(resolveAssistantIdentity({ cfg, workspaceDir: "" }).avatar).toBe("avatars/mtbot.png");
   });
 });

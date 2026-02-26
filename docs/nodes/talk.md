@@ -46,7 +46,7 @@ Supported keys:
 - `seed`, `normalize`, `lang`, `output_format`, `latency_tier`
 - `once`
 
-## Config (`~/.openclaw/openclaw.json`)
+## Config (`~/.mtbot/mtbot.json`)
 
 ```json5
 {

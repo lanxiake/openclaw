@@ -1,4 +1,4 @@
-import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";
+import { emptyPluginConfigSchema } from "mtbot/plugin-sdk";
 
 import { loginQwenPortalOAuth } from "./oauth.js";
 

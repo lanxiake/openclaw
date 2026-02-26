@@ -56,7 +56,7 @@ function buildBootstrapFilesFromDatabase(
 ```typescript
 export async function resolveBootstrapFilesForRun(params: {
   workspaceDir: string;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
   sessionKey?: string;
   sessionId?: string;
   agentId?: string;

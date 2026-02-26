@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import type { ChannelPlugin } from "../channels/plugins/types.js";
 import { runSecurityAudit } from "./audit.js";
 import {
@@ -19,7 +19,7 @@ const telegramPlugin = createTelegramTestPlugin();
 
 describe("security audit", () => {
   it("includes an attack surface summary (info)", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       channels: { whatsapp: { groupPolicy: "open" }, telegram: { groupPolicy: "allowlist" } },
       tools: { elevated: { enabled: true, allowFrom: { whatsapp: ["+1"] } } },
       hooks: { enabled: true },
@@ -40,7 +40,7 @@ describe("security audit", () => {
   });
 
   it("flags non-loopback bind without auth as critical", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       gateway: {
         bind: "lan",
         auth: {},
@@ -60,7 +60,7 @@ describe("security audit", () => {
   });
 
   it("warns when loopback control UI lacks trusted proxies", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       gateway: {
         bind: "loopback",
         controlUi: { enabled: true },
@@ -84,7 +84,7 @@ describe("security audit", () => {
   });
 
   it("flags loopback control UI without auth as critical", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       gateway: {
         bind: "loopback",
         controlUi: { enabled: true },
@@ -110,7 +110,7 @@ describe("security audit", () => {
   });
 
   it("flags logging.redactSensitive=off", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       logging: { redactSensitive: "off" },
     };
 
@@ -128,10 +128,10 @@ describe("security audit", () => {
   });
 
   it("treats Windows ACL-only perms as secure", async () => {
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-security-audit-win-"));
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-security-audit-win-"));
     const stateDir = path.join(tmp, "state");
     await fs.mkdir(stateDir, { recursive: true });
-    const configPath = path.join(stateDir, "openclaw.json");
+    const configPath = path.join(stateDir, "mtbot.json");
     await fs.writeFile(configPath, "{}\n", "utf-8");
 
     const user = "DESKTOP-TEST\\Tester";
@@ -165,10 +165,10 @@ describe("security audit", () => {
   });
 
   it("flags Windows ACLs when Users can read the state dir", async () => {
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-security-audit-win-open-"));
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-security-audit-win-open-"));
     const stateDir = path.join(tmp, "state");
     await fs.mkdir(stateDir, { recursive: true });
-    const configPath = path.join(stateDir, "openclaw.json");
+    const configPath = path.join(stateDir, "mtbot.json");
     await fs.writeFile(configPath, "{}\n", "utf-8");
 
     const user = "DESKTOP-TEST\\Tester";
@@ -205,7 +205,7 @@ describe("security audit", () => {
   });
 
   it("warns when small models are paired with web/browser tools", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       agents: { defaults: { model: { primary: "ollama/mistral-8b" } } },
       tools: {
         web: {
@@ -231,7 +231,7 @@ describe("security audit", () => {
   });
 
   it("treats small models as safe when sandbox is on and web tools are disabled", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       agents: { defaults: { model: { primary: "ollama/mistral-8b" }, sandbox: { mode: "all" } } },
       tools: {
         web: {
@@ -255,7 +255,7 @@ describe("security audit", () => {
   });
 
   it("flags tools.elevated allowFrom wildcard as critical", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       tools: {
         elevated: {
           allowFrom: { whatsapp: ["*"] },
@@ -280,7 +280,7 @@ describe("security audit", () => {
   });
 
   it("warns when remote CDP uses HTTP", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       browser: {
         profiles: {
           remote: { cdpUrl: "http://example.com:9222", color: "#0066CC" },
@@ -302,7 +302,7 @@ describe("security audit", () => {
   });
 
   it("warns when control UI allows insecure auth", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       gateway: {
         controlUi: { allowInsecureAuth: true },
       },
@@ -325,7 +325,7 @@ describe("security audit", () => {
   });
 
   it("warns when control UI device auth is disabled", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       gateway: {
         controlUi: { dangerouslyDisableDeviceAuth: true },
       },
@@ -348,7 +348,7 @@ describe("security audit", () => {
   });
 
   it("warns when multiple DM senders share the main session", async () => {
-    const cfg: OpenClawConfig = { session: { dmScope: "main" } };
+    const cfg: MtBotConfig = { session: { dmScope: "main" } };
     const plugins: ChannelPlugin[] = [
       {
         id: "whatsapp",
@@ -396,12 +396,12 @@ describe("security audit", () => {
   });
 
   it("flags Discord native commands without a guild user allowlist", async () => {
-    const prevStateDir = process.env.OPENCLAW_STATE_DIR;
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-security-audit-discord-"));
-    process.env.OPENCLAW_STATE_DIR = tmp;
+    const prevStateDir = process.env.MTBOT_STATE_DIR;
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-security-audit-discord-"));
+    process.env.MTBOT_STATE_DIR = tmp;
     await fs.mkdir(path.join(tmp, "credentials"), { recursive: true, mode: 0o700 });
     try {
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         channels: {
           discord: {
             enabled: true,
@@ -435,22 +435,22 @@ describe("security audit", () => {
       );
     } finally {
       if (prevStateDir == null) {
-        delete process.env.OPENCLAW_STATE_DIR;
+        delete process.env.MTBOT_STATE_DIR;
       } else {
-        process.env.OPENCLAW_STATE_DIR = prevStateDir;
+        process.env.MTBOT_STATE_DIR = prevStateDir;
       }
     }
   });
 
   it("does not flag Discord slash commands when dm.allowFrom includes a Discord snowflake id", async () => {
-    const prevStateDir = process.env.OPENCLAW_STATE_DIR;
+    const prevStateDir = process.env.MTBOT_STATE_DIR;
     const tmp = await fs.mkdtemp(
-      path.join(os.tmpdir(), "openclaw-security-audit-discord-allowfrom-snowflake-"),
+      path.join(os.tmpdir(), "mtbot-security-audit-discord-allowfrom-snowflake-"),
     );
-    process.env.OPENCLAW_STATE_DIR = tmp;
+    process.env.MTBOT_STATE_DIR = tmp;
     await fs.mkdir(path.join(tmp, "credentials"), { recursive: true, mode: 0o700 });
     try {
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         channels: {
           discord: {
             enabled: true,
@@ -484,20 +484,20 @@ describe("security audit", () => {
       );
     } finally {
       if (prevStateDir == null) {
-        delete process.env.OPENCLAW_STATE_DIR;
+        delete process.env.MTBOT_STATE_DIR;
       } else {
-        process.env.OPENCLAW_STATE_DIR = prevStateDir;
+        process.env.MTBOT_STATE_DIR = prevStateDir;
       }
     }
   });
 
   it("flags Discord slash commands when access-group enforcement is disabled and no users allowlist exists", async () => {
-    const prevStateDir = process.env.OPENCLAW_STATE_DIR;
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-security-audit-discord-open-"));
-    process.env.OPENCLAW_STATE_DIR = tmp;
+    const prevStateDir = process.env.MTBOT_STATE_DIR;
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-security-audit-discord-open-"));
+    process.env.MTBOT_STATE_DIR = tmp;
     await fs.mkdir(path.join(tmp, "credentials"), { recursive: true, mode: 0o700 });
     try {
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         commands: { useAccessGroups: false },
         channels: {
           discord: {
@@ -532,20 +532,20 @@ describe("security audit", () => {
       );
     } finally {
       if (prevStateDir == null) {
-        delete process.env.OPENCLAW_STATE_DIR;
+        delete process.env.MTBOT_STATE_DIR;
       } else {
-        process.env.OPENCLAW_STATE_DIR = prevStateDir;
+        process.env.MTBOT_STATE_DIR = prevStateDir;
       }
     }
   });
 
   it("flags Slack slash commands without a channel users allowlist", async () => {
-    const prevStateDir = process.env.OPENCLAW_STATE_DIR;
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-security-audit-slack-"));
-    process.env.OPENCLAW_STATE_DIR = tmp;
+    const prevStateDir = process.env.MTBOT_STATE_DIR;
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-security-audit-slack-"));
+    process.env.MTBOT_STATE_DIR = tmp;
     await fs.mkdir(path.join(tmp, "credentials"), { recursive: true, mode: 0o700 });
     try {
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         channels: {
           slack: {
             enabled: true,
@@ -574,20 +574,20 @@ describe("security audit", () => {
       );
     } finally {
       if (prevStateDir == null) {
-        delete process.env.OPENCLAW_STATE_DIR;
+        delete process.env.MTBOT_STATE_DIR;
       } else {
-        process.env.OPENCLAW_STATE_DIR = prevStateDir;
+        process.env.MTBOT_STATE_DIR = prevStateDir;
       }
     }
   });
 
   it("flags Slack slash commands when access-group enforcement is disabled", async () => {
-    const prevStateDir = process.env.OPENCLAW_STATE_DIR;
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-security-audit-slack-open-"));
-    process.env.OPENCLAW_STATE_DIR = tmp;
+    const prevStateDir = process.env.MTBOT_STATE_DIR;
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-security-audit-slack-open-"));
+    process.env.MTBOT_STATE_DIR = tmp;
     await fs.mkdir(path.join(tmp, "credentials"), { recursive: true, mode: 0o700 });
     try {
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         commands: { useAccessGroups: false },
         channels: {
           slack: {
@@ -617,20 +617,20 @@ describe("security audit", () => {
       );
     } finally {
       if (prevStateDir == null) {
-        delete process.env.OPENCLAW_STATE_DIR;
+        delete process.env.MTBOT_STATE_DIR;
       } else {
-        process.env.OPENCLAW_STATE_DIR = prevStateDir;
+        process.env.MTBOT_STATE_DIR = prevStateDir;
       }
     }
   });
 
   it("flags Telegram group commands without a sender allowlist", async () => {
-    const prevStateDir = process.env.OPENCLAW_STATE_DIR;
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-security-audit-telegram-"));
-    process.env.OPENCLAW_STATE_DIR = tmp;
+    const prevStateDir = process.env.MTBOT_STATE_DIR;
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-security-audit-telegram-"));
+    process.env.MTBOT_STATE_DIR = tmp;
     await fs.mkdir(path.join(tmp, "credentials"), { recursive: true, mode: 0o700 });
     try {
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         channels: {
           telegram: {
             enabled: true,
@@ -658,15 +658,15 @@ describe("security audit", () => {
       );
     } finally {
       if (prevStateDir == null) {
-        delete process.env.OPENCLAW_STATE_DIR;
+        delete process.env.MTBOT_STATE_DIR;
       } else {
-        process.env.OPENCLAW_STATE_DIR = prevStateDir;
+        process.env.MTBOT_STATE_DIR = prevStateDir;
       }
     }
   });
 
   it("adds a warning when deep probe fails", async () => {
-    const cfg: OpenClawConfig = { gateway: { mode: "local" } };
+    const cfg: MtBotConfig = { gateway: { mode: "local" } };
 
     const res = await runSecurityAudit({
       config: cfg,
@@ -695,7 +695,7 @@ describe("security audit", () => {
   });
 
   it("adds a warning when deep probe throws", async () => {
-    const cfg: OpenClawConfig = { gateway: { mode: "local" } };
+    const cfg: MtBotConfig = { gateway: { mode: "local" } };
 
     const res = await runSecurityAudit({
       config: cfg,
@@ -718,7 +718,7 @@ describe("security audit", () => {
   });
 
   it("warns on legacy model configuration", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       agents: { defaults: { model: { primary: "openai/gpt-3.5-turbo" } } },
     };
 
@@ -736,7 +736,7 @@ describe("security audit", () => {
   });
 
   it("warns on weak model tiers", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       agents: { defaults: { model: { primary: "anthropic/claude-haiku-4-5" } } },
     };
 
@@ -755,7 +755,7 @@ describe("security audit", () => {
 
   it("does not warn on Venice-style opus-45 model names", async () => {
     // Venice uses "claude-opus-45" format (no dash between 4 and 5)
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       agents: { defaults: { model: { primary: "venice/claude-opus-45" } } },
     };
 
@@ -771,7 +771,7 @@ describe("security audit", () => {
   });
 
   it("warns when hooks token looks short", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       hooks: { enabled: true, token: "short" },
     };
 
@@ -789,9 +789,9 @@ describe("security audit", () => {
   });
 
   it("warns when hooks token reuses the gateway env token", async () => {
-    const prevToken = process.env.OPENCLAW_GATEWAY_TOKEN;
-    process.env.OPENCLAW_GATEWAY_TOKEN = "shared-gateway-token-1234567890";
-    const cfg: OpenClawConfig = {
+    const prevToken = process.env.MTBOT_GATEWAY_TOKEN;
+    process.env.MTBOT_GATEWAY_TOKEN = "shared-gateway-token-1234567890";
+    const cfg: MtBotConfig = {
       hooks: { enabled: true, token: "shared-gateway-token-1234567890" },
     };
 
@@ -809,22 +809,22 @@ describe("security audit", () => {
       );
     } finally {
       if (prevToken === undefined) {
-        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+        delete process.env.MTBOT_GATEWAY_TOKEN;
       } else {
-        process.env.OPENCLAW_GATEWAY_TOKEN = prevToken;
+        process.env.MTBOT_GATEWAY_TOKEN = prevToken;
       }
     }
   });
 
   it("warns when state/config look like a synced folder", async () => {
-    const cfg: OpenClawConfig = {};
+    const cfg: MtBotConfig = {};
 
     const res = await runSecurityAudit({
       config: cfg,
       includeFilesystem: false,
       includeChannelSecurity: false,
-      stateDir: "/Users/test/Dropbox/.openclaw",
-      configPath: "/Users/test/Dropbox/.openclaw/openclaw.json",
+      stateDir: "/Users/test/Dropbox/.mtbot",
+      configPath: "/Users/test/Dropbox/.mtbot/mtbot.json",
     });
 
     expect(res.findings).toEqual(
@@ -835,7 +835,7 @@ describe("security audit", () => {
   });
 
   it("flags group/world-readable config include files", async () => {
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-security-audit-"));
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-security-audit-"));
     const stateDir = path.join(tmp, "state");
     await fs.mkdir(stateDir, { recursive: true, mode: 0o700 });
 
@@ -849,12 +849,12 @@ describe("security audit", () => {
       await fs.chmod(includePath, 0o644);
     }
 
-    const configPath = path.join(stateDir, "openclaw.json");
+    const configPath = path.join(stateDir, "mtbot.json");
     await fs.writeFile(configPath, `{ "$include": "./extra.json5" }\n`, "utf-8");
     await fs.chmod(configPath, 0o600);
 
     try {
-      const cfg: OpenClawConfig = { logging: { redactSensitive: "off" } };
+      const cfg: MtBotConfig = { logging: { redactSensitive: "off" } };
       const user = "DESKTOP-TEST\\Tester";
       const execIcacls = isWindows
         ? async (_cmd: string, args: string[]) => {
@@ -908,7 +908,7 @@ describe("security audit", () => {
     delete process.env.TELEGRAM_BOT_TOKEN;
     delete process.env.SLACK_BOT_TOKEN;
     delete process.env.SLACK_APP_TOKEN;
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-security-audit-"));
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-security-audit-"));
     const stateDir = path.join(tmp, "state");
     await fs.mkdir(path.join(stateDir, "extensions", "some-plugin"), {
       recursive: true,
@@ -916,13 +916,13 @@ describe("security audit", () => {
     });
 
     try {
-      const cfg: OpenClawConfig = {};
+      const cfg: MtBotConfig = {};
       const res = await runSecurityAudit({
         config: cfg,
         includeFilesystem: true,
         includeChannelSecurity: false,
         stateDir,
-        configPath: path.join(stateDir, "openclaw.json"),
+        configPath: path.join(stateDir, "mtbot.json"),
       });
 
       expect(res.findings).toEqual(
@@ -957,7 +957,7 @@ describe("security audit", () => {
   it("flags unallowlisted extensions as critical when native skill commands are exposed", async () => {
     const prevDiscordToken = process.env.DISCORD_BOT_TOKEN;
     delete process.env.DISCORD_BOT_TOKEN;
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-security-audit-"));
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mtbot-security-audit-"));
     const stateDir = path.join(tmp, "state");
     await fs.mkdir(path.join(stateDir, "extensions", "some-plugin"), {
       recursive: true,
@@ -965,7 +965,7 @@ describe("security audit", () => {
     });
 
     try {
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         channels: {
           discord: { enabled: true, token: "t" },
         },
@@ -975,7 +975,7 @@ describe("security audit", () => {
         includeFilesystem: true,
         includeChannelSecurity: false,
         stateDir,
-        configPath: path.join(stateDir, "openclaw.json"),
+        configPath: path.join(stateDir, "mtbot.json"),
       });
 
       expect(res.findings).toEqual(
@@ -996,7 +996,7 @@ describe("security audit", () => {
   });
 
   it("flags open groupPolicy when tools.elevated is enabled", async () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       tools: { elevated: { enabled: true, allowFrom: { whatsapp: ["+1"] } } },
       channels: { whatsapp: { groupPolicy: "open" } },
     };
@@ -1018,30 +1018,30 @@ describe("security audit", () => {
   });
 
   describe("maybeProbeGateway auth selection", () => {
-    const originalEnvToken = process.env.OPENCLAW_GATEWAY_TOKEN;
-    const originalEnvPassword = process.env.OPENCLAW_GATEWAY_PASSWORD;
+    const originalEnvToken = process.env.MTBOT_GATEWAY_TOKEN;
+    const originalEnvPassword = process.env.MTBOT_GATEWAY_PASSWORD;
 
     beforeEach(() => {
-      delete process.env.OPENCLAW_GATEWAY_TOKEN;
-      delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+      delete process.env.MTBOT_GATEWAY_TOKEN;
+      delete process.env.MTBOT_GATEWAY_PASSWORD;
     });
 
     afterEach(() => {
       if (originalEnvToken == null) {
-        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+        delete process.env.MTBOT_GATEWAY_TOKEN;
       } else {
-        process.env.OPENCLAW_GATEWAY_TOKEN = originalEnvToken;
+        process.env.MTBOT_GATEWAY_TOKEN = originalEnvToken;
       }
       if (originalEnvPassword == null) {
-        delete process.env.OPENCLAW_GATEWAY_PASSWORD;
+        delete process.env.MTBOT_GATEWAY_PASSWORD;
       } else {
-        process.env.OPENCLAW_GATEWAY_PASSWORD = originalEnvPassword;
+        process.env.MTBOT_GATEWAY_PASSWORD = originalEnvPassword;
       }
     });
 
     it("uses local auth when gateway.mode is local", async () => {
       let capturedAuth: { token?: string; password?: string } | undefined;
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         gateway: {
           mode: "local",
           auth: { token: "local-token-abc123" },
@@ -1074,9 +1074,9 @@ describe("security audit", () => {
     });
 
     it("prefers env token over local config token", async () => {
-      process.env.OPENCLAW_GATEWAY_TOKEN = "env-token";
+      process.env.MTBOT_GATEWAY_TOKEN = "env-token";
       let capturedAuth: { token?: string; password?: string } | undefined;
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         gateway: {
           mode: "local",
           auth: { token: "local-token" },
@@ -1110,7 +1110,7 @@ describe("security audit", () => {
 
     it("uses local auth when gateway.mode is undefined (default)", async () => {
       let capturedAuth: { token?: string; password?: string } | undefined;
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         gateway: {
           auth: { token: "default-local-token" },
         },
@@ -1143,7 +1143,7 @@ describe("security audit", () => {
 
     it("uses remote auth when gateway.mode is remote with URL", async () => {
       let capturedAuth: { token?: string; password?: string } | undefined;
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         gateway: {
           mode: "remote",
           auth: { token: "local-token-should-not-use" },
@@ -1180,9 +1180,9 @@ describe("security audit", () => {
     });
 
     it("ignores env token when gateway.mode is remote", async () => {
-      process.env.OPENCLAW_GATEWAY_TOKEN = "env-token";
+      process.env.MTBOT_GATEWAY_TOKEN = "env-token";
       let capturedAuth: { token?: string; password?: string } | undefined;
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         gateway: {
           mode: "remote",
           auth: { token: "local-token-should-not-use" },
@@ -1220,7 +1220,7 @@ describe("security audit", () => {
 
     it("uses remote password when env is unset", async () => {
       let capturedAuth: { token?: string; password?: string } | undefined;
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         gateway: {
           mode: "remote",
           remote: {
@@ -1256,9 +1256,9 @@ describe("security audit", () => {
     });
 
     it("prefers env password over remote password", async () => {
-      process.env.OPENCLAW_GATEWAY_PASSWORD = "env-pass";
+      process.env.MTBOT_GATEWAY_PASSWORD = "env-pass";
       let capturedAuth: { token?: string; password?: string } | undefined;
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         gateway: {
           mode: "remote",
           remote: {
@@ -1295,7 +1295,7 @@ describe("security audit", () => {
 
     it("falls back to local auth when gateway.mode is remote but URL is missing", async () => {
       let capturedAuth: { token?: string; password?: string } | undefined;
-      const cfg: OpenClawConfig = {
+      const cfg: MtBotConfig = {
         gateway: {
           mode: "remote",
           auth: { token: "fallback-local-token" },

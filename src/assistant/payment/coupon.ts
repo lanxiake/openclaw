@@ -7,7 +7,7 @@
  * - 折扣计算
  * - 使用记录追踪
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import { v4 as uuidv4 } from "uuid";

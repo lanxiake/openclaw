@@ -1,6 +1,6 @@
 import type { AssistantMessage } from "@mariozechner/pi-ai";
 
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { extractAssistantText } from "../pi-embedded-utils.js";
 
 export type ImageModelConfig = { primary?: string; fallbacks?: string[] };
@@ -51,7 +51,7 @@ export function coerceImageAssistantText(params: {
   throw new Error(`Image model returned no text (${params.provider}/${params.model}).`);
 }
 
-export function coerceImageModelConfig(cfg?: OpenClawConfig): ImageModelConfig {
+export function coerceImageModelConfig(cfg?: MtBotConfig): ImageModelConfig {
   const imageModel = cfg?.agents?.defaults?.imageModel as
     | { primary?: string; fallbacks?: string[] }
     | string
@@ -65,7 +65,7 @@ export function coerceImageModelConfig(cfg?: OpenClawConfig): ImageModelConfig {
 }
 
 export function resolveProviderVisionModelFromConfig(params: {
-  cfg?: OpenClawConfig;
+  cfg?: MtBotConfig;
   provider: string;
 }): string | null {
   const providerCfg = params.cfg?.models?.providers?.[params.provider] as unknown as

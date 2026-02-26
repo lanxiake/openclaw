@@ -19,7 +19,7 @@ cron is the mechanism.
 ## TL;DR
 
 - Cron runs **inside the Gateway** (not inside the model).
-- Jobs persist under `~/.openclaw/cron/` so restarts don’t lose schedules.
+- Jobs persist under `~/.mtbot/cron/` so restarts don’t lose schedules.
 - Two execution styles:
   - **Main session**: enqueue a system event, then run on the next heartbeat.
   - **Isolated**: run a dedicated agent turn in `cron:<jobId>`, optionally deliver output.
@@ -30,7 +30,7 @@ cron is the mechanism.
 Create a one-shot reminder, verify it exists, and run it immediately:
 
 ```bash
-openclaw cron add \
+mtbot cron add \
   --name "Reminder" \
   --at "2026-02-01T16:00:00Z" \
   --session main \
@@ -38,15 +38,15 @@ openclaw cron add \
   --wake now \
   --delete-after-run
 
-openclaw cron list
-openclaw cron run <job-id> --force
-openclaw cron runs --id <job-id>
+mtbot cron list
+mtbot cron run <job-id> --force
+mtbot cron runs --id <job-id>
 ```
 
 Schedule a recurring isolated job with delivery:
 
 ```bash
-openclaw cron add \
+mtbot cron add \
   --name "Morning brief" \
   --cron "0 7 * * *" \
   --tz "America/Los_Angeles" \
@@ -63,9 +63,9 @@ For the canonical JSON shapes and examples, see [JSON schema for tool calls](/au
 
 ## Where cron jobs are stored
 
-Cron jobs are persisted on the Gateway host at `~/.openclaw/cron/jobs.json` by default.
+Cron jobs are persisted on the Gateway host at `~/.mtbot/cron/jobs.json` by default.
 The Gateway loads the file into memory and writes it back on changes, so manual edits
-are only safe when the Gateway is stopped. Prefer `openclaw cron add/edit` or the cron
+are only safe when the Gateway is stopped. Prefer `mtbot cron add/edit` or the cron
 tool call API for changes.
 
 ## Beginner-friendly overview
@@ -294,8 +294,8 @@ Notes:
 
 ## Storage & history
 
-- Job store: `~/.openclaw/cron/jobs.json` (Gateway-managed JSON).
-- Run history: `~/.openclaw/cron/runs/<jobId>.jsonl` (JSONL, auto-pruned).
+- Job store: `~/.mtbot/cron/jobs.json` (Gateway-managed JSON).
+- Run history: `~/.mtbot/cron/runs/<jobId>.jsonl` (JSONL, auto-pruned).
 - Override store path: `cron.store` in config.
 
 ## Configuration
@@ -304,7 +304,7 @@ Notes:
 {
   cron: {
     enabled: true, // default true
-    store: "~/.openclaw/cron/jobs.json",
+    store: "~/.mtbot/cron/jobs.json",
     maxConcurrentRuns: 1, // default 1
   },
 }
@@ -313,14 +313,14 @@ Notes:
 Disable cron entirely:
 
 - `cron.enabled: false` (config)
-- `OPENCLAW_SKIP_CRON=1` (env)
+- `MTBOT_SKIP_CRON=1` (env)
 
 ## CLI quickstart
 
 One-shot reminder (UTC ISO, auto-delete after success):
 
 ```bash
-openclaw cron add \
+mtbot cron add \
   --name "Send reminder" \
   --at "2026-01-12T18:00:00Z" \
   --session main \
@@ -332,7 +332,7 @@ openclaw cron add \
 One-shot reminder (main session, wake immediately):
 
 ```bash
-openclaw cron add \
+mtbot cron add \
   --name "Calendar check" \
   --at "20m" \
   --session main \
@@ -343,7 +343,7 @@ openclaw cron add \
 Recurring isolated job (deliver to WhatsApp):
 
 ```bash
-openclaw cron add \
+mtbot cron add \
   --name "Morning status" \
   --cron "0 7 * * *" \
   --tz "America/Los_Angeles" \
@@ -357,7 +357,7 @@ openclaw cron add \
 Recurring isolated job (deliver to a Telegram topic):
 
 ```bash
-openclaw cron add \
+mtbot cron add \
   --name "Nightly summary (topic)" \
   --cron "0 22 * * *" \
   --tz "America/Los_Angeles" \
@@ -371,7 +371,7 @@ openclaw cron add \
 Isolated job with model and thinking override:
 
 ```bash
-openclaw cron add \
+mtbot cron add \
   --name "Deep analysis" \
   --cron "0 6 * * 1" \
   --tz "America/Los_Angeles" \
@@ -388,23 +388,23 @@ Agent selection (multi-agent setups):
 
 ```bash
 # Pin a job to agent "ops" (falls back to default if that agent is missing)
-openclaw cron add --name "Ops sweep" --cron "0 6 * * *" --session isolated --message "Check ops queue" --agent ops
+mtbot cron add --name "Ops sweep" --cron "0 6 * * *" --session isolated --message "Check ops queue" --agent ops
 
 # Switch or clear the agent on an existing job
-openclaw cron edit <jobId> --agent ops
-openclaw cron edit <jobId> --clear-agent
+mtbot cron edit <jobId> --agent ops
+mtbot cron edit <jobId> --clear-agent
 ```
 
 Manual run (debug):
 
 ```bash
-openclaw cron run <jobId> --force
+mtbot cron run <jobId> --force
 ```
 
 Edit an existing job (patch fields):
 
 ```bash
-openclaw cron edit <jobId> \
+mtbot cron edit <jobId> \
   --message "Updated prompt" \
   --model "opus" \
   --thinking low
@@ -413,26 +413,26 @@ openclaw cron edit <jobId> \
 Run history:
 
 ```bash
-openclaw cron runs --id <jobId> --limit 50
+mtbot cron runs --id <jobId> --limit 50
 ```
 
 Immediate system event without creating a job:
 
 ```bash
-openclaw system event --mode now --text "Next heartbeat: check battery."
+mtbot system event --mode now --text "Next heartbeat: check battery."
 ```
 
 ## Gateway API surface
 
 - `cron.list`, `cron.status`, `cron.add`, `cron.update`, `cron.remove`
 - `cron.run` (force or due), `cron.runs`
-  For immediate system events without a job, use [`openclaw system event`](/cli/system).
+  For immediate system events without a job, use [`mtbot system event`](/cli/system).
 
 ## Troubleshooting
 
 ### “Nothing runs”
 
-- Check cron is enabled: `cron.enabled` and `OPENCLAW_SKIP_CRON`.
+- Check cron is enabled: `cron.enabled` and `MTBOT_SKIP_CRON`.
 - Check the Gateway is running continuously (cron runs inside the Gateway process).
 - For `cron` schedules: confirm timezone (`--tz`) vs the host timezone.
 

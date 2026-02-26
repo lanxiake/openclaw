@@ -1,4 +1,4 @@
-# OpenClaw 基础设施 Docker Compose 配置
+# MtBot 基础设施 Docker Compose 配置
 #
 # 包含系统所需的所有第三方组件和中间件
 #
@@ -52,14 +52,14 @@ services:
   # 使用 pgvector 镜像以支持向量类型 (user_memories.embedding)
   postgres:
     image: pgvector/pgvector:pg17
-    container_name: openclaw-postgres
+    container_name: mtbot-postgres
     restart: unless-stopped
     profiles:
       - minimal
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-openclaw_admin}
+      POSTGRES_USER: ${POSTGRES_USER:-mtbot_admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Oc@2026!Pg#Secure}
-      POSTGRES_DB: ${POSTGRES_DB:-openclaw_prod}
+      POSTGRES_DB: ${POSTGRES_DB:-mtbot_prod}
       # 设置时区
       TZ: Asia/Shanghai
     ports:
@@ -72,13 +72,13 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-openclaw_admin} -d ${POSTGRES_DB:-openclaw_prod}",
+          "pg_isready -U ${POSTGRES_USER:-mtbot_admin} -d ${POSTGRES_DB:-mtbot_prod}",
         ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - openclaw-network
+      - mtbot-network
 
   # ==================== 缓存服务 ====================
 
@@ -86,7 +86,7 @@ services:
   # 用于: 会话缓存、工作记忆、速率限制、消息队列
   redis:
     image: redis:7-alpine
-    container_name: openclaw-redis
+    container_name: mtbot-redis
     restart: unless-stopped
     profiles:
       - minimal
@@ -106,7 +106,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - openclaw-network
+      - mtbot-network
 
   # ==================== 对象存储 ====================
 
@@ -114,11 +114,11 @@ services:
   # 用于: 文件上传、多媒体存储、导出文件、文档存储
   minio:
     image: minio/minio:latest
-    container_name: openclaw-minio
+    container_name: mtbot-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-openclaw_minio}
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-mtbot_minio}
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-Oc@2026!Mn#Secure}
     ports:
       - "${MINIO_API_PORT:-22003}:9000"
@@ -131,35 +131,35 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - openclaw-network
+      - mtbot-network
 
   # MinIO 初始化 - 创建默认存储桶
   minio-init:
     image: minio/mc:latest
-    container_name: openclaw-minio-init
+    container_name: mtbot-minio-init
     depends_on:
       minio:
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      mc alias set myminio http://minio:9000 $${MINIO_ACCESS_KEY:-openclaw_minio} $${MINIO_SECRET_KEY:-Oc@2026!Mn#Secure};
-      mc mb --ignore-existing myminio/openclaw-documents;
-      mc mb --ignore-existing myminio/openclaw-media;
-      mc mb --ignore-existing myminio/openclaw-temp;
-      mc mb --ignore-existing myminio/openclaw-exports;
-      mc anonymous set download myminio/openclaw-media;
+      mc alias set myminio http://minio:9000 $${MINIO_ACCESS_KEY:-mtbot_minio} $${MINIO_SECRET_KEY:-Oc@2026!Mn#Secure};
+      mc mb --ignore-existing myminio/mtbot-documents;
+      mc mb --ignore-existing myminio/mtbot-media;
+      mc mb --ignore-existing myminio/mtbot-temp;
+      mc mb --ignore-existing myminio/mtbot-exports;
+      mc anonymous set download myminio/mtbot-media;
       echo 'MinIO buckets created successfully';
       exit 0;
       "
     networks:
-      - openclaw-network
+      - mtbot-network
 
   # ==================== 向量数据库 (知识记忆) ====================
 
   # Milvus 依赖 - etcd
   milvus-etcd:
     image: quay.io/coreos/etcd:v3.5.5
-    container_name: openclaw-milvus-etcd
+    container_name: mtbot-milvus-etcd
     restart: unless-stopped
     environment:
       ETCD_AUTO_COMPACTION_MODE: revision
@@ -175,7 +175,7 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - openclaw-network
+      - mtbot-network
     profiles:
       - knowledge
       - all
@@ -183,7 +183,7 @@ services:
   # Milvus 依赖 - MinIO (独立实例)
   milvus-minio:
     image: minio/minio:RELEASE.2023-03-20T20-16-18Z
-    container_name: openclaw-milvus-minio
+    container_name: mtbot-milvus-minio
     restart: unless-stopped
     environment:
       MINIO_ACCESS_KEY: minioadmin
@@ -197,7 +197,7 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - openclaw-network
+      - mtbot-network
     profiles:
       - knowledge
       - all
@@ -206,7 +206,7 @@ services:
   # 用于: 知识记忆、语义搜索、相似度匹配
   milvus:
     image: milvusdb/milvus:v2.5.6
-    container_name: openclaw-milvus
+    container_name: mtbot-milvus
     restart: unless-stopped
     depends_on:
       - milvus-etcd
@@ -225,7 +225,7 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - openclaw-network
+      - mtbot-network
     profiles:
       - knowledge
       - all
@@ -233,7 +233,7 @@ services:
   # Milvus 管理界面
   milvus-attu:
     image: zilliz/attu:v2.4
-    container_name: openclaw-milvus-attu
+    container_name: mtbot-milvus-attu
     restart: unless-stopped
     depends_on:
       - milvus
@@ -242,7 +242,7 @@ services:
     ports:
       - "${ATTU_PORT:-22016}:3000"
     networks:
-      - openclaw-network
+      - mtbot-network
     profiles:
       - knowledge
       - dev-tools
@@ -254,7 +254,7 @@ services:
   # 用于: 知识图谱、实体关系存储、图查询
   neo4j:
     image: neo4j:5.26-community
-    container_name: openclaw-neo4j
+    container_name: mtbot-neo4j
     restart: unless-stopped
     environment:
       NEO4J_AUTH: ${NEO4J_USER:-neo4j_admin}/${NEO4J_PASSWORD:-Oc@2026!N4j#Secure}
@@ -275,7 +275,7 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - openclaw-network
+      - mtbot-network
     profiles:
       - knowledge
       - all
@@ -286,12 +286,12 @@ services:
   # 用于: 异步任务处理、事件驱动架构
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: openclaw-rabbitmq
+    container_name: mtbot-rabbitmq
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-openclaw_mq}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-mtbot_mq}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-Oc@2026!Mq#Secure}
-      RABBITMQ_DEFAULT_VHOST: openclaw
+      RABBITMQ_DEFAULT_VHOST: mtbot
     ports:
       - "${RABBITMQ_PORT:-22009}:5672"
       - "${RABBITMQ_MANAGEMENT_PORT:-22010}:15672"
@@ -303,7 +303,7 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - openclaw-network
+      - mtbot-network
     profiles:
       - queue
       - all
@@ -313,7 +313,7 @@ services:
   # Prometheus - 指标收集
   prometheus:
     image: prom/prometheus:v2.51.0
-    container_name: openclaw-prometheus
+    container_name: mtbot-prometheus
     restart: unless-stopped
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -326,7 +326,7 @@ services:
       - ./docker-init/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     networks:
-      - openclaw-network
+      - mtbot-network
     profiles:
       - monitoring
       - all
@@ -334,7 +334,7 @@ services:
   # Grafana - 可视化仪表盘
   grafana:
     image: grafana/grafana:10.4.0
-    container_name: openclaw-grafana
+    container_name: mtbot-grafana
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-grafana_admin}
@@ -349,7 +349,7 @@ services:
     depends_on:
       - prometheus
     networks:
-      - openclaw-network
+      - mtbot-network
     profiles:
       - monitoring
       - all
@@ -359,7 +359,7 @@ services:
   # Loki - 日志聚合
   loki:
     image: grafana/loki:2.9.0
-    container_name: openclaw-loki
+    container_name: mtbot-loki
     restart: unless-stopped
     ports:
       - "${LOKI_PORT:-22013}:3100"
@@ -368,7 +368,7 @@ services:
       - ./docker-init/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
     command: -config.file=/etc/loki/local-config.yaml
     networks:
-      - openclaw-network
+      - mtbot-network
     profiles:
       - logging
       - all
@@ -378,10 +378,10 @@ services:
   # pgAdmin - PostgreSQL 管理界面
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: openclaw-pgadmin
+    container_name: mtbot-pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@openclaw.ai}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@mtbot.top}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-Oc@2026!Pga#Secure}
       PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
@@ -391,7 +391,7 @@ services:
     depends_on:
       - postgres
     networks:
-      - openclaw-network
+      - mtbot-network
     profiles:
       - dev-tools
       - all
@@ -399,7 +399,7 @@ services:
   # Redis Commander - Redis 管理界面
   redis-commander:
     image: rediscommander/redis-commander:latest
-    container_name: openclaw-redis-commander
+    container_name: mtbot-redis-commander
     restart: unless-stopped
     environment:
       REDIS_HOSTS: local:redis:6379:0:${REDIS_PASSWORD:-Oc@2026!Rd#Secure}
@@ -408,7 +408,7 @@ services:
     depends_on:
       - redis
     networks:
-      - openclaw-network
+      - mtbot-network
     profiles:
       - dev-tools
       - all
@@ -416,49 +416,49 @@ services:
 # ==================== 网络配置 ====================
 
 networks:
-  openclaw-network:
+  mtbot-network:
     driver: bridge
-    name: openclaw-network
+    name: mtbot-network
 
 # ==================== 数据卷 ====================
 
 volumes:
   # 核心服务数据
   postgres-data:
-    name: openclaw-postgres-data
+    name: mtbot-postgres-data
   redis-data:
-    name: openclaw-redis-data
+    name: mtbot-redis-data
   minio-data:
-    name: openclaw-minio-data
+    name: mtbot-minio-data
 
   # Milvus 数据
   milvus-data:
-    name: openclaw-milvus-data
+    name: mtbot-milvus-data
   milvus-etcd-data:
-    name: openclaw-milvus-etcd-data
+    name: mtbot-milvus-etcd-data
   milvus-minio-data:
-    name: openclaw-milvus-minio-data
+    name: mtbot-milvus-minio-data
 
   # Neo4j 数据
   neo4j-data:
-    name: openclaw-neo4j-data
+    name: mtbot-neo4j-data
   neo4j-logs:
-    name: openclaw-neo4j-logs
+    name: mtbot-neo4j-logs
   neo4j-plugins:
-    name: openclaw-neo4j-plugins
+    name: mtbot-neo4j-plugins
 
   # 消息队列数据
   rabbitmq-data:
-    name: openclaw-rabbitmq-data
+    name: mtbot-rabbitmq-data
 
   # 监控数据
   prometheus-data:
-    name: openclaw-prometheus-data
+    name: mtbot-prometheus-data
   grafana-data:
-    name: openclaw-grafana-data
+    name: mtbot-grafana-data
   loki-data:
-    name: openclaw-loki-data
+    name: mtbot-loki-data
 
   # 管理工具数据
   pgadmin-data:
-    name: openclaw-pgadmin-data
+    name: mtbot-pgadmin-data

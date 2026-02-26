@@ -4,7 +4,7 @@ let createTelegramBot: typeof import("./bot.js").createTelegramBot;
 let resetInboundDedupe: typeof import("../auto-reply/reply/inbound-dedupe.js").resetInboundDedupe;
 
 const { sessionStorePath } = vi.hoisted(() => ({
-  sessionStorePath: `/tmp/openclaw-telegram-${Math.random().toString(16).slice(2)}.json`,
+  sessionStorePath: `/tmp/mtbot-telegram-${Math.random().toString(16).slice(2)}.json`,
 }));
 
 const { loadWebMedia } = vi.hoisted(() => ({
@@ -180,10 +180,10 @@ describe("createTelegramBot", () => {
       message: {
         chat: { id: -100123456789, type: "group", title: "Test Group" },
         from: { id: 123456789, username: "testuser" },
-        text: "@openclaw_bot hello",
+        text: "@mtbot_bot hello",
         date: 1736380800,
       },
-      me: { username: "openclaw_bot" },
+      me: { username: "mtbot_bot" },
       getFile: async () => ({ download: async () => new Uint8Array() }),
     });
 
@@ -210,10 +210,10 @@ describe("createTelegramBot", () => {
       message: {
         chat: { id: -100123456789, type: "group", title: "Test Group" },
         from: { id: 999999, username: "notallowed" }, // Not in allowFrom
-        text: "@openclaw_bot hello",
+        text: "@mtbot_bot hello",
         date: 1736380800,
       },
-      me: { username: "openclaw_bot" },
+      me: { username: "mtbot_bot" },
       getFile: async () => ({ download: async () => new Uint8Array() }),
     });
 
@@ -243,7 +243,7 @@ describe("createTelegramBot", () => {
         text: "hello",
         date: 1736380800,
       },
-      me: { username: "openclaw_bot" },
+      me: { username: "mtbot_bot" },
       getFile: async () => ({ download: async () => new Uint8Array() }),
     });
 
@@ -273,7 +273,7 @@ describe("createTelegramBot", () => {
         text: "hello",
         date: 1736380800,
       },
-      me: { username: "openclaw_bot" },
+      me: { username: "mtbot_bot" },
       getFile: async () => ({ download: async () => new Uint8Array() }),
     });
 
@@ -303,7 +303,7 @@ describe("createTelegramBot", () => {
         text: "hello",
         date: 1736380800,
       },
-      me: { username: "openclaw_bot" },
+      me: { username: "mtbot_bot" },
       getFile: async () => ({ download: async () => new Uint8Array() }),
     });
 
@@ -333,7 +333,7 @@ describe("createTelegramBot", () => {
         text: "hello",
         date: 1736380800,
       },
-      me: { username: "openclaw_bot" },
+      me: { username: "mtbot_bot" },
       getFile: async () => ({ download: async () => new Uint8Array() }),
     });
 
@@ -362,7 +362,7 @@ describe("createTelegramBot", () => {
         text: "hello",
         date: 1736380800,
       },
-      me: { username: "openclaw_bot" },
+      me: { username: "mtbot_bot" },
       getFile: async () => ({ download: async () => new Uint8Array() }),
     });
 

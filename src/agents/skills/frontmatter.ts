@@ -5,7 +5,7 @@ import { LEGACY_MANIFEST_KEYS, MANIFEST_KEY } from "../../compat/legacy-names.js
 import { parseFrontmatterBlock } from "../../markdown/frontmatter.js";
 import { parseBooleanValue } from "../../utils/boolean.js";
 import type {
-  OpenClawSkillMetadata,
+  MtBotSkillMetadata,
   ParsedSkillFrontmatter,
   SkillEntry,
   SkillInstallSpec,
@@ -100,9 +100,9 @@ function parseFrontmatterBool(value: string | undefined, fallback: boolean): boo
   return parsed === undefined ? fallback : parsed;
 }
 
-export function resolveOpenClawMetadata(
+export function resolveMtBotMetadata(
   frontmatter: ParsedSkillFrontmatter,
-): OpenClawSkillMetadata | undefined {
+): MtBotSkillMetadata | undefined {
   const raw = getFrontmatterValue(frontmatter, "metadata");
   if (!raw) {
     return undefined;

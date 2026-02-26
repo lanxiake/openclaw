@@ -1,12 +1,12 @@
 {
-  "name": "@openclaw/lobster",
+  "name": "@mtbot/lobster",
   "version": "2026.1.30",
   "description": "Lobster workflow tool plugin (typed pipelines + resumable approvals)",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "mtbot": "workspace:*"
   },
-  "openclaw": {
+  "mtbot": {
     "extensions": [
       "./index.ts"
     ]

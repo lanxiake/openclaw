@@ -1,6 +1,6 @@
-import OpenClawKit
+import MtBotKit
 import Testing
-@testable import OpenClaw
+@testable import MtBot
 
 @Suite struct IOSGatewayChatTransportTests {
     @Test func requestsFailFastWhenGatewayNotConnected() async {

@@ -1,4 +1,4 @@
-import OpenClawProtocol
+import MtBotProtocol
 import Observation
 import SwiftUI
 
@@ -231,15 +231,15 @@ private struct SkillRow: View {
 
     private var sourceLabel: String {
         switch self.skill.source {
-        case "openclaw-bundled":
+        case "mtbot-bundled":
             "Bundled"
-        case "openclaw-managed":
+        case "mtbot-managed":
             "Managed"
-        case "openclaw-workspace":
+        case "mtbot-workspace":
             "Workspace"
-        case "openclaw-extra":
+        case "mtbot-extra":
             "Extra"
-        case "openclaw-plugin":
+        case "mtbot-plugin":
             "Plugin"
         default:
             self.skill.source
@@ -580,7 +580,7 @@ extension SkillsSettings {
         let skill = SkillStatus(
             name: "Test Skill",
             description: "Test description",
-            source: "openclaw-bundled",
+            source: "mtbot-bundled",
             filePath: "/tmp/skills/test",
             baseDir: "/tmp/skills",
             skillKey: "test",

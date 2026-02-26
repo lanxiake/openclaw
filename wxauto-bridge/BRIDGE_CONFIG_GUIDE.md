@@ -2,7 +2,7 @@
 
 ## 概述
 
-微信桥接器 (`wxauto-bridge`) 是一个 Python WebSocket 客户端，用于连接 OpenClaw Gateway 和微信 Windows 客户端。它基于 wxauto 库，通过 Windows UI Automation 控制微信 3.x 版本。
+微信桥接器 (`wxauto-bridge`) 是一个 Python WebSocket 客户端，用于连接 MtBot Gateway 和微信 Windows 客户端。它基于 wxauto 库，通过 Windows UI Automation 控制微信 3.x 版本。
 
 ## 核心架构
 
@@ -15,7 +15,7 @@
         ↑
     WebSocket 连接
         ↑
-OpenClaw Gateway (Node.js WebSocket 服务器)
+MtBot Gateway (Node.js WebSocket 服务器)
 ```
 
 ## 安装与配置
@@ -48,7 +48,7 @@ pip install pywin32
 #### 配置文件位置
 
 - Bridge 配置: `wxauto-bridge/config.json` (可选)
-- Gateway 配置: `~/.openclaw-dev/openclaw.json`
+- Gateway 配置: `~/.mtbot-dev/mtbot.json`
 
 #### 关键配置项
 
@@ -183,7 +183,7 @@ AI 可以：
 
 ### 2. 设置固定 Auth Token
 
-在 `openclaw.json` 中配置固定 token：
+在 `mtbot.json` 中配置固定 token：
 
 ```json
 {
@@ -200,7 +200,7 @@ AI 可以：
 然后使用固定 token 启动 Gateway：
 
 ```bash
-OPENCLAW_GATEWAY_TOKEN=your-fixed-token node openclaw.mjs --dev gateway --token your-fixed-token
+MTBOT_GATEWAY_TOKEN=your-fixed-token node mtbot.mjs --dev gateway --token your-fixed-token
 ```
 
 ### 3. 自动检测微信窗口
@@ -320,7 +320,7 @@ if errorlevel 1 (
 )
 
 REM 3. 启动 Bridge（token 需要从 Gateway 输出获取）
-cd /d D:\AI-workspace\openclaw\wxauto-bridge
+cd /d D:\AI-workspace\mtbot\wxauto-bridge
 "%PYTHON_PATH%" bridge.py --gateway ws://127.0.0.1:19001 --token 9021e21b4e574349bc7a6e39574c7845 -v
 
 pause
@@ -433,7 +433,7 @@ pause
 
 # 使用示例
 if __name__ == "__main__":
-    configurator = BridgeConfigurator("D:/AI-workspace/openclaw")
+    configurator = BridgeConfigurator("D:/AI-workspace/mtbot")
 
     # 1. 检测 Python
     python_path = configurator.detect_python()
@@ -502,7 +502,7 @@ if __name__ == "__main__":
 ### 1. 启动顺序
 
 1. 启动微信客户端并登录
-2. 启动 OpenClaw Gateway
+2. 启动 MtBot Gateway
 3. 复制 Gateway 输出的 auth token
 4. 使用正确 token 启动 Bridge
 
@@ -569,7 +569,7 @@ if __name__ == "__main__":
   "isAtMe": false,
   "media": {
     "url": "http://localhost:18790/media/wxauto_image_20240210120000.jpg",
-    "path": "D:/AI-workspace/openclaw/wxauto-bridge/media/wxauto_image_20240210120000.jpg",
+    "path": "D:/AI-workspace/mtbot/wxauto-bridge/media/wxauto_image_20240210120000.jpg",
     "fileName": null,
     "fileSize": null
   },

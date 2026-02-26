@@ -64,7 +64,7 @@ import {
   useUpdateAuthProfile,
   useDeleteAuthProfile,
 } from '@/hooks/useAuthProfiles'
-import type { AuthProfile } from '@openclaw/api-client/admin'
+import type { AuthProfile } from '@mtbot/api-client/admin'
 
 /** 凭据模式选项 */
 const CREDENTIAL_MODE_OPTIONS = [

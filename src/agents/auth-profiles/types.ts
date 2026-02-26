@@ -1,6 +1,6 @@
 import type { OAuthCredentials } from "@mariozechner/pi-ai";
 
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 
 export type ApiKeyCredential = {
   type: "api_key";
@@ -12,7 +12,7 @@ export type ApiKeyCredential = {
 export type TokenCredential = {
   /**
    * Static bearer-style token (often OAuth access token / PAT).
-   * Not refreshable by OpenClaw (unlike `type: "oauth"`).
+   * Not refreshable by MtBot (unlike `type: "oauth"`).
    */
   type: "token";
   provider: string;
@@ -65,7 +65,7 @@ export type AuthProfileStore = {
 };
 
 export type AuthProfileIdRepairResult = {
-  config: OpenClawConfig;
+  config: MtBotConfig;
   changes: string[];
   migrated: boolean;
   fromProfileId?: string;

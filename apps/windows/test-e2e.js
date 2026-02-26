@@ -55,7 +55,7 @@ async function runTests() {
     console.log('─────────────────────────────────────\n');
 
     try {
-      const { stdout } = await execPromise('pnpm openclaw gateway health --json', {
+      const { stdout } = await execPromise('pnpm mtbot gateway health --json', {
         timeout: 10000,
         cwd: process.cwd().replace(/apps[\\\/]windows.*/, '')
       });

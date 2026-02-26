@@ -20,11 +20,11 @@ const CONFIG = {
   /** 本地 Edge 浏览器路径 */
   edgePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
   /** 截图输出目录 */
-  screenshotDir: "D:\\AI-workspace\\openclaw\\test-browser\\screenshots\\windows-ui",
+  screenshotDir: "D:\\AI-workspace\\mtbot\\test-browser\\screenshots\\windows-ui",
   /** 全局超时 */
   timeout: 15000,
   /** Windows 应用目录 */
-  windowsAppDir: "D:\\AI-workspace\\openclaw\\apps\\windows",
+  windowsAppDir: "D:\\AI-workspace\\mtbot\\apps\\windows",
 };
 
 // ============================================
@@ -506,9 +506,9 @@ const AUTH_STORAGE_SCRIPT = `
     displayName: '测试用户',
     createdAt: '2025-01-01T00:00:00.000Z',
   };
-  localStorage.setItem('openclaw_user', JSON.stringify(mockUser));
-  localStorage.setItem('openclaw_access_token', 'mock-access-token-jwt');
-  localStorage.setItem('openclaw_refresh_token', 'mock-refresh-token');
+  localStorage.setItem('mtbot_user', JSON.stringify(mockUser));
+  localStorage.setItem('mtbot_access_token', 'mock-access-token-jwt');
+  localStorage.setItem('mtbot_refresh_token', 'mock-refresh-token');
 
   // 注入默认设置
   const mockSettings = {
@@ -520,7 +520,7 @@ const AUTH_STORAGE_SCRIPT = `
     language: 'zh-CN',
     checkUpdateOnStartup: true,
   };
-  localStorage.setItem('openclaw-assistant-settings', JSON.stringify(mockSettings));
+  localStorage.setItem('mtbot-assistant-settings', JSON.stringify(mockSettings));
 
   console.log('[Mock] localStorage 认证状态已注入');
 `;
@@ -617,9 +617,9 @@ async function testWinUI001(context) {
     await page.addInitScript(ELECTRON_API_MOCK_SCRIPT);
     // 清除 localStorage 确保未登录
     await page.addInitScript(`
-      localStorage.removeItem('openclaw_user');
-      localStorage.removeItem('openclaw_access_token');
-      localStorage.removeItem('openclaw_refresh_token');
+      localStorage.removeItem('mtbot_user');
+      localStorage.removeItem('mtbot_access_token');
+      localStorage.removeItem('mtbot_refresh_token');
       // 注入设置（Sidebar 依赖）
       const mockSettings = {
         gateway: { url: 'ws://localhost:18789', autoConnect: false, reconnectInterval: 5000, maxReconnectAttempts: 5 },
@@ -630,7 +630,7 @@ async function testWinUI001(context) {
         language: 'zh-CN',
         checkUpdateOnStartup: true,
       };
-      localStorage.setItem('openclaw-assistant-settings', JSON.stringify(mockSettings));
+      localStorage.setItem('mtbot-assistant-settings', JSON.stringify(mockSettings));
       console.log('[Test] 未登录状态已设置');
     `);
 

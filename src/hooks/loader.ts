@@ -8,7 +8,7 @@
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 import { registerInternalHook } from "./internal-hooks.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import type { InternalHookHandler } from "./internal-hooks.js";
 import { loadWorkspaceHookEntries } from "./workspace.js";
 import { resolveHookConfig } from "./config.js";
@@ -21,7 +21,7 @@ import { shouldIncludeHook } from "./config.js";
  * 1. Directory-based discovery (bundled, managed, workspace)
  * 2. Legacy config handlers (backwards compatibility)
  *
- * @param cfg - OpenClaw configuration
+ * @param cfg - MtBot configuration
  * @param workspaceDir - Workspace directory for hook discovery
  * @returns Number of handlers successfully loaded
  *
@@ -34,7 +34,7 @@ import { shouldIncludeHook } from "./config.js";
  * ```
  */
 export async function loadInternalHooks(
-  cfg: OpenClawConfig,
+  cfg: MtBotConfig,
   workspaceDir: string,
 ): Promise<number> {
   // Check if hooks are enabled

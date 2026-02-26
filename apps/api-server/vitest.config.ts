@@ -9,7 +9,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@openclaw/db": path.resolve(__dirname, "../../src/db"),
+      "@mtbot/db": path.resolve(__dirname, "../../src/db"),
     },
   },
 });

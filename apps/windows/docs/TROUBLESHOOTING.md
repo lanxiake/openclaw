@@ -31,7 +31,7 @@ scripts\package-as-admin.bat
 2. 选择 **"以管理员身份运行"**
 3. 执行打包命令：
    ```bash
-   cd d:\AI-workspace\openclaw\apps\windows
+   cd d:\AI-workspace\mtbot\apps\windows
    pnpm package:win
    ```
 
@@ -53,11 +53,11 @@ Windows 10/11 开发者模式允许普通用户创建符号链接：
 ```
 ⨯ cannot execute  cause=exit status 1
 errorOut=Fatal error: Unable to commit changes
-command='...\rcedit-x64.exe' '...\OpenClaw Assistant.exe' ...
+command='...\rcedit-x64.exe' '...\MtBot Assistant.exe' ...
 ```
 
 ### 根本原因
-- **文件被占用**: `OpenClaw Assistant.exe` 或 `electron.exe` 正在运行
+- **文件被占用**: `MtBot Assistant.exe` 或 `electron.exe` 正在运行
 - **权限问题**: 当前用户没有足够权限修改文件
 - **杀毒软件**: Windows Defender 或其他杀毒软件正在扫描/锁定文件
 
@@ -85,7 +85,7 @@ pnpm package:win
 #### 方案 3: 手动清理
 ```bash
 # 1. 手动终止进程
-taskkill /F /IM "OpenClaw Assistant.exe"
+taskkill /F /IM "MtBot Assistant.exe"
 taskkill /F /IM electron.exe
 taskkill /F /IM rcedit-x64.exe
 
@@ -101,7 +101,7 @@ pnpm package:win
 2. 选择"以管理员身份运行"
 3. 执行打包命令：
    ```bash
-   cd d:\AI-workspace\openclaw\apps\windows
+   cd d:\AI-workspace\mtbot\apps\windows
    pnpm package:win
    ```
 
@@ -115,8 +115,8 @@ pnpm package:win
 #### 方案 6: 添加杀毒软件排除项
 将以下目录添加到 Windows Defender 排除列表：
 ```
-D:\AI-workspace\openclaw\apps\windows\release
-D:\AI-workspace\openclaw\apps\windows\out
+D:\AI-workspace\mtbot\apps\windows\release
+D:\AI-workspace\mtbot\apps\windows\out
 %LOCALAPPDATA%\electron-builder\Cache
 ```
 
@@ -155,13 +155,13 @@ npm config set electron_builder_binaries_mirror https://npmmirror.com/mirrors/el
 ### 排查步骤
 1. **检查日志**：
    ```
-   %APPDATA%\openclaw-assistant\logs
+   %APPDATA%\mtbot-assistant\logs
    ```
 
 2. **调试模式运行**：
    ```bash
    pnpm package:dir
-   .\release\win-unpacked\"OpenClaw Assistant.exe" --inspect
+   .\release\win-unpacked\"MtBot Assistant.exe" --inspect
    ```
 
 3. **检查依赖**：

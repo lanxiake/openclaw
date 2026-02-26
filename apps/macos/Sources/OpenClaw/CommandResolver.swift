@@ -1,15 +1,15 @@
 import Foundation
 
 enum CommandResolver {
-    private static let projectRootDefaultsKey = "openclaw.gatewayProjectRootPath"
-    private static let helperName = "openclaw"
+    private static let projectRootDefaultsKey = "mtbot.gatewayProjectRootPath"
+    private static let helperName = "mtbot"
 
     static func gatewayEntrypoint(in root: URL) -> String? {
         let distEntry = root.appendingPathComponent("dist/index.js").path
         if FileManager().isReadableFile(atPath: distEntry) { return distEntry }
-        let openclawEntry = root.appendingPathComponent("openclaw.mjs").path
-        if FileManager().isReadableFile(atPath: openclawEntry) { return openclawEntry }
-        let binEntry = root.appendingPathComponent("bin/openclaw.js").path
+        let mtbotEntry = root.appendingPathComponent("mtbot.mjs").path
+        if FileManager().isReadableFile(atPath: mtbotEntry) { return mtbotEntry }
+        let binEntry = root.appendingPathComponent("bin/mtbot.js").path
         if FileManager().isReadableFile(atPath: binEntry) { return binEntry }
         return nil
     }
@@ -38,9 +38,9 @@ enum CommandResolver {
 
     static func errorCommand(with message: String) -> [String] {
         let script = """
-        cat <<'__OPENCLAW_ERR__' >&2
+        cat <<'__MTBOT_ERR__' >&2
         \(message)
-        __OPENCLAW_ERR__
+        __MTBOT_ERR__
         exit 1
         """
         return ["/bin/sh", "-c", script]
@@ -54,7 +54,7 @@ enum CommandResolver {
             return url
         }
         let fallback = FileManager().homeDirectoryForCurrentUser
-            .appendingPathComponent("Projects/openclaw")
+            .appendingPathComponent("Projects/mtbot")
         if FileManager().fileExists(atPath: fallback.path) {
             return fallback
         }
@@ -89,19 +89,19 @@ enum CommandResolver {
         // Dev-only convenience. Avoid project-local PATH hijacking in release builds.
         extras.insert(projectRoot.appendingPathComponent("node_modules/.bin").path, at: 0)
         #endif
-        let openclawPaths = self.openclawManagedPaths(home: home)
-        if !openclawPaths.isEmpty {
-            extras.insert(contentsOf: openclawPaths, at: 1)
+        let mtbotPaths = self.mtbotManagedPaths(home: home)
+        if !mtbotPaths.isEmpty {
+            extras.insert(contentsOf: mtbotPaths, at: 1)
         }
-        extras.insert(contentsOf: self.nodeManagerBinPaths(home: home), at: 1 + openclawPaths.count)
+        extras.insert(contentsOf: self.nodeManagerBinPaths(home: home), at: 1 + mtbotPaths.count)
         var seen = Set<String>()
         // Preserve order while stripping duplicates so PATH lookups remain deterministic.
         return (extras + current).filter { seen.insert($0).inserted }
     }
 
-    private static func openclawManagedPaths(home: URL) -> [String] {
+    private static func mtbotManagedPaths(home: URL) -> [String] {
         let bases = [
-            home.appendingPathComponent(".openclaw"),
+            home.appendingPathComponent(".mtbot"),
         ]
         var paths: [String] = []
         for base in bases {
@@ -193,11 +193,11 @@ enum CommandResolver {
         return nil
     }
 
-    static func openclawExecutable(searchPaths: [String]? = nil) -> String? {
+    static func mtbotExecutable(searchPaths: [String]? = nil) -> String? {
         self.findExecutable(named: self.helperName, searchPaths: searchPaths)
     }
 
-    static func projectOpenClawExecutable(projectRoot: URL? = nil) -> String? {
+    static func projectMtBotExecutable(projectRoot: URL? = nil) -> String? {
         #if DEBUG
         let root = projectRoot ?? self.projectRoot()
         let candidate = root.appendingPathComponent("node_modules/.bin").appendingPathComponent(self.helperName).path
@@ -210,8 +210,8 @@ enum CommandResolver {
     static func nodeCliPath() -> String? {
         let root = self.projectRoot()
         let candidates = [
-            root.appendingPathComponent("openclaw.mjs").path,
-            root.appendingPathComponent("bin/openclaw.js").path,
+            root.appendingPathComponent("mtbot.mjs").path,
+            root.appendingPathComponent("bin/mtbot.js").path,
         ]
         for candidate in candidates where FileManager().isReadableFile(atPath: candidate) {
             return candidate
@@ -219,8 +219,8 @@ enum CommandResolver {
         return nil
     }
 
-    static func hasAnyOpenClawInvoker(searchPaths: [String]? = nil) -> Bool {
-        if self.openclawExecutable(searchPaths: searchPaths) != nil { return true }
+    static func hasAnyMtBotInvoker(searchPaths: [String]? = nil) -> Bool {
+        if self.mtbotExecutable(searchPaths: searchPaths) != nil { return true }
         if self.findExecutable(named: "pnpm", searchPaths: searchPaths) != nil { return true }
         if self.findExecutable(named: "node", searchPaths: searchPaths) != nil,
            self.nodeCliPath() != nil
@@ -230,7 +230,7 @@ enum CommandResolver {
         return false
     }
 
-    static func openclawNodeCommand(
+    static func mtbotNodeCommand(
         subcommand: String,
         extraArgs: [String] = [],
         defaults: UserDefaults = .standard,
@@ -251,8 +251,8 @@ enum CommandResolver {
         switch runtimeResult {
         case let .success(runtime):
             let root = self.projectRoot()
-            if let openclawPath = self.projectOpenClawExecutable(projectRoot: root) {
-                return [openclawPath, subcommand] + extraArgs
+            if let mtbotPath = self.projectMtBotExecutable(projectRoot: root) {
+                return [mtbotPath, subcommand] + extraArgs
             }
 
             if let entry = self.gatewayEntrypoint(in: root) {
@@ -264,14 +264,14 @@ enum CommandResolver {
             }
             if let pnpm = self.findExecutable(named: "pnpm", searchPaths: searchPaths) {
                 // Use --silent to avoid pnpm lifecycle banners that would corrupt JSON outputs.
-                return [pnpm, "--silent", "openclaw", subcommand] + extraArgs
+                return [pnpm, "--silent", "mtbot", subcommand] + extraArgs
             }
-            if let openclawPath = self.openclawExecutable(searchPaths: searchPaths) {
-                return [openclawPath, subcommand] + extraArgs
+            if let mtbotPath = self.mtbotExecutable(searchPaths: searchPaths) {
+                return [mtbotPath, subcommand] + extraArgs
             }
 
             let missingEntry = """
-            openclaw entrypoint missing (looked for dist/index.js or openclaw.mjs); run pnpm build.
+            mtbot entrypoint missing (looked for dist/index.js or mtbot.mjs); run pnpm build.
             """
             return self.errorCommand(with: missingEntry)
 
@@ -280,14 +280,14 @@ enum CommandResolver {
         }
     }
 
-    static func openclawCommand(
+    static func mtbotCommand(
         subcommand: String,
         extraArgs: [String] = [],
         defaults: UserDefaults = .standard,
         configRoot: [String: Any]? = nil,
         searchPaths: [String]? = nil) -> [String]
     {
-        self.openclawNodeCommand(
+        self.mtbotNodeCommand(
             subcommand: subcommand,
             extraArgs: extraArgs,
             defaults: defaults,
@@ -301,7 +301,7 @@ enum CommandResolver {
         guard !settings.target.isEmpty else { return nil }
         guard let parsed = self.parseSSHTarget(settings.target) else { return nil }
 
-        // Run the real openclaw CLI on the remote host.
+        // Run the real mtbot CLI on the remote host.
         let exportedPath = [
             "/opt/homebrew/bin",
             "/usr/local/bin",
@@ -318,7 +318,7 @@ enum CommandResolver {
 
         let projectSection = if userPRJ.isEmpty {
             """
-            DEFAULT_PRJ="$HOME/Projects/openclaw"
+            DEFAULT_PRJ="$HOME/Projects/mtbot"
             if [ -d "$DEFAULT_PRJ" ]; then
               PRJ="$DEFAULT_PRJ"
               cd "$PRJ" || { echo "Project root not found: $PRJ"; exit 127; }
@@ -357,9 +357,9 @@ enum CommandResolver {
         CLI="";
         \(cliSection)
         \(projectSection)
-        if command -v openclaw >/dev/null 2>&1; then
-          CLI="$(command -v openclaw)"
-          openclaw \(quotedArgs);
+        if command -v mtbot >/dev/null 2>&1; then
+          CLI="$(command -v mtbot)"
+          mtbot \(quotedArgs);
         elif [ -n "${PRJ:-}" ] && [ -f "$PRJ/dist/index.js" ]; then
           if command -v node >/dev/null 2>&1; then
             CLI="node $PRJ/dist/index.js"
@@ -367,25 +367,25 @@ enum CommandResolver {
           else
             echo "Node >=22 required on remote host"; exit 127;
           fi
-        elif [ -n "${PRJ:-}" ] && [ -f "$PRJ/openclaw.mjs" ]; then
+        elif [ -n "${PRJ:-}" ] && [ -f "$PRJ/mtbot.mjs" ]; then
           if command -v node >/dev/null 2>&1; then
-            CLI="node $PRJ/openclaw.mjs"
-            node "$PRJ/openclaw.mjs" \(quotedArgs);
+            CLI="node $PRJ/mtbot.mjs"
+            node "$PRJ/mtbot.mjs" \(quotedArgs);
           else
             echo "Node >=22 required on remote host"; exit 127;
           fi
-        elif [ -n "${PRJ:-}" ] && [ -f "$PRJ/bin/openclaw.js" ]; then
+        elif [ -n "${PRJ:-}" ] && [ -f "$PRJ/bin/mtbot.js" ]; then
           if command -v node >/dev/null 2>&1; then
-            CLI="node $PRJ/bin/openclaw.js"
-            node "$PRJ/bin/openclaw.js" \(quotedArgs);
+            CLI="node $PRJ/bin/mtbot.js"
+            node "$PRJ/bin/mtbot.js" \(quotedArgs);
           else
             echo "Node >=22 required on remote host"; exit 127;
           fi
         elif command -v pnpm >/dev/null 2>&1; then
-          CLI="pnpm --silent openclaw"
-          pnpm --silent openclaw \(quotedArgs);
+          CLI="pnpm --silent mtbot"
+          pnpm --silent mtbot \(quotedArgs);
         else
-          echo "openclaw CLI missing on remote host"; exit 127;
+          echo "mtbot CLI missing on remote host"; exit 127;
         fi
         """
         let options: [String] = [
@@ -413,7 +413,7 @@ enum CommandResolver {
         defaults: UserDefaults = .standard,
         configRoot: [String: Any]? = nil) -> RemoteSettings
     {
-        let root = configRoot ?? OpenClawConfigFile.loadDict()
+        let root = configRoot ?? MtBotConfigFile.loadDict()
         let mode = ConnectionModeResolver.resolve(root: root, defaults: defaults).mode
         let target = defaults.string(forKey: remoteTargetKey) ?? ""
         let identity = defaults.string(forKey: remoteIdentityKey) ?? ""

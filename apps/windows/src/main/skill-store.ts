@@ -1,7 +1,7 @@
 /**
  * LocalSkillStore - 本地技能存储管理
  *
- * 管理 ~/.openclaw/skills/ 目录下的技能文件
+ * 管理 ~/.mtbot/skills/ 目录下的技能文件
  * 维护 index.json 索引文件，支持安装、卸载、列表查询
  */
 

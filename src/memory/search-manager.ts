@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import type { MemoryIndexManager } from "./manager.js";
 
 export type MemorySearchManagerResult = {
@@ -13,7 +13,7 @@ export type MemorySearchManagerResult = {
  * 旧版 MemoryIndexManager 将在后续版本中移除。
  */
 export async function getMemorySearchManager(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   agentId: string;
 }): Promise<MemorySearchManagerResult> {
   try {

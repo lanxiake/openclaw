@@ -119,7 +119,7 @@ interface SessionsListResponse {
 /**
  * LocalStorage 键名
  */
-const STORAGE_KEY = 'openclaw-chat-history'
+const STORAGE_KEY = 'mtbot-chat-history'
 
 /**
  * 最大会话数量
@@ -507,7 +507,7 @@ export function useChatHistory() {
     const welcomeMessage: ChatMessage = {
       id: generateId(),
       role: 'system',
-      content: '欢迎使用 OpenClaw Assistant！连接 Gateway 后即可开始对话。',
+      content: '欢迎使用 MtBot Assistant！连接 Gateway 后即可开始对话。',
       timestamp: now,
     }
 

@@ -14,8 +14,8 @@ Status: external CLI integration. Gateway talks to `signal-cli` over HTTP JSON-R
 1. Use a **separate Signal number** for the bot (recommended).
 2. Install `signal-cli` (Java required).
 3. Link the bot device and start the daemon:
-   - `signal-cli link -n "OpenClaw"`
-4. Configure OpenClaw and start the gateway.
+   - `signal-cli link -n "MtBot"`
+4. Configure MtBot and start the gateway.
 
 Minimal config:
 
@@ -61,7 +61,7 @@ Disable with:
 
 1. Install `signal-cli` (Java required).
 2. Link a bot account:
-   - `signal-cli link -n "OpenClaw"` then scan the QR in Signal.
+   - `signal-cli link -n "MtBot"` then scan the QR in Signal.
 3. Configure Signal and start the gateway.
 
 Example:
@@ -84,7 +84,7 @@ Multi-account support: use `channels.signal.accounts` with per-account config an
 
 ## External daemon mode (httpUrl)
 
-If you want to manage `signal-cli` yourself (slow JVM cold starts, container init, or shared CPUs), run the daemon separately and point OpenClaw at it:
+If you want to manage `signal-cli` yourself (slow JVM cold starts, container init, or shared CPUs), run the daemon separately and point MtBot at it:
 
 ```json5
 {
@@ -97,7 +97,7 @@ If you want to manage `signal-cli` yourself (slow JVM cold starts, container ini
 }
 ```
 
-This skips auto-spawn and the startup wait inside OpenClaw. For slow starts when auto-spawning, set `channels.signal.startupTimeoutMs`.
+This skips auto-spawn and the startup wait inside MtBot. For slow starts when auto-spawning, set `channels.signal.startupTimeoutMs`.
 
 ## Access control (DMs + groups)
 
@@ -106,8 +106,8 @@ DMs:
 - Default: `channels.signal.dmPolicy = "pairing"`.
 - Unknown senders receive a pairing code; messages are ignored until approved (codes expire after 1 hour).
 - Approve via:
-  - `openclaw pairing list signal`
-  - `openclaw pairing approve signal <CODE>`
+  - `mtbot pairing list signal`
+  - `mtbot pairing approve signal <CODE>`
 - Pairing is the default token exchange for Signal DMs. Details: [Pairing](/start/pairing)
 - UUID-only senders (from `sourceUuid`) are stored as `uuid:<id>` in `channels.signal.allowFrom`.
 
@@ -133,8 +133,8 @@ Groups:
 
 ## Typing + read receipts
 
-- **Typing indicators**: OpenClaw sends typing signals via `signal-cli sendTyping` and refreshes them while a reply is running.
-- **Read receipts**: when `channels.signal.sendReadReceipts` is true, OpenClaw forwards read receipts for allowed DMs.
+- **Typing indicators**: MtBot sends typing signals via `signal-cli sendTyping` and refreshes them while a reply is running.
+- **Read receipts**: when `channels.signal.sendReadReceipts` is true, MtBot forwards read receipts for allowed DMs.
 - Signal-cli does not expose read receipts for groups.
 
 ## Reactions (message tool)

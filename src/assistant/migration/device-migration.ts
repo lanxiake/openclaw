@@ -8,7 +8,7 @@
  * - 数据一致性验证
  * - 回滚支持
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import { randomUUID } from "node:crypto";
@@ -140,7 +140,7 @@ export interface MigrationConfig {
  * 默认迁移配置
  */
 export const DEFAULT_MIGRATION_CONFIG: MigrationConfig = {
-  virtualEmailDomain: "internal.openclaw.local",
+  virtualEmailDomain: "internal.mtbot.local",
   batchSize: 100,
   stopOnError: false,
   dualWriteEnabled: false,

@@ -6,7 +6,7 @@ import {
   resolveConfiguredModelRef,
   resolveModelRefFromString,
 } from "../../agents/model-selection.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { shortenHomePath } from "../../utils.js";
 import type { ReplyPayload } from "../types.js";
 import {
@@ -24,7 +24,7 @@ import { resolveModelsCommandReply } from "./commands-models.js";
 import { type ModelDirectiveSelection, resolveModelDirectiveSelection } from "./model-selection.js";
 
 function buildModelPickerCatalog(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   defaultProvider: string;
   defaultModel: string;
   aliasIndex: ModelAliasIndex;
@@ -167,7 +167,7 @@ function buildModelPickerCatalog(params: {
 
 export async function maybeHandleModelDirectiveInfo(params: {
   directives: InlineDirectives;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   agentDir: string;
   activeAgentId: string;
   provider: string;
@@ -295,7 +295,7 @@ export async function maybeHandleModelDirectiveInfo(params: {
 
 export function resolveModelSelectionFromDirective(params: {
   directives: InlineDirectives;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   agentDir: string;
   defaultProvider: string;
   defaultModel: string;

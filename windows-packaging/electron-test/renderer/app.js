@@ -1,5 +1,5 @@
 /**
- * OpenClaw Desktop - 渲染进程主脚本
+ * MtBot Desktop - 渲染进程主脚本
  * 负责页面交互、WebSocket 通信和状态管理
  */
 
@@ -182,7 +182,7 @@ function sendConnect() {
     minProtocol: 3,
     maxProtocol: 3,
     client: {
-      id: "openclaw-control-ui",
+      id: "mtbot-control-ui",
       version: "1.0.0",
       platform: process.platform || "win32",
       mode: "webchat",
@@ -1049,7 +1049,7 @@ function switchPage(page) {
 
 // ============ 初始化 ============
 async function init() {
-  console.log("Initializing OpenClaw Desktop...");
+  console.log("Initializing MtBot Desktop...");
 
   // 设置默认值
   state.gatewayUrl = "ws://127.0.0.1:18789";

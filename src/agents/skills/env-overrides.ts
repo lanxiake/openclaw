@@ -1,9 +1,9 @@
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { resolveSkillConfig } from "./config.js";
 import { resolveSkillKey } from "./frontmatter.js";
 import type { SkillEntry, SkillSnapshot } from "./types.js";
 
-export function applySkillEnvOverrides(params: { skills: SkillEntry[]; config?: OpenClawConfig }) {
+export function applySkillEnvOverrides(params: { skills: SkillEntry[]; config?: MtBotConfig }) {
   const { skills, config } = params;
   const updates: Array<{ key: string; prev: string | undefined }> = [];
 
@@ -44,7 +44,7 @@ export function applySkillEnvOverrides(params: { skills: SkillEntry[]; config?: 
 
 export function applySkillEnvOverridesFromSnapshot(params: {
   snapshot?: SkillSnapshot;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
 }) {
   const { snapshot, config } = params;
   if (!snapshot) {

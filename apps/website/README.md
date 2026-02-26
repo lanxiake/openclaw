@@ -1,6 +1,6 @@
 # Website - 官方网站
 
-OpenClaw（麦图助手）官方网站是一个现代化的产品展示页面，采用纯静态 HTML + CSS + JavaScript 实现，无需构建工具，开箱即用。
+MtBot（麦图助手）官方网站是一个现代化的产品展示页面，采用纯静态 HTML + CSS + JavaScript 实现，无需构建工具，开箱即用。
 
 ## 功能特性
 
@@ -349,7 +349,7 @@ CMD ["nginx", "-g", "daemon off;"]
 
 ## 相关文档
 
-- [OpenClaw 主项目](../../README.md)
+- [MtBot 主项目](../../README.md)
 - [Admin Console](../admin-console/README.md)
 - [Windows App](../windows/README.md)
 

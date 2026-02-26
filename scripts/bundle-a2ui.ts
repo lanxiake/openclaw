@@ -12,7 +12,7 @@ const rootDir = path.resolve(__dirname, "..");
 const hashFile = path.join(rootDir, "src/canvas-host/a2ui/.bundle.hash");
 const outputFile = path.join(rootDir, "src/canvas-host/a2ui/a2ui.bundle.js");
 const a2uiRendererDir = path.join(rootDir, "vendor/a2ui/renderers/lit");
-const a2uiAppDir = path.join(rootDir, "apps/shared/OpenClawKit/Tools/CanvasA2UI");
+const a2uiAppDir = path.join(rootDir, "apps/shared/MtBotKit/Tools/CanvasA2UI");
 const inputPaths = [
   path.join(rootDir, "package.json"),
   path.join(rootDir, "pnpm-lock.yaml"),

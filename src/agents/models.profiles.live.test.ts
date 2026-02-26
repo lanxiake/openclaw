@@ -4,7 +4,7 @@ import { Type } from "@sinclair/typebox";
 import { describe, expect, it } from "vitest";
 import { loadConfig } from "../config/config.js";
 import { isTruthyEnvValue } from "../infra/env.js";
-import { resolveOpenClawAgentDir } from "./agent-paths.js";
+import { resolveMtBotAgentDir } from "./agent-paths.js";
 import {
   collectAnthropicApiKeys,
   isAnthropicBillingError,
@@ -12,12 +12,12 @@ import {
 } from "./live-auth-keys.js";
 import { isModernModelRef } from "./live-model-filter.js";
 import { getApiKeyForModel, requireApiKey } from "./model-auth.js";
-import { ensureOpenClawModelsJson } from "./models-config.js";
+import { ensureMtBotModelsJson } from "./models-config.js";
 import { isRateLimitErrorMessage } from "./pi-embedded-helpers/errors.js";
 
-const LIVE = isTruthyEnvValue(process.env.LIVE) || isTruthyEnvValue(process.env.OPENCLAW_LIVE_TEST);
-const DIRECT_ENABLED = Boolean(process.env.OPENCLAW_LIVE_MODELS?.trim());
-const REQUIRE_PROFILE_KEYS = isTruthyEnvValue(process.env.OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS);
+const LIVE = isTruthyEnvValue(process.env.LIVE) || isTruthyEnvValue(process.env.MTBOT_LIVE_TEST);
+const DIRECT_ENABLED = Boolean(process.env.MTBOT_LIVE_MODELS?.trim());
+const REQUIRE_PROFILE_KEYS = isTruthyEnvValue(process.env.MTBOT_LIVE_REQUIRE_PROFILE_KEYS);
 
 const describeLive = LIVE ? describe : describe.skip;
 
@@ -179,10 +179,10 @@ describeLive("live models (profile keys)", () => {
     "completes across selected models",
     async () => {
       const cfg = loadConfig();
-      await ensureOpenClawModelsJson(cfg);
+      await ensureMtBotModelsJson(cfg);
       if (!DIRECT_ENABLED) {
         logProgress(
-          "[live-models] skipping (set OPENCLAW_LIVE_MODELS=modern|all|<list>; all=modern)",
+          "[live-models] skipping (set MTBOT_LIVE_MODELS=modern|all|<list>; all=modern)",
         );
         return;
       }
@@ -192,18 +192,18 @@ describeLive("live models (profile keys)", () => {
         logProgress(`[live-models] anthropic keys loaded: ${anthropicKeys.length}`);
       }
 
-      const agentDir = resolveOpenClawAgentDir();
+      const agentDir = resolveMtBotAgentDir();
       const authStorage = discoverAuthStorage(agentDir);
       const modelRegistry = discoverModels(authStorage, agentDir);
       const models = modelRegistry.getAll();
 
-      const rawModels = process.env.OPENCLAW_LIVE_MODELS?.trim();
+      const rawModels = process.env.MTBOT_LIVE_MODELS?.trim();
       const useModern = rawModels === "modern" || rawModels === "all";
       const useExplicit = Boolean(rawModels) && !useModern;
       const filter = useExplicit ? parseModelFilter(rawModels) : null;
       const allowNotFoundSkip = useModern;
-      const providers = parseProviderFilter(process.env.OPENCLAW_LIVE_PROVIDERS);
-      const perModelTimeoutMs = toInt(process.env.OPENCLAW_LIVE_MODEL_TIMEOUT_MS, 30_000);
+      const providers = parseProviderFilter(process.env.MTBOT_LIVE_PROVIDERS);
+      const perModelTimeoutMs = toInt(process.env.MTBOT_LIVE_MODEL_TIMEOUT_MS, 30_000);
 
       const failures: Array<{ model: string; error: string }> = [];
       const skipped: Array<{ model: string; reason: string }> = [];

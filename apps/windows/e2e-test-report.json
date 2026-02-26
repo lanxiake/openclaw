@@ -6,7 +6,7 @@
       "category": "Gateway",
       "name": "Health check responds",
       "status": "FAIL",
-      "details": "Error: Command failed: pnpm openclaw gateway health --json\n",
+      "details": "Error: Command failed: pnpm mtbot gateway health --json\n",
       "timestamp": "2026-02-09T14:15:21.091Z"
     },
     {

@@ -9,7 +9,7 @@
  * - 优惠券管理
  * - 自动续费管理
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import { createSubsystemLogger } from "../../logging/subsystem.js";

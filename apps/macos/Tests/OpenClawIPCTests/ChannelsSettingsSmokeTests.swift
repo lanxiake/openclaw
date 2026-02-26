@@ -1,9 +1,9 @@
-import OpenClawProtocol
+import MtBotProtocol
 import SwiftUI
 import Testing
-@testable import OpenClaw
+@testable import MtBot
 
-private typealias SnapshotAnyCodable = OpenClaw.AnyCodable
+private typealias SnapshotAnyCodable = MtBot.AnyCodable
 
 @Suite(.serialized)
 @MainActor
@@ -52,7 +52,7 @@ struct ChannelsSettingsSmokeTests {
                         "ok": true,
                         "status": 200,
                         "elapsedMs": 120,
-                        "bot": ["id": 123, "username": "openclawbot"],
+                        "bot": ["id": 123, "username": "mtbotbot"],
                         "webhook": ["url": "https://example.com/hook", "hasCustomCert": false],
                     ],
                     "lastProbeAt": 1_700_000_050_000,

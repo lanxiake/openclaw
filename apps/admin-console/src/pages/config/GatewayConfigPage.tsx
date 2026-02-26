@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { useGatewayConfig, useUpdateGatewayConfig } from '@/hooks/useGatewayConfig'
-import type { UpdateGatewayConfigRequest } from '@openclaw/api-client/admin'
+import type { UpdateGatewayConfigRequest } from '@mtbot/api-client/admin'
 
 /** 认证模式选项 */
 const AUTH_MODE_OPTIONS = [

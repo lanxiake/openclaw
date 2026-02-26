@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 
 const mocks = vi.hoisted(() => ({
   clackIntro: vi.fn(),
@@ -30,7 +30,7 @@ vi.mock("@clack/prompts", () => ({
 }));
 
 vi.mock("../config/config.js", () => ({
-  CONFIG_PATH: "~/.openclaw/openclaw.json",
+  CONFIG_PATH: "~/.mtbot/mtbot.json",
   readConfigFileSnapshot: mocks.readConfigFileSnapshot,
   writeConfigFile: mocks.writeConfigFile,
   resolveGatewayPort: mocks.resolveGatewayPort,
@@ -49,8 +49,8 @@ vi.mock("../terminal/note.js", () => ({
 }));
 
 vi.mock("./onboard-helpers.js", () => ({
-  DEFAULT_WORKSPACE: "~/.openclaw/workspace",
-  applyWizardMetadata: (cfg: OpenClawConfig) => cfg,
+  DEFAULT_WORKSPACE: "~/.mtbot/workspace",
+  applyWizardMetadata: (cfg: MtBotConfig) => cfg,
   ensureWorkspaceAndSessions: vi.fn(),
   guardCancel: <T>(value: T) => value,
   printWizardHeader: mocks.printWizardHeader,

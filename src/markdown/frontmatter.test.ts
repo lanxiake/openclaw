@@ -22,7 +22,7 @@ description: |
 name: session-memory
 metadata:
   {
-    "openclaw":
+    "mtbot":
       {
         "emoji": "disk",
         "events": ["command:new"],
@@ -34,17 +34,17 @@ metadata:
     expect(result.metadata).toBeDefined();
 
     const parsed = JSON5.parse(result.metadata ?? "");
-    expect(parsed.openclaw?.emoji).toBe("disk");
+    expect(parsed.mtbot?.emoji).toBe("disk");
   });
 
   it("preserves inline JSON values", () => {
     const content = `---
 name: inline-json
-metadata: {"openclaw": {"events": ["test"]}}
+metadata: {"mtbot": {"events": ["test"]}}
 ---
 `;
     const result = parseFrontmatterBlock(content);
-    expect(result.metadata).toBe('{"openclaw": {"events": ["test"]}}');
+    expect(result.metadata).toBe('{"mtbot": {"events": ["test"]}}');
   });
 
   it("stringifies YAML objects and arrays", () => {
@@ -56,7 +56,7 @@ tags:
   - alpha
   - beta
 metadata:
-  openclaw:
+  mtbot:
     events:
       - command:new
 ---
@@ -66,7 +66,7 @@ metadata:
     expect(result.retries).toBe("3");
     expect(JSON.parse(result.tags ?? "[]")).toEqual(["alpha", "beta"]);
     const parsed = JSON5.parse(result.metadata ?? "");
-    expect(parsed.openclaw?.events).toEqual(["command:new"]);
+    expect(parsed.mtbot?.events).toEqual(["command:new"]);
   });
 
   it("returns empty when frontmatter is missing", () => {

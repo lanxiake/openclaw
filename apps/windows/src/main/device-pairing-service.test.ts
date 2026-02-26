@@ -44,9 +44,9 @@ describe("DevicePairingService", () => {
       const device = await service.initialize();
       expect(device).toBeDefined();
       expect(device.deviceId).toBeTruthy();
-      expect(device.displayName).toContain("OpenClaw Assistant");
+      expect(device.displayName).toContain("MtBot Assistant");
       expect(device.platform).toBeTruthy();
-      expect(device.clientId).toBe("openclaw-windows");
+      expect(device.clientId).toBe("mtbot-windows");
       expect(device.clientMode).toBe("assistant");
       expect(device.createdAt).toBeGreaterThan(0);
     });

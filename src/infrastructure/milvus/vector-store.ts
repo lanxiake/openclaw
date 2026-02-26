@@ -1,10 +1,10 @@
 /**
  * Milvus 向量存储服务
  *
- * 管理 openclaw_memories collection，提供向量 CRUD 和相似度搜索。
+ * 管理 mtbot_memories collection，提供向量 CRUD 和相似度搜索。
  * 向量数据存 Milvus，元数据存 PostgreSQL，通过 id 关联。
  *
- * Collection schema: openclaw_memories
+ * Collection schema: mtbot_memories
  *   - id: VARCHAR(64) 主键
  *   - user_id: VARCHAR(64) 多租户分区键
  *   - embedding: FLOAT_VECTOR(1024) 向量字段
@@ -20,7 +20,7 @@ import { getLogger } from "../../logging/logger.js";
 const logger = getLogger();
 
 /** Collection 名称 */
-const COLLECTION_NAME = "openclaw_memories";
+const COLLECTION_NAME = "mtbot_memories";
 
 /** 向量维度 (匹配 Qwen3-Embedding-0.6B 模型输出) */
 const VECTOR_DIM = 1024;

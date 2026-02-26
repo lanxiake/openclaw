@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# OpenClaw 统一日志查看脚本（在服务器上运行）
+# MtBot 统一日志查看脚本（在服务器上运行）
 #
 # 用法:
 #   ./remote-logs.sh all                      # 查看所有应用服务日志
@@ -103,18 +103,18 @@ view_nginx_logs() {
 
     log_info "=== Nginx Access Log ==="
     if [ -n "${FOLLOW}" ]; then
-        tail -f /var/log/nginx/openclaw-access.log /var/log/nginx/openclaw-error.log 2>/dev/null || \
+        tail -f /var/log/nginx/mtbot-access.log /var/log/nginx/mtbot-error.log 2>/dev/null || \
         tail -f /var/log/nginx/access.log /var/log/nginx/error.log 2>/dev/null || \
         log_info "Nginx 日志文件不存在"
     else
         local n="${TAIL##*--tail }"
         n="${n:-50}"
         echo "--- access ---"
-        tail -n "${n}" /var/log/nginx/openclaw-access.log 2>/dev/null || \
+        tail -n "${n}" /var/log/nginx/mtbot-access.log 2>/dev/null || \
         tail -n "${n}" /var/log/nginx/access.log 2>/dev/null || true
         echo ""
         echo "--- error ---"
-        tail -n "${n}" /var/log/nginx/openclaw-error.log 2>/dev/null || \
+        tail -n "${n}" /var/log/nginx/mtbot-error.log 2>/dev/null || \
         tail -n "${n}" /var/log/nginx/error.log 2>/dev/null || true
     fi
 }

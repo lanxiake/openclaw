@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import type { ModelCatalogEntry } from "./model-catalog.js";
 import { normalizeGoogleModelId } from "./models-config.providers.js";
 import { resolveAgentModelPrimary } from "./agent-scope.js";
@@ -44,7 +44,7 @@ export function normalizeProviderId(provider: string): string {
   return normalized;
 }
 
-export function isCliProvider(provider: string, cfg?: OpenClawConfig): boolean {
+export function isCliProvider(provider: string, cfg?: MtBotConfig): boolean {
   const normalized = normalizeProviderId(provider);
   if (normalized === "claude-cli") {
     return true;
@@ -103,7 +103,7 @@ export function parseModelRef(raw: string, defaultProvider: string): ModelRef | 
 }
 
 export function buildModelAliasIndex(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   defaultProvider: string;
 }): ModelAliasIndex {
   const byAlias = new Map<string, { alias: string; ref: ModelRef }>();
@@ -154,7 +154,7 @@ export function resolveModelRefFromString(params: {
 }
 
 export function resolveConfiguredModelRef(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   defaultProvider: string;
   defaultModel: string;
 }): ModelRef {
@@ -186,7 +186,7 @@ export function resolveConfiguredModelRef(params: {
 
       // Default to anthropic if no provider is specified, but warn as this is deprecated.
       console.warn(
-        `[openclaw] Model "${trimmed}" specified without provider. Falling back to "anthropic/${trimmed}". Please use "anthropic/${trimmed}" in your config.`,
+        `[mtbot] Model "${trimmed}" specified without provider. Falling back to "anthropic/${trimmed}". Please use "anthropic/${trimmed}" in your config.`,
       );
       log.debug(`[resolveConfiguredModelRef] no-provider fallback: anthropic/${trimmed}`);
       return { provider: "anthropic", model: trimmed };
@@ -211,7 +211,7 @@ export function resolveConfiguredModelRef(params: {
 }
 
 export function resolveDefaultModelForAgent(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   agentId?: string;
 }): ModelRef {
   const agentModelOverride = params.agentId
@@ -246,7 +246,7 @@ export function resolveDefaultModelForAgent(params: {
 }
 
 export function buildAllowedModelSet(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   catalog: ModelCatalogEntry[];
   defaultProvider: string;
   defaultModel?: string;
@@ -328,7 +328,7 @@ export type ModelRefStatus = {
 };
 
 export function getModelRefStatus(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   catalog: ModelCatalogEntry[];
   ref: ModelRef;
   defaultProvider: string;
@@ -350,7 +350,7 @@ export function getModelRefStatus(params: {
 }
 
 export function resolveAllowedModelRef(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   catalog: ModelCatalogEntry[];
   raw: string;
   defaultProvider: string;
@@ -393,7 +393,7 @@ export function resolveAllowedModelRef(params: {
 }
 
 export function resolveThinkingDefault(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   provider: string;
   model: string;
   catalog?: ModelCatalogEntry[];
@@ -416,7 +416,7 @@ export function resolveThinkingDefault(params: {
  * Returns null if hooks.gmail.model is not set.
  */
 export function resolveHooksGmailModel(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   defaultProvider: string;
 }): ModelRef | null {
   const hooksModel = params.cfg.hooks?.gmail?.model;

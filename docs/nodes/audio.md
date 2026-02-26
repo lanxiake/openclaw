@@ -8,7 +8,7 @@ read_when:
 
 ## What works
 
-- **Media understanding (audio)**: If audio understanding is enabled (or auto‑detected), OpenClaw:
+- **Media understanding (audio)**: If audio understanding is enabled (or auto‑detected), MtBot:
   1. Locates the first audio attachment (local path or URL) and downloads it if needed.
   2. Enforces `maxBytes` before sending to each model entry.
   3. Runs the first eligible model entry in order (provider or CLI).
@@ -20,7 +20,7 @@ read_when:
 ## Auto-detection (default)
 
 If you **don’t configure models** and `tools.media.audio.enabled` is **not** set to `false`,
-OpenClaw auto-detects in this order and stops at the first working option:
+MtBot auto-detects in this order and stops at the first working option:
 
 1. **Local CLIs** (if installed)
    - `sherpa-onnx-offline` (requires `SHERPA_ONNX_MODEL_DIR` with encoder/decoder/joiner/tokens)

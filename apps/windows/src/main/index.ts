@@ -1,5 +1,5 @@
 /**
- * OpenClaw Assistant - Windows 客户端主进程入口
+ * MtBot Assistant - Windows 客户端主进程入口
  *
  * 职责：
  * - 创建和管理应用窗口
@@ -479,7 +479,7 @@ async function getRendererSettings(): Promise<{ workspace?: { directory?: string
   }
   try {
     const json = await mainWindow.webContents.executeJavaScript(
-      `localStorage.getItem('openclaw-assistant-settings')`
+      `localStorage.getItem('mtbot-assistant-settings')`
     )
     if (json) {
       return JSON.parse(json)
@@ -551,7 +551,7 @@ function setupIpcHandlers(): void {
     // 确保工作空间根目录存在
     await fs.mkdir(dirPath, { recursive: true })
     // 确保基本子目录结构存在
-    const subDirs = ['skills', 'sandbox', '.openclaw/hooks']
+    const subDirs = ['skills', 'sandbox', '.mtbot/hooks']
     for (const sub of subDirs) {
       await fs.mkdir(join(dirPath, sub), { recursive: true })
     }
@@ -2042,7 +2042,7 @@ function setupApiIpcHandlers(): void {
  * 应用初始化
  */
 async function initialize(): Promise<void> {
-  log.info('OpenClaw Assistant 启动中...')
+  log.info('MtBot Assistant 启动中...')
 
   // 单实例锁定
   const gotTheLock = app.requestSingleInstanceLock()
@@ -2087,7 +2087,7 @@ async function initialize(): Promise<void> {
   await initSkillRuntime()  // 初始化技能运行时
   initUpdaterService()
 
-  log.info('OpenClaw Assistant 启动完成')
+  log.info('MtBot Assistant 启动完成')
 }
 
 // macOS 特殊处理

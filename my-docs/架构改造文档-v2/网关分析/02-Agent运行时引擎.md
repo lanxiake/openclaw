@@ -2,7 +2,7 @@
 
 > 文档版本：v1.0 | 更新日期：2026-02-22
 >
-> 本文档详细分析 OpenClaw Agent 运行时引擎的核心执行链路、模型选择、错误恢复和会话管理。
+> 本文档详细分析 MtBot Agent 运行时引擎的核心执行链路、模型选择、错误恢复和会话管理。
 
 ---
 
@@ -154,7 +154,7 @@ type RunEmbeddedPiAgentParams = {
   model?: string; // "claude-opus-4-5" / "gpt-4o" / ...
   authProfileId?: string;
   authProfileIdSource?: "auto" | "user";
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
 
   // ── 工具与技能 ──
   skillsSnapshot?: SkillSnapshot;
@@ -222,7 +222,7 @@ runEmbeddedAttempt(params)
 │     构建系统提示
 │
 ├─ ③ 工具配置
-│     创建 OpenClaw 工具集
+│     创建 MtBot 工具集
 │     根据 sandbox policy 过滤工具
 │     应用 client tools（OpenResponses 集成）
 │
@@ -276,7 +276,7 @@ resolveModel(provider, modelId, agentDir?, cfg?)
 
 **解析逻辑**:
 
-1. `discoverModels()` — 从 `~/.openclaw/models.json` 读取注册模型
+1. `discoverModels()` — 从 `~/.mtbot/models.json` 读取注册模型
 2. 回退到内联配置 (`cfg.models.providers`)
 3. 别名规范化（如 `opus-4.5` → `claude-opus-4-5`）
 4. 支持自定义模型定义（开源/小模型）
@@ -408,14 +408,14 @@ type SandboxDockerConfig = {
 
 | 来源      | 标识                      | 说明                             |
 | --------- | ------------------------- | -------------------------------- |
-| Bundled   | `openclaw-bundled`        | 内置技能                         |
-| Workspace | `openclaw-workspace`      | 用户定义 (`~/.openclaw/skills/`) |
+| Bundled   | `mtbot-bundled`        | 内置技能                         |
+| Workspace | `mtbot-workspace`      | 用户定义 (`~/.mtbot/skills/`) |
 | Plugin    | `extension-id:skill-name` | 插件贡献                         |
 
 ### 8.2 技能元数据
 
 ```typescript
-type OpenClawSkillMetadata = {
+type MtBotSkillMetadata = {
   always?: boolean; // 是否始终注入
   skillKey?: string; // 技能唯一键
   primaryEnv?: string; // 主要环境变量
@@ -436,10 +436,10 @@ type OpenClawSkillMetadata = {
 ## 9. 工作目录结构
 
 ```
-~/.openclaw/
+~/.mtbot/
 ├─ auth.json                       AuthStorage (pi-ai 认证)
 ├─ models.json                     ModelRegistry (模型注册表)
-├─ auth-profiles.json             AuthProfileStore (OpenClaw 认证 profile)
+├─ auth-profiles.json             AuthProfileStore (MtBot 认证 profile)
 ├─ config.yaml                     主配置文件
 │
 ├─ workspace/

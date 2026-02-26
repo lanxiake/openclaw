@@ -38,10 +38,10 @@ const logger = createSubsystemLogger("memory/knowledge/sqlite");
  */
 export interface SQLiteKnowledgeConfig {
   /**
-   * OpenClaw 配置对象
+   * MtBot 配置对象
    * 用于创建 MemoryIndexManager
    */
-  openclawConfig?: unknown;
+  mtbotConfig?: unknown;
 
   /**
    * Agent ID
@@ -136,7 +136,7 @@ interface IMemoryIndexManager {
  *
  * // 或者通过配置创建
  * const adapter = new SQLiteKnowledgeMemoryAdapter({
- *   openclawConfig: config,
+ *   mtbotConfig: config,
  *   agentId: 'main',
  * })
  *
@@ -203,11 +203,11 @@ export class SQLiteKnowledgeMemoryAdapter implements IKnowledgeMemoryProvider {
         this.indexManager = this.config.indexManager as IMemoryIndexManager;
         this.ownsManager = false;
         logger.info("使用已存在的 MemoryIndexManager");
-      } else if (this.config.openclawConfig && this.config.agentId) {
+      } else if (this.config.mtbotConfig && this.config.agentId) {
         // 动态导入并创建管理器
         const { getMemorySearchManager } = await import("../../../search-manager.js");
         const result = await getMemorySearchManager({
-          cfg: this.config.openclawConfig as Parameters<typeof getMemorySearchManager>[0]["cfg"],
+          cfg: this.config.mtbotConfig as Parameters<typeof getMemorySearchManager>[0]["cfg"],
           agentId: this.config.agentId,
         });
 

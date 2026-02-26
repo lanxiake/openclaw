@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import { buildWorkspaceHookStatus } from "../hooks/hooks-status.js";
@@ -6,16 +6,16 @@ import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent
 import { formatCliCommand } from "../cli/command-format.js";
 
 export async function setupInternalHooks(
-  cfg: OpenClawConfig,
+  cfg: MtBotConfig,
   runtime: RuntimeEnv,
   prompter: WizardPrompter,
-): Promise<OpenClawConfig> {
+): Promise<MtBotConfig> {
   await prompter.note(
     [
       "Hooks let you automate actions when agent commands are issued.",
       "Example: Save session context to memory when you issue /new.",
       "",
-      "Learn more: https://docs.openclaw.ai/hooks",
+      "Learn more: https://docs.mtbot.top/hooks",
     ].join("\n"),
     "Hooks",
   );
@@ -58,7 +58,7 @@ export async function setupInternalHooks(
     entries[name] = { enabled: true };
   }
 
-  const next: OpenClawConfig = {
+  const next: MtBotConfig = {
     ...cfg,
     hooks: {
       ...cfg.hooks,
@@ -74,9 +74,9 @@ export async function setupInternalHooks(
       `Enabled ${selected.length} hook${selected.length > 1 ? "s" : ""}: ${selected.join(", ")}`,
       "",
       "You can manage hooks later with:",
-      `  ${formatCliCommand("openclaw hooks list")}`,
-      `  ${formatCliCommand("openclaw hooks enable <name>")}`,
-      `  ${formatCliCommand("openclaw hooks disable <name>")}`,
+      `  ${formatCliCommand("mtbot hooks list")}`,
+      `  ${formatCliCommand("mtbot hooks enable <name>")}`,
+      `  ${formatCliCommand("mtbot hooks disable <name>")}`,
     ].join("\n"),
     "Hooks Configured",
   );

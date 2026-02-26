@@ -33,7 +33,7 @@ async function loadDevTemplate(name: string, fallback: string): Promise<string> 
 
 const resolveDevWorkspaceDir = (env: NodeJS.ProcessEnv = process.env): string => {
   const baseDir = resolveDefaultAgentWorkspaceDir(env, os.homedir);
-  const profile = env.OPENCLAW_PROFILE?.trim().toLowerCase();
+  const profile = env.MTBOT_PROFILE?.trim().toLowerCase();
   if (profile === "dev") {
     return baseDir;
   }
@@ -61,7 +61,7 @@ async function ensureDevWorkspace(dir: string) {
   const [agents, soul, tools, identity, user] = await Promise.all([
     loadDevTemplate(
       "AGENTS.dev.md",
-      `# AGENTS.md - OpenClaw Dev Workspace\n\nDefault dev workspace for openclaw gateway --dev.\n`,
+      `# AGENTS.md - MtBot Dev Workspace\n\nDefault dev workspace for mtbot gateway --dev.\n`,
     ),
     loadDevTemplate(
       "SOUL.dev.md",

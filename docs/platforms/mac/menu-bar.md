@@ -47,7 +47,7 @@ read_when:
 ## Status row text (menu)
 
 - While work is active: `<Session role> · <activity label>`
-  - Examples: `Main · exec: pnpm test`, `Other · read: apps/macos/Sources/OpenClaw/AppState.swift`.
+  - Examples: `Main · exec: pnpm test`, `Other · read: apps/macos/Sources/MtBot/AppState.swift`.
 - When idle: falls back to the health summary.
 
 ## Event ingestion

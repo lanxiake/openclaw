@@ -12,7 +12,7 @@ A **node** is a companion device (macOS/iOS/Android/headless) that connects to t
 
 Legacy transport: [Bridge protocol](/gateway/bridge-protocol) (TCP JSONL; deprecated/removed for current nodes).
 
-macOS can also run in **node mode**: the menubar app connects to the Gateway’s WS server and exposes its local canvas/camera commands as a node (so `openclaw nodes …` works against this Mac).
+macOS can also run in **node mode**: the menubar app connects to the Gateway’s WS server and exposes its local canvas/camera commands as a node (so `mtbot nodes …` works against this Mac).
 
 Notes:
 
@@ -27,17 +27,17 @@ creates a device pairing request for `role: node`. Approve via the devices CLI (
 Quick CLI:
 
 ```bash
-openclaw devices list
-openclaw devices approve <requestId>
-openclaw devices reject <requestId>
-openclaw nodes status
-openclaw nodes describe --node <idOrNameOrIp>
+mtbot devices list
+mtbot devices approve <requestId>
+mtbot devices reject <requestId>
+mtbot nodes status
+mtbot nodes describe --node <idOrNameOrIp>
 ```
 
 Notes:
 
 - `nodes status` marks a node as **paired** when its device pairing role includes `node`.
-- `node.pair.*` (CLI: `openclaw nodes pending/approve/reject`) is a separate gateway-owned
+- `node.pair.*` (CLI: `mtbot nodes pending/approve/reject`) is a separate gateway-owned
   node pairing store; it does **not** gate the WS `connect` handshake.
 
 ## Remote node host (system.run)
@@ -50,21 +50,21 @@ forwards `exec` calls to the **node host** when `host=node` is selected.
 
 - **Gateway host**: receives messages, runs the model, routes tool calls.
 - **Node host**: executes `system.run`/`system.which` on the node machine.
-- **Approvals**: enforced on the node host via `~/.openclaw/exec-approvals.json`.
+- **Approvals**: enforced on the node host via `~/.mtbot/exec-approvals.json`.
 
 ### Start a node host (foreground)
 
 On the node machine:
 
 ```bash
-openclaw node run --host <gateway-host> --port 18789 --display-name "Build Node"
+mtbot node run --host <gateway-host> --port 18789 --display-name "Build Node"
 ```
 
 ### Start a node host (service)
 
 ```bash
-openclaw node install --host <gateway-host> --port 18789 --display-name "Build Node"
-openclaw node restart
+mtbot node install --host <gateway-host> --port 18789 --display-name "Build Node"
+mtbot node restart
 ```
 
 ### Pair + name
@@ -72,35 +72,35 @@ openclaw node restart
 On the gateway host:
 
 ```bash
-openclaw nodes pending
-openclaw nodes approve <requestId>
-openclaw nodes list
+mtbot nodes pending
+mtbot nodes approve <requestId>
+mtbot nodes list
 ```
 
 Naming options:
 
-- `--display-name` on `openclaw node run` / `openclaw node install` (persists in `~/.openclaw/node.json` on the node).
-- `openclaw nodes rename --node <id|name|ip> --name "Build Node"` (gateway override).
+- `--display-name` on `mtbot node run` / `mtbot node install` (persists in `~/.mtbot/node.json` on the node).
+- `mtbot nodes rename --node <id|name|ip> --name "Build Node"` (gateway override).
 
 ### Allowlist the commands
 
 Exec approvals are **per node host**. Add allowlist entries from the gateway:
 
 ```bash
-openclaw approvals allowlist add --node <id|name|ip> "/usr/bin/uname"
-openclaw approvals allowlist add --node <id|name|ip> "/usr/bin/sw_vers"
+mtbot approvals allowlist add --node <id|name|ip> "/usr/bin/uname"
+mtbot approvals allowlist add --node <id|name|ip> "/usr/bin/sw_vers"
 ```
 
-Approvals live on the node host at `~/.openclaw/exec-approvals.json`.
+Approvals live on the node host at `~/.mtbot/exec-approvals.json`.
 
 ### Point exec at the node
 
 Configure defaults (gateway config):
 
 ```bash
-openclaw config set tools.exec.host node
-openclaw config set tools.exec.security allowlist
-openclaw config set tools.exec.node "<id-or-name>"
+mtbot config set tools.exec.host node
+mtbot config set tools.exec.security allowlist
+mtbot config set tools.exec.node "<id-or-name>"
 ```
 
 Or per session:
@@ -123,7 +123,7 @@ Related:
 Low-level (raw RPC):
 
 ```bash
-openclaw nodes invoke --node <idOrNameOrIp> --command canvas.eval --params '{"javaScript":"location.href"}'
+mtbot nodes invoke --node <idOrNameOrIp> --command canvas.eval --params '{"javaScript":"location.href"}'
 ```
 
 Higher-level helpers exist for the common “give the agent a MEDIA attachment” workflows.
@@ -135,17 +135,17 @@ If the node is showing the Canvas (WebView), `canvas.snapshot` returns `{ format
 CLI helper (writes to a temp file and prints `MEDIA:<path>`):
 
 ```bash
-openclaw nodes canvas snapshot --node <idOrNameOrIp> --format png
-openclaw nodes canvas snapshot --node <idOrNameOrIp> --format jpg --max-width 1200 --quality 0.9
+mtbot nodes canvas snapshot --node <idOrNameOrIp> --format png
+mtbot nodes canvas snapshot --node <idOrNameOrIp> --format jpg --max-width 1200 --quality 0.9
 ```
 
 ### Canvas controls
 
 ```bash
-openclaw nodes canvas present --node <idOrNameOrIp> --target https://example.com
-openclaw nodes canvas hide --node <idOrNameOrIp>
-openclaw nodes canvas navigate https://example.com --node <idOrNameOrIp>
-openclaw nodes canvas eval --node <idOrNameOrIp> --js "document.title"
+mtbot nodes canvas present --node <idOrNameOrIp> --target https://example.com
+mtbot nodes canvas hide --node <idOrNameOrIp>
+mtbot nodes canvas navigate https://example.com --node <idOrNameOrIp>
+mtbot nodes canvas eval --node <idOrNameOrIp> --js "document.title"
 ```
 
 Notes:
@@ -156,9 +156,9 @@ Notes:
 ### A2UI (Canvas)
 
 ```bash
-openclaw nodes canvas a2ui push --node <idOrNameOrIp> --text "Hello"
-openclaw nodes canvas a2ui push --node <idOrNameOrIp> --jsonl ./payload.jsonl
-openclaw nodes canvas a2ui reset --node <idOrNameOrIp>
+mtbot nodes canvas a2ui push --node <idOrNameOrIp> --text "Hello"
+mtbot nodes canvas a2ui push --node <idOrNameOrIp> --jsonl ./payload.jsonl
+mtbot nodes canvas a2ui reset --node <idOrNameOrIp>
 ```
 
 Notes:
@@ -170,16 +170,16 @@ Notes:
 Photos (`jpg`):
 
 ```bash
-openclaw nodes camera list --node <idOrNameOrIp>
-openclaw nodes camera snap --node <idOrNameOrIp>            # default: both facings (2 MEDIA lines)
-openclaw nodes camera snap --node <idOrNameOrIp> --facing front
+mtbot nodes camera list --node <idOrNameOrIp>
+mtbot nodes camera snap --node <idOrNameOrIp>            # default: both facings (2 MEDIA lines)
+mtbot nodes camera snap --node <idOrNameOrIp> --facing front
 ```
 
 Video clips (`mp4`):
 
 ```bash
-openclaw nodes camera clip --node <idOrNameOrIp> --duration 10s
-openclaw nodes camera clip --node <idOrNameOrIp> --duration 3000 --no-audio
+mtbot nodes camera clip --node <idOrNameOrIp> --duration 10s
+mtbot nodes camera clip --node <idOrNameOrIp> --duration 3000 --no-audio
 ```
 
 Notes:
@@ -193,8 +193,8 @@ Notes:
 Nodes expose `screen.record` (mp4). Example:
 
 ```bash
-openclaw nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10
-openclaw nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10 --no-audio
+mtbot nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10
+mtbot nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10 --no-audio
 ```
 
 Notes:
@@ -212,8 +212,8 @@ Nodes expose `location.get` when Location is enabled in settings.
 CLI helper:
 
 ```bash
-openclaw nodes location get --node <idOrNameOrIp>
-openclaw nodes location get --node <idOrNameOrIp> --accuracy precise --max-age 15000 --location-timeout 10000
+mtbot nodes location get --node <idOrNameOrIp>
+mtbot nodes location get --node <idOrNameOrIp> --accuracy precise --max-age 15000 --location-timeout 10000
 ```
 
 Notes:
@@ -229,7 +229,7 @@ Android nodes can expose `sms.send` when the user grants **SMS** permission and 
 Low-level invoke:
 
 ```bash
-openclaw nodes invoke --node <idOrNameOrIp> --command sms.send --params '{"to":"+15555550123","message":"Hello from OpenClaw"}'
+mtbot nodes invoke --node <idOrNameOrIp> --command sms.send --params '{"to":"+15555550123","message":"Hello from MtBot"}'
 ```
 
 Notes:
@@ -245,8 +245,8 @@ The headless node host exposes `system.run`, `system.which`, and `system.execApp
 Examples:
 
 ```bash
-openclaw nodes run --node <idOrNameOrIp> -- echo "Hello from mac node"
-openclaw nodes notify --node <idOrNameOrIp> --title "Ping" --body "Gateway ready"
+mtbot nodes run --node <idOrNameOrIp> -- echo "Hello from mac node"
+mtbot nodes notify --node <idOrNameOrIp> --title "Ping" --body "Gateway ready"
 ```
 
 Notes:
@@ -258,7 +258,7 @@ Notes:
 - macOS nodes drop `PATH` overrides; headless node hosts only accept `PATH` when it prepends the node host PATH.
 - On macOS node mode, `system.run` is gated by exec approvals in the macOS app (Settings → Exec approvals).
   Ask/allowlist/full behave the same as the headless node host; denied prompts return `SYSTEM_RUN_DENIED`.
-- On headless node host, `system.run` is gated by exec approvals (`~/.openclaw/exec-approvals.json`).
+- On headless node host, `system.run` is gated by exec approvals (`~/.mtbot/exec-approvals.json`).
 
 ## Exec node binding
 
@@ -268,21 +268,21 @@ This sets the default node for `exec host=node` (and can be overridden per agent
 Global default:
 
 ```bash
-openclaw config set tools.exec.node "node-id-or-name"
+mtbot config set tools.exec.node "node-id-or-name"
 ```
 
 Per-agent override:
 
 ```bash
-openclaw config get agents.list
-openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
+mtbot config get agents.list
+mtbot config set agents.list[0].tools.exec.node "node-id-or-name"
 ```
 
 Unset to allow any node:
 
 ```bash
-openclaw config unset tools.exec.node
-openclaw config unset agents.list[0].tools.exec.node
+mtbot config unset tools.exec.node
+mtbot config unset agents.list[0].tools.exec.node
 ```
 
 ## Permissions map
@@ -291,28 +291,28 @@ Nodes may include a `permissions` map in `node.list` / `node.describe`, keyed by
 
 ## Headless node host (cross-platform)
 
-OpenClaw can run a **headless node host** (no UI) that connects to the Gateway
+MtBot can run a **headless node host** (no UI) that connects to the Gateway
 WebSocket and exposes `system.run` / `system.which`. This is useful on Linux/Windows
 or for running a minimal node alongside a server.
 
 Start it:
 
 ```bash
-openclaw node run --host <gateway-host> --port 18789
+mtbot node run --host <gateway-host> --port 18789
 ```
 
 Notes:
 
 - Pairing is still required (the Gateway will show a node approval prompt).
-- The node host stores its node id, token, display name, and gateway connection info in `~/.openclaw/node.json`.
-- Exec approvals are enforced locally via `~/.openclaw/exec-approvals.json`
+- The node host stores its node id, token, display name, and gateway connection info in `~/.mtbot/node.json`.
+- Exec approvals are enforced locally via `~/.mtbot/exec-approvals.json`
   (see [Exec approvals](/tools/exec-approvals)).
 - On macOS, the headless node host prefers the companion app exec host when reachable and falls
-  back to local execution if the app is unavailable. Set `OPENCLAW_NODE_EXEC_HOST=app` to require
-  the app, or `OPENCLAW_NODE_EXEC_FALLBACK=0` to disable fallback.
+  back to local execution if the app is unavailable. Set `MTBOT_NODE_EXEC_HOST=app` to require
+  the app, or `MTBOT_NODE_EXEC_FALLBACK=0` to disable fallback.
 - Add `--tls` / `--tls-fingerprint` when the Gateway WS uses TLS.
 
 ## Mac node mode
 
-- The macOS menubar app connects to the Gateway WS server as a node (so `openclaw nodes …` works against this Mac).
+- The macOS menubar app connects to the Gateway WS server as a node (so `mtbot nodes …` works against this Mac).
 - In remote mode, the app opens an SSH tunnel for the Gateway port and connects to `localhost`.

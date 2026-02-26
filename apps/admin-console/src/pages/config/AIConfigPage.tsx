@@ -79,7 +79,7 @@ import {
 } from '@/hooks/useAuthProfiles'
 import { useAllConfig } from '@/hooks/useConfig'
 import { apiClient } from '@/lib/api-client'
-import type { ModelProvider, ModelProviderTestResult, AuthProfile, EmbeddingTestResult } from '@openclaw/api-client/admin'
+import type { ModelProvider, ModelProviderTestResult, AuthProfile, EmbeddingTestResult } from '@mtbot/api-client/admin'
 
 // ---------------------------------------------------------------------------
 // 类型 & 常量

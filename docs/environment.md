@@ -1,5 +1,5 @@
 ---
-summary: "Where OpenClaw loads environment variables and the precedence order"
+summary: "Where MtBot loads environment variables and the precedence order"
 read_when:
   - You need to know which env vars are loaded, and in what order
   - You are debugging missing API keys in the Gateway
@@ -8,15 +8,15 @@ read_when:
 
 # Environment variables
 
-OpenClaw pulls environment variables from multiple sources. The rule is **never override existing values**.
+MtBot pulls environment variables from multiple sources. The rule is **never override existing values**.
 
 ## Precedence (highest → lowest)
 
 1. **Process environment** (what the Gateway process already has from the parent shell/daemon).
 2. **`.env` in the current working directory** (dotenv default; does not override).
-3. **Global `.env`** at `~/.openclaw/.env` (aka `$OPENCLAW_STATE_DIR/.env`; does not override).
-4. **Config `env` block** in `~/.openclaw/openclaw.json` (applied only if missing).
-5. **Optional login-shell import** (`env.shellEnv.enabled` or `OPENCLAW_LOAD_SHELL_ENV=1`), applied only for missing expected keys.
+3. **Global `.env`** at `~/.mtbot/.env` (aka `$MTBOT_STATE_DIR/.env`; does not override).
+4. **Config `env` block** in `~/.mtbot/mtbot.json` (applied only if missing).
+5. **Optional login-shell import** (`env.shellEnv.enabled` or `MTBOT_LOAD_SHELL_ENV=1`), applied only for missing expected keys.
 
 If the config file is missing entirely, step 4 is skipped; shell import still runs if enabled.
 
@@ -52,8 +52,8 @@ Two equivalent ways to set inline env vars (both are non-overriding):
 
 Env var equivalents:
 
-- `OPENCLAW_LOAD_SHELL_ENV=1`
-- `OPENCLAW_SHELL_ENV_TIMEOUT_MS=15000`
+- `MTBOT_LOAD_SHELL_ENV=1`
+- `MTBOT_SHELL_ENV_TIMEOUT_MS=15000`
 
 ## Env var substitution in config
 

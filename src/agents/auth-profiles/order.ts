@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { normalizeProviderId } from "../model-selection.js";
 import { listProfilesForProvider } from "./profiles.js";
 import type { AuthProfileStore } from "./types.js";
@@ -18,7 +18,7 @@ function resolveProfileUnusableUntil(stats: {
 }
 
 export function resolveAuthProfileOrder(params: {
-  cfg?: OpenClawConfig;
+  cfg?: MtBotConfig;
   store: AuthProfileStore;
   provider: string;
   preferredProfile?: string;

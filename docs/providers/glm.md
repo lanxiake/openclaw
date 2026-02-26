@@ -1,19 +1,19 @@
 ---
-summary: "GLM model family overview + how to use it in OpenClaw"
+summary: "GLM model family overview + how to use it in MtBot"
 read_when:
-  - You want GLM models in OpenClaw
+  - You want GLM models in MtBot
   - You need the model naming convention and setup
 ---
 
 # GLM models
 
-GLM is a **model family** (not a company) available through the Z.AI platform. In OpenClaw, GLM
+GLM is a **model family** (not a company) available through the Z.AI platform. In MtBot, GLM
 models are accessed via the `zai` provider and model IDs like `zai/glm-4.7`.
 
 ## CLI setup
 
 ```bash
-openclaw onboard --auth-choice zai-api-key
+mtbot onboard --auth-choice zai-api-key
 ```
 
 ## Config snippet

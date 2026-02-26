@@ -1,11 +1,11 @@
 ---
-summary: "CLI reference for `openclaw node` (headless node host)"
+summary: "CLI reference for `mtbot node` (headless node host)"
 read_when:
   - Running the headless node host
   - Pairing a non-macOS node for system.run
 ---
 
-# `openclaw node`
+# `mtbot node`
 
 Run a **headless node host** that connects to the Gateway WebSocket and exposes
 `system.run` / `system.which` on this machine.
@@ -45,7 +45,7 @@ Disable it on the node if needed:
 ## Run (foreground)
 
 ```bash
-openclaw node run --host <gateway-host> --port 18789
+mtbot node run --host <gateway-host> --port 18789
 ```
 
 Options:
@@ -62,7 +62,7 @@ Options:
 Install a headless node host as a user service.
 
 ```bash
-openclaw node install --host <gateway-host> --port 18789
+mtbot node install --host <gateway-host> --port 18789
 ```
 
 Options:
@@ -79,13 +79,13 @@ Options:
 Manage the service:
 
 ```bash
-openclaw node status
-openclaw node stop
-openclaw node restart
-openclaw node uninstall
+mtbot node status
+mtbot node stop
+mtbot node restart
+mtbot node uninstall
 ```
 
-Use `openclaw node run` for a foreground node host (no service).
+Use `mtbot node run` for a foreground node host (no service).
 
 Service commands accept `--json` for machine-readable output.
 
@@ -95,17 +95,17 @@ The first connection creates a pending node pair request on the Gateway.
 Approve it via:
 
 ```bash
-openclaw nodes pending
-openclaw nodes approve <requestId>
+mtbot nodes pending
+mtbot nodes approve <requestId>
 ```
 
 The node host stores its node id, token, display name, and gateway connection info in
-`~/.openclaw/node.json`.
+`~/.mtbot/node.json`.
 
 ## Exec approvals
 
 `system.run` is gated by local exec approvals:
 
-- `~/.openclaw/exec-approvals.json`
+- `~/.mtbot/exec-approvals.json`
 - [Exec approvals](/tools/exec-approvals)
-- `openclaw approvals --node <id|name|ip>` (edit from the Gateway)
+- `mtbot approvals --node <id|name|ip>` (edit from the Gateway)

@@ -58,7 +58,7 @@ function getDefaultSkillDirs(): { builtin: string; installed: string } {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "";
   return {
     builtin: join(dirname(import.meta.url.replace("file:///", "")), "../../../skills/builtin"),
-    installed: join(homeDir, ".openclaw", "assistant-skills"),
+    installed: join(homeDir, ".mtbot", "assistant-skills"),
   };
 }
 

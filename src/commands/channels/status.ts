@@ -2,7 +2,7 @@ import { listChannelPlugins } from "../../channels/plugins/index.js";
 import { buildChannelAccountSnapshot } from "../../channels/plugins/status.js";
 import type { ChannelAccountSnapshot } from "../../channels/plugins/types.js";
 import { withProgress } from "../../cli/progress.js";
-import { type OpenClawConfig, readConfigFileSnapshot } from "../../config/config.js";
+import { type MtBotConfig, readConfigFileSnapshot } from "../../config/config.js";
 import { callGateway } from "../../gateway/call.js";
 import { formatAge } from "../../infra/channel-summary.js";
 import { collectChannelStatusIssues } from "../../infra/channels-status-issues.js";
@@ -151,7 +151,7 @@ export function formatGatewayChannelsStatusLines(payload: Record<string, unknown
         `- ${issue.channel} ${issue.accountId}: ${issue.message}${issue.fix ? ` (${issue.fix})` : ""}`,
       );
     }
-    lines.push(`- Run: ${formatCliCommand("openclaw doctor")}`);
+    lines.push(`- Run: ${formatCliCommand("mtbot doctor")}`);
     lines.push("");
   }
   lines.push(
@@ -161,7 +161,7 @@ export function formatGatewayChannelsStatusLines(payload: Record<string, unknown
 }
 
 async function formatConfigChannelsStatusLines(
-  cfg: OpenClawConfig,
+  cfg: MtBotConfig,
   meta: { path?: string; mode?: "local" | "remote" },
 ): Promise<string[]> {
   const lines: string[] = [];

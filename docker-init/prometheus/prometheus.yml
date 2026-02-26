@@ -7,7 +7,7 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
   external_labels:
-    monitor: "openclaw-monitor"
+    monitor: "mtbot-monitor"
 
 # 告警规则文件 (可选)
 # rule_files:
@@ -37,10 +37,10 @@ scrape_configs:
   #   static_configs:
   #     - targets: ['minio:9000']
 
-  # OpenClaw Gateway 监控 (应用指标)
-  # - job_name: 'openclaw-gateway'
+  # MtBot Gateway 监控 (应用指标)
+  # - job_name: 'mtbot-gateway'
   #   static_configs:
-  #     - targets: ['openclaw-gateway:18789']
+  #     - targets: ['mtbot-gateway:18789']
   #   metrics_path: /metrics
 
   # Node Exporter (系统指标)

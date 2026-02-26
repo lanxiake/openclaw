@@ -1,11 +1,11 @@
 {
-  "name": "openclaw-assistant-windows",
+  "name": "mtbot-assistant-windows",
   "version": "0.1.0",
-  "description": "OpenClaw AI Assistant for Windows",
+  "description": "MtBot AI Assistant for Windows",
   "main": "out/main/index.js",
   "author": {
-    "name": "OpenClaw",
-    "email": "support@openclaw.ai"
+    "name": "MtBot",
+    "email": "support@mtbot.top"
   },
   "license": "MIT",
   "scripts": {

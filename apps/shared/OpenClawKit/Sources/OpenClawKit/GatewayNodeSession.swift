@@ -1,4 +1,4 @@
-import OpenClawProtocol
+import MtBotProtocol
 import Foundation
 import OSLog
 
@@ -12,7 +12,7 @@ private struct NodeInvokeRequestPayload: Codable, Sendable {
 }
 
 public actor GatewayNodeSession {
-    private let logger = Logger(subsystem: "ai.openclaw", category: "node.gateway")
+    private let logger = Logger(subsystem: "com.yunkun.mtbot", category: "node.gateway")
     private let decoder = JSONDecoder()
     private let encoder = JSONEncoder()
     private var channel: GatewayChannelActor?
@@ -41,7 +41,7 @@ public actor GatewayNodeSession {
                 return BridgeInvokeResponse(
                     id: request.id,
                     ok: false,
-                    error: OpenClawNodeError(
+                    error: MtBotNodeError(
                         code: .unavailable,
                         message: "node invoke timed out")
                 )

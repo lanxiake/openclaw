@@ -4,9 +4,9 @@ import { resolveStateDir } from "../config/paths.js";
 import { DEFAULT_AGENT_ID } from "../routing/session-key.js";
 import { resolveUserPath } from "../utils.js";
 
-export function resolveOpenClawAgentDir(): string {
+export function resolveMtBotAgentDir(): string {
   const override =
-    process.env.OPENCLAW_AGENT_DIR?.trim() || process.env.PI_CODING_AGENT_DIR?.trim();
+    process.env.MTBOT_AGENT_DIR?.trim() || process.env.PI_CODING_AGENT_DIR?.trim();
   if (override) {
     return resolveUserPath(override);
   }
@@ -14,10 +14,10 @@ export function resolveOpenClawAgentDir(): string {
   return resolveUserPath(defaultAgentDir);
 }
 
-export function ensureOpenClawAgentEnv(): string {
-  const dir = resolveOpenClawAgentDir();
-  if (!process.env.OPENCLAW_AGENT_DIR) {
-    process.env.OPENCLAW_AGENT_DIR = dir;
+export function ensureMtBotAgentEnv(): string {
+  const dir = resolveMtBotAgentDir();
+  if (!process.env.MTBOT_AGENT_DIR) {
+    process.env.MTBOT_AGENT_DIR = dir;
   }
   if (!process.env.PI_CODING_AGENT_DIR) {
     process.env.PI_CODING_AGENT_DIR = dir;

@@ -2,7 +2,7 @@
 summary: "Webhook ingress for wake and isolated agent runs"
 read_when:
   - Adding or changing webhook endpoints
-  - Wiring external systems into OpenClaw
+  - Wiring external systems into MtBot
 ---
 
 # Webhooks
@@ -31,7 +31,7 @@ Notes:
 Every request must include the hook token. Prefer headers:
 
 - `Authorization: Bearer <token>` (recommended)
-- `x-openclaw-token: <token>`
+- `x-mtbot-token: <token>`
 - `?token=<token>` (deprecated; logs a warning and will be removed in a future major release)
 
 ## Endpoints
@@ -105,7 +105,7 @@ Mapping options (summary):
   (`channel` defaults to `last` and falls back to WhatsApp).
 - `allowUnsafeExternalContent: true` disables the external content safety wrapper for that hook
   (dangerous; only for trusted internal sources).
-- `openclaw webhooks gmail setup` writes `hooks.gmail` config for `openclaw webhooks gmail run`.
+- `mtbot webhooks gmail setup` writes `hooks.gmail` config for `mtbot webhooks gmail run`.
   See [Gmail Pub/Sub](/automation/gmail-pubsub) for the full Gmail watch flow.
 
 ## Responses
@@ -127,7 +127,7 @@ curl -X POST http://127.0.0.1:18789/hooks/wake \
 
 ```bash
 curl -X POST http://127.0.0.1:18789/hooks/agent \
-  -H 'x-openclaw-token: SECRET' \
+  -H 'x-mtbot-token: SECRET' \
   -H 'Content-Type: application/json' \
   -d '{"message":"Summarize inbox","name":"Email","wakeMode":"next-heartbeat"}'
 ```
@@ -138,7 +138,7 @@ Add `model` to the agent payload (or mapping) to override the model for that run
 
 ```bash
 curl -X POST http://127.0.0.1:18789/hooks/agent \
-  -H 'x-openclaw-token: SECRET' \
+  -H 'x-mtbot-token: SECRET' \
   -H 'Content-Type: application/json' \
   -d '{"message":"Summarize inbox","name":"Email","model":"openai/gpt-5.2-mini"}'
 ```

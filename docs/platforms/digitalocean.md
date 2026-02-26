@@ -1,15 +1,15 @@
 ---
-summary: "OpenClaw on DigitalOcean (simple paid VPS option)"
+summary: "MtBot on DigitalOcean (simple paid VPS option)"
 read_when:
-  - Setting up OpenClaw on DigitalOcean
-  - Looking for cheap VPS hosting for OpenClaw
+  - Setting up MtBot on DigitalOcean
+  - Looking for cheap VPS hosting for MtBot
 ---
 
-# OpenClaw on DigitalOcean
+# MtBot on DigitalOcean
 
 ## Goal
 
-Run a persistent OpenClaw Gateway on DigitalOcean for **$6/month** (or $4/mo with reserved pricing).
+Run a persistent MtBot Gateway on DigitalOcean for **$6/month** (or $4/mo with reserved pricing).
 
 If you want a $0/month option and don’t mind ARM + provider-specific setup, see the [Oracle Cloud guide](/platforms/oracle).
 
@@ -55,7 +55,7 @@ If you want a $0/month option and don’t mind ARM + provider-specific setup, se
 ssh root@YOUR_DROPLET_IP
 ```
 
-## 3) Install OpenClaw
+## 3) Install MtBot
 
 ```bash
 # Update system
@@ -65,17 +65,17 @@ apt update && apt upgrade -y
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 apt install -y nodejs
 
-# Install OpenClaw
-curl -fsSL https://openclaw.bot/install.sh | bash
+# Install MtBot
+curl -fsSL https://mtbot.bot/install.sh | bash
 
 # Verify
-openclaw --version
+mtbot --version
 ```
 
 ## 4) Run Onboarding
 
 ```bash
-openclaw onboard --install-daemon
+mtbot onboard --install-daemon
 ```
 
 The wizard will walk you through:
@@ -89,13 +89,13 @@ The wizard will walk you through:
 
 ```bash
 # Check status
-openclaw status
+mtbot status
 
 # Check service
-systemctl --user status openclaw-gateway.service
+systemctl --user status mtbot-gateway.service
 
 # View logs
-journalctl --user -u openclaw-gateway.service -f
+journalctl --user -u mtbot-gateway.service -f
 ```
 
 ## 6) Access the Dashboard
@@ -119,8 +119,8 @@ curl -fsSL https://tailscale.com/install.sh | sh
 tailscale up
 
 # Configure Gateway to use Tailscale Serve
-openclaw config set gateway.tailscale.mode serve
-openclaw gateway restart
+mtbot config set gateway.tailscale.mode serve
+mtbot gateway restart
 ```
 
 Open: `https://<magicdns>/`
@@ -133,8 +133,8 @@ Notes:
 **Option C: Tailnet bind (no Serve)**
 
 ```bash
-openclaw config set gateway.bind tailnet
-openclaw gateway restart
+mtbot config set gateway.bind tailnet
+mtbot gateway restart
 ```
 
 Open: `http://<tailscale-ip>:18789` (token required).
@@ -144,14 +144,14 @@ Open: `http://<tailscale-ip>:18789` (token required).
 ### Telegram
 
 ```bash
-openclaw pairing list telegram
-openclaw pairing approve telegram <CODE>
+mtbot pairing list telegram
+mtbot pairing approve telegram <CODE>
 ```
 
 ### WhatsApp
 
 ```bash
-openclaw channels login whatsapp
+mtbot channels login whatsapp
 # Scan QR code
 ```
 
@@ -193,13 +193,13 @@ htop
 
 All state lives in:
 
-- `~/.openclaw/` — config, credentials, session data
-- `~/.openclaw/workspace/` — workspace (SOUL.md, memory, etc.)
+- `~/.mtbot/` — config, credentials, session data
+- `~/.mtbot/workspace/` — workspace (SOUL.md, memory, etc.)
 
 These survive reboots. Back them up periodically:
 
 ```bash
-tar -czvf openclaw-backup.tar.gz ~/.openclaw ~/.openclaw/workspace
+tar -czvf mtbot-backup.tar.gz ~/.mtbot ~/.mtbot/workspace
 ```
 
 ---
@@ -229,9 +229,9 @@ For the full setup guide, see [Oracle Cloud](/platforms/oracle). For signup tips
 ### Gateway won't start
 
 ```bash
-openclaw gateway status
-openclaw doctor --non-interactive
-journalctl -u openclaw --no-pager -n 50
+mtbot gateway status
+mtbot doctor --non-interactive
+journalctl -u mtbot --no-pager -n 50
 ```
 
 ### Port already in use

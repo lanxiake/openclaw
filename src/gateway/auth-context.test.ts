@@ -49,10 +49,10 @@ describe("auth-context", () => {
       vi.mocked(verifyAccessToken).mockReturnValue({
         sub: "user-123",
         type: "user",
-        aud: "openclaw-api",
+        aud: "mtbot-api",
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 900,
-        iss: "openclaw-gateway",
+        iss: "mtbot-gateway",
       });
 
       const ctx = extractUserContext(params);
@@ -138,10 +138,10 @@ describe("auth-context", () => {
       vi.mocked(verifyAccessToken).mockReturnValue({
         sub: "user-from-token-999",
         type: "user",
-        aud: "openclaw-api",
+        aud: "mtbot-api",
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 900,
-        iss: "openclaw-gateway",
+        iss: "mtbot-gateway",
       });
 
       const ctx = extractUserContext(params);
@@ -186,10 +186,10 @@ describe("auth-context", () => {
         sub: "admin-001",
         type: "admin",
         role: "super_admin",
-        aud: "openclaw-admin-api",
+        aud: "mtbot-admin-api",
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 1800,
-        iss: "openclaw-admin",
+        iss: "mtbot-admin",
       });
 
       const ctx = extractAdminContext(params);
@@ -259,10 +259,10 @@ describe("auth-context", () => {
           sub: "admin-role-test",
           type: "admin",
           role: tc.role,
-          aud: "openclaw-admin-api",
+          aud: "mtbot-admin-api",
           iat: Math.floor(Date.now() / 1000),
           exp: Math.floor(Date.now() / 1000) + 1800,
-          iss: "openclaw-admin",
+          iss: "mtbot-admin",
         });
 
         const ctx = extractAdminContext({ authorization: "Bearer token" });

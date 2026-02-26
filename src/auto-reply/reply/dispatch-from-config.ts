@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import type { UserAgentContext } from "../../agents/user-context.js";
 import { persistUserMessage, persistAssistantMessage } from "../../agents/message-persistence.js";
 import { resolveSessionAgentId } from "../../agents/agent-scope.js";
@@ -57,7 +57,7 @@ const isInboundAudioContext = (ctx: FinalizedMsgContext): boolean => {
 
 const resolveSessionTtsAuto = (
   ctx: FinalizedMsgContext,
-  cfg: OpenClawConfig,
+  cfg: MtBotConfig,
 ): string | undefined => {
   const targetSessionKey =
     ctx.CommandSource === "native" ? ctx.CommandTargetSessionKey?.trim() : undefined;
@@ -83,7 +83,7 @@ export type DispatchFromConfigResult = {
 
 export async function dispatchReplyFromConfig(params: {
   ctx: FinalizedMsgContext;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   dispatcher: ReplyDispatcher;
   replyOptions?: Omit<GetReplyOptions, "onToolResult" | "onBlockReply">;
   replyResolver?: typeof getReplyFromConfig;

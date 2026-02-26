@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { resolveGatewayPort, resolveIsNixMode } from "../config/paths.js";
 import { findExtraGatewayServices, renderGatewayServiceCleanupHints } from "../daemon/inspect.js";
 import { renderSystemNodeWarning, resolveSystemNodeInfo } from "../daemon/runtime-paths.js";
@@ -90,7 +90,7 @@ async function cleanupLegacyLaunchdService(params: {
 }
 
 export async function maybeRepairGatewayServiceConfig(
-  cfg: OpenClawConfig,
+  cfg: MtBotConfig,
   mode: "local" | "remote",
   runtime: RuntimeEnv,
   prompter: DoctorPrompter,
@@ -141,7 +141,7 @@ export async function maybeRepairGatewayServiceConfig(
   const { programArguments, workingDirectory, environment } = await buildGatewayInstallPlan({
     env: process.env,
     port,
-    token: cfg.gateway?.auth?.token ?? process.env.OPENCLAW_GATEWAY_TOKEN,
+    token: cfg.gateway?.auth?.token ?? process.env.MTBOT_GATEWAY_TOKEN,
     runtime: needsNodeRuntime && systemNodePath ? "node" : runtimeChoice,
     nodePath: systemNodePath ?? undefined,
     warn: (message, title) => note(message, title),
@@ -263,7 +263,7 @@ export async function maybeScanExtraGatewayServices(
         note(failed.map((line) => `- ${line}`).join("\n"), "Legacy gateway cleanup skipped");
       }
       if (removed.length > 0) {
-        runtime.log("Legacy gateway services removed. Installing OpenClaw gateway next.");
+        runtime.log("Legacy gateway services removed. Installing MtBot gateway next.");
       }
     }
   }

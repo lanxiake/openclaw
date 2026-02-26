@@ -38,7 +38,7 @@ describe("Redis Connection", () => {
       expect(config.port).toBe(6379);
       expect(config.password).toBe("test_password");
       expect(config.db).toBe(0);
-      expect(config.keyPrefix).toBe("openclaw:");
+      expect(config.keyPrefix).toBe("mtbot:");
     });
 
     it("应该使用默认值", async () => {

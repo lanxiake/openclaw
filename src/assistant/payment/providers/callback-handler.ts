@@ -12,7 +12,7 @@
  * - 更新订单状态
  * - 触发业务事件
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import { v4 as uuidv4 } from "uuid";

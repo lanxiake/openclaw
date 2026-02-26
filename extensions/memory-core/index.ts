@@ -1,5 +1,5 @@
-import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
-import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";
+import type { MtBotPluginApi } from "mtbot/plugin-sdk";
+import { emptyPluginConfigSchema } from "mtbot/plugin-sdk";
 
 const memoryCorePlugin = {
   id: "memory-core",
@@ -7,7 +7,7 @@ const memoryCorePlugin = {
   description: "File-backed memory search tools and CLI",
   kind: "memory",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: MtBotPluginApi) {
     api.registerTool(
       (ctx) => {
         const memorySearchTool = api.runtime.tools.createMemorySearchTool({

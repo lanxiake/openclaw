@@ -44,10 +44,10 @@ MinIO 客户端的签名计算与服务器端不匹配，可能的原因：
 ssh user@10.157.152.40
 
 # 检查 MinIO 容器配置
-docker exec openclaw-minio env | grep MINIO
+docker exec mtbot-minio env | grep MINIO
 
 # 应该看到:
-# MINIO_ROOT_USER=openclaw_minio
+# MINIO_ROOT_USER=mtbot_minio
 # MINIO_ROOT_PASSWORD=Oc@2026!Mn#Secure
 ```
 
@@ -62,7 +62,7 @@ cat .env | grep MINIO
 # 应该匹配服务器配置:
 # MINIO_ENDPOINT=10.157.152.40
 # MINIO_PORT=22003
-# MINIO_ACCESS_KEY=openclaw_minio
+# MINIO_ACCESS_KEY=mtbot_minio
 # MINIO_SECRET_KEY=Oc@2026!Mn#Secure
 ```
 
@@ -72,7 +72,7 @@ cat .env | grep MINIO
 # 使用 mc (MinIO Client) 测试连接
 docker run --rm -it minio/mc alias set testminio \
   http://10.157.152.40:22003 \
-  openclaw_minio \
+  mtbot_minio \
   'Oc@2026!Mn#Secure'
 
 # 列出存储桶
@@ -90,7 +90,7 @@ MinIO 密钥包含特殊字符 `@` 和 `#`，可能导致签名问题。
 ```yaml
 minio:
   environment:
-    MINIO_ROOT_USER: openclaw_minio
+    MINIO_ROOT_USER: mtbot_minio
     # 使用不含特殊字符的密钥
     MINIO_ROOT_PASSWORD: Oc2026MnSecure
 ```
@@ -106,7 +106,7 @@ docker-compose -f docker-compose.infra.yml restart minio
 编辑 `.env` 文件：
 
 ```bash
-MINIO_ACCESS_KEY=openclaw_minio
+MINIO_ACCESS_KEY=mtbot_minio
 MINIO_SECRET_KEY=Oc2026MnSecure
 ```
 
@@ -147,8 +147,8 @@ export function getMinioConfigFromEnv(): MinioConfig {
     endPoint: process.env["MINIO_ENDPOINT"] || "localhost",
     port: parseInt(process.env["MINIO_PORT"] || "9000", 10),
     useSSL: process.env["MINIO_USE_SSL"] === "true",
-    accessKey: process.env["MINIO_ACCESS_KEY"] || "openclaw",
-    secretKey: process.env["MINIO_SECRET_KEY"] || "openclaw_dev",
+    accessKey: process.env["MINIO_ACCESS_KEY"] || "mtbot",
+    secretKey: process.env["MINIO_SECRET_KEY"] || "mtbot_dev",
     // 添加区域配置
     region: process.env["MINIO_REGION"] || "us-east-1",
   };
@@ -185,7 +185,7 @@ export function createMinioClient(config: MinioConfig): Minio.Client {
 docker-compose -f docker-compose.infra.yml stop minio
 
 # 2. 删除 MinIO 数据（警告：会丢失所有数据）
-docker volume rm openclaw-minio-data
+docker volume rm mtbot-minio-data
 
 # 3. 重新启动 MinIO
 docker-compose -f docker-compose.infra.yml up -d minio
@@ -247,7 +247,7 @@ const client = new Minio.Client({
   endPoint: '10.157.152.40',
   port: 22003,
   useSSL: false,
-  accessKey: 'openclaw_minio',
+  accessKey: 'mtbot_minio',
   secretKey: 'Oc2026MnSecure',
   region: 'us-east-1',
 });
@@ -288,10 +288,10 @@ docker run --rm -it \
   -v $(pwd):/data \
   minio/mc \
   cp /data/README.md \
-  testminio/openclaw-skills/test-upload.md
+  testminio/mtbot-skills/test-upload.md
 
 # 验证文件已上传
-docker run --rm -it minio/mc ls testminio/openclaw-skills/
+docker run --rm -it minio/mc ls testminio/mtbot-skills/
 ```
 
 ---
@@ -349,7 +349,7 @@ sudo ufw allow 22003/tcp
 MINIO_ENDPOINT=10.157.152.40
 MINIO_PORT=22003
 MINIO_USE_SSL=false
-MINIO_ACCESS_KEY=openclaw_minio
+MINIO_ACCESS_KEY=mtbot_minio
 MINIO_SECRET_KEY=Oc2026MnSecure
 MINIO_REGION=us-east-1
 ```
@@ -359,11 +359,11 @@ MINIO_REGION=us-east-1
 ```yaml
 minio:
   image: minio/minio:latest
-  container_name: openclaw-minio
+  container_name: mtbot-minio
   restart: unless-stopped
   command: server /data --console-address ":9001"
   environment:
-    MINIO_ROOT_USER: openclaw_minio
+    MINIO_ROOT_USER: mtbot_minio
     MINIO_ROOT_PASSWORD: Oc2026MnSecure
     MINIO_REGION: us-east-1
   ports:

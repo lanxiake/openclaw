@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import type { MsgContext } from "../auto-reply/templating.js";
 import { finalizeInboundContext } from "../auto-reply/reply/inbound-context.js";
 import { formatLinkUnderstandingBody } from "./format.js";
@@ -11,7 +11,7 @@ export type ApplyLinkUnderstandingResult = {
 
 export async function applyLinkUnderstanding(params: {
   ctx: MsgContext;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
 }): Promise<ApplyLinkUnderstandingResult> {
   const result = await runLinkUnderstanding({
     cfg: params.cfg,

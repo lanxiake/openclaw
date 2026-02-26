@@ -25,7 +25,7 @@ describe("buildTelegramMessageContext sender prefix", () => {
         },
       } as never,
       cfg: {
-        agents: { defaults: { model: "anthropic/claude-opus-4-5", workspace: "/tmp/openclaw" } },
+        agents: { defaults: { model: "anthropic/claude-opus-4-5", workspace: "/tmp/mtbot" } },
         channels: { telegram: {} },
         messages: { groupChat: { mentionPatterns: [] } },
       } as never,
@@ -72,7 +72,7 @@ describe("buildTelegramMessageContext sender prefix", () => {
         },
       } as never,
       cfg: {
-        agents: { defaults: { model: "anthropic/claude-opus-4-5", workspace: "/tmp/openclaw" } },
+        agents: { defaults: { model: "anthropic/claude-opus-4-5", workspace: "/tmp/mtbot" } },
         channels: { telegram: {} },
         messages: { groupChat: { mentionPatterns: [] } },
       } as never,
@@ -118,7 +118,7 @@ describe("buildTelegramMessageContext sender prefix", () => {
         },
       } as never,
       cfg: {
-        agents: { defaults: { model: "anthropic/claude-opus-4-5", workspace: "/tmp/openclaw" } },
+        agents: { defaults: { model: "anthropic/claude-opus-4-5", workspace: "/tmp/mtbot" } },
         channels: { telegram: {} },
         messages: { groupChat: { mentionPatterns: [] } },
       } as never,

@@ -27,13 +27,13 @@ read_when:
 - `plugins.entries.<id>.config` must be validated by the plugin’s schema.
   - If a plugin lacks a schema, **reject plugin load** and surface a clear error.
 - Unknown `channels.<id>` keys are errors unless a plugin manifest declares the channel id.
-- Plugin manifests (`openclaw.plugin.json`) are required for all plugins.
+- Plugin manifests (`mtbot.plugin.json`) are required for all plugins.
 
 ## Plugin schema enforcement
 
 - Each plugin provides a strict JSON Schema for its config (inline in the manifest).
 - Plugin load flow:
-  1. Resolve plugin manifest + schema (`openclaw.plugin.json`).
+  1. Resolve plugin manifest + schema (`mtbot.plugin.json`).
   2. Validate config against the schema.
   3. If missing schema or invalid config: block plugin load, record error.
 - Error message includes:
@@ -47,8 +47,8 @@ read_when:
 - Doctor runs **every time** config is loaded (dry-run by default).
 - If config invalid:
   - Print a summary + actionable errors.
-  - Instruct: `openclaw doctor --fix`.
-- `openclaw doctor --fix`:
+  - Instruct: `mtbot doctor --fix`.
+- `mtbot doctor --fix`:
   - Applies migrations.
   - Removes unknown keys.
   - Writes updated config.
@@ -57,14 +57,14 @@ read_when:
 
 Allowed (diagnostic-only):
 
-- `openclaw doctor`
-- `openclaw logs`
-- `openclaw health`
-- `openclaw help`
-- `openclaw status`
-- `openclaw gateway status`
+- `mtbot doctor`
+- `mtbot logs`
+- `mtbot health`
+- `mtbot help`
+- `mtbot status`
+- `mtbot gateway status`
 
-Everything else must hard-fail with: “Config invalid. Run `openclaw doctor --fix`.”
+Everything else must hard-fail with: “Config invalid. Run `mtbot doctor --fix`.”
 
 ## Error UX format
 

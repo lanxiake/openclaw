@@ -55,7 +55,7 @@ ws.on('message', (data) => {
           maxProtocol: PROTOCOL_VERSION,
           client: {
             id: 'gateway-client',
-            displayName: 'OpenClaw Windows Test',
+            displayName: 'MtBot Windows Test',
             version: '0.1.0',
             platform: 'win32',
             mode: 'ui'

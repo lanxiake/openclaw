@@ -1,11 +1,11 @@
 ---
 title: "Docker Compose 服务端部署指南"
-description: "使用 Docker Compose 部署 OpenClaw 完整服务端环境"
+description: "使用 Docker Compose 部署 MtBot 完整服务端环境"
 ---
 
 # Docker Compose 服务端部署指南
 
-本文档详细介绍如何使用 Docker Compose 部署 OpenClaw 完整服务端环境，包括基础设施服务和核心应用服务。
+本文档详细介绍如何使用 Docker Compose 部署 MtBot 完整服务端环境，包括基础设施服务和核心应用服务。
 
 ## 目录
 
@@ -25,17 +25,17 @@ description: "使用 Docker Compose 部署 OpenClaw 完整服务端环境"
 
 ## 架构概览
 
-OpenClaw 服务端由两部分组成：
+MtBot 服务端由两部分组成：
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      OpenClaw 服务端架构                          │
+│                      MtBot 服务端架构                          │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │              核心服务 (docker-compose.yml)                │   │
 │  │  ┌─────────────────┐    ┌─────────────────┐             │   │
-│  │  │ openclaw-gateway│    │  openclaw-cli   │             │   │
+│  │  │ mtbot-gateway│    │  mtbot-cli   │             │   │
 │  │  │   (端口 18789)   │    │   (交互式 CLI)   │             │   │
 │  │  └─────────────────┘    └─────────────────┘             │   │
 │  └─────────────────────────────────────────────────────────┘   │
@@ -62,8 +62,8 @@ OpenClaw 服务端由两部分组成：
 
 | 端口  | 服务             | 用途               |
 | ----- | ---------------- | ------------------ |
-| 18789 | OpenClaw Gateway | 网关 API           |
-| 18790 | OpenClaw Bridge  | Bridge 服务        |
+| 18789 | MtBot Gateway | 网关 API           |
+| 18790 | MtBot Bridge  | Bridge 服务        |
 | 22001 | PostgreSQL       | 主数据库           |
 | 22002 | Redis            | 缓存/会话存储      |
 | 22003 | MinIO API        | 对象存储 API       |
@@ -120,8 +120,8 @@ docker info
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/openclaw/openclaw.git
-cd openclaw
+git clone https://github.com/mtbot/mtbot.git
+cd mtbot
 
 # 2. 复制环境变量配置文件
 cp .env.example .env
@@ -163,7 +163,7 @@ curl http://localhost:18789/health
 docker compose -f docker-compose.infra.yml up -d postgres
 
 # 连接数据库
-docker exec -it openclaw-postgres psql -U openclaw_admin -d openclaw_prod
+docker exec -it mtbot-postgres psql -U mtbot_admin -d mtbot_prod
 ```
 
 #### 缓存服务 - Redis
@@ -175,7 +175,7 @@ docker exec -it openclaw-postgres psql -U openclaw_admin -d openclaw_prod
 docker compose -f docker-compose.infra.yml up -d redis
 
 # 连接 Redis CLI
-docker exec -it openclaw-redis redis-cli -a 'Oc@2026!Rd#Secure'
+docker exec -it mtbot-redis redis-cli -a 'Oc@2026!Rd#Secure'
 ```
 
 #### 对象存储 - MinIO
@@ -188,16 +188,16 @@ docker compose -f docker-compose.infra.yml up -d minio minio-init
 
 # 访问 MinIO 控制台
 # URL: http://localhost:22004
-# 用户名: openclaw_minio
+# 用户名: mtbot_minio
 # 密码: Oc@2026!Mn#Secure
 ```
 
 默认创建的存储桶：
 
-- `openclaw-documents` - 文档存储
-- `openclaw-media` - 媒体文件 (公开访问)
-- `openclaw-temp` - 临时文件
-- `openclaw-exports` - 导出文件
+- `mtbot-documents` - 文档存储
+- `mtbot-media` - 媒体文件 (公开访问)
+- `mtbot-temp` - 临时文件
+- `mtbot-exports` - 导出文件
 
 #### 向量数据库 - Milvus (可选)
 
@@ -235,7 +235,7 @@ docker compose -f docker-compose.infra.yml --profile queue up -d rabbitmq
 
 # 访问 RabbitMQ 管理界面
 # URL: http://localhost:22010
-# 用户名: openclaw_mq
+# 用户名: mtbot_mq
 # 密码: Oc@2026!Mq#Secure
 ```
 
@@ -268,7 +268,7 @@ docker compose -f docker-compose.infra.yml --profile all up -d
 ```
 PostgreSQL ─────────────────────────────────────┐
 Redis ──────────────────────────────────────────┤
-MinIO ──────────────────────────────────────────┼──► OpenClaw Gateway
+MinIO ──────────────────────────────────────────┼──► MtBot Gateway
     └── minio-init (初始化存储桶)               │
                                                 │
 Milvus ─────────────────────────────────────────┤ (可选)
@@ -292,7 +292,7 @@ RabbitMQ ───────────────────────�
 
 脚本执行流程：
 
-1. 构建 OpenClaw Docker 镜像
+1. 构建 MtBot Docker 镜像
 2. 运行 onboard 初始化向导
 3. 生成 Gateway Token 并写入 `.env`
 4. 启动 Gateway 服务
@@ -301,22 +301,22 @@ RabbitMQ ───────────────────────�
 
 ```bash
 # 1. 构建镜像
-docker build -t openclaw:local -f Dockerfile .
+docker build -t mtbot:local -f Dockerfile .
 
 # 2. 设置环境变量
-export OPENCLAW_CONFIG_DIR="$HOME/.openclaw"
-export OPENCLAW_WORKSPACE_DIR="$HOME/.openclaw/workspace"
-export OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32)
+export MTBOT_CONFIG_DIR="$HOME/.mtbot"
+export MTBOT_WORKSPACE_DIR="$HOME/.mtbot/workspace"
+export MTBOT_GATEWAY_TOKEN=$(openssl rand -hex 32)
 
 # 3. 创建配置目录
-mkdir -p "$OPENCLAW_CONFIG_DIR"
-mkdir -p "$OPENCLAW_WORKSPACE_DIR"
+mkdir -p "$MTBOT_CONFIG_DIR"
+mkdir -p "$MTBOT_WORKSPACE_DIR"
 
 # 4. 运行 onboard 初始化
-docker compose run --rm openclaw-cli onboard --no-install-daemon
+docker compose run --rm mtbot-cli onboard --no-install-daemon
 
 # 5. 启动 Gateway
-docker compose up -d openclaw-gateway
+docker compose up -d mtbot-gateway
 ```
 
 ### 配置 Channel (消息通道)
@@ -324,29 +324,29 @@ docker compose up -d openclaw-gateway
 #### WhatsApp (QR 码登录)
 
 ```bash
-docker compose run --rm openclaw-cli channels login
+docker compose run --rm mtbot-cli channels login
 ```
 
 #### Telegram (Bot Token)
 
 ```bash
-docker compose run --rm openclaw-cli channels add --channel telegram --token "<YOUR_BOT_TOKEN>"
+docker compose run --rm mtbot-cli channels add --channel telegram --token "<YOUR_BOT_TOKEN>"
 ```
 
 #### Discord (Bot Token)
 
 ```bash
-docker compose run --rm openclaw-cli channels add --channel discord --token "<YOUR_BOT_TOKEN>"
+docker compose run --rm mtbot-cli channels add --channel discord --token "<YOUR_BOT_TOKEN>"
 ```
 
 ### 健康检查
 
 ```bash
 # 检查 Gateway 健康状态
-docker compose exec openclaw-gateway node dist/index.js health --token "$OPENCLAW_GATEWAY_TOKEN"
+docker compose exec mtbot-gateway node dist/index.js health --token "$MTBOT_GATEWAY_TOKEN"
 
 # 或使用 curl
-curl -H "Authorization: Bearer $OPENCLAW_GATEWAY_TOKEN" http://localhost:18789/health
+curl -H "Authorization: Bearer $MTBOT_GATEWAY_TOKEN" http://localhost:18789/health
 ```
 
 ---
@@ -357,9 +357,9 @@ curl -H "Authorization: Bearer $OPENCLAW_GATEWAY_TOKEN" http://localhost:18789/h
 
 ```bash
 # ==================== PostgreSQL ====================
-POSTGRES_USER=openclaw_admin
+POSTGRES_USER=mtbot_admin
 POSTGRES_PASSWORD=Oc@2026!Pg#Secure    # 生产环境请修改
-POSTGRES_DB=openclaw_prod
+POSTGRES_DB=mtbot_prod
 POSTGRES_PORT=22001
 
 # ==================== Redis ====================
@@ -367,7 +367,7 @@ REDIS_PASSWORD=Oc@2026!Rd#Secure       # 生产环境请修改
 REDIS_PORT=22002
 
 # ==================== MinIO ====================
-MINIO_ACCESS_KEY=openclaw_minio
+MINIO_ACCESS_KEY=mtbot_minio
 MINIO_SECRET_KEY=Oc@2026!Mn#Secure     # 生产环境请修改
 MINIO_API_PORT=22003
 MINIO_CONSOLE_PORT=22004
@@ -384,7 +384,7 @@ NEO4J_HTTP_PORT=22007
 NEO4J_BOLT_PORT=22008
 
 # ==================== RabbitMQ ====================
-RABBITMQ_USER=openclaw_mq
+RABBITMQ_USER=mtbot_mq
 RABBITMQ_PASSWORD=Oc@2026!Mq#Secure    # 生产环境请修改
 RABBITMQ_PORT=22009
 RABBITMQ_MANAGEMENT_PORT=22010
@@ -398,7 +398,7 @@ GRAFANA_ROOT_URL=http://localhost:22012
 LOKI_PORT=22013
 
 # ==================== 开发工具 ====================
-PGADMIN_EMAIL=admin@openclaw.ai
+PGADMIN_EMAIL=admin@mtbot.top
 PGADMIN_PASSWORD=Oc@2026!Pga#Secure    # 生产环境请修改
 PGADMIN_PORT=22014
 REDIS_COMMANDER_PORT=22015
@@ -408,7 +408,7 @@ REDIS_COMMANDER_PORT=22015
 
 ```bash
 # ==================== 数据库连接 ====================
-DATABASE_URL=postgresql://openclaw_admin:Oc@2026!Pg#Secure@localhost:22001/openclaw_prod
+DATABASE_URL=postgresql://mtbot_admin:Oc@2026!Pg#Secure@localhost:22001/mtbot_prod
 DATABASE_MAX_CONNECTIONS=10
 DATABASE_CONNECTION_TIMEOUT_MS=10000
 DATABASE_IDLE_TIMEOUT_MS=300000
@@ -421,7 +421,7 @@ REDIS_URL=redis://:Oc@2026!Rd#Secure@localhost:22002/0
 MINIO_ENDPOINT=localhost
 MINIO_PORT=22003
 MINIO_USE_SSL=false
-MINIO_ACCESS_KEY=openclaw_minio
+MINIO_ACCESS_KEY=mtbot_minio
 MINIO_SECRET_KEY=Oc@2026!Mn#Secure
 
 # ==================== Milvus 连接 ====================
@@ -445,14 +445,14 @@ EMBEDDING_MODEL=text-embedding-3-small
 EMBEDDING_DIMENSIONS=1536
 # EMBEDDING_API_KEY=your_api_key
 
-# ==================== OpenClaw Gateway ====================
-OPENCLAW_CONFIG_DIR=/path/to/.openclaw
-OPENCLAW_WORKSPACE_DIR=/path/to/.openclaw/workspace
-OPENCLAW_GATEWAY_PORT=18789
-OPENCLAW_BRIDGE_PORT=18790
-OPENCLAW_GATEWAY_BIND=lan
-OPENCLAW_GATEWAY_TOKEN=your_generated_token
-OPENCLAW_IMAGE=openclaw:local
+# ==================== MtBot Gateway ====================
+MTBOT_CONFIG_DIR=/path/to/.mtbot
+MTBOT_WORKSPACE_DIR=/path/to/.mtbot/workspace
+MTBOT_GATEWAY_PORT=18789
+MTBOT_BRIDGE_PORT=18790
+MTBOT_GATEWAY_BIND=lan
+MTBOT_GATEWAY_TOKEN=your_generated_token
+MTBOT_IMAGE=mtbot:local
 ```
 
 ### 生产环境密码生成
@@ -478,11 +478,11 @@ docker compose ps
 
 # 查看服务日志
 docker compose -f docker-compose.infra.yml logs -f [service_name]
-docker compose logs -f openclaw-gateway
+docker compose logs -f mtbot-gateway
 
 # 重启服务
 docker compose -f docker-compose.infra.yml restart [service_name]
-docker compose restart openclaw-gateway
+docker compose restart mtbot-gateway
 
 # 停止所有服务
 docker compose -f docker-compose.infra.yml down
@@ -506,10 +506,10 @@ docker compose -f docker-compose.infra.yml up -d --scale redis=2
 git pull origin main
 
 # 重新构建镜像
-docker build -t openclaw:local -f Dockerfile .
+docker build -t mtbot:local -f Dockerfile .
 
 # 重启服务
-docker compose up -d openclaw-gateway
+docker compose up -d mtbot-gateway
 ```
 
 ---
@@ -523,7 +523,7 @@ docker compose up -d openclaw-gateway
 默认监控目标:
 
 - Prometheus 自身
-- (可扩展) PostgreSQL、Redis、MinIO、OpenClaw Gateway
+- (可扩展) PostgreSQL、Redis、MinIO、MtBot Gateway
 
 ### Grafana 仪表盘
 
@@ -550,10 +550,10 @@ docker compose up -d openclaw-gateway
 
 ```bash
 # 实时查看 Gateway 日志
-docker compose logs -f openclaw-gateway
+docker compose logs -f mtbot-gateway
 
 # 查看最近 100 行日志
-docker compose logs --tail=100 openclaw-gateway
+docker compose logs --tail=100 mtbot-gateway
 
 # 查看所有基础设施服务日志
 docker compose -f docker-compose.infra.yml logs -f
@@ -567,20 +567,20 @@ docker compose -f docker-compose.infra.yml logs -f
 
 ```bash
 # 创建备份
-docker exec openclaw-postgres pg_dump -U openclaw_admin openclaw_prod > backup_$(date +%Y%m%d_%H%M%S).sql
+docker exec mtbot-postgres pg_dump -U mtbot_admin mtbot_prod > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # 恢复备份
-docker exec -i openclaw-postgres psql -U openclaw_admin openclaw_prod < backup_20240101_120000.sql
+docker exec -i mtbot-postgres psql -U mtbot_admin mtbot_prod < backup_20240101_120000.sql
 ```
 
 ### Redis 备份
 
 ```bash
 # 触发 RDB 快照
-docker exec openclaw-redis redis-cli -a 'Oc@2026!Rd#Secure' BGSAVE
+docker exec mtbot-redis redis-cli -a 'Oc@2026!Rd#Secure' BGSAVE
 
 # 复制备份文件
-docker cp openclaw-redis:/data/dump.rdb ./redis_backup_$(date +%Y%m%d).rdb
+docker cp mtbot-redis:/data/dump.rdb ./redis_backup_$(date +%Y%m%d).rdb
 ```
 
 ### MinIO 备份
@@ -588,11 +588,11 @@ docker cp openclaw-redis:/data/dump.rdb ./redis_backup_$(date +%Y%m%d).rdb
 ```bash
 # 使用 mc 客户端备份
 docker run --rm -v $(pwd)/minio-backup:/backup \
-  --network openclaw-network \
+  --network mtbot-network \
   minio/mc sh -c "
-    mc alias set myminio http://minio:9000 openclaw_minio 'Oc@2026!Mn#Secure' && \
-    mc mirror myminio/openclaw-documents /backup/documents && \
-    mc mirror myminio/openclaw-media /backup/media
+    mc alias set myminio http://minio:9000 mtbot_minio 'Oc@2026!Mn#Secure' && \
+    mc mirror myminio/mtbot-documents /backup/documents && \
+    mc mirror myminio/mtbot-media /backup/media
   "
 ```
 
@@ -600,7 +600,7 @@ docker run --rm -v $(pwd)/minio-backup:/backup \
 
 ```bash
 # 备份所有数据卷
-for vol in $(docker volume ls -q | grep openclaw); do
+for vol in $(docker volume ls -q | grep mtbot); do
   docker run --rm -v $vol:/data -v $(pwd)/backups:/backup alpine \
     tar czf /backup/${vol}_$(date +%Y%m%d).tar.gz -C /data .
 done
@@ -629,7 +629,7 @@ docker inspect [container_name]
 docker compose -f docker-compose.infra.yml ps postgres
 
 # 测试连接
-docker exec -it openclaw-postgres pg_isready -U openclaw_admin -d openclaw_prod
+docker exec -it mtbot-postgres pg_isready -U mtbot_admin -d mtbot_prod
 ```
 
 #### 3. Redis 连接失败
@@ -639,7 +639,7 @@ docker exec -it openclaw-postgres pg_isready -U openclaw_admin -d openclaw_prod
 docker compose -f docker-compose.infra.yml ps redis
 
 # 测试连接
-docker exec -it openclaw-redis redis-cli -a 'Oc@2026!Rd#Secure' ping
+docker exec -it mtbot-redis redis-cli -a 'Oc@2026!Rd#Secure' ping
 ```
 
 #### 4. 端口冲突
@@ -676,13 +676,13 @@ docker stats
 
 ```bash
 # PostgreSQL
-docker exec openclaw-postgres pg_isready -U openclaw_admin
+docker exec mtbot-postgres pg_isready -U mtbot_admin
 
 # Redis
-docker exec openclaw-redis redis-cli -a 'Oc@2026!Rd#Secure' ping
+docker exec mtbot-redis redis-cli -a 'Oc@2026!Rd#Secure' ping
 
 # MinIO
-docker exec openclaw-minio mc ready local
+docker exec mtbot-minio mc ready local
 
 # Milvus
 curl -f http://localhost:22006/healthz
@@ -691,7 +691,7 @@ curl -f http://localhost:22006/healthz
 curl -f http://localhost:22007
 
 # RabbitMQ
-docker exec openclaw-rabbitmq rabbitmq-diagnostics check_port_connectivity
+docker exec mtbot-rabbitmq rabbitmq-diagnostics check_port_connectivity
 ```
 
 ---
@@ -766,7 +766,7 @@ services:
 ### 文件结构
 
 ```
-openclaw/
+mtbot/
 ├── docker-compose.yml           # 核心服务配置
 ├── docker-compose.infra.yml     # 基础设施配置
 ├── docker-compose.extra.yml     # 额外挂载配置 (自动生成)
@@ -797,17 +797,17 @@ openclaw/
 
 ### 概述
 
-OpenClaw Windows 客户端是一个基于 Electron 的桌面应用，可以作为 Gateway 的远程控制终端。它提供了：
+MtBot Windows 客户端是一个基于 Electron 的桌面应用，可以作为 Gateway 的远程控制终端。它提供了：
 
 - **图形化界面**: 系统托盘常驻，随时唤起
-- **远程命令执行**: 可替代 `openclaw-cli` 执行脚本和命令
+- **远程命令执行**: 可替代 `mtbot-cli` 执行脚本和命令
 - **文件操作**: 支持文件读写、目录浏览
 - **系统监控**: 查看进程、磁盘、内存等系统信息
 - **设备配对**: 通过配对码安全连接到 Gateway
 
-### 功能对比：Windows 客户端 vs openclaw-cli
+### 功能对比：Windows 客户端 vs mtbot-cli
 
-| 功能         | Windows 客户端       | openclaw-cli |
+| 功能         | Windows 客户端       | mtbot-cli |
 | ------------ | -------------------- | ------------ |
 | 命令执行     | ✅ 支持 (白名单限制) | ✅ 完整支持  |
 | 文件操作     | ✅ 支持 (路径限制)   | ✅ 完整支持  |
@@ -820,7 +820,7 @@ OpenClaw Windows 客户端是一个基于 Electron 的桌面应用，可以作�
 | 系统托盘     | ✅ 支持              | ❌ 不支持    |
 | 自动更新     | ✅ 支持              | ❌ 需手动    |
 
-**结论**: Windows 客户端**不能完全替代** `openclaw-cli`，但可以作为日常使用的图形化辅助工具。对于 Channel 配置、Gateway 管理等高级操作，仍需使用 CLI。
+**结论**: Windows 客户端**不能完全替代** `mtbot-cli`，但可以作为日常使用的图形化辅助工具。对于 Channel 配置、Gateway 管理等高级操作，仍需使用 CLI。
 
 ### 安全机制
 
@@ -878,9 +878,9 @@ pnpm package:zip
 
 | 文件                                    | 说明             |
 | --------------------------------------- | ---------------- |
-| `OpenClaw-Assistant-Setup-x.x.x.exe`    | NSIS 安装程序    |
-| `OpenClaw-Assistant-x.x.x-portable.exe` | 便携版           |
-| `OpenClaw-Assistant-x.x.x-win.zip`      | ZIP 压缩包       |
+| `MtBot-Assistant-Setup-x.x.x.exe`    | NSIS 安装程序    |
+| `MtBot-Assistant-x.x.x-portable.exe` | 便携版           |
+| `MtBot-Assistant-x.x.x-win.zip`      | ZIP 压缩包       |
 | `win-unpacked/`                         | 未打包的应用目录 |
 
 ### 配置与连接
@@ -947,7 +947,7 @@ docker compose -f docker-compose.infra.yml up -d
 ./docker-setup.sh
 
 # 3. 记录 Gateway Token
-echo $OPENCLAW_GATEWAY_TOKEN
+echo $MTBOT_GATEWAY_TOKEN
 
 # 4. 确保防火墙开放端口
 # - 18789 (Gateway WebSocket)
@@ -961,7 +961,7 @@ pnpm install
 pnpm package:nsis:x64
 
 # 2. 安装并运行
-# 双击 release/OpenClaw-Assistant-Setup-x.x.x.exe
+# 双击 release/MtBot-Assistant-Setup-x.x.x.exe
 
 # 3. 配置连接
 # - Gateway URL: ws://<服务器IP>:18789

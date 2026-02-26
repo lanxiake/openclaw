@@ -382,7 +382,7 @@ describe("MemoryProfileMemoryProvider", () => {
       const factId = await provider.addFact(userId, {
         category: "work",
         key: "company",
-        value: "OpenClaw",
+        value: "MtBot",
         confidence: 1.0,
         source: "explicit",
         sensitive: false,
@@ -391,7 +391,7 @@ describe("MemoryProfileMemoryProvider", () => {
       const facts = await provider.getFacts(userId);
       expect(facts).toHaveLength(1);
       expect(facts[0].id).toBe(factId);
-      expect(facts[0].value).toBe("OpenClaw");
+      expect(facts[0].value).toBe("MtBot");
     });
 
     it("应该搜索事实", async () => {

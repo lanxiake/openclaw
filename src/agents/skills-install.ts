@@ -4,7 +4,7 @@ import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import { pipeline } from "node:stream/promises";
 
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { resolveBrewExecutable } from "../infra/brew.js";
 import { runCommandWithTimeout } from "../process/exec.js";
 import { CONFIG_DIR, ensureDir, resolveUserPath } from "../utils.js";
@@ -23,7 +23,7 @@ export type SkillInstallRequest = {
   skillName: string;
   installId: string;
   timeoutMs?: number;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
 };
 
 export type SkillInstallResult = {

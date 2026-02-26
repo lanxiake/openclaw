@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
 import {
@@ -22,7 +22,7 @@ describe("resolveOutboundTarget", () => {
   });
 
   it("falls back to whatsapp allowFrom via config", () => {
-    const cfg: OpenClawConfig = {
+    const cfg: MtBotConfig = {
       channels: { whatsapp: { allowFrom: ["+1555"] } },
     };
     const res = resolveOutboundTarget({

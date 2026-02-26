@@ -1,6 +1,6 @@
 import type { ChannelId } from "../channels/plugins/types.js";
 import { normalizeAccountId } from "../routing/session-key.js";
-import type { OpenClawConfig } from "./config.js";
+import type { MtBotConfig } from "./config.js";
 import type { GroupToolPolicyBySenderConfig, GroupToolPolicyConfig } from "./types.tools.js";
 
 export type GroupPolicyChannel = ChannelId;
@@ -96,7 +96,7 @@ export function resolveToolsBySender(
 }
 
 function resolveChannelGroups(
-  cfg: OpenClawConfig,
+  cfg: MtBotConfig,
   channel: GroupPolicyChannel,
   accountId?: string | null,
 ): ChannelGroups | undefined {
@@ -121,7 +121,7 @@ function resolveChannelGroups(
 }
 
 export function resolveChannelGroupPolicy(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   channel: GroupPolicyChannel;
   groupId?: string | null;
   accountId?: string | null;
@@ -146,7 +146,7 @@ export function resolveChannelGroupPolicy(params: {
 }
 
 export function resolveChannelGroupRequireMention(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   channel: GroupPolicyChannel;
   groupId?: string | null;
   accountId?: string | null;
@@ -176,7 +176,7 @@ export function resolveChannelGroupRequireMention(params: {
 
 export function resolveChannelGroupToolsPolicy(
   params: {
-    cfg: OpenClawConfig;
+    cfg: MtBotConfig;
     channel: GroupPolicyChannel;
     groupId?: string | null;
     accountId?: string | null;

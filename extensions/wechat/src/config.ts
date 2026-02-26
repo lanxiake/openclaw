@@ -1,5 +1,5 @@
-import type { OpenClawConfig } from "openclaw/plugin-sdk";
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "openclaw/plugin-sdk";
+import type { MtBotConfig } from "mtbot/plugin-sdk";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "mtbot/plugin-sdk";
 import type { ResolvedWeChatAccount, WeChatConfig } from "./types.js";
 
 // Cache for generated auth tokens to ensure consistency within a session
@@ -52,14 +52,14 @@ function resolveAuthToken(params: {
 /**
  * Get WeChat channel configuration from config.
  */
-export function getWeChatConfig(cfg: OpenClawConfig): WeChatConfig | undefined {
+export function getWeChatConfig(cfg: MtBotConfig): WeChatConfig | undefined {
   return (cfg.channels as Record<string, unknown> | undefined)?.wechat as WeChatConfig | undefined;
 }
 
 /**
  * List all configured WeChat account IDs.
  */
-export function listWeChatAccountIds(cfg: OpenClawConfig): string[] {
+export function listWeChatAccountIds(cfg: MtBotConfig): string[] {
   const wechat = getWeChatConfig(cfg);
   if (!wechat) return [];
 
@@ -85,7 +85,7 @@ export function listWeChatAccountIds(cfg: OpenClawConfig): string[] {
 /**
  * Resolve the default WeChat account ID.
  */
-export function resolveDefaultWeChatAccountId(cfg: OpenClawConfig): string {
+export function resolveDefaultWeChatAccountId(cfg: MtBotConfig): string {
   const ids = listWeChatAccountIds(cfg);
   return ids[0] ?? DEFAULT_ACCOUNT_ID;
 }
@@ -94,7 +94,7 @@ export function resolveDefaultWeChatAccountId(cfg: OpenClawConfig): string {
  * Resolve a WeChat account by ID.
  */
 export function resolveWeChatAccount(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   accountId?: string;
 }): ResolvedWeChatAccount {
   const { cfg, accountId: rawAccountId } = params;

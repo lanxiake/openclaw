@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { CONFIG_DIR } from "../utils.js";
 import {
   hasBinary,
@@ -165,7 +165,7 @@ function normalizeInstallOptions(
 
 function buildSkillStatus(
   entry: SkillEntry,
-  config?: OpenClawConfig,
+  config?: MtBotConfig,
   prefs?: SkillsInstallPreferences,
   eligibility?: SkillEligibilityContext,
 ): SkillStatusEntry {
@@ -283,7 +283,7 @@ function buildSkillStatus(
 export function buildWorkspaceSkillStatus(
   workspaceDir: string,
   opts?: {
-    config?: OpenClawConfig;
+    config?: MtBotConfig;
     managedSkillsDir?: string;
     entries?: SkillEntry[];
     eligibility?: SkillEligibilityContext;

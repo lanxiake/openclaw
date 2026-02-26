@@ -6,7 +6,7 @@
     "description": "智能整理文件，按类型、日期或自定义规则组织文件夹",
     "longDescription": "文件整理器可以帮助你自动整理杂乱的文件夹。支持按文件类型（图片、文档、视频等）、日期（年/月/日）或自定义规则进行分类整理。支持预览模式，在实际移动前查看整理计划。",
     "version": "1.0.0",
-    "author": "OpenClaw",
+    "author": "MtBot",
     "icon": "📁",
     "category": "file-management",
     "tags": ["文件", "整理", "分类", "自动化"],

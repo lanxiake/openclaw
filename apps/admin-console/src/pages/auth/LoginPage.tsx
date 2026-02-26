@@ -86,7 +86,7 @@ export default function LoginPage() {
             <Shield className="h-6 w-6 text-primary" />
           </div>
           <CardTitle className="text-2xl">管理员登录</CardTitle>
-          <CardDescription>OpenClaw Admin Console</CardDescription>
+          <CardDescription>MtBot Admin Console</CardDescription>
         </CardHeader>
 
         <CardContent>

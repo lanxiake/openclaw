@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 
 import {
-  type OpenClawConfig,
+  type MtBotConfig,
   DEFAULT_GATEWAY_PORT,
   type HooksGmailTailscaleMode,
   resolveGatewayPort,
@@ -99,7 +99,7 @@ export function buildDefaultHookUrl(
 }
 
 export function resolveGmailHookRuntimeConfig(
-  cfg: OpenClawConfig,
+  cfg: MtBotConfig,
   overrides: GmailHookOverrides,
 ): { ok: true; value: GmailHookRuntimeConfig } | { ok: false; error: string } {
   const hooks = cfg.hooks;

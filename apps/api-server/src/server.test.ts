@@ -27,7 +27,7 @@ describe("App Server", () => {
       port: 0,
       host: "127.0.0.1",
       nodeEnv: "test",
-      databaseUrl: "postgresql://localhost:5432/openclaw_test",
+      databaseUrl: "postgresql://localhost:5432/mtbot_test",
       jwtSecret: "test-jwt-secret-at-least-32-characters-long!",
       adminJwtSecret: "test-jwt-secret-at-least-32-characters-long!",
       corsOrigins: ["http://localhost:3000"],
@@ -193,7 +193,7 @@ describe("App Server", () => {
         },
       });
 
-      // 管理员 Token 的 type="admin", issuer="openclaw-admin"，
+      // 管理员 Token 的 type="admin", issuer="mtbot-admin"，
       // verifyAccessToken 校验 type="user" 会失败
       expect(response.statusCode).toBe(401);
 

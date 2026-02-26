@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# OpenClaw 远程启停脚本（在服务器上运行）
+# MtBot 远程启停脚本（在服务器上运行）
 #
 # 用法:
 #   ./remote-start.sh start [target]          # 启动服务
@@ -132,26 +132,26 @@ deploy_frontend() {
     log_info "部署前端静态文件 ..."
 
     # 创建 Web 目录
-    mkdir -p /var/www/openclaw-website
-    mkdir -p /var/www/openclaw-admin
+    mkdir -p /var/www/mtbot-website
+    mkdir -p /var/www/mtbot-admin
 
     # 部署 Website（纯静态 HTML）
     if [ -d "${SRC_DIR}/apps/website" ]; then
-        cp -rf "${SRC_DIR}/apps/website/"* /var/www/openclaw-website/
-        log_info "Website 已部署到 /var/www/openclaw-website/"
+        cp -rf "${SRC_DIR}/apps/website/"* /var/www/mtbot-website/
+        log_info "Website 已部署到 /var/www/mtbot-website/"
     fi
 
     # 部署 Admin Console（Vite 构建产物）
     if [ -d "${SRC_DIR}/apps/admin-console/dist" ]; then
-        cp -rf "${SRC_DIR}/apps/admin-console/dist/"* /var/www/openclaw-admin/
-        log_info "Admin Console 已部署到 /var/www/openclaw-admin/"
+        cp -rf "${SRC_DIR}/apps/admin-console/dist/"* /var/www/mtbot-admin/
+        log_info "Admin Console 已部署到 /var/www/mtbot-admin/"
     else
         log_error "Admin Console 未构建，请先运行: remote-build.sh admin"
     fi
 
     # 设置权限
-    chown -R nginx:nginx /var/www/openclaw-website 2>/dev/null || chown -R nobody:nobody /var/www/openclaw-website
-    chown -R nginx:nginx /var/www/openclaw-admin 2>/dev/null || chown -R nobody:nobody /var/www/openclaw-admin
+    chown -R nginx:nginx /var/www/mtbot-website 2>/dev/null || chown -R nobody:nobody /var/www/mtbot-website
+    chown -R nginx:nginx /var/www/mtbot-admin 2>/dev/null || chown -R nobody:nobody /var/www/mtbot-admin
 
     # 重载 Nginx
     if command -v nginx &>/dev/null; then
@@ -167,13 +167,13 @@ setup_nginx() {
     log_info "配置 Nginx ..."
 
     # 复制 Nginx 配置
-    if [ -f /tmp/openclaw-nginx.conf ]; then
+    if [ -f /tmp/mtbot-nginx.conf ]; then
         # 替换域名占位符
-        sed -i 's/your-domain.com/mtbot.top/g' /tmp/openclaw-nginx.conf
+        sed -i 's/your-domain.com/mtbot.top/g' /tmp/mtbot-nginx.conf
         # 修正 SSL 证书路径（使用 bundle 证书）
-        sed -i 's/mtbot.top.crt/mtbot.top_bundle.crt/g' /tmp/openclaw-nginx.conf
-        cp /tmp/openclaw-nginx.conf /etc/nginx/conf.d/openclaw.conf
-        log_info "Nginx 配置已安装到 /etc/nginx/conf.d/openclaw.conf"
+        sed -i 's/mtbot.top.crt/mtbot.top_bundle.crt/g' /tmp/mtbot-nginx.conf
+        cp /tmp/mtbot-nginx.conf /etc/nginx/conf.d/mtbot.conf
+        log_info "Nginx 配置已安装到 /etc/nginx/conf.d/mtbot.conf"
     fi
 
     # 部署 SSL 证书
@@ -185,8 +185,8 @@ setup_nginx() {
     fi
 
     # 创建 Web 目录（如果不存在）
-    mkdir -p /var/www/openclaw-website
-    mkdir -p /var/www/openclaw-admin
+    mkdir -p /var/www/mtbot-website
+    mkdir -p /var/www/mtbot-admin
 
     # 测试并重载 Nginx
     nginx -t

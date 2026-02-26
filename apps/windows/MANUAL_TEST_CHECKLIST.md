@@ -45,7 +45,7 @@
 ### 模拟测试:
 ```javascript
 // 在浏览器控制台执行
-localStorage.removeItem('openclaw_access_token')
+localStorage.removeItem('mtbot_access_token')
 // 然后尝试刷新页面或调用 API
 ```
 

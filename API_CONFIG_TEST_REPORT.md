@@ -7,7 +7,7 @@
 ## 测试环境
 
 - API Server: http://127.0.0.1:3000
-- 数据库: PostgreSQL (openclaw_prod)
+- 数据库: PostgreSQL (mtbot_prod)
 - Node.js: v24.12.0
 
 ## 已完成功能

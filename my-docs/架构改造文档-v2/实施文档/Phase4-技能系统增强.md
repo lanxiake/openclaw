@@ -64,7 +64,7 @@
 使用 JSONL（每行一条 JSON 记录）格式存储在本地磁盘，按天分割文件：
 
 ```
-~/.openclaw/logs/skills/
+~/.mtbot/logs/skills/
 ├── execution-2026-02-24.jsonl
 ├── execution-2026-02-23.jsonl
 └── ...

@@ -3,7 +3,7 @@ import path from "node:path";
 
 import JSON5 from "json5";
 
-import type { OpenClawConfig, ConfigFileSnapshot } from "../config/config.js";
+import type { MtBotConfig, ConfigFileSnapshot } from "../config/config.js";
 import { createConfigIO } from "../config/config.js";
 import { resolveNativeSkillsEnabled } from "../config/commands.js";
 import { resolveOAuthDir } from "../config/paths.js";
@@ -56,7 +56,7 @@ function expandTilde(p: string, env: NodeJS.ProcessEnv): string | null {
   return null;
 }
 
-function summarizeGroupPolicy(cfg: OpenClawConfig): {
+function summarizeGroupPolicy(cfg: MtBotConfig): {
   open: number;
   allowlist: number;
   other: number;
@@ -85,7 +85,7 @@ function summarizeGroupPolicy(cfg: OpenClawConfig): {
   return { open, allowlist, other };
 }
 
-export function collectAttackSurfaceSummaryFindings(cfg: OpenClawConfig): SecurityAuditFinding[] {
+export function collectAttackSurfaceSummaryFindings(cfg: MtBotConfig): SecurityAuditFinding[] {
   const group = summarizeGroupPolicy(cfg);
   const elevated = cfg.tools?.elevated?.enabled !== false;
   const hooksEnabled = cfg.hooks?.enabled === true;
@@ -132,7 +132,7 @@ export function collectSyncedFolderFindings(params: {
       severity: "warn",
       title: "State/config path looks like a synced folder",
       detail: `stateDir=${params.stateDir}, configPath=${params.configPath}. Synced folders (iCloud/Dropbox/OneDrive/Google Drive) can leak tokens and transcripts onto other devices.`,
-      remediation: `Keep OPENCLAW_STATE_DIR on a local-only volume and re-run "${formatCliCommand("openclaw security audit --fix")}".`,
+      remediation: `Keep MTBOT_STATE_DIR on a local-only volume and re-run "${formatCliCommand("mtbot security audit --fix")}".`,
     });
   }
   return findings;
@@ -143,7 +143,7 @@ function looksLikeEnvRef(value: string): boolean {
   return v.startsWith("${") && v.endsWith("}");
 }
 
-export function collectSecretsInConfigFindings(cfg: OpenClawConfig): SecurityAuditFinding[] {
+export function collectSecretsInConfigFindings(cfg: MtBotConfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const password =
     typeof cfg.gateway?.auth?.password === "string" ? cfg.gateway.auth.password.trim() : "";
@@ -155,7 +155,7 @@ export function collectSecretsInConfigFindings(cfg: OpenClawConfig): SecurityAud
       detail:
         "gateway.auth.password is set in the config file; prefer environment variables for secrets when possible.",
       remediation:
-        "Prefer OPENCLAW_GATEWAY_PASSWORD (env) and remove gateway.auth.password from disk.",
+        "Prefer MTBOT_GATEWAY_PASSWORD (env) and remove gateway.auth.password from disk.",
     });
   }
 
@@ -173,7 +173,7 @@ export function collectSecretsInConfigFindings(cfg: OpenClawConfig): SecurityAud
   return findings;
 }
 
-export function collectHooksHardeningFindings(cfg: OpenClawConfig): SecurityAuditFinding[] {
+export function collectHooksHardeningFindings(cfg: MtBotConfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   if (cfg.hooks?.enabled !== true) {
     return findings;
@@ -237,7 +237,7 @@ function addModel(models: ModelRef[], raw: unknown, source: string) {
   models.push({ id, source });
 }
 
-function collectModels(cfg: OpenClawConfig): ModelRef[] {
+function collectModels(cfg: MtBotConfig): ModelRef[] {
   const out: ModelRef[] = [];
   addModel(out, cfg.agents?.defaults?.model?.primary, "agents.defaults.model.primary");
   for (const f of cfg.agents?.defaults?.model?.fallbacks ?? []) {
@@ -320,7 +320,7 @@ function isClaude45OrHigher(id: string): boolean {
   return /\bclaude-[^\s/]*?(?:-4-?5\b|4\.5\b)/i.test(id);
 }
 
-export function collectModelHygieneFindings(cfg: OpenClawConfig): SecurityAuditFinding[] {
+export function collectModelHygieneFindings(cfg: MtBotConfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const models = collectModels(cfg);
   if (models.length === 0) {
@@ -423,7 +423,7 @@ function pickToolPolicy(config?: { allow?: string[]; deny?: string[] }): Sandbox
 }
 
 function resolveToolPolicies(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   agentTools?: AgentToolsConfig;
   sandboxMode?: "off" | "non-main" | "all";
   agentId?: string | null;
@@ -453,7 +453,7 @@ function resolveToolPolicies(params: {
   return policies;
 }
 
-function hasWebSearchKey(cfg: OpenClawConfig, env: NodeJS.ProcessEnv): boolean {
+function hasWebSearchKey(cfg: MtBotConfig, env: NodeJS.ProcessEnv): boolean {
   const search = cfg.tools?.web?.search;
   return Boolean(
     search?.apiKey ||
@@ -464,7 +464,7 @@ function hasWebSearchKey(cfg: OpenClawConfig, env: NodeJS.ProcessEnv): boolean {
   );
 }
 
-function isWebSearchEnabled(cfg: OpenClawConfig, env: NodeJS.ProcessEnv): boolean {
+function isWebSearchEnabled(cfg: MtBotConfig, env: NodeJS.ProcessEnv): boolean {
   const enabled = cfg.tools?.web?.search?.enabled;
   if (enabled === false) {
     return false;
@@ -475,7 +475,7 @@ function isWebSearchEnabled(cfg: OpenClawConfig, env: NodeJS.ProcessEnv): boolea
   return hasWebSearchKey(cfg, env);
 }
 
-function isWebFetchEnabled(cfg: OpenClawConfig): boolean {
+function isWebFetchEnabled(cfg: MtBotConfig): boolean {
   const enabled = cfg.tools?.web?.fetch?.enabled;
   if (enabled === false) {
     return false;
@@ -483,7 +483,7 @@ function isWebFetchEnabled(cfg: OpenClawConfig): boolean {
   return true;
 }
 
-function isBrowserEnabled(cfg: OpenClawConfig): boolean {
+function isBrowserEnabled(cfg: MtBotConfig): boolean {
   try {
     return resolveBrowserConfig(cfg.browser, cfg).enabled;
   } catch {
@@ -492,7 +492,7 @@ function isBrowserEnabled(cfg: OpenClawConfig): boolean {
 }
 
 export function collectSmallModelRiskFindings(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   env: NodeJS.ProcessEnv;
 }): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
@@ -587,7 +587,7 @@ export function collectSmallModelRiskFindings(params: {
 }
 
 export async function collectPluginsTrustFindings(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   stateDir: string;
 }): Promise<SecurityAuditFinding[]> {
   const findings: SecurityAuditFinding[] = [];
@@ -847,7 +847,7 @@ export async function collectIncludeFilePermFindings(params: {
 }
 
 export async function collectStateDeepFilesystemFindings(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   env: NodeJS.ProcessEnv;
   stateDir: string;
   platform?: NodeJS.Platform;
@@ -1002,7 +1002,7 @@ export async function collectStateDeepFilesystemFindings(params: {
   return findings;
 }
 
-function listGroupPolicyOpen(cfg: OpenClawConfig): string[] {
+function listGroupPolicyOpen(cfg: MtBotConfig): string[] {
   const out: string[] = [];
   const channels = cfg.channels as Record<string, unknown> | undefined;
   if (!channels || typeof channels !== "object") {
@@ -1032,7 +1032,7 @@ function listGroupPolicyOpen(cfg: OpenClawConfig): string[] {
   return out;
 }
 
-export function collectExposureMatrixFindings(cfg: OpenClawConfig): SecurityAuditFinding[] {
+export function collectExposureMatrixFindings(cfg: MtBotConfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const openGroups = listGroupPolicyOpen(cfg);
   if (openGroups.length === 0) {

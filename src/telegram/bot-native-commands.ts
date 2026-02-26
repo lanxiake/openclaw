@@ -37,7 +37,7 @@ import type {
   TelegramGroupConfig,
   TelegramTopicConfig,
 } from "../config/types.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { deliverReplies } from "./bot/delivery.js";
 import { buildInlineKeyboard } from "./send.js";
@@ -68,7 +68,7 @@ type TelegramCommandAuthResult = {
 
 type RegisterTelegramNativeCommandsParams = {
   bot: Bot;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   runtime: RuntimeEnv;
   accountId: string;
   telegramCfg: TelegramAccountConfig;
@@ -92,7 +92,7 @@ type RegisterTelegramNativeCommandsParams = {
 async function resolveTelegramCommandAuth(params: {
   msg: NonNullable<TelegramNativeCommandContext["message"]>;
   bot: Bot;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   telegramCfg: TelegramAccountConfig;
   allowFrom?: Array<string | number>;
   groupAllowFrom?: Array<string | number>;

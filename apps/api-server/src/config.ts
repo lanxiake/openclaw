@@ -39,7 +39,7 @@ export function loadConfig(): AppConfig {
   }
 
   const databaseUrl =
-    process.env.DATABASE_URL ?? "postgresql://localhost:5432/openclaw";
+    process.env.DATABASE_URL ?? "postgresql://localhost:5432/mtbot";
 
   const nodeEnv = (process.env.NODE_ENV ??
     "development") as AppConfig["nodeEnv"];

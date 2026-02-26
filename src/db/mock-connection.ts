@@ -741,8 +741,8 @@ let realGetDatabase: (() => Database) | null = null;
 export function enableMockDatabase(): void {
   useMock = true;
   const g = globalThis as Record<string, unknown>;
-  g.__OPENCLAW_MOCK_ENABLED__ = true;
-  g.__OPENCLAW_MOCK_DB__ = mockDb;
+  g.__MTBOT_MOCK_ENABLED__ = true;
+  g.__MTBOT_MOCK_DB__ = mockDb;
   console.log("[mock-db] Mock database enabled");
 }
 
@@ -754,8 +754,8 @@ export function enableMockDatabase(): void {
 export function disableMockDatabase(): void {
   useMock = false;
   const g = globalThis as Record<string, unknown>;
-  g.__OPENCLAW_MOCK_ENABLED__ = false;
-  g.__OPENCLAW_MOCK_DB__ = undefined;
+  g.__MTBOT_MOCK_ENABLED__ = false;
+  g.__MTBOT_MOCK_DB__ = undefined;
   console.log("[mock-db] Mock database disabled");
 }
 

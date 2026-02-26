@@ -1,5 +1,5 @@
 ================================================================
-  OpenClaw Windows 打包方案测试指南
+  MtBot Windows 打包方案测试指南
 ================================================================
 
 本目录包含三种 Windows EXE 打包方案的测试项目：
@@ -33,10 +33,10 @@
 1. cd pkg-test
 2. npm install fs-extra  (安装依赖)
 3. node build.js         (执行打包)
-4. dist\openclaw.exe     (测试运行)
+4. dist\mtbot.exe     (测试运行)
 
 预期输出:
-- openclaw.exe (约 50-80MB)
+- mtbot.exe (约 50-80MB)
 - 显示系统信息和配置文件读取结果
 
 优点:
@@ -65,10 +65,10 @@
 1. cd nexe-test
 2. npm install fs-extra  (安装依赖)
 3. node build.js         (执行打包)
-4. dist\openclaw.exe     (测试运行)
+4. dist\mtbot.exe     (测试运行)
 
 预期输出:
-- openclaw.exe (约 40-60MB)
+- mtbot.exe (约 40-60MB)
 - 显示 ASCII Logo 和系统信息
 
 优点:
@@ -140,11 +140,11 @@ GUI 支持      | ❌        | ❌        | ✅
 推荐建议
 ================================================================
 
-🎯 OpenClaw Gateway (纯命令行):
+🎯 MtBot Gateway (纯命令行):
    推荐: PKG
    理由: 平衡的体积和稳定性，资源文件支持完善
 
-🎯 OpenClaw Desktop (带控制面板):
+🎯 MtBot Desktop (带控制面板):
    推荐: Electron
    理由: 提供完整的桌面应用体验，可集成 WebChat UI
 

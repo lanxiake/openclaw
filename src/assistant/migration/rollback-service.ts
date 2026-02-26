@@ -7,7 +7,7 @@
  * - 恢复到 JSON 存储模式
  * - 记录回滚操作
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import { randomUUID } from "node:crypto";
@@ -181,7 +181,7 @@ export class MigrationRollbackService {
    */
   private defaultIsVirtualUser(user: User): boolean {
     // 检查邮箱是否符合虚拟用户格式
-    if (user.email?.includes("@internal.openclaw.local")) {
+    if (user.email?.includes("@internal.mtbot.local")) {
       return true;
     }
 

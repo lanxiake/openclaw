@@ -61,8 +61,8 @@ export class BrowserTokenProvider implements TokenProvider {
       } | null>;
     } = {},
   ) {
-    this.accessTokenKey = options.accessTokenKey || "openclaw_access_token";
-    this.refreshTokenKey = options.refreshTokenKey || "openclaw_refresh_token";
+    this.accessTokenKey = options.accessTokenKey || "mtbot_access_token";
+    this.refreshTokenKey = options.refreshTokenKey || "mtbot_refresh_token";
     this.onRefreshToken = options.onRefreshToken;
   }
 

@@ -21,9 +21,9 @@ export const TOKEN_CONFIG = {
   /** 每个用户最多活跃会话数 */
   maxSessionsPerUser: 5,
   /** 令牌签发者 */
-  issuer: "openclaw-gateway",
+  issuer: "mtbot-gateway",
   /** 令牌受众 */
-  audience: "openclaw-api",
+  audience: "mtbot-api",
 };
 
 /**

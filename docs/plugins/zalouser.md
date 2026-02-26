@@ -1,13 +1,13 @@
 ---
 summary: "Zalo Personal plugin: QR login + messaging via zca-cli (plugin install + channel config + CLI + tool)"
 read_when:
-  - You want Zalo Personal (unofficial) support in OpenClaw
+  - You want Zalo Personal (unofficial) support in MtBot
   - You are configuring or developing the zalouser plugin
 ---
 
 # Zalo Personal (plugin)
 
-Zalo Personal support for OpenClaw via a plugin, using `zca-cli` to automate a normal Zalo user account.
+Zalo Personal support for MtBot via a plugin, using `zca-cli` to automate a normal Zalo user account.
 
 > **Warning:** Unofficial automation may lead to account suspension/ban. Use at your own risk.
 
@@ -26,7 +26,7 @@ If you use a remote Gateway, install/configure it on the **machine running the G
 ### Option A: install from npm
 
 ```bash
-openclaw plugins install @openclaw/zalouser
+mtbot plugins install @mtbot/zalouser
 ```
 
 Restart the Gateway afterwards.
@@ -34,7 +34,7 @@ Restart the Gateway afterwards.
 ### Option B: install from a local folder (dev)
 
 ```bash
-openclaw plugins install ./extensions/zalouser
+mtbot plugins install ./extensions/zalouser
 cd ./extensions/zalouser && pnpm install
 ```
 
@@ -66,11 +66,11 @@ Channel config lives under `channels.zalouser` (not `plugins.entries.*`):
 ## CLI
 
 ```bash
-openclaw channels login --channel zalouser
-openclaw channels logout --channel zalouser
-openclaw channels status --probe
-openclaw message send --channel zalouser --target <threadId> --message "Hello from OpenClaw"
-openclaw directory peers list --channel zalouser --query "name"
+mtbot channels login --channel zalouser
+mtbot channels logout --channel zalouser
+mtbot channels status --probe
+mtbot message send --channel zalouser --target <threadId> --message "Hello from MtBot"
+mtbot directory peers list --channel zalouser --query "name"
 ```
 
 ## Agent tool

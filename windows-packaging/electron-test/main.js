@@ -57,7 +57,7 @@ function initLogFile() {
   }
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  logFilePath = path.join(logDir, `openclaw-${timestamp}.log`);
+  logFilePath = path.join(logDir, `mtbot-${timestamp}.log`);
   log("INFO", "Log file initialized:", logFilePath);
 
   // 清理旧日志（保留最近10个）
@@ -69,7 +69,7 @@ function cleanOldLogs(logDir, keepCount) {
   try {
     const files = fs
       .readdirSync(logDir)
-      .filter((f) => f.startsWith("openclaw-") && f.endsWith(".log"))
+      .filter((f) => f.startsWith("mtbot-") && f.endsWith(".log"))
       .map((f) => ({
         name: f,
         path: path.join(logDir, f),
@@ -98,12 +98,12 @@ function generateToken() {
 
 // 获取配置目录
 function getConfigDir() {
-  return path.join(os.homedir(), ".openclaw");
+  return path.join(os.homedir(), ".mtbot");
 }
 
 // 获取配置文件路径
 function getConfigPath() {
-  return path.join(getConfigDir(), "openclaw.json");
+  return path.join(getConfigDir(), "mtbot.json");
 }
 
 // 确保配置目录存在
@@ -186,35 +186,35 @@ function loadOrCreateConfig() {
 function getBundledConfigPath() {
   // 在打包后的应用中，资源目录在 process.resourcesPath
   if (process.resourcesPath) {
-    const bundledPath = path.join(process.resourcesPath, "bundled-config", "openclaw.json");
+    const bundledPath = path.join(process.resourcesPath, "bundled-config", "mtbot.json");
     if (fs.existsSync(bundledPath)) {
       return bundledPath;
     }
   }
   // 开发模式下，从当前目录查找
-  const devPath = path.join(__dirname, "bundled-config", "openclaw.json");
+  const devPath = path.join(__dirname, "bundled-config", "mtbot.json");
   if (fs.existsSync(devPath)) {
     return devPath;
   }
   return null;
 }
 
-// 查找 OpenClaw 项目根目录
+// 查找 MtBot 项目根目录
 function findProjectRoot() {
-  // 从当前目录向上查找，直到找到 package.json 和 openclaw.mjs
+  // 从当前目录向上查找，直到找到 package.json 和 mtbot.mjs
   let dir = __dirname;
   for (let i = 0; i < 5; i++) {
     const parentDir = path.dirname(dir);
     if (parentDir === dir) break; // 到达根目录
 
     const packageJsonPath = path.join(parentDir, "package.json");
-    const openclawMjs = path.join(parentDir, "openclaw.mjs");
+    const mtbotMjs = path.join(parentDir, "mtbot.mjs");
 
-    if (fs.existsSync(packageJsonPath) && fs.existsSync(openclawMjs)) {
-      // 验证是否是 OpenClaw 项目
+    if (fs.existsSync(packageJsonPath) && fs.existsSync(mtbotMjs)) {
+      // 验证是否是 MtBot 项目
       try {
         const pkg = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-        if (pkg.name === "openclaw") {
+        if (pkg.name === "mtbot") {
           return parentDir;
         }
       } catch (err) {
@@ -293,15 +293,15 @@ async function startGateway() {
 
   const projectRoot = findProjectRoot();
   if (!projectRoot) {
-    const error = "无法找到 OpenClaw 项目根目录";
+    const error = "无法找到 MtBot 项目根目录";
     log("ERROR", error);
     gatewayStatus.error = error;
     return { success: false, message: error };
   }
 
-  const openclawMjs = path.join(projectRoot, "openclaw.mjs");
-  if (!fs.existsSync(openclawMjs)) {
-    const error = `OpenClaw 入口文件不存在: ${openclawMjs}`;
+  const mtbotMjs = path.join(projectRoot, "mtbot.mjs");
+  if (!fs.existsSync(mtbotMjs)) {
+    const error = `MtBot 入口文件不存在: ${mtbotMjs}`;
     log("ERROR", error);
     gatewayStatus.error = error;
     return { success: false, message: error };
@@ -319,7 +319,7 @@ async function startGateway() {
     gatewayProcess = spawn(
       process.execPath,
       [
-        openclawMjs,
+        mtbotMjs,
         "gateway",
         "run",
         "--bind",
@@ -332,8 +332,8 @@ async function startGateway() {
         cwd: projectRoot,
         env: {
           ...process.env,
-          OPENCLAW_CONFIG_PATH: configPath,
-          OPENCLAW_SKIP_CHANNELS: "1",
+          MTBOT_CONFIG_PATH: configPath,
+          MTBOT_SKIP_CHANNELS: "1",
           NODE_OPTIONS: "--disable-warning=ExperimentalWarning",
         },
         stdio: "pipe",
@@ -441,7 +441,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    title: "OpenClaw",
+    title: "MtBot",
     icon: path.join(__dirname, "assets", "icon.png"),
     webPreferences: {
       nodeIntegration: true,
@@ -474,7 +474,7 @@ function createTray() {
   try {
     tray = new Tray(iconPath);
     updateTrayMenu();
-    tray.setToolTip("OpenClaw Gateway");
+    tray.setToolTip("MtBot Gateway");
   } catch (err) {
     console.error("Failed to create tray:", err);
   }
@@ -487,7 +487,7 @@ function updateTrayMenu() {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: "打开 OpenClaw",
+      label: "打开 MtBot",
       click: () => {
         if (mainWindow === null) {
           createWindow();
@@ -559,7 +559,7 @@ ipcMain.handle("get-diagnostic-info", async () => {
     configPath,
     configDir,
     configExists: fs.existsSync(configPath),
-    openclawMjsExists: projectRoot ? fs.existsSync(path.join(projectRoot, "openclaw.mjs")) : false,
+    mtbotMjsExists: projectRoot ? fs.existsSync(path.join(projectRoot, "mtbot.mjs")) : false,
     distExists: projectRoot ? fs.existsSync(path.join(projectRoot, "dist")) : false,
     gatewayPort,
     gatewayToken: gatewayToken ? "****" + gatewayToken.slice(-8) : null,
@@ -671,7 +671,7 @@ ipcMain.handle("update-gateway-token", async (event, token) => {
 app.whenReady().then(async () => {
   // 初始化日志文件
   initLogFile();
-  log("INFO", "OpenClaw Desktop Application starting...");
+  log("INFO", "MtBot Desktop Application starting...");
   log("INFO", "Node version:", process.version);
   log("INFO", "Platform:", process.platform, process.arch);
 

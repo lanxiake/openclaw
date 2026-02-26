@@ -18,7 +18,7 @@ const mockAdmin: Admin = {
   id: 'mock-admin-001',
   username: 'admin',
   displayName: '测试管理员',
-  email: 'admin@openclaw.ai',
+  email: 'admin@mtbot.top',
   role: 'super_admin',
   status: 'active',
   mfaEnabled: false,

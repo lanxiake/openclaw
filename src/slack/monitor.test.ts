@@ -159,16 +159,16 @@ describe("resolveSlackThreadTs", () => {
 
 describe("buildSlackSlashCommandMatcher", () => {
   it("matches with or without a leading slash", () => {
-    const matcher = buildSlackSlashCommandMatcher("openclaw");
+    const matcher = buildSlackSlashCommandMatcher("mtbot");
 
-    expect(matcher.test("openclaw")).toBe(true);
-    expect(matcher.test("/openclaw")).toBe(true);
+    expect(matcher.test("mtbot")).toBe(true);
+    expect(matcher.test("/mtbot")).toBe(true);
   });
 
   it("does not match similar names", () => {
-    const matcher = buildSlackSlashCommandMatcher("openclaw");
+    const matcher = buildSlackSlashCommandMatcher("mtbot");
 
-    expect(matcher.test("/openclaw-bot")).toBe(false);
-    expect(matcher.test("openclaw-bot")).toBe(false);
+    expect(matcher.test("/mtbot-bot")).toBe(false);
+    expect(matcher.test("mtbot-bot")).toBe(false);
   });
 });

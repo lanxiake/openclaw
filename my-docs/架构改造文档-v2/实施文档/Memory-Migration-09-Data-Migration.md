@@ -8,7 +8,7 @@
 
 ### 1. 新建 `src/commands/memory-migrate.ts`
 
-CLI 命令 `openclaw memory migrate`：
+CLI 命令 `mtbot memory migrate`：
 
 ```typescript
 /**
@@ -16,16 +16,16 @@ CLI 命令 `openclaw memory migrate`：
  * 将现有 workspace-dev/ 下的 .md 文件内容迁移到数据库
  *
  * 使用方式:
- *   openclaw memory migrate              # 执行迁移
- *   openclaw memory migrate --dry-run    # 预览模式，不实际写入
- *   openclaw memory migrate --user-id X  # 指定用户 ID（否则使用默认用户）
+ *   mtbot memory migrate              # 执行迁移
+ *   mtbot memory migrate --dry-run    # 预览模式，不实际写入
+ *   mtbot memory migrate --user-id X  # 指定用户 ID（否则使用默认用户）
  */
 ```
 
 #### 迁移逻辑
 
 ```
-1. 扫描 ~/.openclaw/workspace-dev/ 下的 .md 文件
+1. 扫描 ~/.mtbot/workspace-dev/ 下的 .md 文件
    ├── SOUL.md
    ├── IDENTITY.md
    ├── AGENTS.md
@@ -95,7 +95,7 @@ export async function ensureAgentWorkspace(workspaceDir: string): Promise<void> 
   if (existingFiles.length > 0) {
     logger.info(
       "Workspace directory contains legacy .md files. " +
-        "Run 'openclaw memory migrate' to migrate them to the database.",
+        "Run 'mtbot memory migrate' to migrate them to the database.",
     );
   }
 }
@@ -130,15 +130,15 @@ pnpm vitest run src/commands/memory-migrate.test.ts
 
 ```bash
 # 1. 预览模式
-pnpm openclaw memory migrate --dry-run
+pnpm mtbot memory migrate --dry-run
 # 应输出迁移计划，不实际写入
 
 # 2. 执行迁移
-pnpm openclaw memory migrate
+pnpm mtbot memory migrate
 # 应输出迁移报告
 
 # 3. 重复执行（幂等）
-pnpm openclaw memory migrate
+pnpm mtbot memory migrate
 # 应显示"已跳过"，不重复写入
 
 # 4. 验证数据库

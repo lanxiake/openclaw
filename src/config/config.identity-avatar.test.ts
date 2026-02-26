@@ -8,10 +8,10 @@ import { withTempHome } from "./test-helpers.js";
 describe("identity avatar validation", () => {
   it("accepts workspace-relative avatar paths", async () => {
     await withTempHome(async (home) => {
-      const workspace = path.join(home, "openclaw");
+      const workspace = path.join(home, "mtbot");
       const res = validateConfigObject({
         agents: {
-          list: [{ id: "main", workspace, identity: { avatar: "avatars/openclaw.png" } }],
+          list: [{ id: "main", workspace, identity: { avatar: "avatars/mtbot.png" } }],
         },
       });
       expect(res.ok).toBe(true);
@@ -20,7 +20,7 @@ describe("identity avatar validation", () => {
 
   it("accepts http(s) and data avatars", async () => {
     await withTempHome(async (home) => {
-      const workspace = path.join(home, "openclaw");
+      const workspace = path.join(home, "mtbot");
       const httpRes = validateConfigObject({
         agents: {
           list: [{ id: "main", workspace, identity: { avatar: "https://example.com/avatar.png" } }],
@@ -39,7 +39,7 @@ describe("identity avatar validation", () => {
 
   it("rejects avatar paths outside workspace", async () => {
     await withTempHome(async (home) => {
-      const workspace = path.join(home, "openclaw");
+      const workspace = path.join(home, "mtbot");
       const res = validateConfigObject({
         agents: {
           list: [{ id: "main", workspace, identity: { avatar: "../oops.png" } }],

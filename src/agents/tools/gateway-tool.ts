@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { loadConfig, resolveConfigSnapshotHash } from "../../config/io.js";
 import { loadSessionStore, resolveStorePath } from "../../config/sessions.js";
 import { scheduleGatewaySigusr1Restart } from "../../infra/restart.js";
@@ -62,7 +62,7 @@ const GatewayToolSchema = Type.Object({
 
 export function createGatewayTool(opts?: {
   agentSessionKey?: string;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
 }): AnyAgentTool {
   return {
     label: "Gateway",

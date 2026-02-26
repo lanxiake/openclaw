@@ -35,13 +35,13 @@ const SEED_CONFIG = {
     {
       phone: "13800138000",
       displayName: "测试用户",
-      email: "test@openclaw.ai",
+      email: "test@mtbot.top",
       password: "test123456",
     },
     {
       phone: "13900139000",
       displayName: "VIP用户",
-      email: "vip@openclaw.ai",
+      email: "vip@mtbot.top",
       password: "vip123456",
     },
   ],
@@ -144,14 +144,14 @@ const SEED_CONFIG = {
   admins: [
     {
       username: "super_admin",
-      email: "admin@openclaw.ai",
+      email: "admin@mtbot.top",
       password: "Admin@2026!",
       displayName: "超级管理员",
       role: "super_admin" as const,
     },
     {
       username: "operator",
-      email: "operator@openclaw.ai",
+      email: "operator@mtbot.top",
       password: "Operator@2026!",
       displayName: "运营人员",
       role: "operator" as const,

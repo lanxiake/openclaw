@@ -49,7 +49,7 @@ export class TrayManager {
     const icon = nativeImage.createFromPath(iconPath)
 
     this.tray = new Tray(icon.resize({ width: 16, height: 16 }))
-    this.tray.setToolTip('OpenClaw Assistant')
+    this.tray.setToolTip('MtBot Assistant')
 
     // 设置右键菜单
     this.updateContextMenu()
@@ -121,7 +121,7 @@ export class TrayManager {
 
     // 更新图标提示
     this.tray?.setToolTip(
-      `OpenClaw Assistant - ${connected ? '已连接' : '未连接'}`
+      `MtBot Assistant - ${connected ? '已连接' : '未连接'}`
     )
 
     // 更新菜单

@@ -29,10 +29,10 @@ export type WsUpgradeHandler = {
 };
 
 // Use globalThis to ensure single instance across module loads
-const GLOBAL_KEY = "__openclaw_ws_upgrade_handlers__";
+const GLOBAL_KEY = "__mtbot_ws_upgrade_handlers__";
 declare global {
   // eslint-disable-next-line no-var
-  var __openclaw_ws_upgrade_handlers__: WsUpgradeHandler[] | undefined;
+  var __mtbot_ws_upgrade_handlers__: WsUpgradeHandler[] | undefined;
 }
 
 // Global registry for WebSocket upgrade handlers from plugins
@@ -66,7 +66,7 @@ export function getWsUpgradeHandlers(): WsUpgradeHandler[] {
 }
 
 export async function createGatewayRuntimeState(params: {
-  cfg: import("../config/config.js").OpenClawConfig;
+  cfg: import("../config/config.js").MtBotConfig;
   bindHost: string;
   port: number;
   controlUiEnabled: boolean;

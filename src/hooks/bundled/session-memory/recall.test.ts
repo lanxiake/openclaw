@@ -130,7 +130,7 @@ describe("recall (before_agent_start hook)", () => {
         id: "fact-2",
         category: "work",
         key: "company",
-        value: "OpenClaw Inc",
+        value: "MtBot Inc",
         confidence: 0.8,
         source: "inferred",
         sensitive: false,
@@ -151,7 +151,7 @@ describe("recall (before_agent_start hook)", () => {
     expect(result).toBeDefined();
     expect(result?.prependContext).toBeDefined();
     expect(result!.prependContext).toContain("张三");
-    expect(result!.prependContext).toContain("OpenClaw Inc");
+    expect(result!.prependContext).toContain("MtBot Inc");
     expect(result!.prependContext).toContain("user-profile-memory");
   });
 

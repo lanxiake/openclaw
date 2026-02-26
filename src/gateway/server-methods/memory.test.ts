@@ -188,7 +188,7 @@ describe("memory RPC handlers", () => {
         params: {
           category: "work",
           key: "company",
-          value: "OpenClaw",
+          value: "MtBot",
           confidence: 0.95,
           source: "explicit",
         },
@@ -199,7 +199,7 @@ describe("memory RPC handlers", () => {
       expect(mockProfile.addFact).toHaveBeenCalledWith(TEST_USER_ID, {
         category: "work",
         key: "company",
-        value: "OpenClaw",
+        value: "MtBot",
         confidence: 0.95,
         source: "explicit",
         sensitive: false,
@@ -214,7 +214,7 @@ describe("memory RPC handlers", () => {
     });
 
     it("MEMORY-RPC-005: 应该查询事实列表", async () => {
-      const mockFacts = [{ id: "f1", category: "work", key: "company", value: "OpenClaw" }];
+      const mockFacts = [{ id: "f1", category: "work", key: "company", value: "MtBot" }];
       mockProfile.getFacts.mockResolvedValue(mockFacts);
 
       const opts = createHandlerOpts({
@@ -235,16 +235,16 @@ describe("memory RPC handlers", () => {
     });
 
     it("MEMORY-RPC-006: 应该搜索事实", async () => {
-      const mockResults = [{ id: "f1", category: "work", key: "company", value: "OpenClaw" }];
+      const mockResults = [{ id: "f1", category: "work", key: "company", value: "MtBot" }];
       mockProfile.searchFacts.mockResolvedValue(mockResults);
 
       const opts = createHandlerOpts({
-        params: { query: "OpenClaw" },
+        params: { query: "MtBot" },
       });
 
       await memoryHandlers["memory.profile.fact.search"]!(opts);
 
-      expect(mockProfile.searchFacts).toHaveBeenCalledWith(TEST_USER_ID, "OpenClaw");
+      expect(mockProfile.searchFacts).toHaveBeenCalledWith(TEST_USER_ID, "MtBot");
       expect(opts.respond).toHaveBeenCalledWith(
         true,
         expect.objectContaining({

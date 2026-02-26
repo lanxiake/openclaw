@@ -8,10 +8,10 @@ import SwiftUI
 final class VoiceWakeOverlayController {
     static let shared = VoiceWakeOverlayController()
 
-    let logger = Logger(subsystem: "ai.openclaw", category: "voicewake.overlay")
+    let logger = Logger(subsystem: "com.yunkun.mtbot", category: "voicewake.overlay")
     let enableUI: Bool
 
-    /// Keep the voice wake overlay above any other OpenClaw windows, but below the system’s pop-up menus.
+    /// Keep the voice wake overlay above any other MtBot windows, but below the system’s pop-up menus.
     /// (Menu bar menus typically live at `.popUpMenu`.)
     static let preferredWindowLevel = NSWindow.Level(rawValue: NSWindow.Level.popUpMenu.rawValue - 4)
 

@@ -54,11 +54,11 @@ function connectReq(
   );
 }
 
-test("accepts openclaw-ios as a valid gateway client id", async () => {
+test("accepts mtbot-ios as a valid gateway client id", async () => {
   const ws = new WebSocket(`ws://127.0.0.1:${port}`);
   await new Promise<void>((resolve) => ws.once("open", resolve));
 
-  const res = await connectReq(ws, { clientId: "openclaw-ios", platform: "ios" });
+  const res = await connectReq(ws, { clientId: "mtbot-ios", platform: "ios" });
   // We don't care if auth fails here; we only care that schema validation accepts the client id.
   // A schema rejection would close the socket before sending a response.
   if (!res.ok) {
@@ -73,11 +73,11 @@ test("accepts openclaw-ios as a valid gateway client id", async () => {
   ws.close();
 });
 
-test("accepts openclaw-android as a valid gateway client id", async () => {
+test("accepts mtbot-android as a valid gateway client id", async () => {
   const ws = new WebSocket(`ws://127.0.0.1:${port}`);
   await new Promise<void>((resolve) => ws.once("open", resolve));
 
-  const res = await connectReq(ws, { clientId: "openclaw-android", platform: "android" });
+  const res = await connectReq(ws, { clientId: "mtbot-android", platform: "android" });
   // We don't care if auth fails here; we only care that schema validation accepts the client id.
   // A schema rejection would close the socket before sending a response.
   if (!res.ok) {

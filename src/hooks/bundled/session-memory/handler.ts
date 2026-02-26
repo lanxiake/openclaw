@@ -9,7 +9,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { MtBotConfig } from "../../../config/config.js";
 import { resolveAgentWorkspaceDir } from "../../../agents/agent-scope.js";
 import { resolveAgentIdFromSessionKey } from "../../../routing/session-key.js";
 import { resolveHookConfig } from "../../config.js";
@@ -74,11 +74,11 @@ const saveSessionToMemory: HookHandler = async (event) => {
     logger.info("hook triggered for /new command");
 
     const context = event.context || {};
-    const cfg = context.cfg as OpenClawConfig | undefined;
+    const cfg = context.cfg as MtBotConfig | undefined;
     const agentId = resolveAgentIdFromSessionKey(event.sessionKey);
     const workspaceDir = cfg
       ? resolveAgentWorkspaceDir(cfg, agentId)
-      : path.join(os.homedir(), ".openclaw", "workspace");
+      : path.join(os.homedir(), ".mtbot", "workspace");
     const memoryDir = path.join(workspaceDir, "memory");
     await fs.mkdir(memoryDir, { recursive: true });
 
@@ -122,8 +122,8 @@ const saveSessionToMemory: HookHandler = async (event) => {
         // Dynamically import the LLM slug generator (avoids module caching issues)
         // When compiled, handler is at dist/hooks/bundled/session-memory/handler.js
         // Going up ../.. puts us at dist/hooks/, so just add llm-slug-generator.js
-        const openclawRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-        const slugGenPath = path.join(openclawRoot, "llm-slug-generator.js");
+        const mtbotRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+        const slugGenPath = path.join(mtbotRoot, "llm-slug-generator.js");
         const { generateSlugViaLLM } = await import(slugGenPath);
 
         // Use LLM to generate a descriptive slug

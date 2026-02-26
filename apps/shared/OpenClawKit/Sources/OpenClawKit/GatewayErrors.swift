@@ -1,4 +1,4 @@
-import OpenClawProtocol
+import MtBotProtocol
 import Foundation
 
 /// Structured error surfaced when the gateway responds with `{ ok: false }`.

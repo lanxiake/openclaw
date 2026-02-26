@@ -1,8 +1,8 @@
-import OpenClawKit
+import MtBotKit
 import Foundation
 import Testing
-@testable import OpenClaw
-@testable import OpenClawIPC
+@testable import MtBot
+@testable import MtBotIPC
 
 private final class FakeWebSocketTask: WebSocketTasking, @unchecked Sendable {
     var state: URLSessionTask.State = .running

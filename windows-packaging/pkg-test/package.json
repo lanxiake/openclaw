@@ -1,12 +1,12 @@
 {
-  "name": "openclaw-pkg-test",
+  "name": "mtbot-pkg-test",
   "version": "1.0.0",
-  "description": "OpenClaw Windows packaging test - pkg",
+  "description": "MtBot Windows packaging test - pkg",
   "bin": "index.js",
   "main": "index.js",
   "scripts": {
     "build": "node build.js",
-    "test": "node dist/openclaw.exe"
+    "test": "node dist/mtbot.exe"
   },
   "dependencies": {
     "fs-extra": "^11.3.3"
@@ -19,7 +19,7 @@
     "assets": [
       "assets/**/*",
       "dist/**/*",
-      "openclaw.mjs"
+      "mtbot.mjs"
     ],
     "scripts": [
       "dist/**/*.js"

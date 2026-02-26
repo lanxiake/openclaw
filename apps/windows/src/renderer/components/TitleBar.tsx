@@ -52,7 +52,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({ isConnected, onToggleSidebar
         </button>
 
         <div className="title-bar-title">
-          <span className="app-name">OpenClaw Assistant</span>
+          <span className="app-name">MtBot Assistant</span>
           <span className={`status-dot ${isConnected ? 'connected' : 'disconnected'}`} />
         </div>
       </div>

@@ -6,10 +6,10 @@ import {
   setAccountEnabledInConfigSection,
   applyAccountNameToChannelSection,
   type ChannelPlugin,
-  type OpenClawConfig,
+  type MtBotConfig,
   type ChannelMeta,
   type PluginRuntime,
-} from "openclaw/plugin-sdk";
+} from "mtbot/plugin-sdk";
 
 import { getWeChatRuntime } from "./runtime.js";
 import {
@@ -23,12 +23,12 @@ import { createGateway, removeGateway, getGateway } from "./gateway.js";
 import type { ResolvedWeChatAccount, WeChatAccountRuntime, WeChatMessage } from "./types.js";
 
 /**
- * Handle inbound WeChat message using OpenClaw's message processing pipeline.
+ * Handle inbound WeChat message using MtBot's message processing pipeline.
  */
 async function handleWeChatInboundMessage(params: {
   message: WeChatMessage;
   account: ResolvedWeChatAccount;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   runtime: PluginRuntime;
   log?: { info: (msg: string) => void; error: (msg: string) => void };
 }): Promise<void> {
@@ -72,7 +72,7 @@ async function handleWeChatInboundMessage(params: {
     `[${account.accountId}] Processing message context: SessionKey=${ctxPayload.SessionKey}, From=${ctxPayload.From}, isGroup=${isGroup}, isAtMe=${message.isAtMe}`,
   );
 
-  // Dispatch message using OpenClaw's message processing pipeline
+  // Dispatch message using MtBot's message processing pipeline
   await runtime.channel.reply.dispatchReplyWithBufferedBlockDispatcher({
     ctx: ctxPayload,
     cfg,
@@ -555,7 +555,7 @@ export const wechatPlugin: ChannelPlugin<ResolvedWeChatAccount> = {
       removeGateway(accountId);
 
       // Clear config if needed
-      const nextCfg = { ...cfg } as OpenClawConfig;
+      const nextCfg = { ...cfg } as MtBotConfig;
       const wechat = getWeChatConfig(cfg);
       let cleared = false;
       let changed = false;

@@ -11,7 +11,7 @@ import type {
   ModelProviderTestResult,
   UpsertModelProviderRequest,
   UpdateModelProviderRequest,
-} from '@openclaw/api-client/admin'
+} from '@mtbot/api-client/admin'
 
 const QUERY_KEY = ['admin', 'model-providers'] as const
 

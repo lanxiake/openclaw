@@ -10,7 +10,7 @@ import {
 } from "../scripts/postinstall.js";
 
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-patch-"));
+  return fs.mkdtempSync(path.join(os.tmpdir(), "mtbot-patch-"));
 }
 
 describe("postinstall patcher", () => {

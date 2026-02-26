@@ -84,7 +84,7 @@
 ## Generated File Structure
 
 ```
-E:\openclaw-workspace\media-organizer-test\organized\
+E:\mtbot-workspace\media-organizer-test\organized\
 ├── index.html          # Gallery viewer
 ├── media_list.json     # Media index (8 files)
 ├── stats.json          # Statistics
@@ -177,6 +177,6 @@ The Media Organizer skill has been successfully created and tested. All componen
 ## Test Output Location
 
 Test files can be found at:
-`E:\openclaw-workspace\media-organizer-test\organized\`
+`E:\mtbot-workspace\media-organizer-test\organized\`
 
 Open `index.html` in a browser to verify the gallery interface.

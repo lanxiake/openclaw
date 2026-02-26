@@ -37,7 +37,7 @@ read_when:
 
 ## Configuration
 
-Set retry policy per provider in `~/.openclaw/openclaw.json`:
+Set retry policy per provider in `~/.mtbot/mtbot.json`:
 
 ```json5
 {

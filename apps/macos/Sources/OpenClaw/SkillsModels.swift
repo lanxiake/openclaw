@@ -1,4 +1,4 @@
-import OpenClawProtocol
+import MtBotProtocol
 import Foundation
 
 struct SkillsStatusReport: Codable {

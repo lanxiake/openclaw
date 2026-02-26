@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import {
   closeDispatcher,
   createPinnedDispatcher,
@@ -61,7 +61,7 @@ const WebFetchSchema = Type.Object({
   ),
 });
 
-type WebFetchConfig = NonNullable<OpenClawConfig["tools"]>["web"] extends infer Web
+type WebFetchConfig = NonNullable<MtBotConfig["tools"]>["web"] extends infer Web
   ? Web extends { fetch?: infer Fetch }
     ? Fetch
     : undefined
@@ -78,7 +78,7 @@ type FirecrawlFetchConfig =
     }
   | undefined;
 
-function resolveFetchConfig(cfg?: OpenClawConfig): WebFetchConfig {
+function resolveFetchConfig(cfg?: MtBotConfig): WebFetchConfig {
   const fetch = cfg?.tools?.web?.fetch;
   if (!fetch || typeof fetch !== "object") {
     return undefined;
@@ -598,7 +598,7 @@ function resolveFirecrawlEndpoint(baseUrl: string): string {
 }
 
 export function createWebFetchTool(options?: {
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
   sandboxed?: boolean;
 }): AnyAgentTool | null {
   const fetch = resolveFetchConfig(options?.config);

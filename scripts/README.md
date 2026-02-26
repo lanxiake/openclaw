@@ -1,6 +1,6 @@
 # Windows 客户端测试脚本使用指南
 
-本目录包含用于测试 Windows 客户端与 OpenClaw Gateway 集成的自动化脚本。
+本目录包含用于测试 Windows 客户端与 MtBot Gateway 集成的自动化脚本。
 
 ## 📋 脚本列表
 
@@ -24,7 +24,7 @@
 
 ### 2. `start-gateway-test.ps1` - 网关启动脚本
 
-启动 OpenClaw Gateway 服务并验证其运行状态。
+启动 MtBot Gateway 服务并验证其运行状态。
 
 **参数**：
 
@@ -209,10 +209,10 @@ Stop-Process -Id <PID> -Force
 Get-Content logs/gateway.log -Tail 100
 
 # 检查网关状态
-pnpm openclaw gateway status
+pnpm mtbot gateway status
 
 # 手动测试健康检查
-pnpm openclaw gateway health
+pnpm mtbot gateway health
 
 # 重新运行测试
 .\scripts\test-windows-client-integration.ps1 -Verbose
@@ -263,10 +263,10 @@ netstat -ano | findstr ":18789"
 
 ### CLI 测试
 
-- [ ] `openclaw gateway status` 正常
-- [ ] `openclaw gateway health` 正常
-- [ ] `openclaw gateway discover` 正常
-- [ ] `openclaw gateway call` 正常
+- [ ] `mtbot gateway status` 正常
+- [ ] `mtbot gateway health` 正常
+- [ ] `mtbot gateway discover` 正常
+- [ ] `mtbot gateway call` 正常
 
 ## 🔧 高级用法
 
@@ -313,7 +313,7 @@ $times = @()
 
 for ($i = 0; $i -lt $iterations; $i++) {
     $start = Get-Date
-    pnpm openclaw gateway health --json | Out-Null
+    pnpm mtbot gateway health --json | Out-Null
     $end = Get-Date
     $times += ($end - $start).TotalMilliseconds
 }
@@ -326,7 +326,7 @@ Write-Host "平均响应时间: $([math]::Round($avgTime, 2)) ms"
 
 - [完整测试方案](../docs/testing/windows-client-gateway-test-plan.md)
 - [Windows 客户端开发指南](../apps/windows/README.md)
-- [OpenClaw Gateway 文档](../docs/gateway/)
+- [MtBot Gateway 文档](../docs/gateway/)
 
 ## 🤝 贡献
 

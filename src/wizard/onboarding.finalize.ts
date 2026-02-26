@@ -19,7 +19,7 @@ import {
 } from "../commands/onboard-helpers.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OnboardOptions } from "../commands/onboard-types.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { resolveGatewayService } from "../daemon/service.js";
 import { isSystemdUserServiceAvailable } from "../daemon/systemd.js";
 import { ensureControlUiAssetsBuilt } from "../infra/control-ui-assets.js";
@@ -36,8 +36,8 @@ import type { WizardPrompter } from "./prompts.js";
 type FinalizeOnboardingOptions = {
   flow: WizardFlow;
   opts: OnboardOptions;
-  baseConfig: OpenClawConfig;
-  nextConfig: OpenClawConfig;
+  baseConfig: MtBotConfig;
+  nextConfig: MtBotConfig;
   workspaceDir: string;
   settings: GatewayWizardSettings;
   prompter: WizardPrompter;
@@ -213,8 +213,8 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
       await prompter.note(
         [
           "Docs:",
-          "https://docs.openclaw.ai/gateway/health",
-          "https://docs.openclaw.ai/gateway/troubleshooting",
+          "https://docs.mtbot.top/gateway/health",
+          "https://docs.mtbot.top/gateway/troubleshooting",
         ].join("\n"),
         "Health check help",
       );
@@ -276,7 +276,7 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
       tokenParam ? `Web UI (with token): ${authedUrl}` : undefined,
       `Gateway WS: ${links.wsUrl}`,
       gatewayStatusLine,
-      "Docs: https://docs.openclaw.ai/web/control-ui",
+      "Docs: https://docs.mtbot.top/web/control-ui",
     ]
       .filter(Boolean)
       .join("\n"),
@@ -304,9 +304,9 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
     await prompter.note(
       [
         "Gateway token: shared auth for the Gateway + Control UI.",
-        "Stored in: ~/.openclaw/openclaw.json (gateway.auth.token) or OPENCLAW_GATEWAY_TOKEN.",
-        "Web UI stores a copy in this browser's localStorage (openclaw.control.settings.v1).",
-        `Get the tokenized link anytime: ${formatCliCommand("openclaw dashboard --no-open")}`,
+        "Stored in: ~/.mtbot/mtbot.json (gateway.auth.token) or MTBOT_GATEWAY_TOKEN.",
+        "Web UI stores a copy in this browser's localStorage (mtbot.control.settings.v1).",
+        `Get the tokenized link anytime: ${formatCliCommand("mtbot dashboard --no-open")}`,
       ].join("\n"),
       "Token",
     );
@@ -336,7 +336,7 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
       if (seededInBackground) {
         await prompter.note(
           `Web UI seeded in the background. Open later with: ${formatCliCommand(
-            "openclaw dashboard --no-open",
+            "mtbot dashboard --no-open",
           )}`,
           "Web UI",
         );
@@ -363,8 +363,8 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
         [
           `Dashboard link (with token): ${authedUrl}`,
           controlUiOpened
-            ? "Opened in your browser. Keep that tab to control OpenClaw."
-            : "Copy/paste this URL in a browser on this machine to control OpenClaw.",
+            ? "Opened in your browser. Keep that tab to control MtBot."
+            : "Copy/paste this URL in a browser on this machine to control MtBot.",
           controlUiOpenHint,
         ]
           .filter(Boolean)
@@ -373,7 +373,7 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
       );
     } else {
       await prompter.note(
-        `When you're ready: ${formatCliCommand("openclaw dashboard --no-open")}`,
+        `When you're ready: ${formatCliCommand("mtbot dashboard --no-open")}`,
         "Later",
       );
     }
@@ -384,13 +384,13 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
   await prompter.note(
     [
       "Back up your agent workspace.",
-      "Docs: https://docs.openclaw.ai/concepts/agent-workspace",
+      "Docs: https://docs.mtbot.top/concepts/agent-workspace",
     ].join("\n"),
     "Workspace backup",
   );
 
   await prompter.note(
-    "Running agents on your computer is risky — harden your setup: https://docs.openclaw.ai/security",
+    "Running agents on your computer is risky — harden your setup: https://docs.mtbot.top/security",
     "Security",
   );
 
@@ -422,8 +422,8 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
       [
         `Dashboard link (with token): ${authedUrl}`,
         controlUiOpened
-          ? "Opened in your browser. Keep that tab to control OpenClaw."
-          : "Copy/paste this URL in a browser on this machine to control OpenClaw.",
+          ? "Opened in your browser. Keep that tab to control MtBot."
+          : "Copy/paste this URL in a browser on this machine to control MtBot.",
         controlUiOpenHint,
       ]
         .filter(Boolean)
@@ -443,33 +443,33 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
           webSearchKey
             ? "API key: stored in config (tools.web.search.apiKey)."
             : "API key: provided via BRAVE_API_KEY env var (Gateway environment).",
-          "Docs: https://docs.openclaw.ai/tools/web",
+          "Docs: https://docs.mtbot.top/tools/web",
         ].join("\n")
       : [
           "If you want your agent to be able to search the web, you’ll need an API key.",
           "",
-          "OpenClaw uses Brave Search for the `web_search` tool. Without a Brave Search API key, web search won’t work.",
+          "MtBot uses Brave Search for the `web_search` tool. Without a Brave Search API key, web search won’t work.",
           "",
           "Set it up interactively:",
-          `- Run: ${formatCliCommand("openclaw configure --section web")}`,
+          `- Run: ${formatCliCommand("mtbot configure --section web")}`,
           "- Enable web_search and paste your Brave Search API key",
           "",
           "Alternative: set BRAVE_API_KEY in the Gateway environment (no config changes).",
-          "Docs: https://docs.openclaw.ai/tools/web",
+          "Docs: https://docs.mtbot.top/tools/web",
         ].join("\n"),
     "Web search (optional)",
   );
 
   await prompter.note(
-    'What now: https://openclaw.ai/showcase ("What People Are Building").',
+    'What now: https://mtbot.top/showcase ("What People Are Building").',
     "What now",
   );
 
   await prompter.outro(
     controlUiOpened
-      ? "Onboarding complete. Dashboard opened with your token; keep that tab to control OpenClaw."
+      ? "Onboarding complete. Dashboard opened with your token; keep that tab to control MtBot."
       : seededInBackground
         ? "Onboarding complete. Web UI seeded in the background; open it anytime with the tokenized link above."
-        : "Onboarding complete. Use the tokenized dashboard link above to control OpenClaw.",
+        : "Onboarding complete. Use the tokenized dashboard link above to control MtBot.",
   );
 }

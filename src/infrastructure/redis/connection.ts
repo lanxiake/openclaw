@@ -34,7 +34,7 @@ export interface RedisConfig {
   maxRetries?: number;
   /** 重试延迟毫秒数 (默认 1000) */
   retryDelayMs?: number;
-  /** 键前缀 (默认 "openclaw:") */
+  /** 键前缀 (默认 "mtbot:") */
   keyPrefix?: string;
   /** 是否启用 TLS */
   tls?: boolean;
@@ -59,7 +59,7 @@ export function getRedisConfigFromEnv(): RedisConfig {
     commandTimeoutMs: parseInt(process.env["REDIS_COMMAND_TIMEOUT_MS"] || "5000", 10),
     maxRetries: parseInt(process.env["REDIS_MAX_RETRIES"] || "3", 10),
     retryDelayMs: parseInt(process.env["REDIS_RETRY_DELAY_MS"] || "1000", 10),
-    keyPrefix: process.env["REDIS_KEY_PREFIX"] || "openclaw:",
+    keyPrefix: process.env["REDIS_KEY_PREFIX"] || "mtbot:",
     tls: process.env["REDIS_TLS"] === "true",
   };
 }
@@ -170,8 +170,8 @@ function setupEventHandlers(redis: RedisType): void {
 export function getRedis(): RedisType {
   // 检查是否处于 Mock 模式（用于单元测试）
   const g = globalThis as Record<string, unknown>;
-  if (g.__OPENCLAW_MOCK_ENABLED__ && g.__OPENCLAW_MOCK_REDIS__) {
-    return g.__OPENCLAW_MOCK_REDIS__ as RedisType;
+  if (g.__MTBOT_MOCK_ENABLED__ && g.__MTBOT_MOCK_REDIS__) {
+    return g.__MTBOT_MOCK_REDIS__ as RedisType;
   }
 
   if (!redisInstance) {

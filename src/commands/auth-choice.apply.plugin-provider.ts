@@ -1,4 +1,4 @@
-import { resolveOpenClawAgentDir } from "../agents/agent-paths.js";
+import { resolveMtBotAgentDir } from "../agents/agent-paths.js";
 import {
   resolveDefaultAgentId,
   resolveAgentDir,
@@ -7,7 +7,7 @@ import {
 import { upsertAuthProfile } from "../agents/auth-profiles.js";
 import { normalizeProviderId } from "../agents/model-selection.js";
 import { resolveDefaultAgentWorkspaceDir } from "../agents/workspace.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { enablePluginInConfig } from "../plugins/enable.js";
 import { resolvePluginProviders } from "../plugins/providers.js";
 import type { ProviderAuthMethod, ProviderPlugin } from "../plugins/types.js";
@@ -74,7 +74,7 @@ function mergeConfigPatch<T>(base: T, patch: unknown): T {
   return next as T;
 }
 
-function applyDefaultModel(cfg: OpenClawConfig, model: string): OpenClawConfig {
+function applyDefaultModel(cfg: MtBotConfig, model: string): MtBotConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[model] = models[model] ?? {};
 
@@ -119,7 +119,7 @@ export async function applyAuthChoicePluginProvider(
   const defaultAgentId = resolveDefaultAgentId(nextConfig);
   const agentDir =
     params.agentDir ??
-    (agentId === defaultAgentId ? resolveOpenClawAgentDir() : resolveAgentDir(nextConfig, agentId));
+    (agentId === defaultAgentId ? resolveMtBotAgentDir() : resolveAgentDir(nextConfig, agentId));
   const workspaceDir =
     resolveAgentWorkspaceDir(nextConfig, agentId) ?? resolveDefaultAgentWorkspaceDir();
 

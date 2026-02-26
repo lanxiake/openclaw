@@ -165,10 +165,10 @@ function build() {
 
   // 2. 复制用户配置到打包目录
   console.log("\n📋 复制用户配置...");
-  const userConfigDir = path.join(os.homedir(), ".openclaw");
-  const userConfigPath = path.join(userConfigDir, "openclaw.json");
+  const userConfigDir = path.join(os.homedir(), ".mtbot");
+  const userConfigPath = path.join(userConfigDir, "mtbot.json");
   const bundledConfigDir = path.join(__dirname, "bundled-config");
-  const bundledConfigPath = path.join(bundledConfigDir, "openclaw.json");
+  const bundledConfigPath = path.join(bundledConfigDir, "mtbot.json");
 
   if (!fs.existsSync(bundledConfigDir)) {
     fs.mkdirSync(bundledConfigDir, { recursive: true });
@@ -198,50 +198,50 @@ function build() {
     console.log("✅ 已创建默认配置（随机生成 Gateway Token）");
   }
 
-  // 2.5 复制 OpenClaw 核心文件到打包目录
-  console.log("\n📦 复制 OpenClaw 核心文件...");
-  const openclawProjectRoot = path.resolve(__dirname, "..", "..");
-  const bundledOpenclawDir = path.join(__dirname, "bundled-openclaw");
+  // 2.5 复制 MtBot 核心文件到打包目录
+  console.log("\n📦 复制 MtBot 核心文件...");
+  const mtbotProjectRoot = path.resolve(__dirname, "..", "..");
+  const bundledMtbotDir = path.join(__dirname, "bundled-mtbot");
 
-  // 清理旧的 bundled-openclaw 目录
-  if (fs.existsSync(bundledOpenclawDir)) {
-    fs.rmSync(bundledOpenclawDir, { recursive: true, force: true });
+  // 清理旧的 bundled-mtbot 目录
+  if (fs.existsSync(bundledMtbotDir)) {
+    fs.rmSync(bundledMtbotDir, { recursive: true, force: true });
   }
-  fs.mkdirSync(bundledOpenclawDir, { recursive: true });
+  fs.mkdirSync(bundledMtbotDir, { recursive: true });
 
-  // 复制 openclaw.mjs 入口文件
-  const openclawMjsPath = path.join(openclawProjectRoot, "openclaw.mjs");
-  if (fs.existsSync(openclawMjsPath)) {
-    fs.copyFileSync(openclawMjsPath, path.join(bundledOpenclawDir, "openclaw.mjs"));
-    console.log("✅ 已复制 openclaw.mjs");
+  // 复制 mtbot.mjs 入口文件
+  const mtbotMjsPath = path.join(mtbotProjectRoot, "mtbot.mjs");
+  if (fs.existsSync(mtbotMjsPath)) {
+    fs.copyFileSync(mtbotMjsPath, path.join(bundledMtbotDir, "mtbot.mjs"));
+    console.log("✅ 已复制 mtbot.mjs");
   } else {
-    console.log("⚠️  未找到 openclaw.mjs，跳过 OpenClaw 核心文件复制");
+    console.log("⚠️  未找到 mtbot.mjs，跳过 MtBot 核心文件复制");
   }
 
   // 复制 dist 目录
-  const openclawDistDir = path.join(openclawProjectRoot, "dist");
-  const bundledDistDir = path.join(bundledOpenclawDir, "dist");
-  if (fs.existsSync(openclawDistDir)) {
-    console.log("📂 正在复制 OpenClaw dist 目录（这可能需要一些时间）...");
-    copyDirSync(openclawDistDir, bundledDistDir);
-    console.log("✅ 已复制 OpenClaw dist 目录");
+  const mtbotDistDir = path.join(mtbotProjectRoot, "dist");
+  const bundledDistDir = path.join(bundledMtbotDir, "dist");
+  if (fs.existsSync(mtbotDistDir)) {
+    console.log("📂 正在复制 MtBot dist 目录（这可能需要一些时间）...");
+    copyDirSync(mtbotDistDir, bundledDistDir);
+    console.log("✅ 已复制 MtBot dist 目录");
   } else {
-    console.log("⚠️  未找到 OpenClaw dist 目录");
+    console.log("⚠️  未找到 MtBot dist 目录");
   }
 
   // 复制 package.json（用于依赖信息）
-  const openclawPackageJson = path.join(openclawProjectRoot, "package.json");
-  if (fs.existsSync(openclawPackageJson)) {
-    fs.copyFileSync(openclawPackageJson, path.join(bundledOpenclawDir, "package.json"));
+  const mtbotPackageJson = path.join(mtbotProjectRoot, "package.json");
+  if (fs.existsSync(mtbotPackageJson)) {
+    fs.copyFileSync(mtbotPackageJson, path.join(bundledMtbotDir, "package.json"));
     console.log("✅ 已复制 package.json");
   }
 
   // 复制 node_modules（只复制 dependencies 中的包）
-  const openclawNodeModules = path.join(openclawProjectRoot, "node_modules");
-  const bundledNodeModules = path.join(bundledOpenclawDir, "node_modules");
-  if (fs.existsSync(openclawNodeModules)) {
+  const mtbotNodeModules = path.join(mtbotProjectRoot, "node_modules");
+  const bundledNodeModules = path.join(bundledMtbotDir, "node_modules");
+  if (fs.existsSync(mtbotNodeModules)) {
     console.log("📂 正在复制 node_modules（这可能需要较长时间）...");
-    copyDirSync(openclawNodeModules, bundledNodeModules);
+    copyDirSync(mtbotNodeModules, bundledNodeModules);
     console.log("✅ 已复制 node_modules");
   } else {
     console.log("⚠️  未找到 node_modules 目录");

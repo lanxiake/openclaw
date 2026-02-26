@@ -6,7 +6,7 @@
 
 ## 项目信息
 
-- 项目名称: OpenClaw
+- 项目名称: MtBot
 - 分支: feat/ai-assistant-platform
 - 最新提交: 87488355c (feat(testing): complete auth service integration testing)
 

@@ -7,7 +7,7 @@ read_when:
 
 # Skills Config
 
-All skills-related configuration lives under `skills` in `~/.openclaw/openclaw.json`.
+All skills-related configuration lives under `skills` in `~/.mtbot/mtbot.json`.
 
 ```json5
 {
@@ -59,7 +59,7 @@ Per-skill fields:
 ## Notes
 
 - Keys under `entries` map to the skill name by default. If a skill defines
-  `metadata.openclaw.skillKey`, use that key instead.
+  `metadata.mtbot.skillKey`, use that key instead.
 - Changes to skills are picked up on the next agent turn when the watcher is enabled.
 
 ### Sandboxed skills + env vars

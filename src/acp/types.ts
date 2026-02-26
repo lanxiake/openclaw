@@ -24,7 +24,7 @@ export type AcpServerOptions = {
 };
 
 export const ACP_AGENT_INFO = {
-  name: "openclaw-acp",
-  title: "OpenClaw ACP Gateway",
+  name: "mtbot-acp",
+  title: "MtBot ACP Gateway",
   version: VERSION,
 };

@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "OpenClaw",
+  "name": "MtBot",
   "theme": "mint",
   "logo": {
     "light": "/assets/pixel-lobster.svg",
@@ -13,11 +13,11 @@
   "topbarLinks": [
     {
       "name": "GitHub",
-      "url": "https://github.com/openclaw/openclaw"
+      "url": "https://github.com/mtbot/mtbot"
     },
     {
       "name": "Releases",
-      "url": "https://github.com/openclaw/openclaw/releases"
+      "url": "https://github.com/mtbot/mtbot/releases"
     }
   ],
   "redirects": [
@@ -359,15 +359,15 @@
     },
     {
       "source": "/clawd",
-      "destination": "/start/openclaw"
+      "destination": "/start/mtbot"
     },
     {
       "source": "/start/clawd",
-      "destination": "/start/openclaw"
+      "destination": "/start/mtbot"
     },
     {
       "source": "/start/clawd/",
-      "destination": "/start/openclaw"
+      "destination": "/start/mtbot"
     },
     {
       "source": "/clawhub",
@@ -848,7 +848,7 @@
           "start/wizard",
           "start/setup",
           "start/pairing",
-          "start/openclaw",
+          "start/mtbot",
           "start/showcase",
           "start/hubs",
           "start/onboarding",

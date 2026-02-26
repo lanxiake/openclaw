@@ -1,5 +1,5 @@
 #!/bin/bash
-# OpenClaw 快速验证脚本 (Bash)
+# MtBot 快速验证脚本 (Bash)
 #
 # 用于快速验证项目核心功能
 #
@@ -39,7 +39,7 @@ done
 
 echo ""
 echo -e "${CYAN}========================================"
-echo "  OpenClaw Quick Verification Script"
+echo "  MtBot Quick Verification Script"
 echo -e "========================================${NC}"
 echo ""
 
@@ -137,7 +137,7 @@ fi
 # Step 6: 网关健康检查
 if [ "$SKIP_GATEWAY" = false ]; then
     log_step "Step 6: Testing gateway health..."
-    if pnpm openclaw health > /tmp/health.log 2>&1; then
+    if pnpm mtbot health > /tmp/health.log 2>&1; then
         log_ok "Gateway health check passed"
     else
         log_warn "Gateway health check failed (gateway may not be running)"

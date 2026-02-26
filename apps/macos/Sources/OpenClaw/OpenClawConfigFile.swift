@@ -1,19 +1,19 @@
-import OpenClawProtocol
+import MtBotProtocol
 import Foundation
 
-enum OpenClawConfigFile {
-    private static let logger = Logger(subsystem: "ai.openclaw", category: "config")
+enum MtBotConfigFile {
+    private static let logger = Logger(subsystem: "com.yunkun.mtbot", category: "config")
 
     static func url() -> URL {
-        OpenClawPaths.configURL
+        MtBotPaths.configURL
     }
 
     static func stateDirURL() -> URL {
-        OpenClawPaths.stateDirURL
+        MtBotPaths.stateDirURL
     }
 
     static func defaultWorkspaceURL() -> URL {
-        OpenClawPaths.workspaceURL
+        MtBotPaths.workspaceURL
     }
 
     static func loadDict() -> [String: Any] {

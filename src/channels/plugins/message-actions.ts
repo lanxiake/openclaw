@@ -1,10 +1,10 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
 
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { getChannelPlugin, listChannelPlugins } from "./index.js";
 import type { ChannelMessageActionContext, ChannelMessageActionName } from "./types.js";
 
-export function listChannelMessageActions(cfg: OpenClawConfig): ChannelMessageActionName[] {
+export function listChannelMessageActions(cfg: MtBotConfig): ChannelMessageActionName[] {
   const actions = new Set<ChannelMessageActionName>(["send", "broadcast"]);
   for (const plugin of listChannelPlugins()) {
     const list = plugin.actions?.listActions?.({ cfg });
@@ -18,7 +18,7 @@ export function listChannelMessageActions(cfg: OpenClawConfig): ChannelMessageAc
   return Array.from(actions);
 }
 
-export function supportsChannelMessageButtons(cfg: OpenClawConfig): boolean {
+export function supportsChannelMessageButtons(cfg: MtBotConfig): boolean {
   for (const plugin of listChannelPlugins()) {
     if (plugin.actions?.supportsButtons?.({ cfg })) {
       return true;
@@ -27,7 +27,7 @@ export function supportsChannelMessageButtons(cfg: OpenClawConfig): boolean {
   return false;
 }
 
-export function supportsChannelMessageCards(cfg: OpenClawConfig): boolean {
+export function supportsChannelMessageCards(cfg: MtBotConfig): boolean {
   for (const plugin of listChannelPlugins()) {
     if (plugin.actions?.supportsCards?.({ cfg })) {
       return true;

@@ -13,7 +13,7 @@ import {
   resetGatewayMemoryService,
 } from "./memory-service.js";
 
-// 模拟 OpenClaw 配置
+// 模拟 MtBot 配置
 const mockConfig = {
   // 最小化配置
 };
@@ -36,7 +36,7 @@ describe("GatewayMemoryService", () => {
   describe("生命周期", () => {
     it("应该创建服务实例", () => {
       service = new GatewayMemoryService({
-        openclawConfig: mockConfig as never,
+        mtbotConfig: mockConfig as never,
         agentId: "test-agent",
         useSQLiteKnowledge: false, // 禁用 SQLite 适配器以避免依赖
       });
@@ -47,7 +47,7 @@ describe("GatewayMemoryService", () => {
 
     it("应该初始化服务", async () => {
       service = new GatewayMemoryService({
-        openclawConfig: mockConfig as never,
+        mtbotConfig: mockConfig as never,
         agentId: "test-agent",
         useSQLiteKnowledge: false,
       });
@@ -59,7 +59,7 @@ describe("GatewayMemoryService", () => {
 
     it("应该关闭服务", async () => {
       service = new GatewayMemoryService({
-        openclawConfig: mockConfig as never,
+        mtbotConfig: mockConfig as never,
         agentId: "test-agent",
         useSQLiteKnowledge: false,
       });
@@ -72,7 +72,7 @@ describe("GatewayMemoryService", () => {
 
     it("应该能重复初始化", async () => {
       service = new GatewayMemoryService({
-        openclawConfig: mockConfig as never,
+        mtbotConfig: mockConfig as never,
         agentId: "test-agent",
         useSQLiteKnowledge: false,
       });
@@ -84,7 +84,7 @@ describe("GatewayMemoryService", () => {
 
     it("应该能重复关闭", async () => {
       service = new GatewayMemoryService({
-        openclawConfig: mockConfig as never,
+        mtbotConfig: mockConfig as never,
         agentId: "test-agent",
         useSQLiteKnowledge: false,
       });
@@ -99,7 +99,7 @@ describe("GatewayMemoryService", () => {
   describe("记忆管理器访问", () => {
     beforeEach(async () => {
       service = new GatewayMemoryService({
-        openclawConfig: mockConfig as never,
+        mtbotConfig: mockConfig as never,
         agentId: "test-agent",
         useSQLiteKnowledge: false,
       });
@@ -113,7 +113,7 @@ describe("GatewayMemoryService", () => {
 
     it("未初始化时访问管理器应抛出错误", async () => {
       const uninitializedService = new GatewayMemoryService({
-        openclawConfig: mockConfig as never,
+        mtbotConfig: mockConfig as never,
         agentId: "test-agent",
         useSQLiteKnowledge: false,
       });
@@ -125,7 +125,7 @@ describe("GatewayMemoryService", () => {
   describe("健康检查", () => {
     it("应该返回健康状态", async () => {
       service = new GatewayMemoryService({
-        openclawConfig: mockConfig as never,
+        mtbotConfig: mockConfig as never,
         agentId: "test-agent",
         useSQLiteKnowledge: false,
       });
@@ -139,7 +139,7 @@ describe("GatewayMemoryService", () => {
 
     it("未初始化时应返回未初始化状态", async () => {
       service = new GatewayMemoryService({
-        openclawConfig: mockConfig as never,
+        mtbotConfig: mockConfig as never,
         agentId: "test-agent",
         useSQLiteKnowledge: false,
       });
@@ -152,7 +152,7 @@ describe("GatewayMemoryService", () => {
   describe("便捷方法", () => {
     beforeEach(async () => {
       service = new GatewayMemoryService({
-        openclawConfig: mockConfig as never,
+        mtbotConfig: mockConfig as never,
         agentId: "test-agent",
         useSQLiteKnowledge: false,
       });
@@ -196,7 +196,7 @@ describe("全局服务管理", () => {
 
   it("首次调用时应创建服务", () => {
     const service = getGatewayMemoryService({
-      openclawConfig: {} as never,
+      mtbotConfig: {} as never,
       agentId: "test",
       useSQLiteKnowledge: false,
     });
@@ -205,7 +205,7 @@ describe("全局服务管理", () => {
 
   it("重复调用应返回同一实例", () => {
     const service1 = getGatewayMemoryService({
-      openclawConfig: {} as never,
+      mtbotConfig: {} as never,
       agentId: "test",
       useSQLiteKnowledge: false,
     });
@@ -219,7 +219,7 @@ describe("全局服务管理", () => {
 
   it("应该初始化全局服务", async () => {
     const service = await initializeGatewayMemoryService({
-      openclawConfig: {} as never,
+      mtbotConfig: {} as never,
       agentId: "test",
       useSQLiteKnowledge: false,
     });
@@ -228,7 +228,7 @@ describe("全局服务管理", () => {
 
   it("应该关闭全局服务", async () => {
     await initializeGatewayMemoryService({
-      openclawConfig: {} as never,
+      mtbotConfig: {} as never,
       agentId: "test",
       useSQLiteKnowledge: false,
     });

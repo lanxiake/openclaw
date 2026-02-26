@@ -6,7 +6,7 @@
  * 使用方式:
  *   pnpm tsx scripts/init-memory-system.ts
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import { config } from "dotenv";
@@ -93,7 +93,7 @@ function buildMemoryConfig(): MemoryManagerConfig {
  */
 async function testMemorySystem(): Promise<void> {
   console.log("\n========================================");
-  console.log("初始化 OpenClaw 记忆系统");
+  console.log("初始化 MtBot 记忆系统");
   console.log("========================================\n");
 
   // 1. 构建配置
@@ -228,7 +228,7 @@ async function testMemorySystem(): Promise<void> {
     }
 
     // 上传测试文件
-    const testData = Buffer.from("Hello, OpenClaw Memory System!");
+    const testData = Buffer.from("Hello, MtBot Memory System!");
     const objectName = `test-file-${Date.now()}.txt`;
     await manager.storage.upload("test-bucket", objectName, testData, {
       contentType: "text/plain",

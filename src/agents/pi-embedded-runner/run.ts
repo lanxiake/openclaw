@@ -3,7 +3,7 @@ import type { ThinkLevel } from "../../auto-reply/thinking.js";
 import { enqueueCommandInLane } from "../../process/command-queue.js";
 import { resolveUserPath } from "../../utils.js";
 import { isMarkdownCapableMessageChannel } from "../../utils/message-channel.js";
-import { resolveOpenClawAgentDir } from "../agent-paths.js";
+import { resolveMtBotAgentDir } from "../agent-paths.js";
 import { loadDbAuthProfileStore, mergeAuthStores } from "../auth-profiles/db-store.js";
 import {
   isProfileInCooldown,
@@ -26,7 +26,7 @@ import {
   type ResolvedProviderAuth,
 } from "../model-auth.js";
 import { normalizeProviderId } from "../model-selection.js";
-import { ensureOpenClawModelsJson } from "../models-config.js";
+import { ensureMtBotModelsJson } from "../models-config.js";
 import {
   classifyFailoverReason,
   formatAssistantErrorText,
@@ -97,10 +97,10 @@ export async function runEmbeddedPiAgent(
 
       const provider = (params.provider ?? DEFAULT_PROVIDER).trim() || DEFAULT_PROVIDER;
       const modelId = (params.model ?? DEFAULT_MODEL).trim() || DEFAULT_MODEL;
-      const agentDir = params.agentDir ?? resolveOpenClawAgentDir();
+      const agentDir = params.agentDir ?? resolveMtBotAgentDir();
       const fallbackConfigured =
         (params.config?.agents?.defaults?.model?.fallbacks?.length ?? 0) > 0;
-      await ensureOpenClawModelsJson(params.config, agentDir);
+      await ensureMtBotModelsJson(params.config, agentDir);
 
       const { model, error, authStorage, modelRegistry } = resolveModel(
         provider,

@@ -1,6 +1,6 @@
-import OpenClawProtocol
+import MtBotProtocol
 import Testing
-@testable import OpenClaw
+@testable import MtBot
 
 @Suite struct InstancesStoreTests {
     @Test
@@ -8,7 +8,7 @@ import Testing
     func presenceEventPayloadDecodesViaJSONEncoder() {
         // Build a payload that mirrors the gateway's presence event shape:
         // { "presence": [ PresenceEntry ] }
-        let entry: [String: OpenClawProtocol.AnyCodable] = [
+        let entry: [String: MtBotProtocol.AnyCodable] = [
             "host": .init("gw"),
             "ip": .init("10.0.0.1"),
             "version": .init("2.0.0"),
@@ -18,10 +18,10 @@ import Testing
             "text": .init("Gateway node"),
             "ts": .init(1_730_000_000),
         ]
-        let payloadMap: [String: OpenClawProtocol.AnyCodable] = [
-            "presence": .init([OpenClawProtocol.AnyCodable(entry)]),
+        let payloadMap: [String: MtBotProtocol.AnyCodable] = [
+            "presence": .init([MtBotProtocol.AnyCodable(entry)]),
         ]
-        let payload = OpenClawProtocol.AnyCodable(payloadMap)
+        let payload = MtBotProtocol.AnyCodable(payloadMap)
 
         let store = InstancesStore(isPreview: true)
         store.handlePresenceEventPayload(payload)

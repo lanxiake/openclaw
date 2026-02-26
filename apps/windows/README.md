@@ -1,6 +1,6 @@
 # Windows Desktop App - Windows 桌面客户端
 
-OpenClaw Windows 桌面客户端是基于 Electron 的跨平台桌面应用，为用户提供本地 AI 助手服务，支持自然语言交互、技能执行、系统监控和远程控制。
+MtBot Windows 桌面客户端是基于 Electron 的跨平台桌面应用，为用户提供本地 AI 助手服务，支持自然语言交互、技能执行、系统监控和远程控制。
 
 ## 功能特性
 
@@ -32,7 +32,7 @@ OpenClaw Windows 桌面客户端是基于 Electron 的跨平台桌面应用，�
 在项目根目录：
 
 ```bash
-cd d:\AI-workspace\openclaw
+cd d:\AI-workspace\mtbot
 pnpm gateway:watch
 ```
 
@@ -43,7 +43,7 @@ pnpm gateway:watch
 在新的终端窗口：
 
 ```bash
-cd d:\AI-workspace\openclaw\apps\windows
+cd d:\AI-workspace\mtbot\apps\windows
 pnpm dev
 ```
 
@@ -55,7 +55,7 @@ pnpm dev
 
 **查看日志**：
 - 主窗口日志：终端输出
-- 文件日志：`%APPDATA%\openclaw-assistant-windows\logs\`
+- 文件日志：`%APPDATA%\mtbot-assistant-windows\logs\`
 
 ### 3. 测试打包版本
 
@@ -206,7 +206,7 @@ pnpm clean:deep
 2. **手动清理**
    ```bash
    # 手动终止进程
-   taskkill /F /IM "OpenClaw Assistant.exe"
+   taskkill /F /IM "MtBot Assistant.exe"
    taskkill /F /IM electron.exe
    
    # 清理旧文件
@@ -263,7 +263,7 @@ npm config set electron_builder_binaries_mirror https://npmmirror.com/mirrors/el
 **Q: 打包后的应用无法启动？**
 A: 
 - 检查是否缺少 VC++ 运行库
-- 查看应用日志：`%APPDATA%\openclaw-assistant\logs`
+- 查看应用日志：`%APPDATA%\mtbot-assistant\logs`
 - 尝试以管理员权限运行
 
 **Q: 如何调试打包后的应用？**
@@ -273,7 +273,7 @@ A:
 pnpm package:dir
 
 # 运行未打包的版本
-.\release\win-unpacked\"OpenClaw Assistant.exe" --inspect
+.\release\win-unpacked\"MtBot Assistant.exe" --inspect
 ```
 
 **Q: 如何跳过代码签名？**
@@ -395,8 +395,8 @@ ipcMain.handle('skill:execute', async (event, { skillId, params }) => {
 {
   "publish": {
     "provider": "github",
-    "owner": "openclaw",
-    "repo": "openclaw"
+    "owner": "mtbot",
+    "repo": "mtbot"
   }
 }
 ```
@@ -442,7 +442,7 @@ ipcMain.handle('skill:execute', async (event, { skillId, params }) => {
 - 主进程调试：使用 `--inspect` 参数启动
 - 渲染进程调试：打开 DevTools (Ctrl+Shift+I)
 - IPC 通信调试：在 preload 中添加日志
-- 技能执行调试：查看 `~/.openclaw/logs/skills.log`
+- 技能执行调试：查看 `~/.mtbot/logs/skills.log`
 
 ## 部署与分发
 
@@ -466,7 +466,7 @@ export CSC_KEY_PASSWORD=your_password
 
 ## 相关文档
 
-- [OpenClaw 主项目](../../README.md)
+- [MtBot 主项目](../../README.md)
 - [技能开发指南](../../docs/skills/)
 - [API 文档](../../docs/api/)
 - [部署指南](../../docs/deployment/)

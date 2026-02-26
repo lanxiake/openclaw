@@ -60,7 +60,7 @@ scripts\package-as-admin.bat
 
 2. **切换到项目目录**
    ```powershell
-   cd d:\AI-workspace\openclaw\apps\windows
+   cd d:\AI-workspace\mtbot\apps\windows
    ```
 
 3. **执行打包命令**
@@ -136,8 +136,8 @@ scripts\fix-package-error.bat
 成功后，在 `release/` 目录下会生成：
 
 ### NSIS 安装包
-- `OpenClaw Assistant-Setup-0.1.0-x64.exe` - 64位安装包
-- `OpenClaw Assistant-Setup-0.1.0-ia32.exe` - 32位安装包
+- `MtBot Assistant-Setup-0.1.0-x64.exe` - 64位安装包
+- `MtBot Assistant-Setup-0.1.0-ia32.exe` - 32位安装包
 
 **特点**：
 - 标准 Windows 安装程序
@@ -146,7 +146,7 @@ scripts\fix-package-error.bat
 - 支持卸载
 
 ### 便携版
-- `OpenClaw Assistant-0.1.0-portable.exe`
+- `MtBot Assistant-0.1.0-portable.exe`
 
 **特点**：
 - 单文件可执行
@@ -154,7 +154,7 @@ scripts\fix-package-error.bat
 - 适合 U 盘携带
 
 ### ZIP 压缩包
-- `OpenClaw Assistant-0.1.0-x64.zip`
+- `MtBot Assistant-0.1.0-x64.zip`
 
 **特点**：
 - 绿色版
@@ -187,7 +187,7 @@ Fatal error: Unable to commit changes
 **解决**：
 ```bash
 # 1. 手动终止进程
-taskkill /F /IM "OpenClaw Assistant.exe"
+taskkill /F /IM "MtBot Assistant.exe"
 taskkill /F /IM electron.exe
 
 # 2. 清理旧文件
@@ -231,7 +231,7 @@ scripts\add-defender-exclusion.ps1 -Remove
 `scripts\package-windows.js` 自动执行以下步骤：
 
 1. **清理环境**
-   - 终止相关进程（electron.exe, OpenClaw Assistant.exe, rcedit-x64.exe）
+   - 终止相关进程（electron.exe, MtBot Assistant.exe, rcedit-x64.exe）
    - 删除旧的 `release/` 和 `out/` 目录
    - 清理 `rcedit` 缓存
 

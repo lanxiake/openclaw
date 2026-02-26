@@ -20,10 +20,10 @@ import type {
 const MOCK_AGENTS: CustomAgent[] = [
   {
     id: 'agent-main',
-    name: 'OpenClaw 助手',
+    name: 'MtBot 助手',
     description: '默认通用 AI 助手，支持对话、工具调用、文件操作等',
-    systemPrompt: '你是 OpenClaw 的默认 AI 助手，帮助用户完成各种任务。',
-    identity: { name: 'OpenClaw', emoji: '🤖', theme: 'blue' },
+    systemPrompt: '你是 MtBot 的默认 AI 助手，帮助用户完成各种任务。',
+    identity: { name: 'MtBot', emoji: '🤖', theme: 'blue' },
     model: { primary: 'anthropic/claude-opus-4-6' },
     tools: { autoApprove: ['search', 'calculator'] },
     sandbox: { mode: 'non-main', workspaceAccess: 'rw' },

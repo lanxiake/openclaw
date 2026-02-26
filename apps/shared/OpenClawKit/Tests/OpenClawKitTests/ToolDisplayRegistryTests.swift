@@ -1,10 +1,10 @@
-import OpenClawKit
+import MtBotKit
 import Foundation
 import Testing
 
 @Suite struct ToolDisplayRegistryTests {
     @Test func loadsToolDisplayConfigFromBundle() {
-        let url = OpenClawKitResources.bundle.url(forResource: "tool-display", withExtension: "json")
+        let url = MtBotKitResources.bundle.url(forResource: "tool-display", withExtension: "json")
         #expect(url != nil)
     }
 

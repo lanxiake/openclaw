@@ -11,7 +11,7 @@
  */
 
 import { Type } from "@sinclair/typebox";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { optionalStringEnum, stringEnum } from "../schema/typebox.js";
 import { type AnyAgentTool, jsonResult, readStringParam } from "./common.js";
 import { callGatewayTool, type GatewayCallOptions } from "./gateway.js";
@@ -76,7 +76,7 @@ const SkillCreateToolSchema = Type.Object({
  */
 export function createSkillCreateTool(options?: {
   agentSessionKey?: string;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
 }): AnyAgentTool {
   return {
     label: "Skill Create",

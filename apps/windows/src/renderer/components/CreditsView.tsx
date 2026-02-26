@@ -273,7 +273,7 @@ export const CreditsView: React.FC = () => {
    */
   const handleCopyInvite = async () => {
     const userId = balance?.userId || '你的用户 ID'
-    const inviteText = `我正在使用 OpenClaw AI 助手，推荐你也试试！注册时填写我的邀请码 ${userId}，我们都能获得积分奖励。`
+    const inviteText = `我正在使用 MtBot AI 助手，推荐你也试试！注册时填写我的邀请码 ${userId}，我们都能获得积分奖励。`
 
     try {
       await window.electronAPI.clipboard.writeText(inviteText)

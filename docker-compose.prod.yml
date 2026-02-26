@@ -1,4 +1,4 @@
-# OpenClaw 生产环境 Docker Compose 配置
+# MtBot 生产环境 Docker Compose 配置
 #
 # 包含所有应用服务（API Server, Gateway）
 #
@@ -22,15 +22,15 @@ services:
     build:
       context: .
       dockerfile: apps/api-server/Dockerfile
-    image: openclaw-api-server:latest
-    container_name: openclaw-api-server
+    image: mtbot-api-server:latest
+    container_name: mtbot-api-server
     restart: unless-stopped
     env_file:
       - .env.production
     environment:
       NODE_ENV: production
       # 数据库连接（使用 Docker 网络内部地址）
-      DATABASE_URL: postgresql://${POSTGRES_USER:-openclaw_admin}:${POSTGRES_PASSWORD:-Oc@2026!Pg#Secure}@postgres:5432/${POSTGRES_DB:-openclaw_prod}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mtbot_admin}:${POSTGRES_PASSWORD:-Oc@2026!Pg#Secure}@postgres:5432/${POSTGRES_DB:-mtbot_prod}
       # Redis 连接
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -38,7 +38,7 @@ services:
       # MinIO 连接
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-openclaw_minio}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-mtbot_minio}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-Oc@2026!Mn#Secure}
     ports:
       - "${API_SERVER_PORT:-3000}:3000"
@@ -50,7 +50,7 @@ services:
       minio:
         condition: service_healthy
     networks:
-      - openclaw-network
+      - mtbot-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -71,8 +71,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: openclaw-gateway:latest
-    container_name: openclaw-gateway
+    image: mtbot-gateway:latest
+    container_name: mtbot-gateway
     restart: unless-stopped
     env_file:
       - .env.production
@@ -81,14 +81,14 @@ services:
       HOME: /home/node
       TERM: xterm-256color
       # 数据库连接
-      DATABASE_URL: postgresql://${POSTGRES_USER:-openclaw_admin}:${POSTGRES_PASSWORD:-Oc@2026!Pg#Secure}@postgres:5432/${POSTGRES_DB:-openclaw_prod}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mtbot_admin}:${POSTGRES_PASSWORD:-Oc@2026!Pg#Secure}@postgres:5432/${POSTGRES_DB:-mtbot_prod}
       # Redis 连接
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-Oc@2026!Rd#Secure}
       # Gateway 配置
-      OPENCLAW_GATEWAY_TOKEN: ${GATEWAY_TOKEN}
-      OPENCLAW_SKIP_CHANNELS: 1
+      MTBOT_GATEWAY_TOKEN: ${GATEWAY_TOKEN}
+      MTBOT_SKIP_CHANNELS: 1
       CLAWDBOT_SKIP_CHANNELS: 1
     ports:
       - "${GATEWAY_PORT:-18789}:18789"
@@ -99,7 +99,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - openclaw-network
+      - mtbot-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
       interval: 30s
@@ -107,8 +107,8 @@ services:
       retries: 3
       start_period: 40s
     volumes:
-      - ./logs/gateway:/home/node/.openclaw/logs
-      - gateway-workspace:/home/node/.openclaw/workspace
+      - ./logs/gateway:/home/node/.mtbot/logs
+      - gateway-workspace:/home/node/.mtbot/workspace
     deploy:
       resources:
         limits:
@@ -128,11 +128,11 @@ services:
 
 # ==================== 网络配置 ====================
 networks:
-  openclaw-network:
+  mtbot-network:
     external: true
-    name: openclaw-network
+    name: mtbot-network
 
 # ==================== 数据卷 ====================
 volumes:
   gateway-workspace:
-    name: openclaw-gateway-workspace
+    name: mtbot-gateway-workspace

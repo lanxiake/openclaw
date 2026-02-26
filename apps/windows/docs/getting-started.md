@@ -1,6 +1,6 @@
-# OpenClaw Assistant 快速入门指南
+# MtBot Assistant 快速入门指南
 
-欢迎使用 OpenClaw Assistant！本指南将帮助您快速上手使用这款 AI 个人助理。
+欢迎使用 MtBot Assistant！本指南将帮助您快速上手使用这款 AI 个人助理。
 
 ## 目录
 
@@ -22,25 +22,25 @@
 
 ### 方式一：使用安装程序 (推荐)
 
-1. 下载最新版本的安装程序 `OpenClaw-Assistant-Setup-x.x.x-x64.exe`
+1. 下载最新版本的安装程序 `MtBot-Assistant-Setup-x.x.x-x64.exe`
 2. 双击运行安装程序
 3. 选择安装语言（支持简体中文和英文）
 4. 阅读并同意许可协议
-5. 选择安装目录（默认为 `C:\Program Files\OpenClaw Assistant`）
+5. 选择安装目录（默认为 `C:\Program Files\MtBot Assistant`）
 6. 点击"安装"开始安装
 7. 安装完成后，可选择立即启动应用
 
 ### 方式二：使用便携版
 
-1. 下载便携版 `OpenClaw-Assistant-x.x.x-portable.exe`
+1. 下载便携版 `MtBot-Assistant-x.x.x-portable.exe`
 2. 将文件放置到您希望的目录
 3. 双击运行即可使用，无需安装
 
 ## 首次启动
 
-启动 OpenClaw Assistant 后，应用会：
+启动 MtBot Assistant 后，应用会：
 
-1. **最小化到系统托盘**: 应用默认在后台运行，您可以在系统托盘找到 OpenClaw 图标
+1. **最小化到系统托盘**: 应用默认在后台运行，您可以在系统托盘找到 MtBot 图标
 2. **显示主窗口**: 点击托盘图标或使用快捷键打开主窗口
 
 ### 系统托盘操作
@@ -53,7 +53,7 @@
 
 ## 连接 Gateway
 
-OpenClaw Assistant 需要连接到 Gateway 服务才能使用 AI 功能。
+MtBot Assistant 需要连接到 Gateway 服务才能使用 AI 功能。
 
 ### 本地 Gateway
 
@@ -129,4 +129,4 @@ OpenClaw Assistant 需要连接到 Gateway 服务才能使用 AI 功能。
 
 ---
 
-如有问题，请访问 [GitHub Issues](https://github.com/openclaw/openclaw/issues) 反馈。
+如有问题，请访问 [GitHub Issues](https://github.com/mtbot/mtbot/issues) 反馈。

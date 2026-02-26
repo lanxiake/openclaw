@@ -78,7 +78,7 @@ fs.writeFileSync('icon.ico', ico);
 magick -size 150x57 xc:#1a1a2e \
   -fill "#6366f1" -draw "rectangle 0,50 150,57" \
   -fill white -pointsize 18 -gravity center \
-  -annotate +0-5 "OpenClaw" \
+  -annotate +0-5 "MtBot" \
   installer-header.bmp
 ```
 
@@ -88,7 +88,7 @@ magick -size 150x57 xc:#1a1a2e \
 magick -size 164x314 gradient:#1a1a2e-#16213e \
   \( icon.png -resize 100x100 \) -gravity north -geometry +0+40 -composite \
   -fill white -pointsize 14 -gravity south \
-  -annotate +0+20 "OpenClaw\nAssistant" \
+  -annotate +0+20 "MtBot\nAssistant" \
   installer-sidebar.bmp
 ```
 

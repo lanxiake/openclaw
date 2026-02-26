@@ -8,12 +8,12 @@ const path = require('path')
 function cleanBuild() {
   console.log('🧹 清理构建环境...\n')
 
-  // 1. 终止所有 Electron 和 OpenClaw 进程
+  // 1. 终止所有 Electron 和 MtBot 进程
   console.log('[1/4] 终止相关进程...')
   try {
-    // 终止 OpenClaw Assistant.exe
-    execSync('taskkill /F /IM "OpenClaw Assistant.exe" 2>nul', { stdio: 'ignore' })
-    console.log('  ✓ 已终止 OpenClaw Assistant.exe')
+    // 终止 MtBot Assistant.exe
+    execSync('taskkill /F /IM "MtBot Assistant.exe" 2>nul', { stdio: 'ignore' })
+    console.log('  ✓ 已终止 MtBot Assistant.exe')
   } catch (e) {
     // 进程不存在，忽略
   }

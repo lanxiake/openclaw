@@ -1,13 +1,13 @@
 /**
  * 配置合并器
  *
- * 将数据库配置覆盖到文件配置上，生成最终的 OpenClawConfig。
+ * 将数据库配置覆盖到文件配置上，生成最终的 MtBotConfig。
  * 原则：数据库有值则覆盖文件对应字段，数据库无值则保留文件值。
  * 所有操作均遵循不可变模式——不修改任何输入对象。
  */
 
 import type { GatewayBindMode } from "../config/types.gateway.js";
-import type { OpenClawConfig } from "../config/types.openclaw.js";
+import type { MtBotConfig } from "../config/types.mtbot.js";
 import type { GatewayConfig as DbGatewayConfig } from "../db/schema/gateway-configs.js";
 import type { ModelProvider } from "../db/schema/model-configs.js";
 import type { AgentDefaultConfig } from "../db/schema/model-configs.js";
@@ -73,11 +73,11 @@ function deepMerge(target: unknown, source: unknown): unknown {
 /**
  * 将数据库 gateway_configs 行合并到文件配置的 gateway 段
  */
-function mergeGatewayConfig(fileConfig: OpenClawConfig, dbGw: DbGatewayConfig): OpenClawConfig {
+function mergeGatewayConfig(fileConfig: MtBotConfig, dbGw: DbGatewayConfig): MtBotConfig {
   const fileGw = fileConfig.gateway ?? {};
 
   // 1. 标量字段合并（数据库非 null 则覆盖）
-  const gateway: OpenClawConfig["gateway"] = {
+  const gateway: MtBotConfig["gateway"] = {
     ...fileGw,
     mode: dbGw.gatewayMode as "local" | "remote",
     port: dbGw.gatewayPort ?? fileGw.port,
@@ -127,13 +127,13 @@ function mergeGatewayConfig(fileConfig: OpenClawConfig, dbGw: DbGatewayConfig): 
  * 策略：按 providerKey 合并，数据库存在则覆盖文件的同名 provider
  *
  * 注意：数据库中 models 字段存储为字符串数组 ["model-id-1", "model-id-2"]，
- * 但 OpenClawConfig 期望 ModelDefinitionConfig[]（对象数组）。
+ * 但 MtBotConfig 期望 ModelDefinitionConfig[]（对象数组）。
  * 此函数负责将字符串数组转换为最小化的 ModelDefinitionConfig 格式。
  */
 function mergeModelProviders(
-  fileConfig: OpenClawConfig,
+  fileConfig: MtBotConfig,
   dbProviders: ModelProvider[],
-): OpenClawConfig {
+): MtBotConfig {
   const fileModels = fileConfig.models ?? {};
   const fileProviders = fileModels.providers ?? {};
 
@@ -158,7 +158,7 @@ function mergeModelProviders(
     ...fileConfig,
     models: {
       ...fileModels,
-      providers: merged as OpenClawConfig["models"] extends { providers?: infer P } ? P : never,
+      providers: merged as MtBotConfig["models"] extends { providers?: infer P } ? P : never,
     },
   };
 }
@@ -214,7 +214,7 @@ function normalizeDbModels(raw: unknown): Array<Record<string, unknown>> {
  *
  * 策略：数据库非 null 字段覆盖文件值
  */
-function mergeAgentConfig(fileConfig: OpenClawConfig, dbAgent: AgentDefaultConfig): OpenClawConfig {
+function mergeAgentConfig(fileConfig: MtBotConfig, dbAgent: AgentDefaultConfig): MtBotConfig {
   const fileAgents = fileConfig.agents ?? {};
   const fileDefaults = (fileAgents.defaults ?? {}) as Record<string, unknown>;
   let merged: Record<string, unknown> = { ...fileDefaults };
@@ -244,7 +244,7 @@ function mergeAgentConfig(fileConfig: OpenClawConfig, dbAgent: AgentDefaultConfi
     agents: {
       ...fileAgents,
       defaults: merged,
-    } as OpenClawConfig["agents"],
+    } as MtBotConfig["agents"],
   };
 }
 
@@ -255,12 +255,12 @@ function mergeAgentConfig(fileConfig: OpenClawConfig, dbAgent: AgentDefaultConfi
 /**
  * 将 system_configs KV 对合并到文件配置的对应段
  *
- * 策略：每个 key 对应 OpenClawConfig 的一个顶层段，进行深度合并
+ * 策略：每个 key 对应 MtBotConfig 的一个顶层段，进行深度合并
  */
 function mergeSystemConfigs(
-  fileConfig: OpenClawConfig,
+  fileConfig: MtBotConfig,
   systemConfigs: Record<string, unknown>,
-): OpenClawConfig {
+): MtBotConfig {
   if (Object.keys(systemConfigs).length === 0) {
     return fileConfig;
   }
@@ -297,10 +297,10 @@ function mergeSystemConfigs(
  * - auth.cooldowns: 从 auth_profiles 的 cooldownConfig 合并（仅取第一个非空值作为全局冷却配置）
  */
 function mergeAuthProfiles(
-  fileConfig: OpenClawConfig,
+  fileConfig: MtBotConfig,
   dbProfiles: AuthProfile[],
   dbOrders: AuthProfileOrderRecord[],
-): OpenClawConfig {
+): MtBotConfig {
   if (dbProfiles.length === 0 && dbOrders.length === 0) {
     return fileConfig;
   }
@@ -369,14 +369,14 @@ function mergeAuthProfiles(
  * 优先级：数据库 > 文件
  * 合并粒度：字段级深度合并（非整段替换）
  *
- * @param fileConfig - 从 openclaw.json 加载的配置
+ * @param fileConfig - 从 mtbot.json 加载的配置
  * @param dbConfigs  - 从数据库加载的配置集合
- * @returns 合并后的 OpenClawConfig（新对象，不修改输入）
+ * @returns 合并后的 MtBotConfig（新对象，不修改输入）
  */
 export function mergeFileAndDbConfigs(
-  fileConfig: OpenClawConfig,
+  fileConfig: MtBotConfig,
   dbConfigs: DatabaseConfigs,
-): OpenClawConfig {
+): MtBotConfig {
   let merged = { ...fileConfig };
 
   // 1. 合并 gateway 配置
@@ -442,7 +442,7 @@ function resolveDbSource(configType: string | null | undefined): ConfigSource {
  * @returns 每个配置段的来源标注
  */
 export function buildConfigSources(
-  _fileConfig: OpenClawConfig,
+  _fileConfig: MtBotConfig,
   dbConfigs: DatabaseConfigs,
 ): ConfigSourcesMap {
   const sources: ConfigSourcesMap = {};

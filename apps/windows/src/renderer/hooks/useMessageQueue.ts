@@ -23,7 +23,7 @@ const MAX_QUEUE_SIZE = 10
 /**
  * localStorage key 前缀
  */
-const STORAGE_KEY_PREFIX = 'openclaw_message_queue_'
+const STORAGE_KEY_PREFIX = 'mtbot_message_queue_'
 
 /**
  * 队列消息项

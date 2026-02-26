@@ -9,7 +9,7 @@
  *
  * 参考文档：https://opendocs.alipay.com/open/
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import * as crypto from "node:crypto";

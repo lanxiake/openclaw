@@ -1,4 +1,4 @@
-import OpenClawProtocol
+import MtBotProtocol
 
 /// Server-push messages from the gateway websocket.
 ///

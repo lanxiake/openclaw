@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import OpenClaw
+@testable import MtBot
 
 @Suite struct NodeManagerPathsTests {
     private func makeTempDir() throws -> URL {

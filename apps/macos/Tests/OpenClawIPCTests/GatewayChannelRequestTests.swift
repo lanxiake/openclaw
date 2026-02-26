@@ -1,8 +1,8 @@
-import OpenClawKit
+import MtBotKit
 import Foundation
 import os
 import Testing
-@testable import OpenClaw
+@testable import MtBot
 
 @Suite struct GatewayChannelRequestTests {
     private final class FakeWebSocketTask: WebSocketTasking, @unchecked Sendable {

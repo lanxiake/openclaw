@@ -1,4 +1,4 @@
-# OpenClaw 开发环境 Docker Compose 配置
+# MtBot 开发环境 Docker Compose 配置
 #
 # 简化版配置，用于本地开发和测试
 #
@@ -18,12 +18,12 @@ services:
   # PostgreSQL - 主数据库 (启用 pgvector 扩展)
   postgres:
     image: pgvector/pgvector:pg17
-    container_name: openclaw-dev-postgres
+    container_name: mtbot-dev-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-openclaw_admin}
+      POSTGRES_USER: ${POSTGRES_USER:-mtbot_admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Oc@2026!Pg#Secure}
-      POSTGRES_DB: ${POSTGRES_DB:-openclaw_prod}
+      POSTGRES_DB: ${POSTGRES_DB:-mtbot_prod}
       TZ: Asia/Shanghai
     ports:
       - "${POSTGRES_PORT:-22001}:5432"
@@ -34,18 +34,18 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-openclaw_admin} -d ${POSTGRES_DB:-openclaw_prod}",
+          "pg_isready -U ${POSTGRES_USER:-mtbot_admin} -d ${POSTGRES_DB:-mtbot_prod}",
         ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - openclaw-dev-network
+      - mtbot-dev-network
 
   # Redis - 缓存和会话存储
   redis:
     image: redis:7-alpine
-    container_name: openclaw-dev-redis
+    container_name: mtbot-dev-redis
     restart: unless-stopped
     command: >
       redis-server
@@ -63,16 +63,16 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - openclaw-dev-network
+      - mtbot-dev-network
 
   # MinIO - S3 兼容的对象存储
   minio:
     image: minio/minio:latest
-    container_name: openclaw-dev-minio
+    container_name: mtbot-dev-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-openclaw_minio}
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-mtbot_minio}
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-Oc@2026!Mn#Secure}
     ports:
       - "${MINIO_API_PORT:-22003}:9000"
@@ -85,37 +85,37 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - openclaw-dev-network
+      - mtbot-dev-network
 
   # MinIO 初始化 - 创建默认存储桶
   minio-init:
     image: minio/mc:latest
-    container_name: openclaw-dev-minio-init
+    container_name: mtbot-dev-minio-init
     depends_on:
       minio:
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      mc alias set myminio http://minio:9000 $${MINIO_ACCESS_KEY:-openclaw_minio} $${MINIO_SECRET_KEY:-Oc@2026!Mn#Secure};
-      mc mb --ignore-existing myminio/openclaw-files;
-      mc mb --ignore-existing myminio/openclaw-media;
-      mc mb --ignore-existing myminio/openclaw-temp;
-      mc anonymous set download myminio/openclaw-media;
+      mc alias set myminio http://minio:9000 $${MINIO_ACCESS_KEY:-mtbot_minio} $${MINIO_SECRET_KEY:-Oc@2026!Mn#Secure};
+      mc mb --ignore-existing myminio/mtbot-files;
+      mc mb --ignore-existing myminio/mtbot-media;
+      mc mb --ignore-existing myminio/mtbot-temp;
+      mc anonymous set download myminio/mtbot-media;
       echo 'MinIO buckets created successfully';
       exit 0;
       "
     networks:
-      - openclaw-dev-network
+      - mtbot-dev-network
 
 networks:
-  openclaw-dev-network:
+  mtbot-dev-network:
     driver: bridge
-    name: openclaw-dev-network
+    name: mtbot-dev-network
 
 volumes:
   postgres-dev-data:
-    name: openclaw-dev-postgres-data
+    name: mtbot-dev-postgres-data
   redis-dev-data:
-    name: openclaw-dev-redis-data
+    name: mtbot-dev-redis-data
   minio-dev-data:
-    name: openclaw-dev-minio-data
+    name: mtbot-dev-minio-data

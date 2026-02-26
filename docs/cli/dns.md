@@ -1,11 +1,11 @@
 ---
-summary: "CLI reference for `openclaw dns` (wide-area discovery helpers)"
+summary: "CLI reference for `mtbot dns` (wide-area discovery helpers)"
 read_when:
   - You want wide-area discovery (DNS-SD) via Tailscale + CoreDNS
-  - You’re setting up split DNS for a custom discovery domain (example: openclaw.internal)
+  - You’re setting up split DNS for a custom discovery domain (example: mtbot.internal)
 ---
 
-# `openclaw dns`
+# `mtbot dns`
 
 DNS helpers for wide-area discovery (Tailscale + CoreDNS). Currently focused on macOS + Homebrew CoreDNS.
 
@@ -17,6 +17,6 @@ Related:
 ## Setup
 
 ```bash
-openclaw dns setup
-openclaw dns setup --apply
+mtbot dns setup
+mtbot dns setup --apply
 ```

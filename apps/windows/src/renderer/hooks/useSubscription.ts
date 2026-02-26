@@ -129,7 +129,7 @@ export function useSubscription(): UseSubscriptionReturn {
    */
   const fetchPlans = useCallback(async () => {
     try {
-      const accessToken = localStorage.getItem('openclaw_access_token')
+      const accessToken = localStorage.getItem('mtbot_access_token')
       if (!accessToken) {
         throw new Error('未登录')
       }
@@ -153,7 +153,7 @@ export function useSubscription(): UseSubscriptionReturn {
    */
   const fetchSubscription = useCallback(async () => {
     try {
-      const accessToken = localStorage.getItem('openclaw_access_token')
+      const accessToken = localStorage.getItem('mtbot_access_token')
       if (!accessToken) {
         return
       }

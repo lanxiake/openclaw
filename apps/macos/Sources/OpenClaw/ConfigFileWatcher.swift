@@ -13,7 +13,7 @@ final class ConfigFileWatcher: @unchecked Sendable {
 
     init(url: URL, onChange: @escaping () -> Void) {
         self.url = url
-        self.queue = DispatchQueue(label: "ai.openclaw.configwatcher")
+        self.queue = DispatchQueue(label: "com.yunkun.mtbot.configwatcher")
         self.onChange = onChange
         self.watchedDir = url.deletingLastPathComponent()
         self.targetPath = url.path

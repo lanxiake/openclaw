@@ -1,5 +1,5 @@
-import OpenClawKit
-import OpenClawProtocol
+import MtBotKit
+import MtBotProtocol
 import Darwin
 import Foundation
 
@@ -71,10 +71,10 @@ func runWizardCommand(_ args: [String]) async {
     let opts = WizardCliOptions.parse(args)
     if opts.help {
         print("""
-        openclaw-mac wizard
+        mtbot-mac wizard
 
         Usage:
-          openclaw-mac wizard [--url <ws://host:port>] [--token <token>] [--password <password>]
+          mtbot-mac wizard [--url <ws://host:port>] [--token <token>] [--password <password>]
                               [--mode <local|remote>] [--workspace <path>] [--json]
 
         Options:
@@ -247,13 +247,13 @@ actor GatewayWizardClient {
         }
         let osVersion = ProcessInfo.processInfo.operatingSystemVersion
         let platform = "macos \(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
-        let clientId = "openclaw-macos"
+        let clientId = "mtbot-macos"
         let clientMode = "ui"
         let role = "operator"
         let scopes: [String] = []
         let client: [String: ProtoAnyCodable] = [
             "id": ProtoAnyCodable(clientId),
-            "displayName": ProtoAnyCodable(Host.current().localizedName ?? "OpenClaw macOS Wizard CLI"),
+            "displayName": ProtoAnyCodable(Host.current().localizedName ?? "MtBot macOS Wizard CLI"),
             "version": ProtoAnyCodable("dev"),
             "platform": ProtoAnyCodable(platform),
             "deviceFamily": ProtoAnyCodable("Mac"),

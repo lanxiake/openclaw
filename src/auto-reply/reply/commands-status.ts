@@ -15,7 +15,7 @@ import {
   resolveMainSessionAlias,
 } from "../../agents/tools/sessions-helpers.js";
 import { normalizeProviderId } from "../../agents/model-selection.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import type { SessionEntry, SessionScope } from "../../config/sessions.js";
 import { logVerbose } from "../../globals.js";
 import {
@@ -45,7 +45,7 @@ function formatApiKeySnippet(apiKey: string): string {
 
 function resolveModelAuthLabel(
   provider?: string,
-  cfg?: OpenClawConfig,
+  cfg?: MtBotConfig,
   sessionEntry?: SessionEntry,
   agentDir?: string,
 ): string | undefined {
@@ -101,7 +101,7 @@ function resolveModelAuthLabel(
 }
 
 export async function buildStatusReply(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   command: CommandContext;
   sessionEntry?: SessionEntry;
   sessionKey: string;

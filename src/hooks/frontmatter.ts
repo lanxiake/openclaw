@@ -4,7 +4,7 @@ import { LEGACY_MANIFEST_KEYS, MANIFEST_KEY } from "../compat/legacy-names.js";
 import { parseFrontmatterBlock } from "../markdown/frontmatter.js";
 import { parseBooleanValue } from "../utils/boolean.js";
 import type {
-  OpenClawHookMetadata,
+  MtBotHookMetadata,
   HookEntry,
   HookInstallSpec,
   HookInvocationPolicy,
@@ -77,9 +77,9 @@ function parseFrontmatterBool(value: string | undefined, fallback: boolean): boo
   return parsed === undefined ? fallback : parsed;
 }
 
-export function resolveOpenClawMetadata(
+export function resolveMtBotMetadata(
   frontmatter: ParsedHookFrontmatter,
-): OpenClawHookMetadata | undefined {
+): MtBotHookMetadata | undefined {
   const raw = getFrontmatterValue(frontmatter, "metadata");
   if (!raw) {
     return undefined;

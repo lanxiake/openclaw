@@ -127,14 +127,14 @@ describe("buildProfileExtractionSystemPrompt", () => {
   it("有已有事实时包含事实列表", () => {
     const facts: UserFact[] = [
       makeFact({ category: "personal", key: "name", value: "张三" }),
-      makeFact({ id: "fact-2", category: "work", key: "company", value: "OpenClaw" }),
+      makeFact({ id: "fact-2", category: "work", key: "company", value: "MtBot" }),
     ];
 
     const prompt = buildProfileExtractionSystemPrompt(facts);
 
     expect(prompt).toContain("用户已有的事实");
     expect(prompt).toContain("[personal] name: 张三");
-    expect(prompt).toContain("[work] company: OpenClaw");
+    expect(prompt).toContain("[work] company: MtBot");
   });
 
   it("应包含置信度说明", () => {
@@ -150,13 +150,13 @@ describe("buildProfileExtractionUserMessage", () => {
     const messages: Message[] = [
       makeMessage("user", "我叫张三"),
       makeMessage("assistant", "你好张三"),
-      makeMessage("user", "我在OpenClaw工作"),
+      makeMessage("user", "我在MtBot工作"),
     ];
 
     const result = buildProfileExtractionUserMessage(messages);
 
     expect(result).toContain("我叫张三");
-    expect(result).toContain("我在OpenClaw工作");
+    expect(result).toContain("我在MtBot工作");
     expect(result).not.toContain("你好张三");
   });
 

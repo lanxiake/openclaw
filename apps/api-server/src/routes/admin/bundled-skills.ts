@@ -21,7 +21,7 @@ import {
 } from "../../../../../src/assistant/config/config-service.js";
 import { CONFIG_KEYS } from "../../../../../src/db/schema/system-config.js";
 import { resolveBundledSkillsDir } from "../../../../../src/agents/skills/bundled-dir.js";
-import { parseFrontmatter, resolveOpenClawMetadata } from "../../../../../src/agents/skills/frontmatter.js";
+import { parseFrontmatter, resolveMtBotMetadata } from "../../../../../src/agents/skills/frontmatter.js";
 import { getRequiredAdmin } from "../../plugins/admin-auth.js";
 import { requirePermission } from "../../plugins/permission-guard.js";
 import { getClientInfo } from "../../plugins/request-utils.js";
@@ -70,7 +70,7 @@ function scanBundledSkills(): Array<Omit<BundledSkillInfo, "isDisabled">> {
         const content = fs.readFileSync(skillMdPath, "utf-8");
         const frontmatter = parseFrontmatter(content);
         description = (typeof frontmatter.description === "string" ? frontmatter.description : "") || "";
-        const resolved = resolveOpenClawMetadata(frontmatter);
+        const resolved = resolveMtBotMetadata(frontmatter);
         metadata = resolved ? { ...resolved } : {};
       } catch {
         // 忽略解析失败的技能文件

@@ -2,7 +2,7 @@ import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/ag
 import { installSkill } from "../../agents/skills-install.js";
 import { buildWorkspaceSkillStatus } from "../../agents/skills-status.js";
 import { loadWorkspaceSkillEntries, type SkillEntry } from "../../agents/skills.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { loadConfig, writeConfigFile } from "../../config/config.js";
 import { getRemoteSkillEligibility } from "../../infra/skills-remote.js";
 import {
@@ -16,7 +16,7 @@ import {
 } from "../protocol/index.js";
 import type { GatewayRequestHandlers } from "./types.js";
 
-function listWorkspaceDirs(cfg: OpenClawConfig): string[] {
+function listWorkspaceDirs(cfg: MtBotConfig): string[] {
   const dirs = new Set<string>();
   const list = cfg.agents?.list;
   if (Array.isArray(list)) {
@@ -188,7 +188,7 @@ export const skillsHandlers: GatewayRequestHandlers = {
     }
     entries[p.skillKey] = current;
     skills.entries = entries;
-    const nextConfig: OpenClawConfig = {
+    const nextConfig: MtBotConfig = {
       ...cfg,
       skills,
     };

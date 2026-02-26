@@ -3,7 +3,7 @@ import { getFinishedSession, getSession, markExited } from "../../agents/bash-pr
 import { createExecTool } from "../../agents/bash-tools.js";
 import { resolveSandboxRuntimeStatus } from "../../agents/sandbox.js";
 import { killProcessTree } from "../../agents/shell-utils.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { formatCliCommand } from "../../cli/command-format.js";
 import { logVerbose } from "../../globals.js";
 import { clampInt } from "../../utils.js";
@@ -33,7 +33,7 @@ type ActiveBashJob =
 
 let activeJob: ActiveBashJob | null = null;
 
-function resolveForegroundMs(cfg: OpenClawConfig): number {
+function resolveForegroundMs(cfg: MtBotConfig): number {
   const raw = cfg.commands?.bashForegroundMs;
   if (typeof raw !== "number" || Number.isNaN(raw)) {
     return DEFAULT_FOREGROUND_MS;
@@ -97,7 +97,7 @@ function parseBashRequest(raw: string): BashRequest | null {
 
 function resolveRawCommandBody(params: {
   ctx: MsgContext;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   agentId?: string;
   isGroup: boolean;
 }) {
@@ -197,7 +197,7 @@ function formatElevatedUnavailableMessage(params: {
   lines.push("- agents.list[].tools.elevated.allowFrom.<provider>");
   if (params.sessionKey) {
     lines.push(
-      `See: ${formatCliCommand(`openclaw sandbox explain --session ${params.sessionKey}`)}`,
+      `See: ${formatCliCommand(`mtbot sandbox explain --session ${params.sessionKey}`)}`,
     );
   }
   return lines.join("\n");
@@ -205,7 +205,7 @@ function formatElevatedUnavailableMessage(params: {
 
 export async function handleBashChatCommand(params: {
   ctx: MsgContext;
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   agentId?: string;
   sessionKey: string;
   isGroup: boolean;
@@ -217,7 +217,7 @@ export async function handleBashChatCommand(params: {
 }): Promise<ReplyPayload> {
   if (params.cfg.commands?.bash !== true) {
     return {
-      text: "⚠️ bash is disabled. Set commands.bash=true to enable. Docs: https://docs.openclaw.ai/tools/slash-commands#config",
+      text: "⚠️ bash is disabled. Set commands.bash=true to enable. Docs: https://docs.mtbot.top/tools/slash-commands#config",
     };
   }
 

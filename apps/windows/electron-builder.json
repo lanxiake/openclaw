@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "ai.openclaw.assistant",
-  "productName": "OpenClaw Assistant",
-  "copyright": "Copyright © 2026 OpenClaw",
+  "appId": "com.yunkun.mtbot.assistant",
+  "productName": "MtBot Assistant",
+  "copyright": "Copyright © 2026 MtBot",
   "directories": {
     "output": "release",
     "buildResources": "build"
@@ -42,7 +42,7 @@
     "requestedExecutionLevel": "asInvoker",
     "signingHashAlgorithms": ["sha256"],
     "verifyUpdateCodeSignature": false,
-    "publisherName": "OpenClaw",
+    "publisherName": "MtBot",
     "sign": null,
     "forceCodeSigning": false
   },
@@ -54,8 +54,8 @@
     "installerHeaderIcon": "assets/icon.ico",
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
-    "shortcutName": "OpenClaw Assistant",
-    "menuCategory": "OpenClaw",
+    "shortcutName": "MtBot Assistant",
+    "menuCategory": "MtBot",
     "runAfterFinish": true,
     "allowElevation": true,
     "perMachine": false,
@@ -76,8 +76,8 @@
   },
   "publish": {
     "provider": "github",
-    "owner": "openclaw",
-    "repo": "openclaw",
+    "owner": "mtbot",
+    "repo": "mtbot",
     "releaseType": "release"
   },
   "electronDownload": {

@@ -130,7 +130,7 @@ describe("PostgresProfileMemoryProvider (Integration)", () => {
       const factId = await provider.addFact(TEST_USER_ID, {
         category: "work",
         key: "company",
-        value: "OpenClaw",
+        value: "MtBot",
         confidence: 0.95,
         source: "explicit",
         sensitive: false,
@@ -147,7 +147,7 @@ describe("PostgresProfileMemoryProvider (Integration)", () => {
       expect(found).toBeDefined();
       expect(found!.category).toBe("work");
       expect(found!.key).toBe("company");
-      expect(found!.value).toBe("OpenClaw");
+      expect(found!.value).toBe("MtBot");
       expect(found!.confidence).toBe(0.95);
       expect(found!.source).toBe("explicit");
       console.log("[TEST] ✓ 事实添加和查询成功");

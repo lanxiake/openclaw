@@ -1,6 +1,6 @@
-# OpenClaw 部署信息目录
+# MtBot 部署信息目录
 
-本目录包含 OpenClaw 生产环境的完整部署配置和文档。
+本目录包含 MtBot 生产环境的完整部署配置和文档。
 
 ## 文件说明
 
@@ -67,7 +67,7 @@ docker-compose -f docker-compose.infra.yml up -d
 
 ```bash
 # 执行数据库迁移
-export DATABASE_URL="postgresql://openclaw_admin:password@localhost:22001/openclaw_prod"
+export DATABASE_URL="postgresql://mtbot_admin:password@localhost:22001/mtbot_prod"
 pnpm db:migrate
 ```
 
@@ -112,7 +112,7 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ## 相关文档
 
-- [OpenClaw 主项目 README](../../README.md)
+- [MtBot 主项目 README](../../README.md)
 - [Gateway 配置文档](../../docs/gateway/configuration.md)
 - [Docker 部署指南](../../docs/install/docker-compose-deploy.md)
 
@@ -133,7 +133,7 @@ docker-compose -f docker-compose.prod.yml up -d
 
 - [生产环境部署文档](生产环境部署文档.md) 中的"故障排查"章节
 - [部署检查清单](部署检查清单.md)
-- 项目 Issue: https://github.com/openclaw/openclaw/issues
+- 项目 Issue: https://github.com/mtbot/mtbot/issues
 
 ## 自动化发布
 

@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { MtBotConfig } from "../../../config/config.js";
 import type { DmPolicy } from "../../../config/types.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../../routing/session-key.js";
 import {
@@ -14,7 +14,7 @@ import { addWildcardAllowFrom, promptAccountId } from "./helpers.js";
 
 const channel = "telegram" as const;
 
-function setTelegramDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy) {
+function setTelegramDmPolicy(cfg: MtBotConfig, dmPolicy: DmPolicy) {
   const allowFrom =
     dmPolicy === "open" ? addWildcardAllowFrom(cfg.channels?.telegram?.allowFrom) : undefined;
   return {
@@ -38,7 +38,7 @@ async function noteTelegramTokenHelp(prompter: WizardPrompter): Promise<void> {
       "3) Copy the token (looks like 123456:ABC...)",
       "Tip: you can also set TELEGRAM_BOT_TOKEN in your env.",
       `Docs: ${formatDocsLink("/telegram")}`,
-      "Website: https://openclaw.ai",
+      "Website: https://mtbot.top",
     ].join("\n"),
     "Telegram bot token",
   );
@@ -47,21 +47,21 @@ async function noteTelegramTokenHelp(prompter: WizardPrompter): Promise<void> {
 async function noteTelegramUserIdHelp(prompter: WizardPrompter): Promise<void> {
   await prompter.note(
     [
-      `1) DM your bot, then read from.id in \`${formatCliCommand("openclaw logs --follow")}\` (safest)`,
+      `1) DM your bot, then read from.id in \`${formatCliCommand("mtbot logs --follow")}\` (safest)`,
       "2) Or call https://api.telegram.org/bot<bot_token>/getUpdates and read message.from.id",
       "3) Third-party: DM @userinfobot or @getidsbot",
       `Docs: ${formatDocsLink("/telegram")}`,
-      "Website: https://openclaw.ai",
+      "Website: https://mtbot.top",
     ].join("\n"),
     "Telegram user id",
   );
 }
 
 async function promptTelegramAllowFrom(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   prompter: WizardPrompter;
   accountId: string;
-}): Promise<OpenClawConfig> {
+}): Promise<MtBotConfig> {
   const { cfg, prompter, accountId } = params;
   const resolved = resolveTelegramAccount({ cfg, accountId });
   const existingAllowFrom = resolved.config.allowFrom ?? [];
@@ -176,10 +176,10 @@ async function promptTelegramAllowFrom(params: {
 }
 
 async function promptTelegramAllowFromForAccount(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<OpenClawConfig> {
+}): Promise<MtBotConfig> {
   const accountId =
     params.accountId && normalizeAccountId(params.accountId)
       ? (normalizeAccountId(params.accountId) ?? DEFAULT_ACCOUNT_ID)

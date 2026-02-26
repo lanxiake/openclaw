@@ -5,7 +5,7 @@ vi.mock("../pi-model-discovery.js", () => ({
   discoverModels: vi.fn(() => ({ find: vi.fn(() => null) })),
 }));
 
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { buildInlineProviderModels, resolveModel } from "./model.js";
 
 const makeModel = (id: string) => ({
@@ -134,7 +134,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
     const result = resolveModel("custom", "missing-model", "/tmp/agent", cfg);
 
@@ -155,7 +155,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
     const result = resolveModel("new-api", "claude-opus-4-5-20251101", "/tmp/agent", cfg);
 
@@ -173,7 +173,7 @@ describe("resolveModel", () => {
       models: {
         providers: {},
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
     const result = resolveModel("nonexistent", "some-model", "/tmp/agent", cfg);
 
@@ -192,7 +192,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
     const result = resolveModel("my-relay", "claude-sonnet-4-20250514", "/tmp/agent", cfg);
 
@@ -213,7 +213,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
     const result = resolveModel("new-api", "claude-opus-4-5-20251101", "/tmp/agent", cfg);
 
@@ -232,7 +232,7 @@ describe("resolveModel", () => {
           },
         },
       },
-    } as OpenClawConfig;
+    } as MtBotConfig;
 
     const result = resolveModel("google-relay", "gemini-pro", "/tmp/agent", cfg);
 

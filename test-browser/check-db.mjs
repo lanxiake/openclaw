@@ -4,7 +4,7 @@
 import postgres from "postgres";
 
 const DATABASE_URL =
-  "postgresql://openclaw_admin:Oc%402026!Pg%23Secure@10.157.152.40:22001/openclaw_prod";
+  "postgresql://mtbot_admin:Oc%402026!Pg%23Secure@10.157.152.40:22001/mtbot_prod";
 
 const sql = postgres(DATABASE_URL, {
   connect_timeout: 10,

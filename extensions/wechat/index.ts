@@ -1,5 +1,5 @@
-import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
-import { emptyPluginConfigSchema, registerWsUpgradeHandler } from "openclaw/plugin-sdk";
+import type { MtBotPluginApi } from "mtbot/plugin-sdk";
+import { emptyPluginConfigSchema, registerWsUpgradeHandler } from "mtbot/plugin-sdk";
 
 import { wechatPlugin, handleWeChatUpgrade } from "./src/channel.js";
 import { setWeChatRuntime } from "./src/runtime.js";
@@ -9,7 +9,7 @@ const plugin = {
   name: "WeChat",
   description: "WeChat channel plugin via wxauto-bridge",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: MtBotPluginApi) {
     setWeChatRuntime(api.runtime);
     api.registerChannel({ plugin: wechatPlugin });
 

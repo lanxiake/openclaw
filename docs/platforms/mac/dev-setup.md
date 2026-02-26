@@ -1,12 +1,12 @@
 ---
-summary: "Setup guide for developers working on the OpenClaw macOS app"
+summary: "Setup guide for developers working on the MtBot macOS app"
 read_when:
   - Setting up the macOS development environment
 ---
 
 # macOS Developer Setup
 
-This guide covers the necessary steps to build and run the OpenClaw macOS application from source.
+This guide covers the necessary steps to build and run the MtBot macOS application from source.
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ pnpm install
 
 ## 2. Build and Package the App
 
-To build the macOS app and package it into `dist/OpenClaw.app`, run:
+To build the macOS app and package it into `dist/MtBot.app`, run:
 
 ```bash
 ./scripts/package-mac-app.sh
@@ -34,24 +34,24 @@ To build the macOS app and package it into `dist/OpenClaw.app`, run:
 If you don't have an Apple Developer ID certificate, the script will automatically use **ad-hoc signing** (`-`).
 
 For dev run modes, signing flags, and Team ID troubleshooting, see the macOS app README:
-https://github.com/openclaw/openclaw/blob/main/apps/macos/README.md
+https://github.com/mtbot/mtbot/blob/main/apps/macos/README.md
 
 > **Note**: Ad-hoc signed apps may trigger security prompts. If the app crashes immediately with "Abort trap 6", see the [Troubleshooting](#troubleshooting) section.
 
 ## 3. Install the CLI
 
-The macOS app expects a global `openclaw` CLI install to manage background tasks.
+The macOS app expects a global `mtbot` CLI install to manage background tasks.
 
 **To install it (recommended):**
 
-1.  Open the OpenClaw app.
+1.  Open the MtBot app.
 2.  Go to the **General** settings tab.
 3.  Click **"Install CLI"**.
 
 Alternatively, install it manually:
 
 ```bash
-npm install -g openclaw@<version>
+npm install -g mtbot@<version>
 ```
 
 ## Troubleshooting
@@ -84,15 +84,15 @@ If the app crashes when you try to allow **Speech Recognition** or **Microphone*
    ```bash
    tccutil reset All bot.molt.mac.debug
    ```
-2. If that fails, change the `BUNDLE_ID` temporarily in [`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) to force a "clean slate" from macOS.
+2. If that fails, change the `BUNDLE_ID` temporarily in [`scripts/package-mac-app.sh`](https://github.com/mtbot/mtbot/blob/main/scripts/package-mac-app.sh) to force a "clean slate" from macOS.
 
 ### Gateway "Starting..." indefinitely
 
 If the gateway status stays on "Starting...", check if a zombie process is holding the port:
 
 ```bash
-openclaw gateway status
-openclaw gateway stop
+mtbot gateway status
+mtbot gateway stop
 
 # If you’re not using a LaunchAgent (dev mode / manual runs), find the listener:
 lsof -nP -iTCP:18789 -sTCP:LISTEN

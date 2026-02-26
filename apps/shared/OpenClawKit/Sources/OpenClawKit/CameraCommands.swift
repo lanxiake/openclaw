@@ -1,38 +1,38 @@
 import Foundation
 
-public enum OpenClawCameraCommand: String, Codable, Sendable {
+public enum MtBotCameraCommand: String, Codable, Sendable {
     case list = "camera.list"
     case snap = "camera.snap"
     case clip = "camera.clip"
 }
 
-public enum OpenClawCameraFacing: String, Codable, Sendable {
+public enum MtBotCameraFacing: String, Codable, Sendable {
     case back
     case front
 }
 
-public enum OpenClawCameraImageFormat: String, Codable, Sendable {
+public enum MtBotCameraImageFormat: String, Codable, Sendable {
     case jpg
     case jpeg
 }
 
-public enum OpenClawCameraVideoFormat: String, Codable, Sendable {
+public enum MtBotCameraVideoFormat: String, Codable, Sendable {
     case mp4
 }
 
-public struct OpenClawCameraSnapParams: Codable, Sendable, Equatable {
-    public var facing: OpenClawCameraFacing?
+public struct MtBotCameraSnapParams: Codable, Sendable, Equatable {
+    public var facing: MtBotCameraFacing?
     public var maxWidth: Int?
     public var quality: Double?
-    public var format: OpenClawCameraImageFormat?
+    public var format: MtBotCameraImageFormat?
     public var deviceId: String?
     public var delayMs: Int?
 
     public init(
-        facing: OpenClawCameraFacing? = nil,
+        facing: MtBotCameraFacing? = nil,
         maxWidth: Int? = nil,
         quality: Double? = nil,
-        format: OpenClawCameraImageFormat? = nil,
+        format: MtBotCameraImageFormat? = nil,
         deviceId: String? = nil,
         delayMs: Int? = nil)
     {
@@ -45,18 +45,18 @@ public struct OpenClawCameraSnapParams: Codable, Sendable, Equatable {
     }
 }
 
-public struct OpenClawCameraClipParams: Codable, Sendable, Equatable {
-    public var facing: OpenClawCameraFacing?
+public struct MtBotCameraClipParams: Codable, Sendable, Equatable {
+    public var facing: MtBotCameraFacing?
     public var durationMs: Int?
     public var includeAudio: Bool?
-    public var format: OpenClawCameraVideoFormat?
+    public var format: MtBotCameraVideoFormat?
     public var deviceId: String?
 
     public init(
-        facing: OpenClawCameraFacing? = nil,
+        facing: MtBotCameraFacing? = nil,
         durationMs: Int? = nil,
         includeAudio: Bool? = nil,
-        format: OpenClawCameraVideoFormat? = nil,
+        format: MtBotCameraVideoFormat? = nil,
         deviceId: String? = nil)
     {
         self.facing = facing

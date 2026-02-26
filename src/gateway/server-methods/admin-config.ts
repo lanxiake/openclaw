@@ -42,10 +42,10 @@ const mockNotificationTemplates = [
     name: "欢迎邮件",
     code: "welcome_email",
     channel: "email" as const,
-    subject: "欢迎加入 OpenClaw",
+    subject: "欢迎加入 MtBot",
     content: `尊敬的 {{username}}，
 
-欢迎加入 OpenClaw！您的账号已成功创建。
+欢迎加入 MtBot！您的账号已成功创建。
 
 您可以使用以下方式登录：
 - 邮箱：{{email}}
@@ -54,7 +54,7 @@ const mockNotificationTemplates = [
 如有任何问题，请联系我们的客服团队。
 
 祝您使用愉快！
-OpenClaw 团队`,
+MtBot 团队`,
     variables: ["username", "email", "phone"],
     enabled: true,
     updatedAt: "2024-01-15T10:30:00Z",
@@ -75,7 +75,7 @@ OpenClaw 团队`,
 
 如果这不是您的操作，请忽略此邮件。
 
-OpenClaw 团队`,
+MtBot 团队`,
     variables: ["username", "resetLink", "expireTime"],
     enabled: true,
     updatedAt: "2024-01-15T10:30:00Z",
@@ -86,7 +86,7 @@ OpenClaw 团队`,
     code: "verification_sms",
     channel: "sms" as const,
     content:
-      "【OpenClaw】您的验证码是 {{code}}，{{expireMinutes}} 分钟内有效。请勿将验证码告知他人。",
+      "【MtBot】您的验证码是 {{code}}，{{expireMinutes}} 分钟内有效。请勿将验证码告知他人。",
     variables: ["code", "expireMinutes"],
     enabled: true,
     updatedAt: "2024-01-15T10:30:00Z",
@@ -106,7 +106,7 @@ OpenClaw 团队`,
 续费链接：{{renewLink}}
 
 感谢您的支持！
-OpenClaw 团队`,
+MtBot 团队`,
     variables: ["username", "planName", "expireDate", "renewLink"],
     enabled: true,
     updatedAt: "2024-01-15T10:30:00Z",
@@ -127,7 +127,7 @@ OpenClaw 团队`,
 - 支付时间：{{payTime}}
 
 感谢您的购买！
-OpenClaw 团队`,
+MtBot 团队`,
     variables: ["username", "orderId", "productName", "amount", "payTime"],
     enabled: true,
     updatedAt: "2024-01-15T10:30:00Z",
@@ -490,7 +490,7 @@ const getSiteConfig: GatewayRequestHandler = async ({ respond }) => {
 
   try {
     // 从数据库获取站点相关配置
-    const siteName = await getConfigValue<string>(CONFIG_KEYS.SITE_NAME, "OpenClaw AI Assistant");
+    const siteName = await getConfigValue<string>(CONFIG_KEYS.SITE_NAME, "MtBot AI Assistant");
     const siteDescription = await getConfigValue<string>(
       CONFIG_KEYS.SITE_DESCRIPTION,
       "智能 AI 助手平台",
@@ -503,10 +503,10 @@ const getSiteConfig: GatewayRequestHandler = async ({ respond }) => {
         siteDescription,
         logoUrl: "/logo.png",
         faviconUrl: "/favicon.ico",
-        contactEmail: "support@openclaw.ai",
+        contactEmail: "support@mtbot.top",
         contactPhone: "400-123-4567",
         icpNumber: "京ICP备12345678号",
-        copyright: "© 2024 OpenClaw. All rights reserved.",
+        copyright: "© 2024 MtBot. All rights reserved.",
       },
     });
   } catch (error) {
@@ -760,7 +760,7 @@ const getAllConfig: GatewayRequestHandler = async ({ respond }) => {
 
   try {
     // 获取各类配置
-    const siteName = await getConfigValue<string>(CONFIG_KEYS.SITE_NAME, "OpenClaw AI Assistant");
+    const siteName = await getConfigValue<string>(CONFIG_KEYS.SITE_NAME, "MtBot AI Assistant");
     const siteDescription = await getConfigValue<string>(
       CONFIG_KEYS.SITE_DESCRIPTION,
       "智能 AI 助手平台",
@@ -783,10 +783,10 @@ const getAllConfig: GatewayRequestHandler = async ({ respond }) => {
           siteDescription,
           logoUrl: "/logo.png",
           faviconUrl: "/favicon.ico",
-          contactEmail: "support@openclaw.ai",
+          contactEmail: "support@mtbot.top",
           contactPhone: "400-123-4567",
           icpNumber: "京ICP备12345678号",
-          copyright: "© 2024 OpenClaw. All rights reserved.",
+          copyright: "© 2024 MtBot. All rights reserved.",
         },
         features: {
           registrationEnabled: true,

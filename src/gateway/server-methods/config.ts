@@ -18,7 +18,7 @@ import {
   writeRestartSentinel,
 } from "../../infra/restart-sentinel.js";
 import { listChannelPlugins } from "../../channels/plugins/index.js";
-import { loadOpenClawPlugins } from "../../plugins/loader.js";
+import { loadMtBotPlugins } from "../../plugins/loader.js";
 import {
   ErrorCodes,
   errorShape,
@@ -119,7 +119,7 @@ export const configHandlers: GatewayRequestHandlers = {
     }
     const cfg = loadConfig();
     const workspaceDir = resolveAgentWorkspaceDir(cfg, resolveDefaultAgentId(cfg));
-    const pluginRegistry = loadOpenClawPlugins({
+    const pluginRegistry = loadMtBotPlugins({
       config: cfg,
       workspaceDir,
       logger: {

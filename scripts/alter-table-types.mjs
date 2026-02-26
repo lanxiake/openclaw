@@ -2,7 +2,7 @@
 import "dotenv/config";
 import postgres from "postgres";
 
-const sql = postgres(process.env.DATABASE_URL || "postgresql://localhost:5432/openclaw");
+const sql = postgres(process.env.DATABASE_URL || "postgresql://localhost:5432/mtbot");
 
 try {
   console.log("开始修改表结构...\n");

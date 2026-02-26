@@ -9,7 +9,7 @@
  *
  * 参考文档：https://pay.weixin.qq.com/wiki/doc/apiv3/apis/
  *
- * @author OpenClaw
+ * @author MtBot
  */
 
 import * as crypto from "node:crypto";

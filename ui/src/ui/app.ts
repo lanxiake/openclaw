@@ -78,7 +78,7 @@ import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./contro
 
 declare global {
   interface Window {
-    __OPENCLAW_CONTROL_UI_BASE_PATH__?: string;
+    __MTBOT_CONTROL_UI_BASE_PATH__?: string;
   }
 }
 
@@ -93,8 +93,8 @@ function resolveOnboardingMode(): boolean {
   return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
 }
 
-@customElement("openclaw-app")
-export class OpenClawApp extends LitElement {
+@customElement("mtbot-app")
+export class MtBotApp extends LitElement {
   @state() settings: UiSettings = loadSettings();
   @state() password = "";
   @state() tab: Tab = "chat";

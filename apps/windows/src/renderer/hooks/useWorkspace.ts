@@ -39,7 +39,7 @@ const WORKSPACE_LOCATIONS: WorkspaceLocation[] = [
   { id: 'bootstrap', label: 'BOOTSTRAP.md', icon: '🚀', relativePath: 'BOOTSTRAP.md', group: 'config' },
   // 子目录组
   { id: 'skills', label: 'skills', icon: '⚡', relativePath: 'skills', group: 'directories' },
-  { id: 'hooks', label: 'hooks', icon: '🪝', relativePath: '.openclaw/hooks', group: 'directories' },
+  { id: 'hooks', label: 'hooks', icon: '🪝', relativePath: '.mtbot/hooks', group: 'directories' },
   { id: 'sandbox', label: 'sandbox', icon: '📦', relativePath: 'sandbox', group: 'directories' },
 ]
 

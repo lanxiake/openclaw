@@ -1,5 +1,5 @@
-import OpenClawKit
-import OpenClawProtocol
+import MtBotKit
+import MtBotProtocol
 import CoreGraphics
 import Foundation
 import OSLog
@@ -8,7 +8,7 @@ import OSLog
 final class ExecApprovalsGatewayPrompter {
     static let shared = ExecApprovalsGatewayPrompter()
 
-    private let logger = Logger(subsystem: "ai.openclaw", category: "exec-approvals.gateway")
+    private let logger = Logger(subsystem: "com.yunkun.mtbot", category: "exec-approvals.gateway")
     private var task: Task<Void, Never>?
 
     struct GatewayApprovalRequest: Codable, Sendable {

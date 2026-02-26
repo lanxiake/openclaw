@@ -10,7 +10,7 @@
 
 import { completeSimple, getModel } from "@mariozechner/pi-ai";
 
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { MtBotConfig } from "../../../config/config.js";
 import { createSubsystemLogger } from "../../../logging/subsystem.js";
 
 const logger = createSubsystemLogger("memory/llm/service");
@@ -33,8 +33,8 @@ export interface MemoryLLMServiceConfig {
   timeoutMs: number;
   /** 直接提供 API Key（测试用） */
   apiKey?: string;
-  /** OpenClaw 配置（运行时解析 API Key） */
-  cfg?: OpenClawConfig;
+  /** MtBot 配置（运行时解析 API Key） */
+  cfg?: MtBotConfig;
 }
 
 /**
@@ -150,7 +150,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
  *   maxTokens: 1024,
  *   temperature: 0.3,
  *   timeoutMs: 30000,
- *   cfg: openclawConfig,
+ *   cfg: mtbotConfig,
  * });
  *
  * if (await service.isAvailable()) {
@@ -173,7 +173,7 @@ export class MemoryLLMService {
   /** 缓存的可用性结果 */
   private cachedAvailable = false;
 
-  constructor(config: Partial<MemoryLLMServiceConfig> & { cfg?: OpenClawConfig }) {
+  constructor(config: Partial<MemoryLLMServiceConfig> & { cfg?: MtBotConfig }) {
     this.config = {
       ...DEFAULT_LLM_CONFIG,
       ...config,

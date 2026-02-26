@@ -1,8 +1,8 @@
 /**
  * GatewayClient - WebSocket 客户端
  *
- * 负责与 OpenClaw Gateway 服务器建立和管理 WebSocket 连接
- * 实现 OpenClaw 通信协议的握手流程
+ * 负责与 MtBot Gateway 服务器建立和管理 WebSocket 连接
+ * 实现 MtBot 通信协议的握手流程
  */
 
 import WebSocket from 'ws'
@@ -24,12 +24,12 @@ const log = {
 const PROTOCOL_VERSION = 3
 
 /**
- * 消息类型 (复用 OpenClaw 协议)
+ * 消息类型 (复用 MtBot 协议)
  */
 export type MessageType = 'req' | 'res' | 'event'
 
 /**
- * 消息结构 (复用 OpenClaw 协议)
+ * 消息结构 (复用 MtBot 协议)
  */
 export interface Message {
   type: MessageType
@@ -148,7 +148,7 @@ export interface CommandExecuteRequest {
 /**
  * Gateway 客户端类
  *
- * 实现 OpenClaw Gateway 握手协议：
+ * 实现 MtBot Gateway 握手协议：
  * 1. 建立 WebSocket 连接
  * 2. 等待 connect.challenge 事件
  * 3. 发送 connect 请求
@@ -366,7 +366,7 @@ export class GatewayClient extends EventEmitter {
       maxProtocol: PROTOCOL_VERSION,
       client: {
         id: 'gateway-client', // 使用有效的客户端 ID
-        displayName: 'OpenClaw Windows Assistant',
+        displayName: 'MtBot Windows Assistant',
         version: '0.1.0',
         platform: 'win32',
         mode: 'ui', // 使用有效的客户端 mode

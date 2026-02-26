@@ -1,15 +1,15 @@
 import type { Command } from "commander";
 
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
-import { loadOpenClawPlugins } from "./loader.js";
+import { loadMtBotPlugins } from "./loader.js";
 import type { PluginLogger } from "./types.js";
 
 const log = createSubsystemLogger("plugins");
 
-export function registerPluginCliCommands(program: Command, cfg?: OpenClawConfig) {
+export function registerPluginCliCommands(program: Command, cfg?: MtBotConfig) {
   const config = cfg ?? loadConfig();
   const workspaceDir = resolveAgentWorkspaceDir(config, resolveDefaultAgentId(config));
   const logger: PluginLogger = {
@@ -18,7 +18,7 @@ export function registerPluginCliCommands(program: Command, cfg?: OpenClawConfig
     error: (msg: string) => log.error(msg),
     debug: (msg: string) => log.debug(msg),
   };
-  const registry = loadOpenClawPlugins({
+  const registry = loadMtBotPlugins({
     config,
     workspaceDir,
     logger,

@@ -1,7 +1,7 @@
 import { AGENT_LANE_NESTED } from "../../agents/lanes.js";
 import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
 import { createOutboundSendDeps, type CliDeps } from "../../cli/outbound-send-deps.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { deliverOutboundPayloads } from "../../infra/outbound/deliver.js";
 import { buildOutboundResultEnvelope } from "../../infra/outbound/envelope.js";
@@ -58,7 +58,7 @@ function logNestedOutput(runtime: RuntimeEnv, opts: AgentCommandOpts, output: st
 }
 
 export async function deliverAgentCommandResult(params: {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   deps: CliDeps;
   runtime: RuntimeEnv;
   opts: AgentCommandOpts;

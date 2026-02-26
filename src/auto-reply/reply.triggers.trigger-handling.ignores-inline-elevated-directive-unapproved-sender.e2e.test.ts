@@ -68,7 +68,7 @@ async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
       vi.mocked(abortEmbeddedPiRun).mockClear();
       return await fn(home);
     },
-    { prefix: "openclaw-triggers-" },
+    { prefix: "mtbot-triggers-" },
   );
 }
 
@@ -77,7 +77,7 @@ function makeCfg(home: string) {
     agents: {
       defaults: {
         model: "anthropic/claude-opus-4-5",
-        workspace: join(home, "openclaw"),
+        workspace: join(home, "mtbot"),
       },
     },
     channels: {
@@ -107,7 +107,7 @@ describe("trigger handling", () => {
         agents: {
           defaults: {
             model: "anthropic/claude-opus-4-5",
-            workspace: join(home, "openclaw"),
+            workspace: join(home, "mtbot"),
           },
         },
         tools: {
@@ -145,7 +145,7 @@ describe("trigger handling", () => {
         agents: {
           defaults: {
             model: "anthropic/claude-opus-4-5",
-            workspace: join(home, "openclaw"),
+            workspace: join(home, "mtbot"),
           },
         },
         tools: { elevated: { allowFrom: { discord: ["steipete"] } } },
@@ -158,7 +158,7 @@ describe("trigger handling", () => {
           From: "discord:123",
           To: "user:123",
           Provider: "discord",
-          SenderName: "Peter Steinberger",
+          SenderName: "成都云鲲创想科技有限公司",
           SenderUsername: "steipete",
           SenderTag: "steipete",
           CommandAuthorized: true,
@@ -180,7 +180,7 @@ describe("trigger handling", () => {
         agents: {
           defaults: {
             model: "anthropic/claude-opus-4-5",
-            workspace: join(home, "openclaw"),
+            workspace: join(home, "mtbot"),
           },
         },
         tools: {

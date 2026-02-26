@@ -1,7 +1,7 @@
 import { getOAuthApiKey, type OAuthCredentials } from "@mariozechner/pi-ai";
 import lockfile from "proper-lockfile";
 
-import type { OpenClawConfig } from "../../config/config.js";
+import type { MtBotConfig } from "../../config/config.js";
 import { refreshChutesTokens } from "../chutes-oauth.js";
 import { refreshQwenPortalCredentials } from "../../providers/qwen-portal-oauth.js";
 import { AUTH_STORE_LOCK_OPTIONS, log } from "./constants.js";
@@ -88,7 +88,7 @@ async function refreshOAuthTokenWithLock(params: {
 }
 
 async function tryResolveOAuthProfile(params: {
-  cfg?: OpenClawConfig;
+  cfg?: MtBotConfig;
   store: AuthProfileStore;
   profileId: string;
   agentDir?: string;
@@ -129,7 +129,7 @@ async function tryResolveOAuthProfile(params: {
 }
 
 export async function resolveApiKeyForProfile(params: {
-  cfg?: OpenClawConfig;
+  cfg?: MtBotConfig;
   store: AuthProfileStore;
   profileId: string;
   agentDir?: string;

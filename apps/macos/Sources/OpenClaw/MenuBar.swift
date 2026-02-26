@@ -8,10 +8,10 @@ import Security
 import SwiftUI
 
 @main
-struct OpenClawApp: App {
+struct MtBotApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @State private var state: AppState
-    private static let logger = Logger(subsystem: "ai.openclaw", category: "app")
+    private static let logger = Logger(subsystem: "com.yunkun.mtbot", category: "app")
     private let gatewayManager = GatewayProcessManager.shared
     private let controlChannel = ControlChannel.shared
     private let activityStore = WorkActivityStore.shared
@@ -32,7 +32,7 @@ struct OpenClawApp: App {
     }
 
     init() {
-        OpenClawLogging.bootstrapIfNeeded()
+        MtBotLogging.bootstrapIfNeeded()
         Self.applyAttachOnlyOverrideIfNeeded()
         _state = State(initialValue: AppStateStore.shared)
     }
@@ -252,7 +252,7 @@ private final class StatusItemMouseHandlerView: NSView {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var state: AppState?
-    private let webChatAutoLogger = Logger(subsystem: "ai.openclaw", category: "Chat")
+    private let webChatAutoLogger = Logger(subsystem: "com.yunkun.mtbot", category: "Chat")
     let updaterController: UpdaterProviding = makeUpdaterController()
 
     func application(_: NSApplication, open urls: [URL]) {

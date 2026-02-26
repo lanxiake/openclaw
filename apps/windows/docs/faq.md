@@ -1,4 +1,4 @@
-# OpenClaw Assistant 常见问题 (FAQ)
+# MtBot Assistant 常见问题 (FAQ)
 
 本文档收集了用户常见的问题和解答。
 
@@ -28,8 +28,8 @@
 
 **A:**
 1. 通过"控制面板" > "程序和功能"卸载
-2. 或运行安装目录下的 `Uninstall OpenClaw Assistant.exe`
-3. 如需清除配置数据，删除 `%APPDATA%\OpenClaw Assistant` 目录
+2. 或运行安装目录下的 `Uninstall MtBot Assistant.exe`
+3. 如需清除配置数据，删除 `%APPDATA%\MtBot Assistant` 目录
 
 ### Q: 便携版和安装版有什么区别？
 
@@ -158,7 +158,7 @@
 
 ### Q: 我的数据安全吗？
 
-**A:** OpenClaw Assistant 采取多项措施保护您的数据：
+**A:** MtBot Assistant 采取多项措施保护您的数据：
 - 所有通信使用加密传输
 - 敏感操作需要用户确认
 - 聊天记录仅保存在本地
@@ -216,7 +216,7 @@
 ### Q: 更新后设置丢失了怎么办？
 
 **A:** 正常情况下更新不会丢失设置。如果发生：
-1. 检查 `%APPDATA%\OpenClaw Assistant` 目录
+1. 检查 `%APPDATA%\MtBot Assistant` 目录
 2. 如有备份，恢复 `settings.json` 文件
 3. 如无备份，需要重新配置
 
@@ -228,14 +228,14 @@
 
 **A:**
 1. 查阅本文档和其他用户文档
-2. 访问 [GitHub Issues](https://github.com/openclaw/openclaw/issues) 搜索类似问题
+2. 访问 [GitHub Issues](https://github.com/mtbot/mtbot/issues) 搜索类似问题
 3. 提交新的 Issue 描述您的问题
 4. 加入社区讨论群组
 
 ### Q: 如何反馈 Bug 或建议？
 
 **A:**
-1. 访问 [GitHub Issues](https://github.com/openclaw/openclaw/issues)
+1. 访问 [GitHub Issues](https://github.com/mtbot/mtbot/issues)
 2. 点击"New Issue"
 3. 选择 Bug 报告或功能建议模板
 4. 详细描述问题或建议
@@ -250,7 +250,7 @@
 
 ### Q: 如何参与开发？
 
-**A:** OpenClaw 是开源项目，欢迎贡献：
+**A:** MtBot 是开源项目，欢迎贡献：
 1. Fork 项目仓库
 2. 创建功能分支
 3. 提交 Pull Request
@@ -267,8 +267,8 @@
 
 ## 联系我们
 
-- **GitHub**: https://github.com/openclaw/openclaw
-- **官网**: https://openclaw.ai
-- **邮箱**: support@openclaw.ai
+- **GitHub**: https://github.com/mtbot/mtbot
+- **官网**: https://mtbot.top
+- **邮箱**: support@mtbot.top
 
 如果您的问题未在此列出，请通过上述渠道联系我们。

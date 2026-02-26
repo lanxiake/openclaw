@@ -1,5 +1,5 @@
 import type { SkillSnapshot } from "../../../agents/skills.js";
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { MtBotConfig } from "../../../config/config.js";
 import type { SessionEntry } from "../../../config/sessions.js";
 import type { OriginatingChannelType } from "../../templating.js";
 import type { ElevatedLevel, ReasoningLevel, ThinkLevel, VerboseLevel } from "../directives.js";
@@ -57,7 +57,7 @@ export type FollowupRun = {
     senderE164?: string;
     sessionFile: string;
     workspaceDir: string;
-    config: OpenClawConfig;
+    config: MtBotConfig;
     skillsSnapshot?: SkillSnapshot;
     provider: string;
     model: string;
@@ -82,7 +82,7 @@ export type FollowupRun = {
 };
 
 export type ResolveQueueSettingsParams = {
-  cfg: OpenClawConfig;
+  cfg: MtBotConfig;
   channel?: string;
   sessionEntry?: SessionEntry;
   inlineMode?: QueueMode;

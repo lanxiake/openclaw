@@ -5,7 +5,7 @@ import {
   createWriteTool,
   readTool,
 } from "@mariozechner/pi-coding-agent";
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { isSubagentSessionKey } from "../routing/session-key.js";
 import { resolveGatewayMessageChannel } from "../utils/message-channel.js";
 import { createApplyPatchTool } from "./apply-patch.js";
@@ -16,7 +16,7 @@ import {
   type ProcessToolDefaults,
 } from "./bash-tools.js";
 import { listChannelAgentTools } from "./channel-tools.js";
-import { createOpenClawTools } from "./openclaw-tools.js";
+import { createMtBotTools } from "./mtbot-tools.js";
 import type { ModelAuthMode } from "./model-auth.js";
 import { wrapToolWithAbortSignal } from "./pi-tools.abort.js";
 import { wrapToolWithUserContextGuard } from "./tool-guard.js";
@@ -30,7 +30,7 @@ import {
 import {
   assertRequiredParams,
   CLAUDE_PARAM_GROUPS,
-  createOpenClawReadTool,
+  createMtBotReadTool,
   createSandboxedEditTool,
   createSandboxedReadTool,
   createSandboxedWriteTool,
@@ -85,7 +85,7 @@ function isApplyPatchAllowedForModel(params: {
   });
 }
 
-function resolveExecConfig(cfg: OpenClawConfig | undefined) {
+function resolveExecConfig(cfg: MtBotConfig | undefined) {
   const globalExec = cfg?.tools?.exec;
   return {
     host: globalExec?.host,
@@ -111,7 +111,7 @@ export const __testing = {
   assertRequiredParams,
 } as const;
 
-export function createOpenClawCodingTools(options?: {
+export function createMtBotCodingTools(options?: {
   exec?: ExecToolDefaults & ProcessToolDefaults;
   messageProvider?: string;
   agentAccountId?: string;
@@ -121,7 +121,7 @@ export function createOpenClawCodingTools(options?: {
   sessionKey?: string;
   agentDir?: string;
   workspaceDir?: string;
-  config?: OpenClawConfig;
+  config?: MtBotConfig;
   abortSignal?: AbortSignal;
   /**
    * Provider of the currently selected model (used for provider-specific tool quirks).
@@ -241,7 +241,7 @@ export function createOpenClawCodingTools(options?: {
         return [createSandboxedReadTool(sandboxRoot)];
       }
       const freshReadTool = createReadTool(workspaceRoot);
-      return [createOpenClawReadTool(freshReadTool)];
+      return [createMtBotReadTool(freshReadTool)];
     }
     if (tool.name === "bash" || tool.name === execToolName) {
       return [];
@@ -316,7 +316,7 @@ export function createOpenClawCodingTools(options?: {
     processTool as unknown as AnyAgentTool,
     // Channel docking: include channel-defined agent tools (login, etc.).
     ...listChannelAgentTools({ cfg: options?.config }),
-    ...createOpenClawTools({
+    ...createMtBotTools({
       sandboxBrowserBridgeUrl: sandbox?.browser?.bridgeUrl,
       allowHostBrowserControl: sandbox ? sandbox.browserAllowHostControl : true,
       agentSessionKey: options?.sessionKey,

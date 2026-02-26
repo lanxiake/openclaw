@@ -5,7 +5,7 @@ import { resolveConfigDir, resolveUserPath } from "../utils.js";
 import { resolveBundledPluginsDir } from "./bundled-dir.js";
 import {
   getPackageManifestMetadata,
-  type OpenClawPackageManifest,
+  type MtBotPackageManifest,
   type PackageManifest,
 } from "./manifest.js";
 import type { PluginDiagnostic, PluginOrigin } from "./types.js";
@@ -22,7 +22,7 @@ export type PluginCandidate = {
   packageVersion?: string;
   packageDescription?: string;
   packageDir?: string;
-  packageManifest?: OpenClawPackageManifest;
+  packageManifest?: MtBotPackageManifest;
 };
 
 export type PluginDiscoveryResult = {
@@ -71,7 +71,7 @@ function deriveIdHint(params: {
   }
 
   // Prefer the unscoped name so config keys stay stable even when the npm
-  // package is scoped (example: @openclaw/voice-call -> voice-call).
+  // package is scoped (example: @mtbot/voice-call -> voice-call).
   const unscoped = rawPackageName.includes("/")
     ? (rawPackageName.split("/").pop() ?? rawPackageName)
     : rawPackageName;
@@ -299,7 +299,7 @@ function discoverFromPath(params: {
   }
 }
 
-export function discoverOpenClawPlugins(params: {
+export function discoverMtBotPlugins(params: {
   workspaceDir?: string;
   extraPaths?: string[];
 }): PluginDiscoveryResult {
@@ -328,7 +328,7 @@ export function discoverOpenClawPlugins(params: {
   }
   if (workspaceDir) {
     const workspaceRoot = resolveUserPath(workspaceDir);
-    const workspaceExtDirs = [path.join(workspaceRoot, ".openclaw", "extensions")];
+    const workspaceExtDirs = [path.join(workspaceRoot, ".mtbot", "extensions")];
     for (const dir of workspaceExtDirs) {
       discoverInDirectory({
         dir,

@@ -532,7 +532,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
             />
             <span>开机时自动启动</span>
           </label>
-          <span className="setting-hint">登录系统后自动启动 OpenClaw Assistant</span>
+          <span className="setting-hint">登录系统后自动启动 MtBot Assistant</span>
         </div>
       </div>
     </div>
@@ -937,11 +937,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
    */
   const renderAboutSettings = () => (
     <div className="settings-section">
-      <h3 className="settings-section-title">关于 OpenClaw Assistant</h3>
+      <h3 className="settings-section-title">关于 MtBot Assistant</h3>
 
       <div className="about-content">
         <div className="about-logo">🦞</div>
-        <h2 className="about-name">OpenClaw Assistant</h2>
+        <h2 className="about-name">MtBot Assistant</h2>
         <p className="about-version">版本 {appVersion}</p>
 
         <div className="about-info">
@@ -949,9 +949,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
             <span className="about-label">官方网站</span>
             <button
               className="about-link"
-              onClick={() => window.electronAPI.app.openExternal('https://openclaw.ai')}
+              onClick={() => window.electronAPI.app.openExternal('https://mtbot.top')}
             >
-              openclaw.ai
+              mtbot.top
             </button>
           </div>
 
@@ -960,10 +960,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
             <button
               className="about-link"
               onClick={() =>
-                window.electronAPI.app.openExternal('https://github.com/openclaw/openclaw')
+                window.electronAPI.app.openExternal('https://github.com/mtbot/mtbot')
               }
             >
-              github.com/openclaw/openclaw
+              github.com/mtbot/mtbot
             </button>
           </div>
 
@@ -972,7 +972,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
             <button
               className="about-link"
               onClick={() =>
-                window.electronAPI.app.openExternal('https://github.com/openclaw/openclaw/issues')
+                window.electronAPI.app.openExternal('https://github.com/mtbot/mtbot/issues')
               }
             >
               提交 Issue
@@ -982,13 +982,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isConnected, isConne
 
         <div className="about-description">
           <p>
-            OpenClaw 是一个开源的 AI 个人助理平台，让你能够在自己的设备上运行智能助理，
+            MtBot 是一个开源的 AI 个人助理平台，让你能够在自己的设备上运行智能助理，
             管理文件、执行任务、连接各种服务。
           </p>
         </div>
 
         <div className="about-footer">
-          <p>© 2024-2026 OpenClaw Team</p>
+          <p>© 2024-2026 MtBot Team</p>
           <p>基于 MIT 许可证开源</p>
         </div>
 

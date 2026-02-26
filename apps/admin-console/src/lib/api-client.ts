@@ -4,7 +4,7 @@
  * 创建并导出 AdminApiClient 实例，供 Hooks 使用
  */
 
-import { createAdminApiClient, type AdminApiClient } from "@openclaw/api-client/admin";
+import { createAdminApiClient, type AdminApiClient } from "@mtbot/api-client/admin";
 import { STORAGE_KEYS } from "./constants";
 
 /**

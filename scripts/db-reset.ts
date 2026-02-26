@@ -100,7 +100,7 @@ function printTargets(opts: CliOptions): void {
   const resetAll = !opts.hasServiceFilter;
 
   console.log("\n========================================");
-  console.log("  OpenClaw 开发环境数据库重置");
+  console.log("  MtBot 开发环境数据库重置");
   console.log("========================================\n");
 
   if (resetAll || opts.pg) {
@@ -388,7 +388,7 @@ async function resetMinio(): Promise<ResetResult> {
 /**
  * 重置 Milvus 向量数据库
  *
- * 删除 openclaw_memories collection 并重新创建（含 HNSW 索引）
+ * 删除 mtbot_memories collection 并重新创建（含 HNSW 索引）
  * Milvus SDK 在连接失败时可能抛出 unhandled rejection，这里通过临时拦截来防止进程崩溃。
  *
  * @returns 重置结果

@@ -56,9 +56,9 @@ export const ADMIN_TOKEN_CONFIG = {
   /** 每个管理员最多活跃会话数 */
   maxSessionsPerAdmin: 3,
   /** 令牌签发者 */
-  issuer: "openclaw-admin",
+  issuer: "mtbot-admin",
   /** 令牌受众 */
-  audience: "openclaw-admin-api",
+  audience: "mtbot-admin-api",
 };
 
 /**

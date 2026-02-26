@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# OpenClaw 远程构建脚本（在服务器上运行）
+# MtBot 远程构建脚本（在服务器上运行）
 #
 # 用法:
 #   ./remote-build.sh all        # 构建所有服务
@@ -54,7 +54,7 @@ build_gateway() {
 
     cd "${SRC_DIR}"
     docker build \
-        -t openclaw-gateway:latest \
+        -t mtbot-gateway:latest \
         -f Dockerfile \
         .
 
@@ -67,7 +67,7 @@ build_api() {
 
     cd "${SRC_DIR}"
     docker build \
-        -t openclaw-api-server:latest \
+        -t mtbot-api-server:latest \
         -f apps/api-server/Dockerfile \
         .
 
@@ -121,9 +121,9 @@ run_migrate() {
     fi
 
     # 使用 localhost:22001 连接（主机网络）
-    export DATABASE_URL="postgresql://${POSTGRES_USER:-openclaw_admin}:${POSTGRES_PASSWORD:-Oc%402026!Pg%23Secure}@localhost:22001/${POSTGRES_DB:-openclaw_prod}"
+    export DATABASE_URL="postgresql://${POSTGRES_USER:-mtbot_admin}:${POSTGRES_PASSWORD:-Oc%402026!Pg%23Secure}@localhost:22001/${POSTGRES_DB:-mtbot_prod}"
 
-    log_info "数据库连接: localhost:22001/${POSTGRES_DB:-openclaw_prod}"
+    log_info "数据库连接: localhost:22001/${POSTGRES_DB:-mtbot_prod}"
 
     # 先构建（迁移脚本需要 dist/）
     pnpm build 2>/dev/null || true

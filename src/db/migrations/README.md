@@ -65,7 +65,7 @@ DATABASE_URL=postgresql://user:password@host:port/database
 1. **备份数据库**
 
    ```bash
-   pg_dump -h 10.157.152.40 -p 22001 -U openclaw_admin openclaw_prod > backup_$(date +%Y%m%d_%H%M%S).sql
+   pg_dump -h 10.157.152.40 -p 22001 -U mtbot_admin mtbot_prod > backup_$(date +%Y%m%d_%H%M%S).sql
    ```
 
 2. **测试迁移（可选）**
@@ -79,7 +79,7 @@ DATABASE_URL=postgresql://user:password@host:port/database
 3. **执行生产迁移**
 
    ```bash
-   DATABASE_URL=postgresql://openclaw_admin:Oc%402026!Pg%23Secure@10.157.152.40:22001/openclaw_prod pnpm db:migrate
+   DATABASE_URL=postgresql://mtbot_admin:Oc%402026!Pg%23Secure@10.157.152.40:22001/mtbot_prod pnpm db:migrate
    ```
 
 4. **验证迁移**

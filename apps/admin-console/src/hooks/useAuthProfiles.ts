@@ -11,7 +11,7 @@ import type {
   UpsertAuthProfileRequest,
   UpdateAuthProfileRequest,
   AuthProfileOrder,
-} from '@openclaw/api-client/admin'
+} from '@mtbot/api-client/admin'
 
 const QUERY_KEY = ['admin', 'auth-profiles'] as const
 const ORDERS_QUERY_KEY = ['admin', 'auth-profile-orders'] as const

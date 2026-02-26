@@ -13,9 +13,9 @@ import './AuthView.css'
 
 // localStorage keys for remember password
 const STORAGE_KEYS = {
-  REMEMBER_PASSWORD: 'openclaw_remember_password',
-  SAVED_IDENTIFIER: 'openclaw_saved_identifier',
-  SAVED_PASSWORD: 'openclaw_saved_password',
+  REMEMBER_PASSWORD: 'mtbot_remember_password',
+  SAVED_IDENTIFIER: 'mtbot_saved_identifier',
+  SAVED_PASSWORD: 'mtbot_saved_password',
 }
 
 /**
@@ -306,7 +306,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
    * 紧接着调用 saveSettings 会因为闭包捕获旧 settings 而保存过期数据。
    */
   const persistGatewayUrl = useCallback((url: string) => {
-    const STORAGE_KEY = 'openclaw-assistant-settings'
+    const STORAGE_KEY = 'mtbot-assistant-settings'
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
       const current = raw ? JSON.parse(raw) : {}
@@ -378,7 +378,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
               <circle cx="24" cy="24" r="6" fill="white"/>
             </svg>
           </div>
-          <h1 className="auth-title">OpenClaw</h1>
+          <h1 className="auth-title">MtBot</h1>
           <p className="auth-subtitle">智能助理客户端</p>
         </div>
 

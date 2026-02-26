@@ -15,17 +15,17 @@ Nextcloud Talk ships as a plugin and is not bundled with the core install.
 Install via CLI (npm registry):
 
 ```bash
-openclaw plugins install @openclaw/nextcloud-talk
+mtbot plugins install @mtbot/nextcloud-talk
 ```
 
 Local checkout (when running from a git repo):
 
 ```bash
-openclaw plugins install ./extensions/nextcloud-talk
+mtbot plugins install ./extensions/nextcloud-talk
 ```
 
 If you choose Nextcloud Talk during configure/onboarding and a git checkout is detected,
-OpenClaw will offer the local install path automatically.
+MtBot will offer the local install path automatically.
 
 Details: [Plugins](/plugin)
 
@@ -34,10 +34,10 @@ Details: [Plugins](/plugin)
 1. Install the Nextcloud Talk plugin.
 2. On your Nextcloud server, create a bot:
    ```bash
-   ./occ talk:bot:install "OpenClaw" "<shared-secret>" "<webhook-url>" --feature reaction
+   ./occ talk:bot:install "MtBot" "<shared-secret>" "<webhook-url>" --feature reaction
    ```
 3. Enable the bot in the target room settings.
-4. Configure OpenClaw:
+4. Configure MtBot:
    - Config: `channels.nextcloud-talk.baseUrl` + `channels.nextcloud-talk.botSecret`
    - Or env: `NEXTCLOUD_TALK_BOT_SECRET` (default account only)
 5. Restart the gateway (or finish onboarding).
@@ -68,8 +68,8 @@ Minimal config:
 
 - Default: `channels.nextcloud-talk.dmPolicy = "pairing"`. Unknown senders get a pairing code.
 - Approve via:
-  - `openclaw pairing list nextcloud-talk`
-  - `openclaw pairing approve nextcloud-talk <CODE>`
+  - `mtbot pairing list nextcloud-talk`
+  - `mtbot pairing approve nextcloud-talk <CODE>`
 - Public DMs: `channels.nextcloud-talk.dmPolicy="open"` plus `channels.nextcloud-talk.allowFrom=["*"]`.
 
 ## Rooms (groups)

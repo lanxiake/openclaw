@@ -1,11 +1,11 @@
 /**
- * OpenClaw API 客户端
+ * MtBot API 客户端
  *
  * 提供统一的 HTTP API 客户端，支持浏览器和 Node.js 环境
  *
  * @example
  * ```typescript
- * import { createAdminApiClient } from '@openclaw/api-client/admin';
+ * import { createAdminApiClient } from '@mtbot/api-client/admin';
  *
  * const client = createAdminApiClient({
  *   baseUrl: 'http://localhost:3000',

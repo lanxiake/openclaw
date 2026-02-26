@@ -1,13 +1,13 @@
 ---
-summary: "Run OpenClaw in a sandboxed macOS VM (local or hosted) when you need isolation or iMessage"
+summary: "Run MtBot in a sandboxed macOS VM (local or hosted) when you need isolation or iMessage"
 read_when:
-  - You want OpenClaw isolated from your main macOS environment
+  - You want MtBot isolated from your main macOS environment
   - You want iMessage integration (BlueBubbles) in a sandbox
   - You want a resettable macOS environment you can clone
   - You want to compare local vs hosted macOS VM options
 ---
 
-# OpenClaw on macOS VMs (Sandboxing)
+# MtBot on macOS VMs (Sandboxing)
 
 ## Recommended default (most users)
 
@@ -21,7 +21,7 @@ Use a macOS VM when you specifically need macOS-only capabilities (iMessage/Blue
 
 ### Local VM on your Apple Silicon Mac (Lume)
 
-Run OpenClaw in a sandboxed macOS VM on your existing Apple Silicon Mac using [Lume](https://cua.ai/docs/lume).
+Run MtBot in a sandboxed macOS VM on your existing Apple Silicon Mac using [Lume](https://cua.ai/docs/lume).
 
 This gives you:
 
@@ -44,10 +44,10 @@ Once you have SSH access to a macOS VM, continue at step 6 below.
 ## Quick path (Lume, experienced users)
 
 1. Install Lume
-2. `lume create openclaw --os macos --ipsw latest`
+2. `lume create mtbot --os macos --ipsw latest`
 3. Complete Setup Assistant, enable Remote Login (SSH)
-4. `lume run openclaw --no-display`
-5. SSH in, install OpenClaw, configure channels
+4. `lume run mtbot --no-display`
+5. SSH in, install MtBot, configure channels
 6. Done
 
 ---
@@ -86,7 +86,7 @@ Docs: [Lume Installation](https://cua.ai/docs/lume/guide/getting-started/install
 ## 2) Create the macOS VM
 
 ```bash
-lume create openclaw --os macos --ipsw latest
+lume create mtbot --os macos --ipsw latest
 ```
 
 This downloads macOS and creates the VM. A VNC window opens automatically.
@@ -114,7 +114,7 @@ After setup completes, enable SSH:
 ## 4) Get the VM's IP address
 
 ```bash
-lume get openclaw
+lume get mtbot
 ```
 
 Look for the IP address (usually `192.168.64.x`).
@@ -131,13 +131,13 @@ Replace `youruser` with the account you created, and the IP with your VM's IP.
 
 ---
 
-## 6) Install OpenClaw
+## 6) Install MtBot
 
 Inside the VM:
 
 ```bash
-npm install -g openclaw@latest
-openclaw onboard --install-daemon
+npm install -g mtbot@latest
+mtbot onboard --install-daemon
 ```
 
 Follow the onboarding prompts to set up your model provider (Anthropic, OpenAI, etc.).
@@ -149,7 +149,7 @@ Follow the onboarding prompts to set up your model provider (Anthropic, OpenAI, 
 Edit the config file:
 
 ```bash
-nano ~/.openclaw/openclaw.json
+nano ~/.mtbot/mtbot.json
 ```
 
 Add your channels:
@@ -171,7 +171,7 @@ Add your channels:
 Then login to WhatsApp (scan QR):
 
 ```bash
-openclaw channels login
+mtbot channels login
 ```
 
 ---
@@ -181,23 +181,23 @@ openclaw channels login
 Stop the VM and restart without display:
 
 ```bash
-lume stop openclaw
-lume run openclaw --no-display
+lume stop mtbot
+lume run mtbot --no-display
 ```
 
-The VM runs in the background. OpenClaw's daemon keeps the gateway running.
+The VM runs in the background. MtBot's daemon keeps the gateway running.
 
 To check status:
 
 ```bash
-ssh youruser@192.168.64.X "openclaw status"
+ssh youruser@192.168.64.X "mtbot status"
 ```
 
 ---
 
 ## Bonus: iMessage integration
 
-This is the killer feature of running on macOS. Use [BlueBubbles](https://bluebubbles.app) to add iMessage to OpenClaw.
+This is the killer feature of running on macOS. Use [BlueBubbles](https://bluebubbles.app) to add iMessage to MtBot.
 
 Inside the VM:
 
@@ -206,7 +206,7 @@ Inside the VM:
 3. Enable the Web API and set a password
 4. Point BlueBubbles webhooks at your gateway (example: `https://your-gateway-host:3000/bluebubbles-webhook?password=<password>`)
 
-Add to your OpenClaw config:
+Add to your MtBot config:
 
 ```json
 {
@@ -231,16 +231,16 @@ Full setup details: [BlueBubbles channel](/channels/bluebubbles)
 Before customizing further, snapshot your clean state:
 
 ```bash
-lume stop openclaw
-lume clone openclaw openclaw-golden
+lume stop mtbot
+lume clone mtbot mtbot-golden
 ```
 
 Reset anytime:
 
 ```bash
-lume stop openclaw && lume delete openclaw
-lume clone openclaw-golden openclaw
-lume run openclaw --no-display
+lume stop mtbot && lume delete mtbot
+lume clone mtbot-golden mtbot
+lume run mtbot --no-display
 ```
 
 ---
@@ -262,9 +262,9 @@ For true always-on, consider a dedicated Mac mini or a small VPS. See [VPS hosti
 | Problem                  | Solution                                                                           |
 | ------------------------ | ---------------------------------------------------------------------------------- |
 | Can't SSH into VM        | Check "Remote Login" is enabled in VM's System Settings                            |
-| VM IP not showing        | Wait for VM to fully boot, run `lume get openclaw` again                           |
+| VM IP not showing        | Wait for VM to fully boot, run `lume get mtbot` again                           |
 | Lume command not found   | Add `~/.local/bin` to your PATH                                                    |
-| WhatsApp QR not scanning | Ensure you're logged into the VM (not host) when running `openclaw channels login` |
+| WhatsApp QR not scanning | Ensure you're logged into the VM (not host) when running `mtbot channels login` |
 
 ---
 

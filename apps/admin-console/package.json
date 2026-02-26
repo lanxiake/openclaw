@@ -1,5 +1,5 @@
 {
-  "name": "@openclaw/admin-console",
+  "name": "@mtbot/admin-console",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
-    "@openclaw/api-client": "workspace:*",
+    "@mtbot/api-client": "workspace:*",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-dialog": "^1.1.1",

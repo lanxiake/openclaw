@@ -3,7 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 
-console.log("🦞 OpenClaw Gateway - PKG 打包测试版本");
+console.log("🦞 MtBot Gateway - PKG 打包测试版本");
 console.log("=".repeat(50));
 
 // 测试基本功能

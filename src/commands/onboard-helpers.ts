@@ -6,7 +6,7 @@ import { inspect } from "node:util";
 import { cancel, isCancel } from "@clack/prompts";
 
 import { DEFAULT_AGENT_WORKSPACE_DIR, ensureAgentWorkspace } from "../agents/workspace.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { MtBotConfig } from "../config/config.js";
 import { CONFIG_PATH } from "../config/config.js";
 import { resolveSessionTranscriptsDirForAgent } from "../config/sessions.js";
 import { callGateway } from "../gateway/call.js";
@@ -36,7 +36,7 @@ export function guardCancel<T>(value: T | symbol, runtime: RuntimeEnv): T {
   return value;
 }
 
-export function summarizeExistingConfig(config: OpenClawConfig): string {
+export function summarizeExistingConfig(config: MtBotConfig): string {
   const rows: string[] = [];
   const defaults = config.agents?.defaults;
   if (defaults?.workspace) {
@@ -84,16 +84,16 @@ export function printWizardHeader(runtime: RuntimeEnv) {
     "██░███░██░▀▀░██░▄▄▄██░█░█░██░█████░████░▀▀░██░█░█░██",
     "██░▀▀▀░██░█████░▀▀▀██░██▄░██░▀▀▄██░▀▀░█░██░██▄▀▄▀▄██",
     "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀",
-    "                  🦞 OPENCLAW 🦞                    ",
+    "                  🦞 MTBOT 🦞                    ",
     " ",
   ].join("\n");
   runtime.log(header);
 }
 
 export function applyWizardMetadata(
-  cfg: OpenClawConfig,
+  cfg: MtBotConfig,
   params: { command: string; mode: OnboardMode },
-): OpenClawConfig {
+): MtBotConfig {
   const commit = process.env.GIT_COMMIT?.trim() || process.env.GIT_SHA?.trim() || undefined;
   return {
     ...cfg,
@@ -199,8 +199,8 @@ export function formatControlUiSshHint(params: {
     localUrl,
     authedUrl,
     "Docs:",
-    "https://docs.openclaw.ai/gateway/remote",
-    "https://docs.openclaw.ai/web/control-ui",
+    "https://docs.mtbot.top/gateway/remote",
+    "https://docs.mtbot.top/web/control-ui",
   ]
     .filter(Boolean)
     .join("\n");
