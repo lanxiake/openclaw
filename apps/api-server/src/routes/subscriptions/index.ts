@@ -24,6 +24,7 @@ import { getCreditService } from "../../../../../src/assistant/credits/credit-se
 import { getConfigValue } from "../../../../../src/assistant/config/config-service.js";
 import { CONFIG_KEYS } from "../../../../../src/db/schema/system-config.js";
 import { getRequestUser } from "../../plugins/auth.js";
+import { getDeviceQuota } from "../../../../../src/assistant/device/service.js";
 
 /**
  * 注册用户订阅路由
@@ -48,11 +49,12 @@ export function registerSubscriptionsRoutes(server: FastifyInstance): void {
 
       request.log.info({ userId: user.userId }, "[subscriptions] 获取订阅概览");
 
-      const [subscription, plan, dailyUsage, monthlyUsage] = await Promise.all([
+      const [subscription, plan, dailyUsage, monthlyUsage, deviceQuota] = await Promise.all([
         getUserSubscription(user.userId),
         getUserPlan(user.userId),
         getUserDailyUsage(user.userId),
         getUserMonthlyUsage(user.userId),
+        getDeviceQuota(user.userId).catch(() => null),
       ]);
 
       /**
@@ -82,10 +84,11 @@ export function registerSubscriptionsRoutes(server: FastifyInstance): void {
       };
 
       if (quotas.maxDevices > 0) {
+        const deviceUsed = deviceQuota?.currentCount ?? 0;
         usage.devices = {
-          used: 0, // TODO: 从设备服务获取实际设备数
+          used: deviceUsed,
           limit: quotas.maxDevices,
-          percent: 0,
+          percent: calcPercent(deviceUsed, quotas.maxDevices),
         };
       }
 

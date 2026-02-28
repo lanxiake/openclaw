@@ -21,10 +21,7 @@ import * as configModule from "../config/config.js";
 import { emitAgentEvent, onAgentEvent } from "../infra/agent-events.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
-import {
-  createTelegramTestPlugin,
-  createTestRegistry,
-} from "../test-utils/channel-plugins.js";
+import { createTelegramTestPlugin, createTestRegistry } from "../test-utils/channel-plugins.js";
 import { agentCommand } from "./agent.js";
 
 const runtime: RuntimeEnv = {

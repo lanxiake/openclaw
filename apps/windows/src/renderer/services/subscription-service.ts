@@ -64,6 +64,9 @@ export interface UsageStats {
   }
 }
 
+/** 默认 API 基础 URL（与主进程 OPENCLAW_API_BASE_URL 未设置时的默认值一致） */
+const DEFAULT_API_BASE_URL = 'http://127.0.0.1:3000'
+
 /**
  * 订阅管理服务
  */
@@ -71,8 +74,15 @@ export class SubscriptionService {
   private baseUrl: string
   private accessToken: string | null = null
 
-  constructor(baseUrl = 'http://127.0.0.1:3000') {
+  constructor(baseUrl = DEFAULT_API_BASE_URL) {
     this.baseUrl = baseUrl
+  }
+
+  /**
+   * 设置 API 基础 URL（通常由主进程 OPENCLAW_API_BASE_URL 或设置项同步而来）
+   */
+  setBaseUrl(url: string): void {
+    this.baseUrl = url
   }
 
   /**

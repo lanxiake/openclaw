@@ -9,9 +9,9 @@ import { STORAGE_KEYS } from "./constants";
 
 /**
  * API 服务器地址
- * 优先使用环境变量，否则使用相对路径（同源部署）
+ * 优先使用环境变量，否则使用当前域名（同源部署）
  */
-const API_BASE_URL = import.meta.env.VITE_API_SERVER_URL || "";
+const API_BASE_URL = import.meta.env.VITE_API_SERVER_URL || window.location.origin;
 
 /**
  * 全局 API 客户端实例

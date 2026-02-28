@@ -1,14 +1,13 @@
 /**
- * MemoriesView Component - 用户记忆管理视图
+ * MemoriesView Component - 用户记忆查看视图
  *
- * 显示用户的记忆列表，支持：
+ * 只读显示用户的记忆列表，支持：
  * - 按类型过滤（情景记忆/用户画像/偏好设置/事实知识）
- * - 创建新记忆
- * - 编辑记忆内容
- * - 删除记忆
+ * - 分页加载
+ * - 刷新
  */
 
-import React, { useState } from 'react'
+import React from 'react'
 import {
   useMemories,
   MEMORY_TYPE_LABELS,
@@ -52,15 +51,11 @@ const TYPE_OPTIONS: Array<{ value: MemoryType | ''; label: string }> = [
 ]
 
 /**
- * 记忆卡片组件
+ * 记忆卡片组件（只读）
  */
 const MemoryCard: React.FC<{
   memory: MemoryItem
-  onEdit: (memory: MemoryItem) => void
-  onDelete: (id: string) => void
-}> = ({ memory, onEdit, onDelete }) => {
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
-
+}> = ({ memory }) => {
   return (
     <div className="memory-card">
       <div className="memory-card-header">
@@ -82,117 +77,6 @@ const MemoryCard: React.FC<{
       )}
       <div className="memory-card-footer">
         <span className="memory-time">{formatDateTime(memory.updatedAt || memory.createdAt)}</span>
-        <div className="memory-actions">
-          <button className="btn-edit" onClick={() => onEdit(memory)} title="编辑">
-            编辑
-          </button>
-          {showConfirmDelete ? (
-            <span className="confirm-delete">
-              <button className="btn-confirm-delete" onClick={() => { onDelete(memory.id); setShowConfirmDelete(false) }}>
-                确认删除
-              </button>
-              <button className="btn-cancel-delete" onClick={() => setShowConfirmDelete(false)}>
-                取消
-              </button>
-            </span>
-          ) : (
-            <button className="btn-delete" onClick={() => setShowConfirmDelete(true)} title="删除">
-              删除
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/**
- * 编辑/创建记忆对话框
- */
-const MemoryDialog: React.FC<{
-  mode: 'create' | 'edit'
-  memory?: MemoryItem | null
-  onSave: (data: { type: MemoryType; content: string; category?: string; importance?: number }) => Promise<boolean>
-  onCancel: () => void
-}> = ({ mode, memory, onSave, onCancel }) => {
-  const [type, setType] = useState<MemoryType>(memory?.type ?? 'fact')
-  const [content, setContent] = useState(memory?.content ?? '')
-  const [category, setCategory] = useState(memory?.category ?? '')
-  const [importance, setImportance] = useState(memory?.importance ?? 5)
-  const [saving, setSaving] = useState(false)
-
-  const handleSave = async () => {
-    if (!content.trim()) return
-    setSaving(true)
-    const success = await onSave({
-      type,
-      content: content.trim(),
-      category: category.trim() || undefined,
-      importance,
-    })
-    setSaving(false)
-    if (success) {
-      onCancel()
-    }
-  }
-
-  return (
-    <div className="dialog-overlay" onClick={onCancel}>
-      <div className="dialog memory-dialog" onClick={(e) => e.stopPropagation()}>
-        <h3>{mode === 'create' ? '添加记忆' : '编辑记忆'}</h3>
-
-        <div className="form-group">
-          <label>类型</label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as MemoryType)}
-            disabled={mode === 'edit'}
-          >
-            {Object.entries(MEMORY_TYPE_LABELS).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>分类（可选）</label>
-          <input
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="如：personal, work, hobby..."
-          />
-        </div>
-
-        <div className="form-group">
-          <label>内容</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="输入记忆内容..."
-            rows={5}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>重要度: {importance}</label>
-          <input
-            type="range"
-            min="1"
-            max="10"
-            value={importance}
-            onChange={(e) => setImportance(Number(e.target.value))}
-          />
-        </div>
-
-        <div className="dialog-actions">
-          <button className="btn-secondary" onClick={onCancel} disabled={saving}>
-            取消
-          </button>
-          <button className="btn-primary" onClick={handleSave} disabled={saving || !content.trim()}>
-            {saving ? '保存中...' : '保存'}
-          </button>
-        </div>
       </div>
     </div>
   )
@@ -212,49 +96,7 @@ export const MemoriesView: React.FC = () => {
     refresh,
     loadMore,
     hasMore,
-    createMemory,
-    updateMemory,
-    deleteMemory,
   } = useMemories()
-
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [editingMemory, setEditingMemory] = useState<MemoryItem | null>(null)
-
-  /**
-   * 处理创建
-   */
-  const handleCreate = async (data: {
-    type: MemoryType
-    content: string
-    category?: string
-    importance?: number
-  }): Promise<boolean> => {
-    return createMemory(data)
-  }
-
-  /**
-   * 处理编辑保存
-   */
-  const handleEditSave = async (data: {
-    type: MemoryType
-    content: string
-    category?: string
-    importance?: number
-  }): Promise<boolean> => {
-    if (!editingMemory) return false
-    return updateMemory(editingMemory.id, {
-      content: data.content,
-      category: data.category,
-      importance: data.importance,
-    })
-  }
-
-  /**
-   * 处理删除
-   */
-  const handleDelete = async (id: string) => {
-    await deleteMemory(id)
-  }
 
   return (
     <div className="memories-view">
@@ -262,9 +104,6 @@ export const MemoriesView: React.FC = () => {
       <div className="view-header">
         <h2>记忆管理</h2>
         <div className="header-actions">
-          <button className="btn-primary" onClick={() => setShowCreateDialog(true)}>
-            添加记忆
-          </button>
           <button className="btn-refresh" onClick={refresh} disabled={isLoading}>
             {isLoading ? '刷新中...' : '刷新'}
           </button>
@@ -297,7 +136,7 @@ export const MemoriesView: React.FC = () => {
       {memories.length === 0 && !isLoading ? (
         <div className="empty-state">
           <p>暂无记忆数据</p>
-          <p className="empty-hint">AI 助手会在对话中自动记住你的偏好和重要信息，你也可以手动添加。</p>
+          <p className="empty-hint">AI 助手会在对话中自动记住你的偏好和重要信息。</p>
         </div>
       ) : (
         <div className="memories-list">
@@ -305,8 +144,6 @@ export const MemoriesView: React.FC = () => {
             <MemoryCard
               key={memory.id}
               memory={memory}
-              onEdit={setEditingMemory}
-              onDelete={handleDelete}
             />
           ))}
         </div>
@@ -319,25 +156,6 @@ export const MemoriesView: React.FC = () => {
             加载更多
           </button>
         </div>
-      )}
-
-      {/* 创建对话框 */}
-      {showCreateDialog && (
-        <MemoryDialog
-          mode="create"
-          onSave={handleCreate}
-          onCancel={() => setShowCreateDialog(false)}
-        />
-      )}
-
-      {/* 编辑对话框 */}
-      {editingMemory && (
-        <MemoryDialog
-          mode="edit"
-          memory={editingMemory}
-          onSave={handleEditSave}
-          onCancel={() => setEditingMemory(null)}
-        />
       )}
     </div>
   )

@@ -2,10 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { extractMessagingToolSend } from "./pi-embedded-subscribe.tools.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
-import {
-  createTelegramTestPlugin,
-  createTestRegistry,
-} from "../test-utils/channel-plugins.js";
+import { createTelegramTestPlugin, createTestRegistry } from "../test-utils/channel-plugins.js";
 
 describe("extractMessagingToolSend", () => {
   beforeEach(() => {

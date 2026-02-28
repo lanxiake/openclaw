@@ -70,3 +70,29 @@ export class ApiError extends Error {
     this.name = "ApiError";
   }
 }
+
+// ============ 验证码相关 ============
+
+/** 滑动验证码挑战 */
+export interface CaptchaChallenge {
+  captchaId: string;
+  backgroundImage: string;
+  sliderImage: string;
+  sliderY: number;
+}
+
+/** 验证码验证请求 */
+export interface CaptchaVerifyRequest {
+  captchaId: string;
+  sliderX: number;
+}
+
+/** 验证码验证响应 */
+export interface CaptchaVerifyResponse {
+  token?: string;
+}
+
+/** RSA 公钥响应 */
+export interface PublicKeyResponse {
+  publicKey: string;
+}

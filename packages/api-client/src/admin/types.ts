@@ -32,6 +32,7 @@ export interface LoginRequest {
   username: string;
   password: string;
   mfaCode?: string;
+  captchaToken?: string;
 }
 
 /**

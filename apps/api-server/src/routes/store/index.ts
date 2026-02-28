@@ -16,6 +16,7 @@ import {
   getStoreStats,
   searchSkills,
   type StoreFilters,
+  type StoreSkillInfo,
 } from "../../../../../src/assistant/skills/store.js";
 import {
   getCategoryList,
@@ -35,6 +36,37 @@ import { downloadSkillFile } from "../../../../../src/assistant/skills/skill-sto
  */
 function getRequestUser(request: FastifyRequest): { userId: string } | null {
   return (request as unknown as { user?: { userId: string } }).user ?? null;
+}
+
+/**
+ * 为技能列表标记当前用户的安装状态
+ *
+ * 查询 userInstalledSkills 表，将 installed/installedVersion/hasUpdate 字段注入到每个技能中。
+ * 未登录时直接返回原列表。
+ */
+async function markInstalledStatus(
+  skills: StoreSkillInfo[],
+  userId: string | null,
+): Promise<StoreSkillInfo[]> {
+  if (!userId || skills.length === 0) return skills;
+
+  const installed = await getUserInstalledSkills(userId);
+  const installedMap = new Map(
+    installed.map((r) => [r.installed.skillItemId, r.installed.installedVersion]),
+  );
+
+  return skills.map((skill) => {
+    const ver = installedMap.get(skill.id);
+    if (ver) {
+      return {
+        ...skill,
+        installed: true,
+        installedVersion: ver,
+        hasUpdate: ver !== skill.version,
+      };
+    }
+    return skill;
+  });
 }
 
 /**
@@ -68,10 +100,12 @@ export function registerStoreRoutes(server: FastifyInstance): void {
       };
 
       const result = await queryStoreSkills(filters);
+      const user = getRequestUser(request);
+      const skills = await markInstalledStatus(result.skills, user?.userId ?? null);
 
       return {
         success: true,
-        data: result.skills,
+        data: skills,
         meta: {
           total: result.total,
           limit: filters.limit ?? 20,
@@ -92,7 +126,9 @@ export function registerStoreRoutes(server: FastifyInstance): void {
       request.log.info("[store] 查询推荐技能");
 
       const limit = query.limit ? parseInt(query.limit, 10) : 10;
-      const skills = await getFeaturedSkills(limit);
+      const featuredSkills = await getFeaturedSkills(limit);
+      const user = getRequestUser(request);
+      const skills = await markInstalledStatus(featuredSkills, user?.userId ?? null);
 
       return { success: true, data: skills };
     },
@@ -109,7 +145,9 @@ export function registerStoreRoutes(server: FastifyInstance): void {
       request.log.info("[store] 查询热门技能");
 
       const limit = query.limit ? parseInt(query.limit, 10) : 10;
-      const skills = await getPopularSkills(limit);
+      const popularSkills = await getPopularSkills(limit);
+      const user = getRequestUser(request);
+      const skills = await markInstalledStatus(popularSkills, user?.userId ?? null);
 
       return { success: true, data: skills };
     },
@@ -126,7 +164,9 @@ export function registerStoreRoutes(server: FastifyInstance): void {
       request.log.info("[store] 查询最新技能");
 
       const limit = query.limit ? parseInt(query.limit, 10) : 10;
-      const skills = await getRecentSkills(limit);
+      const recentSkills = await getRecentSkills(limit);
+      const user = getRequestUser(request);
+      const skills = await markInstalledStatus(recentSkills, user?.userId ?? null);
 
       return { success: true, data: skills };
     },
@@ -154,7 +194,9 @@ export function registerStoreRoutes(server: FastifyInstance): void {
       request.log.info({ query: query.q }, "[store] 搜索技能");
 
       const limit = query.limit ? parseInt(query.limit, 10) : 20;
-      const skills = await searchSkills(query.q, limit);
+      const searchResults = await searchSkills(query.q, limit);
+      const user = getRequestUser(request);
+      const skills = await markInstalledStatus(searchResults, user?.userId ?? null);
 
       return { success: true, data: skills };
     },
@@ -280,7 +322,10 @@ export function registerStoreRoutes(server: FastifyInstance): void {
         });
       }
 
-      return { success: true, data: skill };
+      const user = getRequestUser(request);
+      const [markedSkill] = await markInstalledStatus([skill], user?.userId ?? null);
+
+      return { success: true, data: markedSkill };
     },
   );
 

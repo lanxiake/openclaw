@@ -2,16 +2,19 @@
  * AuthView - 用户认证视图
  *
  * 包含登录和注册表单的认证容器组件。
- * 使用前端 SVG 图形验证码替代手机/邮箱验证码。
+ * 使用服务端滑动验证码 + RSA 密码加密。
  */
 
 import React, { useState, useCallback, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { useCaptcha } from '../hooks/useCaptcha'
+import { useServerCaptcha } from '../hooks/useServerCaptcha'
 import { useSettings } from '../hooks/useSettings'
+import { SlidingCaptcha } from './SlidingCaptcha'
+import { encryptPassword } from '../utils/rsa-encrypt'
 import './AuthView.css'
+import './SlidingCaptcha.css'
 
-// localStorage keys for remember password
+// localStorage keys
 const STORAGE_KEYS = {
   REMEMBER_PASSWORD: 'mtbot_remember_password',
   SAVED_IDENTIFIER: 'mtbot_saved_identifier',
@@ -44,8 +47,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
     clearError,
   } = useAuth()
 
-  // 图形验证码
-  const { svgHtml, validate: validateCaptcha, refresh: refreshCaptcha } = useCaptcha()
+  // 服务端滑动验证码
+  const captcha = useServerCaptcha()
 
   // 网关设置
   const { settings, updateGateway } = useSettings()
@@ -55,36 +58,43 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
-  const [captchaInput, setCaptchaInput] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
-  const [rememberPassword, setRememberPassword] = useState(false)
+  const [rememberIdentifier, setRememberIdentifier] = useState(false)
   const [showGatewayConfig, setShowGatewayConfig] = useState(false)
   const [gatewayUrl, setGatewayUrl] = useState(settings.gateway.url || 'ws://localhost:18789')
   const [gatewayTesting, setGatewayTesting] = useState(false)
   const [gatewayTestResult, setGatewayTestResult] = useState<'success' | 'error' | null>(null)
 
+  // RSA 公钥
+  const [publicKey, setPublicKey] = useState<string | null>(null)
+
   /**
-   * 从 localStorage 加载保存的账号密码
+   * 初始化：加载保存的账号、获取验证码和公钥
    */
   useEffect(() => {
-    const rememberPasswordEnabled = localStorage.getItem(STORAGE_KEYS.REMEMBER_PASSWORD) === 'true'
-    if (rememberPasswordEnabled) {
+    // 加载记住的账号
+    const rememberEnabled = localStorage.getItem(STORAGE_KEYS.REMEMBER_IDENTIFIER) === 'true'
+    if (rememberEnabled) {
       const savedIdentifier = localStorage.getItem(STORAGE_KEYS.SAVED_IDENTIFIER)
-      const savedPassword = localStorage.getItem(STORAGE_KEYS.SAVED_PASSWORD)
       if (savedIdentifier) {
         setIdentifier(savedIdentifier)
       }
-      if (savedPassword) {
-        // 简单的 base64 解码（注意：这不是加密，只是混淆）
-        try {
-          setPassword(atob(savedPassword))
-        } catch (error) {
-          console.error('[AuthView] 解码保存的密码失败:', error)
-        }
-      }
-      setRememberPassword(true)
+      setRememberIdentifier(true)
     }
-  }, [])
+
+    // 获取验证码
+    captcha.fetchChallenge()
+
+    // 获取 RSA 公钥
+    window.electronAPI.api.getPublicKey().then((res: unknown) => {
+      const result = res as { success: boolean; data?: { publicKey: string } }
+      if (result.success && result.data?.publicKey) {
+        setPublicKey(result.data.publicKey)
+      }
+    }).catch(() => {
+      // 公钥获取失败，降级为明文传输
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * 判断输入是手机号还是邮箱
@@ -93,12 +103,10 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
     const trimmed = identifier.trim()
     if (!trimmed) return null
 
-    // 简单的手机号判断 (11 位数字)
     if (/^1[3-9]\d{9}$/.test(trimmed)) {
       return 'phone'
     }
 
-    // 简单的邮箱判断
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       return 'email'
     }
@@ -128,20 +136,23 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
       return
     }
 
-    // 图形验证码验证
-    if (!captchaInput.trim()) {
-      setFormError('请输入图形验证码')
+    // 滑动验证码验证
+    if (!captcha.captchaToken) {
+      setFormError('请先完成滑动验证')
       return
     }
 
-    if (!validateCaptcha(captchaInput.trim())) {
-      setFormError('图形验证码错误，请重新输入')
-      setCaptchaInput('')
-      return
+    // RSA 加密密码
+    let encryptedPassword = password
+    if (publicKey && password) {
+      try {
+        encryptedPassword = await encryptPassword(password, publicKey)
+      } catch {
+        // 加密失败，降级为明文
+      }
     }
 
     if (mode === 'register') {
-      // 注册验证
       if (!displayName.trim()) {
         setFormError('请输入昵称')
         return
@@ -157,71 +168,54 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
         return
       }
 
-      console.log('[AuthView] 提交注册:', { identifier: trimmedIdentifier, identifierType })
-      console.log('[DEBUG] 密码长度:', password.length, '密码前3位:', password.substring(0, 3))
-
       const params = {
         [identifierType]: trimmedIdentifier,
-        password,
+        password: encryptedPassword,
         displayName: displayName.trim(),
+        captchaToken: captcha.captchaToken,
       }
-
-      console.log('[DEBUG] 注册参数:', JSON.stringify({ ...params, password: `${password.substring(0, 3)}...` }))
 
       const result = await register(params)
       if (result.success) {
-        console.log('[AuthView] 注册成功')
         setFormError(null)
-        // 显示成功提示
         alert('注册成功！正在登录...')
         onAuthSuccess?.()
       } else {
-        console.log('[AuthView] 注册失败:', result.error)
         setFormError(result.error || '注册失败，请重试')
+        captcha.refresh()
       }
     } else {
-      // 登录验证
       if (!password) {
         setFormError('请输入密码')
         return
       }
 
-      console.log('[AuthView] 提交登录:', { identifier: trimmedIdentifier })
-
       const result = await login({
         identifier: trimmedIdentifier,
-        password,
+        password: encryptedPassword,
+        captchaToken: captcha.captchaToken,
       })
 
-      console.log('[AuthView] 登录结果:', { success: result.success, error: result.error })
-
       if (result.success) {
-        console.log('[AuthView] 登录成功，准备跳转')
         setFormError(null)
 
-        // 保存或清除记住的密码
-        if (rememberPassword) {
-          localStorage.setItem(STORAGE_KEYS.REMEMBER_PASSWORD, 'true')
+        // 保存或清除记住的账号
+        if (rememberIdentifier) {
+          localStorage.setItem(STORAGE_KEYS.REMEMBER_IDENTIFIER, 'true')
           localStorage.setItem(STORAGE_KEYS.SAVED_IDENTIFIER, trimmedIdentifier)
-          // 简单的 base64 编码（注意：这不是加密，只是混淆）
-          localStorage.setItem(STORAGE_KEYS.SAVED_PASSWORD, btoa(password))
-          console.log('[AuthView] 已保存账号密码')
         } else {
-          localStorage.removeItem(STORAGE_KEYS.REMEMBER_PASSWORD)
+          localStorage.removeItem(STORAGE_KEYS.REMEMBER_IDENTIFIER)
           localStorage.removeItem(STORAGE_KEYS.SAVED_IDENTIFIER)
-          localStorage.removeItem(STORAGE_KEYS.SAVED_PASSWORD)
-          console.log('[AuthView] 已清除保存的账号密码')
         }
 
-        // 显示成功提示
         alert('登录成功！')
         onAuthSuccess?.()
       } else {
-        console.log('[AuthView] 登录失败:', result.error)
         setFormError(result.error || '登录失败，请检查用户名和密码')
+        captcha.refresh()
       }
     }
-  }, [identifier, password, displayName, captchaInput, mode, getIdentifierType, validateCaptcha, register, login, clearError, onAuthSuccess])
+  }, [identifier, password, displayName, mode, getIdentifierType, captcha, publicKey, register, login, clearError, onAuthSuccess, rememberIdentifier])
 
   /**
    * 切换模式（登录/注册）
@@ -232,23 +226,15 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
     clearError()
     setPassword('')
     setDisplayName('')
-    setCaptchaInput('')
-    refreshCaptcha()
-  }, [clearError, refreshCaptcha])
+    captcha.refresh()
+  }, [clearError, captcha])
 
   /**
    * 测试网关连通性
-   *
-   * 先尝试 HTTP 请求（ws:// → http://），再尝试 WebSocket 连接。
-   * Gateway 在同一端口同时处理 HTTP 和 WebSocket。
    */
   const testGatewayConnection = useCallback(async (url: string): Promise<boolean> => {
-    console.log('[AuthView] 测试网关连通性:', url)
-
-    // 将 ws:// 转换为 http:// 进行 HTTP 探测
     const httpUrl = url.replace(/^ws(s?):\/\//, 'http$1://')
 
-    // 方式1: HTTP fetch 探测（更快更可靠）
     try {
       const controller = new AbortController()
       const timer = setTimeout(() => controller.abort(), 5000)
@@ -258,32 +244,24 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
         mode: 'no-cors',
       })
       clearTimeout(timer)
-      // no-cors 模式下 response.type 为 'opaque'，status 为 0，但不会抛异常说明端口可达
-      console.log('[AuthView] HTTP 探测成功, status:', response.status, 'type:', response.type)
       return true
-    } catch (httpError) {
-      console.log('[AuthView] HTTP 探测失败，尝试 WebSocket:', httpError)
+    } catch {
+      // HTTP 探测失败，尝试 WebSocket
     }
 
-    // 方式2: 降级为 WebSocket 探测
     return new Promise((resolve) => {
-      const timeout = setTimeout(() => {
-        console.log('[AuthView] 网关连接超时')
-        resolve(false)
-      }, 5000)
+      const timeout = setTimeout(() => resolve(false), 5000)
 
       try {
         const ws = new WebSocket(url)
 
         ws.onopen = () => {
-          console.log('[AuthView] WebSocket 连接成功')
           clearTimeout(timeout)
           ws.close()
           resolve(true)
         }
 
         ws.onerror = () => {
-          console.log('[AuthView] WebSocket 连接失败')
           clearTimeout(timeout)
           resolve(false)
         }
@@ -291,8 +269,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
         ws.onclose = () => {
           clearTimeout(timeout)
         }
-      } catch (error) {
-        console.error('[AuthView] WebSocket 连接异常:', error)
+      } catch {
         clearTimeout(timeout)
         resolve(false)
       }
@@ -300,10 +277,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
   }, [])
 
   /**
-   * 直接将网关地址持久化到 localStorage 并同步 React state
-   *
-   * 绕过 useSettings 的 saveSettings，因为 updateGateway (setSettings) 是异步的，
-   * 紧接着调用 saveSettings 会因为闭包捕获旧 settings 而保存过期数据。
+   * 持久化网关地址
    */
   const persistGatewayUrl = useCallback((url: string) => {
     const STORAGE_KEY = 'mtbot-assistant-settings'
@@ -315,17 +289,14 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
         gateway: { ...(current.gateway || {}), url },
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-      console.log('[AuthView] 网关地址已直接写入 localStorage:', url)
-
-      // 同步 React state，让其他组件也能读到最新值
       updateGateway({ url })
-    } catch (error) {
-      console.error('[AuthView] 保存网关地址失败:', error)
+    } catch {
+      // ignore
     }
   }, [updateGateway])
 
   /**
-   * 保存网关地址配置（带连通性测试）
+   * 保存网关地址配置
    */
   const handleSaveGateway = useCallback(async () => {
     const trimmedUrl = gatewayUrl.trim()
@@ -334,30 +305,23 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
       return
     }
 
-    // 验证 URL 格式
     if (!trimmedUrl.startsWith('ws://') && !trimmedUrl.startsWith('wss://')) {
       setFormError('网关地址必须以 ws:// 或 wss:// 开头')
       return
     }
 
-    console.log('[AuthView] 测试并保存网关地址:', trimmedUrl)
     setGatewayTesting(true)
     setGatewayTestResult(null)
     setFormError(null)
 
-    // 测试连通性
     const isReachable = await testGatewayConnection(trimmedUrl)
-
-    // 无论连通与否都持久化，用户可能稍后启动网关
     persistGatewayUrl(trimmedUrl)
 
     if (isReachable) {
       setGatewayTestResult('success')
-      console.log('[AuthView] 网关地址已保存，连接正常')
     } else {
       setGatewayTestResult('error')
       setFormError('无法连接到网关，请检查地址是否正确或网关是否已启动')
-      console.log('[AuthView] 网关地址已保存（但连接失败）')
     }
 
     setGatewayTesting(false)
@@ -441,42 +405,34 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
             />
           </div>
 
-          {/* 记住密码（仅登录模式） */}
+          {/* 记住账号（仅登录模式） */}
           {mode === 'login' && (
             <div className="form-group remember-password-group">
               <label className="checkbox-label">
                 <input
                   type="checkbox"
-                  checked={rememberPassword}
-                  onChange={(e) => setRememberPassword(e.target.checked)}
+                  checked={rememberIdentifier}
+                  onChange={(e) => setRememberIdentifier(e.target.checked)}
                   disabled={authLoading}
                 />
-                <span>记住密码</span>
+                <span>记住账号</span>
               </label>
             </div>
           )}
 
-          {/* 图形验证码 */}
+          {/* 滑动验证码 */}
           <div className="form-group">
-            <label className="form-label">图形验证码</label>
-            <div className="captcha-group">
-              <input
-                type="text"
-                className="form-input captcha-input"
-                placeholder="请输入验证码"
-                value={captchaInput}
-                onChange={(e) => setCaptchaInput(e.target.value)}
-                maxLength={6}
-                disabled={authLoading}
-              />
-              <button
-                type="button"
-                className="captcha-image"
-                onClick={refreshCaptcha}
-                title="点击刷新验证码"
-                dangerouslySetInnerHTML={{ __html: svgHtml }}
-              />
-            </div>
+            <label className="form-label">安全验证</label>
+            <SlidingCaptcha
+              backgroundImage={captcha.challenge?.backgroundImage ?? null}
+              sliderImage={captcha.challenge?.sliderImage ?? null}
+              sliderY={captcha.challenge?.sliderY ?? 0}
+              isVerified={captcha.isVerified}
+              isLoading={captcha.isLoading}
+              error={captcha.error}
+              onVerify={captcha.verify}
+              onRefresh={captcha.refresh}
+            />
           </div>
 
           {/* 错误提示 */}
@@ -490,7 +446,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
           <button
             type="submit"
             className="submit-btn"
-            disabled={authLoading}
+            disabled={authLoading || !captcha.isVerified}
           >
             {authLoading ? '处理中...' : mode === 'login' ? '登录' : '注册'}
           </button>

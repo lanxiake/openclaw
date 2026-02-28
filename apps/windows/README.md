@@ -120,6 +120,22 @@ Cannot find latest.yml in the latest release artifacts
 - pnpm 8+
 - Windows 10/11
 
+### 环境变量与默认配置
+
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `OPENCLAW_API_BASE_URL` | `http://127.0.0.1:3000` | 后端 API 接口地址。主进程与渲染进程的 API 请求均使用该地址。 |
+
+**示例**：使用远程后端（如 `https://www.mtbot.top/admin`）时，在启动应用前设置环境变量：
+
+```powershell
+# PowerShell
+$env:OPENCLAW_API_BASE_URL = "https://www.mtbot.top/api/admin/v1"
+pnpm dev
+```
+
+或创建 `.env` 文件（若使用 dotenv 等加载器）或在系统/用户环境变量中配置。使用自定义 API 地址时，需确保 `src/renderer/index.html` 中的 Content-Security-Policy `connect-src` 包含该域名。
+
 ### 安装依赖
 
 ```bash

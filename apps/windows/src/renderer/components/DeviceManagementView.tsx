@@ -160,9 +160,40 @@ export const DeviceManagementView: React.FC<DeviceManagementViewProps> = ({
   }, [])
 
   /**
-   * 加载设备配额信息（通过 Gateway RPC device.quota）
+   * 加载设备配额信息
+   *
+   * 优先从 REST API GET /api/subscriptions/overview 的 usage.devices 获取，
+   * 如果 REST API 未返回设备配额数据则 fallback 到 Gateway RPC device.quota。
    */
   const loadQuota = useCallback(async (): Promise<DeviceQuota | null> => {
+    // 优先从 REST API 获取
+    try {
+      const overview = await window.electronAPI.api.getSubscriptionOverview() as {
+        success: boolean
+        data?: {
+          usage?: {
+            devices?: {
+              used: number
+              limit: number
+            }
+          }
+        }
+      }
+      if (overview?.success && overview.data?.usage?.devices) {
+        const { used, limit } = overview.data.usage.devices
+        const mapped: DeviceQuota = {
+          max: limit,
+          used,
+          remaining: limit - used,
+        }
+        console.log('[DeviceManagementView] 设备配额（REST API）:', mapped)
+        return mapped
+      }
+    } catch (err) {
+      console.warn('[DeviceManagementView] 从 REST API 获取设备配额失败，尝试 Gateway RPC:', err)
+    }
+
+    // Fallback: Gateway RPC
     try {
       const result = await window.electronAPI.gateway.call<{
         success: boolean
@@ -178,7 +209,7 @@ export const DeviceManagementView: React.FC<DeviceManagementViewProps> = ({
           used: result.quota.currentCount,
           remaining: result.quota.maxDevices - result.quota.currentCount,
         }
-        console.log('[DeviceManagementView] 设备配额:', mapped)
+        console.log('[DeviceManagementView] 设备配额（Gateway RPC）:', mapped)
         return mapped
       }
       return null

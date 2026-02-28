@@ -25,6 +25,8 @@ import { useAuth } from './contexts/AuthContext'
 import { useConfirmRequests } from './hooks/useConfirmRequests'
 import { useConnectionStatus } from './hooks/useConnectionStatus'
 import { useSettings } from './hooks/useSettings'
+import { deviceService } from './services/device-service'
+import { subscriptionService } from './services/subscription-service'
 
 /**
  * 视图类型
@@ -70,6 +72,18 @@ const App: React.FC = () => {
   // UI 状态
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeView, setActiveView] = useState<ViewType>('dashboard')
+
+  /**
+   * 启动时从主进程同步 API 基础 URL 到 renderer 服务（主进程使用 OPENCLAW_API_BASE_URL 环境变量）
+   */
+  useEffect(() => {
+    window.electronAPI.api.getBaseUrl().then((url) => {
+      deviceService.setBaseUrl(url)
+      subscriptionService.setBaseUrl(url)
+    }).catch((err) => {
+      console.warn('[App] 获取 API BaseUrl 失败，使用默认', err)
+    })
+  }, [])
 
   /**
    * 监控认证状态变化

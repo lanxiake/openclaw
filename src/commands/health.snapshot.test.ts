@@ -7,10 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { HealthSummary } from "./health.js";
 import { getHealthSnapshot } from "./health.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
-import {
-  createTelegramTestPlugin,
-  createTestRegistry,
-} from "../test-utils/channel-plugins.js";
+import { createTelegramTestPlugin, createTestRegistry } from "../test-utils/channel-plugins.js";
 
 let testConfig: Record<string, unknown> = {};
 let testStore: Record<string, { updatedAt?: number }> = {};
