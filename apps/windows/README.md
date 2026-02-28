@@ -99,6 +99,21 @@ Cannot find latest.yml in the latest release artifacts
 **解决**：
 这是正常现象，开发阶段已禁用自动更新。如果仍然出现，说明打包版本使用了旧代码，请重新构建。
 
+**问题 3：`Error: Electron uninstall` / 启动 dev 失败**
+
+原因：pnpm 未执行 Electron 的 postinstall，二进制未下载。
+
+**解决**（任选其一）：
+
+1. **交互式放行构建脚本**（推荐）：在项目根目录执行 `pnpm approve-builds`，勾选 `electron` 后确认，再执行 `pnpm install`。
+2. **手动安装 Electron 二进制**：在 `apps/windows` 目录执行：
+   ```bash
+   node node_modules/electron/install.js
+   ```
+   完成后在项目根或 `apps/windows` 执行 `pnpm dev` 即可。
+
+已确保根目录 `.npmrc` 的 `allow-build-scripts` 包含 `electron`，以及 `pnpm-workspace.yaml` 的 `onlyBuiltDependencies` 包含 `electron`，新 clone 后按上述步骤操作即可。
+
 ## 环境要求
 
 - Node.js 20+

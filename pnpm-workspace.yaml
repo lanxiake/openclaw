@@ -11,6 +11,7 @@ onlyBuiltDependencies:
   - "@matrix-org/matrix-sdk-crypto-nodejs"
   - authenticate-pam
   - esbuild
+  - electron
   - protobufjs
   - sharp
   - "@napi-rs/canvas"

@@ -354,9 +354,8 @@ export function useCreateSkill() {
         categoryId: input.categoryId,
         subscriptionLevel: input.subscriptionLevel as
           | "free"
-          | "pro"
-          | "team"
-          | "enterprise"
+          | "monthly"
+          | "yearly"
           | undefined,
         iconUrl: input.iconUrl,
         tags: input.tags,
@@ -402,9 +401,8 @@ export function useUpdateSkill() {
         ...data,
         subscriptionLevel: data.subscriptionLevel as
           | "free"
-          | "pro"
-          | "team"
-          | "enterprise"
+          | "monthly"
+          | "yearly"
           | undefined,
       });
       return skill;

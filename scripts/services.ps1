@@ -126,9 +126,8 @@ $Services = @{
         EnvFile = "$ProjectRoot\.env"
         NeedsBuild = $true
         ExtraEnv = @{
-            "OPENCLAW_SKIP_CHANNELS" = "1"
-            "CLAWDBOT_SKIP_CHANNELS" = "1"
-            "OPENCLAW_GATEWAY_PORT" = "18789"
+            "MTBOT_SKIP_CHANNELS" = "1"
+            "MTBOT_GATEWAY_PORT" = "18789"
         }
     }
     "api-server" = @{

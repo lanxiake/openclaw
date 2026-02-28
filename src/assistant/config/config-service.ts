@@ -179,6 +179,23 @@ export async function getConfigValue<T = unknown>(key: string, defaultValue?: T)
   return result[0].value as T;
 }
 
+/** 允许在首次更新时自动创建的配置键（如未初始化则插入默认行） */
+const CREATE_ON_UPDATE_KEYS: Record<
+  string,
+  { group: string; description: string; valueType: ConfigValueType }
+> = {
+  [CONFIG_KEYS.MEMORY_EMBEDDING]: {
+    group: "memory",
+    description: "记忆系统向量嵌入服务配置（provider, model, dimensions, baseUrl）",
+    valueType: "json",
+  },
+  [CONFIG_KEYS.MEMORY_LLM]: {
+    group: "memory",
+    description: "记忆系统 LLM 服务配置（provider, model, maxTokens, temperature）",
+    valueType: "json",
+  },
+};
+
 /**
  * 设置配置值
  */
@@ -196,6 +213,20 @@ export async function setConfigValue(
   const existing = await db.select().from(systemConfigs).where(eq(systemConfigs.key, key)).limit(1);
 
   if (existing.length === 0) {
+    // 允许在首次保存时自动创建的配置项（避免未跑全量 seed 时管理后台保存失败）
+    const meta = CREATE_ON_UPDATE_KEYS[key];
+    if (meta) {
+      return createConfig(
+        {
+          key,
+          value,
+          valueType: meta.valueType,
+          group: meta.group,
+          description: meta.description,
+        },
+        options,
+      );
+    }
     throw new Error(`配置项不存在: ${key}`);
   }
 

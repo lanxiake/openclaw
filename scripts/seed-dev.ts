@@ -5,9 +5,13 @@
  *
  * 使用方式:
  *   pnpm db:seed              # 创建默认测试数据
- *   pnpm db:seed --admin-only # 仅创建管理员
+ *   pnpm db:seed:admin         # 仅创建管理员（api-server 初始化用）
+ *   pnpm db:seed -- --admin-only  # 同上（若脚本需传参）
  */
 
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+import { config } from "dotenv";
 import { eq, notInArray } from "drizzle-orm";
 
 import { getDatabase } from "../src/db/connection.js";
@@ -442,6 +446,8 @@ export async function runSeed(
 
   if (options.adminOnly) {
     await seedAdmins(db);
+    // 初始化记忆系统配置，便于管理后台 AI 配置页保存
+    await ensureMemorySystemConfigs(db);
   } else {
     // 按依赖顺序创建数据
     const planIds = await seedPlans(db);
@@ -465,6 +471,13 @@ export async function runSeed(
  * 主函数 — 独立运行入口
  */
 async function main() {
+  // 加载 .env：优先当前目录，否则使用 apps/api-server/.env（便于从项目根执行）
+  const cwd = process.cwd();
+  const envPath = existsSync(resolve(cwd, ".env"))
+    ? resolve(cwd, ".env")
+    : resolve(cwd, "apps/api-server/.env");
+  config({ path: envPath });
+
   const args = process.argv.slice(2);
   const adminOnly = args.includes("--admin-only");
 
