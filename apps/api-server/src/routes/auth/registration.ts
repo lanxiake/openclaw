@@ -25,6 +25,11 @@ import { getCreditService } from "../../../../../src/assistant/credits/index.js"
 import { generateAccessToken } from "../../../../../src/assistant/auth/jwt.js";
 import { getUserSessionRepository } from "../../../../../src/db/index.js";
 import { getClientInfo } from "../../plugins/request-utils.js";
+import { validateCaptchaToken } from "../../../../../src/services/captcha-service.js";
+import {
+  isEncrypted,
+  decryptPassword,
+} from "../../../../../src/services/rsa-key-service.js";
 
 /**
  * 注册用户注册路由
@@ -106,7 +111,21 @@ export function registerUserRegistrationRoutes(server: FastifyInstance): void {
   server.post(
     "/api/auth/register-by-phone",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const body = request.body as RegisterByPhoneParams;
+      const body = request.body as RegisterByPhoneParams & {
+        captchaToken?: string;
+      };
+
+      // 验证码 token 校验
+      if (
+        !body.captchaToken ||
+        !(await validateCaptchaToken(body.captchaToken))
+      ) {
+        return reply.code(400).send({
+          success: false,
+          error: "验证码无效或已过期，请重新验证",
+          code: "CAPTCHA_INVALID",
+        });
+      }
 
       // 参数校验
       if (!body.phone) {
@@ -162,12 +181,17 @@ export function registerUserRegistrationRoutes(server: FastifyInstance): void {
         }
 
         // 2. 自动登录
+        // RSA 密码解密
+        const plainPassword =
+          body.password && isEncrypted(body.password)
+            ? decryptPassword(body.password)
+            : body.password;
         let loginResult;
-        if (body.password) {
+        if (plainPassword) {
           // 如果设置了密码,使用密码登录
           loginResult = await login({
             identifier: body.phone,
-            password: body.password,
+            password: plainPassword,
             ipAddress,
             userAgent,
           });
@@ -219,7 +243,21 @@ export function registerUserRegistrationRoutes(server: FastifyInstance): void {
   server.post(
     "/api/auth/register-by-email",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const body = request.body as RegisterByEmailParams;
+      const body = request.body as RegisterByEmailParams & {
+        captchaToken?: string;
+      };
+
+      // 验证码 token 校验
+      if (
+        !body.captchaToken ||
+        !(await validateCaptchaToken(body.captchaToken))
+      ) {
+        return reply.code(400).send({
+          success: false,
+          error: "验证码无效或已过期，请重新验证",
+          code: "CAPTCHA_INVALID",
+        });
+      }
 
       // 参数校验
       if (!body.email) {
@@ -283,9 +321,13 @@ export function registerUserRegistrationRoutes(server: FastifyInstance): void {
         }
 
         // 2. 自动登录
+        // RSA 密码解密
+        const plainPassword = isEncrypted(body.password)
+          ? decryptPassword(body.password)
+          : body.password;
         const loginResult = await login({
           identifier: body.email,
-          password: body.password,
+          password: plainPassword,
           ipAddress,
           userAgent,
         });

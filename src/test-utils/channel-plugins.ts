@@ -234,9 +234,7 @@ export const createBasicChannelTestPlugin = (params: {
   config: {
     listAccountIds: (cfg: OpenClawConfig) => {
       const channels = (cfg.channels as Record<string, unknown> | undefined) ?? {};
-      const raw = channels[params.id] as
-        | { accounts?: Record<string, unknown> }
-        | undefined;
+      const raw = channels[params.id] as { accounts?: Record<string, unknown> } | undefined;
       const accountIds = raw?.accounts ? Object.keys(raw.accounts) : [];
       return accountIds.length > 0 ? accountIds : ["default"];
     },
@@ -253,7 +251,7 @@ export const createBasicChannelTestPlugin = (params: {
       };
     },
     isEnabled: (account: unknown) =>
-      ((account as { config?: { enabled?: boolean } })?.config?.enabled ?? true),
+      (account as { config?: { enabled?: boolean } })?.config?.enabled ?? true,
     isConfigured: (account: unknown) => {
       const config = (account as { config?: Record<string, unknown> } | undefined)?.config ?? {};
       const tokenFields = [
@@ -265,7 +263,9 @@ export const createBasicChannelTestPlugin = (params: {
         "serverUrl",
         "baseUrl",
       ];
-      return tokenFields.some((key) => typeof config[key] === "string" && config[key]?.trim()) || false;
+      return (
+        tokenFields.some((key) => typeof config[key] === "string" && config[key]?.trim()) || false
+      );
     },
     describeAccount: (account: unknown) => {
       const typed = account as { accountId?: string; config?: Record<string, unknown> };
@@ -485,7 +485,8 @@ export const createTelegramTestPlugin = (): ChannelPlugin =>
               channel: "telegram",
               accountId: account.accountId,
               kind: "config",
-              message: "membership probing is not possible when wildcard unmentioned groups are enabled.",
+              message:
+                "membership probing is not possible when wildcard unmentioned groups are enabled.",
             });
           }
           const failedGroup = audit?.groups?.find((entry) => entry.ok === false);
@@ -557,7 +558,9 @@ export const createDiscordTestPlugin = (): ChannelPlugin =>
       },
       normalizeTarget: (raw: string) => {
         const trimmed = raw.trim().replace(/^discord:/i, "");
-        return /^channel:/i.test(trimmed) ? trimmed.toLowerCase() : `channel:${trimmed.toLowerCase()}`;
+        return /^channel:/i.test(trimmed)
+          ? trimmed.toLowerCase()
+          : `channel:${trimmed.toLowerCase()}`;
       },
     },
     status: {
@@ -574,7 +577,10 @@ export const createDiscordTestPlugin = (): ChannelPlugin =>
             });
           }
           const audit = account.audit as
-            | { unresolvedChannels?: number; channels?: Array<{ channelId?: string; ok?: boolean }> }
+            | {
+                unresolvedChannels?: number;
+                channels?: Array<{ channelId?: string; ok?: boolean }>;
+              }
             | undefined;
           if ((audit?.unresolvedChannels ?? 0) > 0) {
             const firstFailed = audit?.channels?.find((entry) => entry.ok === false);

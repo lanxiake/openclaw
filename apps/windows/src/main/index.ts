@@ -55,6 +55,12 @@ const log = {
   warn: (...args: unknown[]) => console.warn('[Main]', ...args),
 }
 
+/**
+ * API Server 基础 URL
+ * 可通过环境变量 OPENCLAW_API_BASE_URL 覆盖，默认 http://127.0.0.1:3000
+ */
+const DEFAULT_API_BASE_URL = process.env.OPENCLAW_API_BASE_URL ?? 'http://127.0.0.1:3000'
+
 // 全局变量
 let mainWindow: BrowserWindow | null = null
 let trayManager: TrayManager | null = null
@@ -555,6 +561,8 @@ function setupIpcHandlers(): void {
     for (const sub of subDirs) {
       await fs.mkdir(join(dirPath, sub), { recursive: true })
     }
+    // 将工作空间路径加入安全白名单，允许文件操作访问
+    securityUtils.addAllowedBasePath(dirPath)
     return dirPath
   })
 
@@ -1138,13 +1146,13 @@ function setupIpcHandlers(): void {
 
 /**
  * 初始化 API Server 客户端
+ * 使用环境变量 OPENCLAW_API_BASE_URL，未设置时默认为 http://127.0.0.1:3000
  */
 function initApiClient(): void {
-  log.info('初始化 API Server 客户端')
+  log.info('初始化 API Server 客户端', { baseUrl: DEFAULT_API_BASE_URL })
 
-  // 从设置中读取 API Server URL，默认使用 127.0.0.1:3000（强制 IPv4）
   apiClient = new ApiClient({
-    baseUrl: 'http://127.0.0.1:3000',
+    baseUrl: DEFAULT_API_BASE_URL,
     timeout: 30000,
   })
 
@@ -1160,7 +1168,7 @@ function setupApiIpcHandlers(): void {
   log.info('设置 API Server IPC 处理器')
 
   // === 认证接口 ===
-  ipcMain.handle('api:login', async (_event, params: { identifier: string; password: string }) => {
+  ipcMain.handle('api:login', async (_event, params: { identifier: string; password: string; captchaToken?: string }) => {
     if (!apiClient) {
       throw new Error('API 客户端未初始化')
     }
@@ -1168,7 +1176,7 @@ function setupApiIpcHandlers(): void {
     if (typeof params.identifier !== 'string' || params.identifier.length > 200) {
       throw new Error('无效的用户标识')
     }
-    if (typeof params.password !== 'string' || params.password.length > 200) {
+    if (typeof params.password !== 'string' || params.password.length > 500) {
       throw new Error('无效的密码')
     }
     return apiClient.login(params)
@@ -1180,13 +1188,14 @@ function setupApiIpcHandlers(): void {
     email?: string
     password: string
     displayName?: string
+    captchaToken?: string
   }) => {
     if (!apiClient) {
       throw new Error('API 客户端未初始化')
     }
-    // 参数验证
-    if (typeof params.password !== 'string' || params.password.length < 6 || params.password.length > 200) {
-      throw new Error('密码长度必须在 6-200 字符之间')
+    // 参数验证 (RSA 加密后密码更长)
+    if (typeof params.password !== 'string' || params.password.length > 500) {
+      throw new Error('无效的密码')
     }
     return apiClient.register(params)
   })
@@ -1220,6 +1229,31 @@ function setupApiIpcHandlers(): void {
       throw new Error('API 客户端未初始化')
     }
     return apiClient.sendVerificationCode(params)
+  })
+
+  // === 验证码与安全接口 ===
+  ipcMain.handle('api:getCaptchaChallenge', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    return apiClient.getCaptchaChallenge()
+  })
+
+  ipcMain.handle('api:verifyCaptcha', async (_event, captchaId: string, sliderX: number) => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    if (typeof captchaId !== 'string' || typeof sliderX !== 'number') {
+      throw new Error('无效的验证参数')
+    }
+    return apiClient.verifyCaptcha(captchaId, sliderX)
+  })
+
+  ipcMain.handle('api:getPublicKey', async () => {
+    if (!apiClient) {
+      throw new Error('API 客户端未初始化')
+    }
+    return apiClient.getPublicKey()
   })
 
   // === 设备配对接口 ===

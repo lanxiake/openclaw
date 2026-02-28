@@ -39,6 +39,10 @@ export type {
   PaginationMeta,
   PaginationParams,
   SortParams,
+  CaptchaChallenge,
+  CaptchaVerifyRequest,
+  CaptchaVerifyResponse,
+  PublicKeyResponse,
 } from "./types.js";
 
 // 管理员 API

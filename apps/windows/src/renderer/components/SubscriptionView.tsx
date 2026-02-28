@@ -109,14 +109,11 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ onViewChange
     error,
     selectedPeriod,
     createSubscription,
-    cancelSubscription,
     formatPrice,
     refresh,
     setSelectedPeriod,
   } = useSubscription()
 
-  const [showCancelDialog, setShowCancelDialog] = useState(false)
-  const [cancelReason, setCancelReason] = useState('')
   const [purchasingPackage, setPurchasingPackage] = useState<number | null>(null)
 
   /**
@@ -178,19 +175,6 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ onViewChange
   }
 
   /**
-   * 处理取消订阅
-   */
-  const handleCancelSubscription = async () => {
-    try {
-      await cancelSubscription(false, cancelReason)
-      setShowCancelDialog(false)
-      setCancelReason('')
-    } catch (err) {
-      // 错误已在 hook 中处理
-    }
-  }
-
-  /**
    * 渲染账户状态区
    */
   const renderAccountStatus = () => {
@@ -201,14 +185,6 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ onViewChange
       <div className="account-status-card">
         <div className="account-status-header">
           <h3>账户状态</h3>
-          {isActive && !subscription?.cancelAtPeriodEnd && (
-            <button
-              className="btn-cancel"
-              onClick={() => setShowCancelDialog(true)}
-            >
-              取消订阅
-            </button>
-          )}
         </div>
         <div className="account-status-body">
           <span className={`status-badge ${isActive ? 'active' : 'free'}`}>
@@ -432,48 +408,6 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ onViewChange
     )
   }
 
-  /**
-   * 渲染取消订阅对话框
-   */
-  const renderCancelDialog = () => {
-    if (!showCancelDialog) return null
-
-    return (
-      <div className="dialog-overlay">
-        <div className="dialog cancel-dialog">
-          <h3>取消订阅</h3>
-          <p>确定要取消订阅吗？订阅将在当前周期结束后失效。</p>
-
-          <div className="form-group">
-            <label>取消原因（可选）</label>
-            <textarea
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              placeholder="请告诉我们您取消的原因，帮助我们改进服务..."
-              rows={3}
-            />
-          </div>
-
-          <div className="dialog-actions">
-            <button
-              className="btn-secondary"
-              onClick={() => setShowCancelDialog(false)}
-            >
-              保留订阅
-            </button>
-            <button
-              className="btn-danger"
-              onClick={handleCancelSubscription}
-              disabled={isLoading}
-            >
-              确认取消
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="subscription-view">
       {/* 页面标题 */}
@@ -514,9 +448,6 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({ onViewChange
 
       {/* 积分包购买 */}
       {renderCreditPackages()}
-
-      {/* 取消订阅对话框 */}
-      {renderCancelDialog()}
     </div>
   )
 }

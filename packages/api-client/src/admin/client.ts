@@ -7,6 +7,12 @@
 import { HttpClient, type FullResponse } from "../http-client.js";
 import { BrowserTokenProvider, type TokenProvider } from "../token-provider.js";
 import type {
+  CaptchaChallenge,
+  CaptchaVerifyRequest,
+  CaptchaVerifyResponse,
+  PublicKeyResponse,
+} from "../types.js";
+import type {
   Admin,
   LoginRequest,
   LoginResponse,
@@ -1076,21 +1082,21 @@ export class AdminApiClient {
    * 获取模型定价详情
    */
   async getModelPricing(modelId: string): Promise<ModelPricing> {
-    return this.http.get<ModelPricing>(`/api/admin/credits/pricing/${modelId}`);
+    return this.http.get<ModelPricing>(`/api/admin/credits/pricing/${encodeURIComponent(modelId)}`);
   }
 
   /**
    * 创建/更新模型定价
    */
   async upsertModelPricing(modelId: string, request: UpsertModelPricingRequest): Promise<void> {
-    await this.http.put(`/api/admin/credits/pricing/${modelId}`, request);
+    await this.http.put(`/api/admin/credits/pricing/${encodeURIComponent(modelId)}`, request);
   }
 
   /**
    * 删除模型定价
    */
   async deleteModelPricing(modelId: string): Promise<void> {
-    await this.http.delete(`/api/admin/credits/pricing/${modelId}`);
+    await this.http.delete(`/api/admin/credits/pricing/${encodeURIComponent(modelId)}`);
   }
 
   /**
@@ -1300,6 +1306,31 @@ export class AdminApiClient {
    */
   async batchUpdateBundledSkills(request: BatchUpdateBundledSkillsRequest): Promise<void> {
     await this.http.put("/api/admin/bundled-skills/batch", request);
+  }
+
+  // ============ 验证码 & 安全 API ============
+
+  /**
+   * 获取滑动验证码挑战
+   */
+  async getCaptchaChallenge(): Promise<CaptchaChallenge> {
+    return this.http.get<CaptchaChallenge>("/api/captcha/challenge", undefined, { skipAuth: true });
+  }
+
+  /**
+   * 验证滑动验证码
+   */
+  async verifyCaptcha(request: CaptchaVerifyRequest): Promise<CaptchaVerifyResponse> {
+    return this.http.post<CaptchaVerifyResponse>("/api/captcha/verify", request, {
+      skipAuth: true,
+    });
+  }
+
+  /**
+   * 获取 RSA 公钥
+   */
+  async getPublicKey(): Promise<PublicKeyResponse> {
+    return this.http.get<PublicKeyResponse>("/api/auth/public-key", undefined, { skipAuth: true });
   }
 }
 

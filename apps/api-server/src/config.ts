@@ -45,7 +45,8 @@ export function loadConfig(): AppConfig {
     "development") as AppConfig["nodeEnv"];
 
   const corsOriginsRaw =
-    process.env.CORS_ORIGINS ?? "http://localhost:5173,http://localhost:5174";
+    process.env.CORS_ORIGINS ??
+    "http://localhost:5173,http://localhost:5174,http://127.0.0.1:5176,http://localhost:5176";
   const corsOrigins = corsOriginsRaw.split(",").map((s) => s.trim());
 
   return {

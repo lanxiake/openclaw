@@ -8,6 +8,8 @@ import { defineConfig } from 'vite'
  * OpenClaw 服务端管理后台构建配置
  */
 export default defineConfig({
+  base: '/admin/',
+
   plugins: [react()],
 
   resolve: {
@@ -17,15 +19,13 @@ export default defineConfig({
   },
 
   server: {
-    host: '0.0.0.0', // 监听所有网络接口
+    host: '0.0.0.0',
     port: 5176,
     proxy: {
-      // 代理 API 请求到 Gateway
       '/api/admin': {
         target: 'http://localhost:18789',
         changeOrigin: true,
       },
-      // 代理 WebSocket 请求
       '/ws': {
         target: 'ws://localhost:18789',
         ws: true,

@@ -51,6 +51,8 @@ import { registerPaymentsRoutes } from "./routes/payments/index.js";
 import { registerAuditRoutes } from "./routes/audit/index.js";
 import { registerUserConfigRoutes } from "./routes/user-config/index.js";
 import { registerCreditsRoutes } from "./routes/credits/index.js";
+import { registerCaptchaRoutes } from "./routes/captcha.js";
+import { registerSecurityRoutes } from "./routes/security.js";
 
 /**
  * 创建并配置 Fastify 实例
@@ -114,6 +116,10 @@ export async function createServer(
 
   // 5. 路由注册
   registerHealthRoutes(server);
+
+  // 5.5 公开服务路由（验证码、安全）
+  registerCaptchaRoutes(server);
+  registerSecurityRoutes(server);
 
   // 6. 管理员 API 路由
   registerAdminAuthRoutes(server);

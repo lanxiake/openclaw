@@ -41,7 +41,7 @@ interface AuthState {
   /** 是否加载中 */
   isLoading: boolean
   /** 登录 */
-  login: (username: string, password: string, mfaCode?: string) => Promise<void>
+  login: (username: string, password: string, mfaCode?: string, captchaToken?: string) => Promise<void>
   /** 登出 */
   logout: () => Promise<void>
   /** 刷新 Token */
@@ -73,7 +73,7 @@ export const useAuthStore = create<AuthState>()(
        * @param password - 密码
        * @param mfaCode - MFA 验证码（可选）
        */
-      login: async (username: string, password: string, mfaCode?: string) => {
+      login: async (username: string, password: string, mfaCode?: string, captchaToken?: string) => {
         console.log('[authStore] 开始登录:', username)
         set({ isLoading: true })
 
@@ -112,6 +112,7 @@ export const useAuthStore = create<AuthState>()(
             username,
             password,
             mfaCode,
+            captchaToken,
           })
 
           const { admin, accessToken, refreshToken } = response

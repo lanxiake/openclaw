@@ -52,6 +52,7 @@ export interface RegisterParams {
 export interface LoginParams {
   identifier: string  // 手机号或邮箱
   password: string
+  captchaToken?: string
 }
 
 /**

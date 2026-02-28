@@ -66,6 +66,8 @@ export interface StoreSkillInfo {
   installed?: boolean;
   /** 安装的版本 */
   installedVersion?: string;
+  /** 是否有更新 */
+  hasUpdate?: boolean;
 }
 
 /**

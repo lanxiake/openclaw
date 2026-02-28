@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Shield, Loader2, Eye, EyeOff } from 'lucide-react'
@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { SlidingCaptcha } from '@/components/ui/sliding-captcha'
+import { useSlidingCaptcha } from '@/hooks/useSlidingCaptcha'
+import { encryptPassword } from '@/lib/rsa-encrypt'
+import { apiClient } from '@/lib/api-client'
 import { useAuthStore } from '@/stores'
 import { ROUTES } from '@/lib/constants'
 
@@ -31,6 +35,12 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [requireMfa, setRequireMfa] = useState(false)
 
+  // 滑动验证码
+  const captcha = useSlidingCaptcha()
+
+  // RSA 公钥缓存
+  const [publicKey, setPublicKey] = useState<string | null>(null)
+
   const {
     register,
     handleSubmit,
@@ -42,6 +52,16 @@ export default function LoginPage() {
       mfaCode: '',
     },
   })
+
+  // 页面加载时获取验证码和公钥
+  useEffect(() => {
+    captcha.fetchChallenge()
+    apiClient.instance.getPublicKey().then((res) => {
+      setPublicKey(res.publicKey)
+    }).catch(() => {
+      // 公钥获取失败，降级为明文传输
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * 获取重定向目标
@@ -55,16 +75,25 @@ export default function LoginPage() {
    * 处理登录提交
    */
   const onSubmit = async (data: LoginFormData) => {
-    console.log('[LoginPage] 提交登录表单:', data.username)
+    // 校验验证码
+    if (!captcha.captchaToken) {
+      setError('请先完成滑动验证')
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
     try {
-      await login(data.username, data.password, data.mfaCode)
-      console.log('[LoginPage] 登录成功，重定向到:', getRedirectPath())
+      // RSA 加密密码
+      let encryptedPassword = data.password
+      if (publicKey) {
+        encryptedPassword = await encryptPassword(data.password, publicKey)
+      }
+
+      await login(data.username, encryptedPassword, data.mfaCode, captcha.captchaToken)
       navigate(getRedirectPath(), { replace: true })
     } catch (err) {
-      console.error('[LoginPage] 登录失败:', err)
       const message = err instanceof Error ? err.message : '登录失败'
 
       if (message === 'REQUIRE_MFA') {
@@ -73,6 +102,9 @@ export default function LoginPage() {
       } else {
         setError(message)
       }
+
+      // 登录失败，刷新验证码
+      captcha.refresh()
     } finally {
       setIsLoading(false)
     }
@@ -161,8 +193,26 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* 滑动验证码 */}
+            <div className="flex justify-center">
+              <SlidingCaptcha
+                backgroundImage={captcha.challenge?.backgroundImage ?? null}
+                sliderImage={captcha.challenge?.sliderImage ?? null}
+                sliderY={captcha.challenge?.sliderY ?? 0}
+                isVerified={captcha.isVerified}
+                isLoading={captcha.isLoading}
+                error={captcha.error}
+                onVerify={captcha.verify}
+                onRefresh={captcha.refresh}
+              />
+            </div>
+
             {/* 登录按钮 */}
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading || !captcha.isVerified}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

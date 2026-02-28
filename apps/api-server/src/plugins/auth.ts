@@ -23,10 +23,11 @@ const PUBLIC_ROUTES = new Set([
   "/api/auth/login",
   "/api/auth/refresh",
   "/api/auth/send-code",
+  "/api/auth/public-key",
 ]);
 
 /** 不需要认证的公开路由前缀 */
-const PUBLIC_ROUTE_PREFIXES = ["/api/plans"];
+const PUBLIC_ROUTE_PREFIXES = ["/api/plans", "/api/captcha", "/api/store"];
 
 /**
  * 检查是否为公开路由
@@ -67,8 +68,20 @@ export function registerAuthPlugin(
   server.addHook(
     "onRequest",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      // 公开路由跳过认证
-      if (isPublicRoute(request.url)) return;
+      // 公开路由：尝试解析 token 但不强制（软认证）
+      if (isPublicRoute(request.url)) {
+        const publicToken = extractBearerToken(request.headers.authorization);
+        if (publicToken) {
+          const publicPayload = verifyAccessToken(publicToken);
+          if (publicPayload) {
+            (request as FastifyRequest & { user: RequestUser }).user = {
+              userId: publicPayload.sub,
+              type: "user",
+            };
+          }
+        }
+        return;
+      }
 
       // 管理员路由由 admin-auth 插件处理
       if (isAdminRoute(request.url)) return;

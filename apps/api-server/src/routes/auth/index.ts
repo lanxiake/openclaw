@@ -19,6 +19,11 @@ import {
 import { getRequestUser } from "../../plugins/auth.js";
 import { registerUserRegistrationRoutes } from "./registration.js";
 import { getClientInfo } from "../../plugins/request-utils.js";
+import { validateCaptchaToken } from "../../../../../src/services/captcha-service.js";
+import {
+  isEncrypted,
+  decryptPassword,
+} from "../../../../../src/services/rsa-key-service.js";
 
 /**
  * 注册用户认证路由
@@ -39,7 +44,21 @@ export function registerAuthRoutes(server: FastifyInstance): void {
         password?: string;
         phone?: string;
         verificationCode?: string;
+        captchaToken?: string;
+        displayName?: string;
       };
+
+      // 验证码 token 校验
+      if (
+        !body.captchaToken ||
+        !(await validateCaptchaToken(body.captchaToken))
+      ) {
+        return reply.code(400).send({
+          success: false,
+          error: "验证码无效或已过期，请重新验证",
+          code: "CAPTCHA_INVALID",
+        });
+      }
 
       // 参数校验
       // 如果没有 username，尝试使用 phone 或 email 作为 username
@@ -53,7 +72,12 @@ export function registerAuthRoutes(server: FastifyInstance): void {
         });
       }
 
-      if (body.password.length < 6) {
+      // RSA 密码解密
+      const plainPassword = isEncrypted(body.password)
+        ? decryptPassword(body.password)
+        : body.password;
+
+      if (plainPassword.length < 6) {
         return reply.code(400).send({
           success: false,
           error: "密码长度至少 6 位",
@@ -71,7 +95,7 @@ export function registerAuthRoutes(server: FastifyInstance): void {
       const result = await register({
         username,
         email: body.email,
-        password: body.password,
+        password: plainPassword,
         phone: body.phone,
         displayName: body.displayName,
         verificationCode: body.verificationCode,
@@ -118,7 +142,20 @@ export function registerAuthRoutes(server: FastifyInstance): void {
         username?: string;
         email?: string;
         password?: string;
+        captchaToken?: string;
       };
+
+      // 验证码 token 校验
+      if (
+        !body.captchaToken ||
+        !(await validateCaptchaToken(body.captchaToken))
+      ) {
+        return reply.code(400).send({
+          success: false,
+          error: "验证码无效或已过期，请重新验证",
+          code: "CAPTCHA_INVALID",
+        });
+      }
 
       // 参数校验
       if ((!body.username && !body.email) || !body.password) {
@@ -129,6 +166,11 @@ export function registerAuthRoutes(server: FastifyInstance): void {
         });
       }
 
+      // RSA 密码解密
+      const plainPassword = isEncrypted(body.password)
+        ? decryptPassword(body.password)
+        : body.password;
+
       const { ipAddress, userAgent } = getClientInfo(request);
 
       request.log.info(
@@ -138,7 +180,7 @@ export function registerAuthRoutes(server: FastifyInstance): void {
 
       const result = await login({
         identifier: body.username || body.email || "",
-        password: body.password || "",
+        password: plainPassword,
         ipAddress,
         userAgent,
       });

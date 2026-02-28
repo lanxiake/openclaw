@@ -94,12 +94,13 @@ function withSuspense(Component: React.LazyExoticComponent<() => JSX.Element>) {
 /**
  * 路由配置
  */
-export const router = createBrowserRouter([
-  // ==================== 公开路由 ====================
-  {
-    path: ROUTES.LOGIN,
-    element: withSuspense(LoginPage),
-  },
+export const router = createBrowserRouter(
+  [
+    // ==================== 公开路由 ====================
+    {
+      path: ROUTES.LOGIN,
+      element: withSuspense(LoginPage),
+    },
 
   // ==================== 认证路由 ====================
   {
@@ -234,4 +235,6 @@ export const router = createBrowserRouter([
     path: '*',
     element: <Navigate to={ROUTES.DASHBOARD} replace />,
   },
-])
+  ],
+  { basename: '/admin' },
+)

@@ -18,10 +18,15 @@
 // ============================================================================
 
 /**
+ * 默认 API Server 基础 URL（与主进程环境变量 OPENCLAW_API_BASE_URL 未设置时的默认值一致）
+ */
+export const DEFAULT_API_BASE_URL = 'http://127.0.0.1:3000'
+
+/**
  * API 客户端配置
  */
 export interface ApiClientConfig {
-  /** API Server 基础 URL，默认 http://localhost:3000 */
+  /** API Server 基础 URL，可由 OPENCLAW_API_BASE_URL 环境变量指定默认值 */
   baseUrl: string
   /** 请求超时时间（毫秒），默认 30000 */
   timeout: number
@@ -65,6 +70,8 @@ export interface LoginParams {
   identifier: string
   /** 密码 */
   password: string
+  /** 验证码 token */
+  captchaToken?: string
 }
 
 /**
@@ -83,6 +90,8 @@ export interface RegisterParams {
   displayName?: string
   /** 验证码 */
   verificationCode?: string
+  /** 验证码 token */
+  captchaToken?: string
 }
 
 /**
@@ -373,8 +382,8 @@ export class ApiClient {
    */
   constructor(config: Partial<ApiClientConfig> = {}) {
     this.config = {
-      baseUrl: config.baseUrl || 'http://127.0.0.1:3000',  // 使用 IPv4 地址而不是 localhost
-      timeout: config.timeout || 30000,
+      baseUrl: config.baseUrl ?? DEFAULT_API_BASE_URL,
+      timeout: config.timeout ?? 30000,
     }
     log.info('API 客户端初始化完成', { baseUrl: this.config.baseUrl })
   }
@@ -446,6 +455,11 @@ export class ApiClient {
       body.username = identifier
     }
 
+    // 传递验证码 token
+    if (params.captchaToken) {
+      body.captchaToken = params.captchaToken
+    }
+
     return this.request<AuthResponse>('POST', '/api/auth/login', body)
   }
 
@@ -508,6 +522,48 @@ export class ApiClient {
     })
 
     return this.request<SendCodeResponse>('POST', '/api/auth/send-code', params)
+  }
+
+  // ==========================================================================
+  // 验证码与安全接口
+  // ==========================================================================
+
+  /**
+   * 获取滑动验证码挑战
+   */
+  async getCaptchaChallenge(): Promise<{
+    success: boolean
+    data?: {
+      captchaId: string
+      backgroundImage: string
+      sliderImage: string
+      sliderY: number
+    }
+    error?: string
+  }> {
+    return this.request('GET', '/api/captcha/challenge')
+  }
+
+  /**
+   * 验证滑动验证码
+   */
+  async verifyCaptcha(captchaId: string, sliderX: number): Promise<{
+    success: boolean
+    data?: { token: string }
+    error?: string
+  }> {
+    return this.request('POST', '/api/captcha/verify', { captchaId, sliderX })
+  }
+
+  /**
+   * 获取 RSA 公钥
+   */
+  async getPublicKey(): Promise<{
+    success: boolean
+    data?: { publicKey: string }
+    error?: string
+  }> {
+    return this.request('GET', '/api/auth/public-key')
   }
 
   // ==========================================================================

@@ -21,6 +21,11 @@ import {
 } from "../../../../../src/assistant/admin-auth/admin-auth-service.js";
 import { getRequiredAdmin } from "../../plugins/admin-auth.js";
 import { getClientInfo } from "../../plugins/request-utils.js";
+import { validateCaptchaToken } from "../../../../../src/services/captcha-service.js";
+import {
+  isEncrypted,
+  decryptPassword,
+} from "../../../../../src/services/rsa-key-service.js";
 
 /**
  * 注册管理员认证路由
@@ -32,11 +37,21 @@ export function registerAdminAuthRoutes(server: FastifyInstance): void {
   server.post(
     "/api/admin/auth/login",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { username, password, mfaCode } = request.body as {
+      const { username, password, mfaCode, captchaToken } = request.body as {
         username?: string;
         password?: string;
         mfaCode?: string;
+        captchaToken?: string;
       };
+
+      // 验证码 token 校验
+      if (!captchaToken || !(await validateCaptchaToken(captchaToken))) {
+        return reply.code(400).send({
+          success: false,
+          error: "验证码无效或已过期，请重新验证",
+          code: "CAPTCHA_INVALID",
+        });
+      }
 
       // 参数校验
       if (!username || !password) {
@@ -47,13 +62,18 @@ export function registerAdminAuthRoutes(server: FastifyInstance): void {
         });
       }
 
+      // RSA 密码解密
+      const plainPassword = isEncrypted(password)
+        ? decryptPassword(password)
+        : password;
+
       const { ipAddress, userAgent } = getClientInfo(request);
 
       request.log.info({ username, ipAddress }, "[admin-auth] 管理员登录请求");
 
       const result = await adminLogin({
         username,
-        password,
+        password: plainPassword,
         mfaCode,
         ipAddress,
         userAgent,

@@ -359,7 +359,7 @@ export interface ElectronAPI {
   // API Server HTTP 调用
   api: {
     /** 用户登录 */
-    login: (params: { identifier: string; password: string }) => Promise<unknown>
+    login: (params: { identifier: string; password: string; captchaToken?: string }) => Promise<unknown>
     /** 用户注册 */
     register: (params: {
       username?: string
@@ -367,6 +367,7 @@ export interface ElectronAPI {
       email?: string
       password: string
       displayName?: string
+      captchaToken?: string
     }) => Promise<unknown>
     /** 刷新访问令牌 */
     refreshToken: (refreshToken: string) => Promise<unknown>
@@ -397,6 +398,14 @@ export interface ElectronAPI {
     getBaseUrl: () => Promise<string>
     /** 设置访问令牌（登录成功后同步到主进程） */
     setAccessToken: (token: string | null) => Promise<void>
+
+    // --- 验证码与安全接口 ---
+    /** 获取滑动验证码 */
+    getCaptchaChallenge: () => Promise<unknown>
+    /** 验证滑动验证码 */
+    verifyCaptcha: (captchaId: string, sliderX: number) => Promise<unknown>
+    /** 获取 RSA 公钥 */
+    getPublicKey: () => Promise<unknown>
 
     // --- 订阅接口 ---
     /** 获取订阅计划列表 */
@@ -802,7 +811,7 @@ const electronAPI: ElectronAPI = {
 
   // API Server HTTP 调用
   api: {
-    login: (params: { identifier: string; password: string }) =>
+    login: (params: { identifier: string; password: string; captchaToken?: string }) =>
       ipcRenderer.invoke('api:login', params),
     register: (params: {
       username?: string
@@ -810,6 +819,7 @@ const electronAPI: ElectronAPI = {
       email?: string
       password: string
       displayName?: string
+      captchaToken?: string
     }) => ipcRenderer.invoke('api:register', params),
     refreshToken: (refreshToken: string) =>
       ipcRenderer.invoke('api:refreshToken', refreshToken),
@@ -835,6 +845,12 @@ const electronAPI: ElectronAPI = {
     getBaseUrl: () => ipcRenderer.invoke('api:getBaseUrl'),
     setAccessToken: (token: string | null) =>
       ipcRenderer.invoke('api:setAccessToken', token),
+
+    // --- 验证码与安全接口 ---
+    getCaptchaChallenge: () => ipcRenderer.invoke('api:getCaptchaChallenge'),
+    verifyCaptcha: (captchaId: string, sliderX: number) =>
+      ipcRenderer.invoke('api:verifyCaptcha', captchaId, sliderX),
+    getPublicKey: () => ipcRenderer.invoke('api:getPublicKey'),
 
     // --- 订阅接口 ---
     getPlans: () => ipcRenderer.invoke('api:getPlans'),
